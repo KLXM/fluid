@@ -1,6 +1,6 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Data;
+namespace Klxm\Fluid\Data;
 
 use Override;
 use Redaxo\Core\Language\Language;

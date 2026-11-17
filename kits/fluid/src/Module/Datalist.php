@@ -1,10 +1,10 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Kit\Fluid\Module;
+namespace Klxm\Fluid\Kit\Fluid\Module;
 
-use FriendsOfRedaxo\Fluid\Field\AsBlock;
-use FriendsOfRedaxo\Fluid\Field\{Checkbox, Choice, Number, Text, Textarea, YFormField, YFormTable};
-use FriendsOfRedaxo\Fluid\Kit\Fluid\FluidBlock;
+use Klxm\Fluid\Field\AsBlock;
+use Klxm\Fluid\Field\{Checkbox, Choice, Number, Text, Textarea, YFormField, YFormTable};
+use Klxm\Fluid\Kit\Fluid\FluidBlock;
 use Redaxo\Core\Content\AsModule;
 
 #[AsModule('fluid.datalist', 'Datenliste')]

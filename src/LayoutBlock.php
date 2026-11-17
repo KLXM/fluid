@@ -1,10 +1,10 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid;
+namespace Klxm\Fluid;
 
-use FriendsOfRedaxo\Fluid\Field\Checkbox;
-use FriendsOfRedaxo\Fluid\Field\Choice;
-use FriendsOfRedaxo\Fluid\Form\Stored;
+use Klxm\Fluid\Field\Checkbox;
+use Klxm\Fluid\Field\Choice;
+use Klxm\Fluid\Form\Stored;
 use Override;
 
 use function count;

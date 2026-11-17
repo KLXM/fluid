@@ -1,6 +1,6 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Field;
+namespace Klxm\Fluid\Field;
 
 use Attribute;
 use Redaxo\Core\Form\Field\Checkbox as CoreCheckbox;

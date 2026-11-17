@@ -1,10 +1,10 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Routing;
+namespace Klxm\Fluid\Routing;
 
 use Redaxo\Core\Core;
 use Redaxo\Core\ExtensionPoint\Extension;
-use FriendsOfRedaxo\Fluid\Routing\ExtensionPoint\RobotsTxt;
+use Klxm\Fluid\Routing\ExtensionPoint\RobotsTxt;
 
 /**
  * robots.txt: Regeln plus Zeile „Sitemap:“ (immer).

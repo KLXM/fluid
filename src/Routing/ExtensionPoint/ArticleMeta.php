@@ -1,9 +1,9 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Routing\ExtensionPoint;
+namespace Klxm\Fluid\Routing\ExtensionPoint;
 
-use FriendsOfRedaxo\Fluid\Routing\RouteMatch;
-use FriendsOfRedaxo\Fluid\Routing\Seo\PageMeta;
+use Klxm\Fluid\Routing\RouteMatch;
+use Klxm\Fluid\Routing\Seo\PageMeta;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\ExtensionPoint\ExtensionPoint;
 

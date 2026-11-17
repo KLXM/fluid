@@ -1,6 +1,6 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Media;
+namespace Klxm\Fluid\Media;
 
 use Redaxo\Core\Filesystem\Path;
 use Redaxo\Core\MediaManager\AsMediaType;

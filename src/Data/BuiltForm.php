@@ -1,9 +1,9 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Data;
+namespace Klxm\Fluid\Data;
 
-use FriendsOfRedaxo\Fluid\Mail\Mail;
-use FriendsOfRedaxo\Fluid\Routing\Routes;
+use Klxm\Fluid\Mail\Mail;
+use Klxm\Fluid\Routing\Routes;
 use Redaxo\Core\Content\Article;
 use Yakamara\YForm\Attribute\AsForm;
 use Yakamara\YForm\Data\Record;
@@ -181,7 +181,7 @@ final class BuiltForm extends FormDefinition
         $email = $this->emailField();
         if (\in_array($mode, ['mail', 'save_mail'], true) && '' !== ($to = trim((string) ($this->cfg['mail_to'] ?? '')))) {
             $subject = trim((string) ($this->cfg['mail_subject'] ?? '')) ?: 'Neue Nachricht: ' . ($this->definition->label ?? 'Formular');
-            $pageUrl = $this->article ? \FriendsOfRedaxo\Fluid\Routing\Router::absolute($this->article->getUrl()) : '';
+            $pageUrl = $this->article ? \Klxm\Fluid\Routing\Router::absolute($this->article->getUrl()) : '';
             yield new SafeMail(new SendMail(to: array_map('trim', explode(',', $to)), subject: $subject, html: true, replyTo: $email ? '{' . $email . '}' : null,
                 body: fn (Submission $s) => Mail::layout($s->interpolate($subject), $this->summaryHtml($s)
                     . ('' !== $pageUrl ? '<p style="margin:20px 0 0;font-size:14px;color:#6b7280">Gesendet über <a href="' . escape($pageUrl) . '">' . escape((string) $this->article?->name) . '</a></p>' : ''))),

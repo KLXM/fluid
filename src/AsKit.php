@@ -1,6 +1,6 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid;
+namespace Klxm\Fluid;
 
 use Attribute;
 

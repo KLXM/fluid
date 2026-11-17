@@ -1,20 +1,20 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Mcp;
+namespace Klxm\Fluid\Mcp;
 
-use FriendsOfRedaxo\Fluid\Activity;
-use FriendsOfRedaxo\Fluid\Api;
-use FriendsOfRedaxo\Fluid\ApiError;
-use FriendsOfRedaxo\Fluid\Blog\Blog;
-use FriendsOfRedaxo\Fluid\BlockModule;
-use FriendsOfRedaxo\Fluid\BlockOps;
-use FriendsOfRedaxo\Fluid\FluidAddon;
-use FriendsOfRedaxo\Fluid\Form\FieldForm;
-use FriendsOfRedaxo\Fluid\Layout;
-use FriendsOfRedaxo\Fluid\PageTemplates;
-use FriendsOfRedaxo\Fluid\RichText;
-use FriendsOfRedaxo\Fluid\Structure;
-use FriendsOfRedaxo\Fluid\Versions;
+use Klxm\Fluid\Activity;
+use Klxm\Fluid\Api;
+use Klxm\Fluid\ApiError;
+use Klxm\Fluid\Blog\Blog;
+use Klxm\Fluid\BlockModule;
+use Klxm\Fluid\BlockOps;
+use Klxm\Fluid\FluidAddon;
+use Klxm\Fluid\Form\FieldForm;
+use Klxm\Fluid\Layout;
+use Klxm\Fluid\PageTemplates;
+use Klxm\Fluid\RichText;
+use Klxm\Fluid\Structure;
+use Klxm\Fluid\Versions;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\ArticleCache;
 use Redaxo\Core\Content\ArticleHandler;
@@ -68,7 +68,7 @@ final class Content
         $id = match (true) {
             is_int($ref), is_string($ref) && ctype_digit($ref) => (int) $ref,
             in_array($ref, [null, '', 'home', '/'], true) => Article::getSiteStartArticleId(),
-            default => \FriendsOfRedaxo\Fluid\Routing\Routes::find(trim((string) parse_url((string) $ref, PHP_URL_PATH), '/'), $lang),
+            default => \Klxm\Fluid\Routing\Routes::find(trim((string) parse_url((string) $ref, PHP_URL_PATH), '/'), $lang),
         };
         $a = null !== $id ? Article::get((int) $id, $lang) : null;
         if (null === $a || !$this->access->canReadPage($a)) {
@@ -166,7 +166,7 @@ final class Content
                 'label' => $m::label(),
                 'group' => (string) ($d['group'] ?? ''),
                 'help' => (string) ($d['help'] ?? ''),
-                'layout' => is_a($m, \FriendsOfRedaxo\Fluid\LayoutBlock::class, true) ? true : null,
+                'layout' => is_a($m, \Klxm\Fluid\LayoutBlock::class, true) ? true : null,
                 'variants' => $m::variants() ?: null,
                 'fields' => self::fieldSchema($m::fields()),
             ], static fn ($v) => null !== $v && '' !== $v);
@@ -221,7 +221,7 @@ final class Content
             throw new ApiError('Dieser Zugang darf die Seite „' . $a->name . '“ nicht ändern.');
         }
         // Bearbeitungssperre: Schlüssel ohne Person gelten als fremd
-        \FriendsOfRedaxo\Fluid\EditLock::assert($a, $this->access->user->id ?? false);
+        \Klxm\Fluid\EditLock::assert($a, $this->access->user->id ?? false);
     }
 
     private function slice(Article $a, int $id): ArticleSlice

@@ -2,7 +2,7 @@
 
 namespace Project\YForm;
 
-use FriendsOfRedaxo\Fluid\Settings;
+use Klxm\Fluid\Settings;
 use Yakamara\YForm\Attribute\AsForm;
 use Yakamara\YForm\Field\Checkbox;
 use Yakamara\YForm\Field\Choice;

@@ -1,12 +1,12 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Search;
+namespace Klxm\Fluid\Search;
 
-use FriendsOfRedaxo\Fluid\BlockModule;
-use FriendsOfRedaxo\Fluid\FluidAddon;
-use FriendsOfRedaxo\Fluid\PageSettings;
-use FriendsOfRedaxo\Fluid\PageTemplates;
-use FriendsOfRedaxo\Fluid\Routing\Routes;
+use Klxm\Fluid\BlockModule;
+use Klxm\Fluid\FluidAddon;
+use Klxm\Fluid\PageSettings;
+use Klxm\Fluid\PageTemplates;
+use Klxm\Fluid\Routing\Routes;
 use Loupe\Loupe\Configuration;
 use Loupe\Loupe\Loupe;
 use Loupe\Loupe\LoupeFactory;
@@ -41,7 +41,7 @@ final class Search
     /** Adressen neu berechnet (Struktur geändert) → Suchindex beim nächsten Suchen neu aufbauen */
     public static function boot(): void
     {
-        \Redaxo\Core\ExtensionPoint\Extension::register(\FriendsOfRedaxo\Fluid\Routing\ExtensionPoint\RoutesRebuilt::class, static fn () => self::markDirty());
+        \Redaxo\Core\ExtensionPoint\Extension::register(\Klxm\Fluid\Routing\ExtensionPoint\RoutesRebuilt::class, static fn () => self::markDirty());
     }
 
     private const string DIRTY = 'search_dirty';
@@ -121,7 +121,7 @@ final class Search
                 $on = 1 === (int) $s['status'];
                 $stored = BlockModule::stored($s['data']);
                 if (0 === (int) ($stored['tunes']['col'] ?? 0)) {
-                    $layoutOn = $on && null !== $m && is_a($m, \FriendsOfRedaxo\Fluid\LayoutBlock::class, true);
+                    $layoutOn = $on && null !== $m && is_a($m, \Klxm\Fluid\LayoutBlock::class, true);
                 } elseif (!$layoutOn) {
                     continue;   // Spalten-Block eines Offline-Layouts (oder ohne Layout): nicht sichtbar
                 }

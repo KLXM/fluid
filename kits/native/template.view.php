@@ -9,10 +9,10 @@
  * Werte, CSS je Block, Design-Optionen – liegt darüber.
  */
 
-use FriendsOfRedaxo\Fluid\Editing;
-use FriendsOfRedaxo\Fluid\Kit;
-use FriendsOfRedaxo\Fluid\Kit\Fluid\FluidTemplate;
-use FriendsOfRedaxo\Fluid\PageSettings;
+use Klxm\Fluid\Editing;
+use Klxm\Fluid\Kit;
+use Klxm\Fluid\Kit\Fluid\FluidTemplate;
+use Klxm\Fluid\PageSettings;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\ArticleContent;
 use Redaxo\Core\Language\Language;
@@ -22,8 +22,8 @@ return static function (ArticleContent $content): void {
     // Inhalt zuerst: so ist bekannt, welche Blöcke (und damit welches CSS) die Seite braucht
     $main = $content->renderContent();
     $article = $content->article;
-    $name = \FriendsOfRedaxo\Fluid\Settings::name();
-    $landing = \FriendsOfRedaxo\Fluid\Routing\Router::landing();
+    $name = \Klxm\Fluid\Settings::name();
+    $landing = \Klxm\Fluid\Routing\Router::landing();
     $home = $landing ? (Article::get((int) $landing->articleId)?->getUrl() ?? '/') : (Article::getSiteStartArticle()?->getUrl() ?? '/');
     $isHome = $landing ? $article->id === $landing->articleId : $article->id === Article::getSiteStartArticleId();
     $menu = FluidTemplate::menu();
@@ -31,10 +31,10 @@ return static function (ArticleContent $content): void {
         $searchHref = rtrim((string) parse_url(link_href($searchHref), PHP_URL_PATH), '/');
         $menu = array_values(array_filter($menu, static fn (array $m) => rtrim((string) parse_url((string) $m['href'], PHP_URL_PATH), '/') !== $searchHref || !empty($m['children'])));
     }
-    $langs = \FriendsOfRedaxo\Fluid\Routing\Router::alternates($article);
+    $langs = \Klxm\Fluid\Routing\Router::alternates($article);
     $title = PageSettings::title($article, $name);
     $design = $kit->design();
-    $isPost = null !== \FriendsOfRedaxo\Fluid\Blog\Blog::blogOf($article);
+    $isPost = null !== \Klxm\Fluid\Blog\Blog::blogOf($article);
     if ($isPost) {
         $kit->markUsed('@post');
     }
@@ -145,7 +145,7 @@ return static function (ArticleContent $content): void {
 <?= $isPost ? fluid_post_footer($article) : '' ?>
 </main>
 <footer class="ncss-footer nv-footer">
-  <div class="ncss-footer-inner ncss-grid <?= e(\FriendsOfRedaxo\Fluid\InlineStyle::class('--ncss-grid-min:13rem')) ?>">
+  <div class="ncss-footer-inner ncss-grid <?= e(\Klxm\Fluid\InlineStyle::class('--ncss-grid-min:13rem')) ?>">
     <div class="ncss-stack nv-footer__about">
       <?= $brand('nv-brand--footer') ?>
       <?php if ('' !== $tagline): ?><p class="nv-footer__tagline"><?= fluid_title($tagline) ?></p><?php endif; ?>

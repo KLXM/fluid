@@ -1,3 +1,3 @@
 <?php
 
-echo FriendsOfRedaxo\Fluid\Backend\StatusPage::run();
+echo Klxm\Fluid\Backend\StatusPage::run();

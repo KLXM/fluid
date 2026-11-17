@@ -2,7 +2,7 @@
 /**
  * Bento-Raster: dichtes Raster (grid-auto-flow: dense) aus Kacheln verschiedener Größe. Spaltenzahl ergibt sich aus der
  * Breite (auto-fill, min. 15 rem); breite/hohe Kacheln spannen erst, wenn der Container Platz hat (@container).
- * @var \FriendsOfRedaxo\Fluid\Block $b  @var array $d
+ * @var \Klxm\Fluid\Block $b  @var array $d
  */
 $items = array_values(array_filter((array) ($d['items'] ?? []), fn($i) => trim((string) ($i['title'] ?? '')) !== '' || is_editing()));
 $tag = fluid_htag($d);

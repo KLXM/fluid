@@ -1,8 +1,8 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Maps;
+namespace Klxm\Fluid\Maps;
 
-use FriendsOfRedaxo\Fluid\Routing\Router;
+use Klxm\Fluid\Routing\Router;
 use Generator;
 use InvalidArgumentException;
 use RecursiveDirectoryIterator;
@@ -29,7 +29,7 @@ use function strlen;
 final class Proxy
 {
     /** @internal Eigener Proxy für Karten (Kacheln, Stile, Schriften) unter /proxy/{dienst}/… – Besucher verbinden sich nie mit Dritten */
-    #[\FriendsOfRedaxo\Fluid\Routing\Attribute\AsEndpoint('/proxy/*')]
+    #[\Klxm\Fluid\Routing\Attribute\AsEndpoint('/proxy/*')]
     public static function serve(string $path, string $rest): void
     {
         if (preg_match('~^([a-z][a-z0-9_-]{1,30})(/.*)?$~', $rest, $m)) {

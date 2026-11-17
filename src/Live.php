@@ -1,6 +1,6 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid;
+namespace Klxm\Fluid;
 
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\ArticleRevision;
@@ -35,7 +35,7 @@ use function Redaxo\Core\View\escape;
 final class Live
 {
     /** @internal Endpunkt der Live-Aktualisierung (SSE) – vor der Domain-Umleitung */
-    #[\FriendsOfRedaxo\Fluid\Routing\Attribute\AsEndpoint('/' . self::PATH, early: true)]
+    #[\Klxm\Fluid\Routing\Attribute\AsEndpoint('/' . self::PATH, early: true)]
     public static function serve(): void
     {
         self::stream();

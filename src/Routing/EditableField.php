@@ -1,6 +1,6 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Routing;
+namespace Klxm\Fluid\Routing;
 
 /**
  * Feld eines Eintrags, das ein Editor anbieten darf (fluid zeigt sie in den Seiteneinstellungen der Detailseite).

@@ -3,7 +3,7 @@
  * Slider (WAI-ARIA APG „Carousel“): CSS-Scroll-Snap, ohne JavaScript wisch- und scrollbar; js/media.js ergänzt Pfeile,
  * Punkte, Tastatur (←/→, Pos1/Ende), Überblenden und – nur wenn eingeschaltet – automatisches Weiterblättern mit
  * Pause-Knopf (hält bei Maus/Fokus, nie bei „Bewegung reduzieren“). Folien als group „n von m“, nicht sichtbare inert.
- * Varianten: slide (schieben) · fade (überblenden). @var \FriendsOfRedaxo\Fluid\Block $b  @var array $d
+ * Varianten: slide (schieben) · fade (überblenden). @var \Klxm\Fluid\Block $b  @var array $d
  */
 $height = in_array($d['height'] ?? '', ['16:9', '21:9', '3:2', '4:3', 'screen'], true) ? $d['height'] : '16:9';
 $fade = 'fade' === $b->variant();
@@ -50,7 +50,7 @@ $head = fluid_head($b);
       <?php foreach ($slides as $n => $s): $p = 'slides.' . $s['i']; $hasText = '' !== $s['eyebrow'] || '' !== $s['title'] || '' !== $s['text'] || '' !== $s['button_label']; ?>
       <div class="cms-slide cms-slide--<?= e($s['position']) ?> cms-slide--ov-<?= e($hasText ? $s['overlay'] : 'none') ?>" id="<?= e($id . '-' . ($n + 1)) ?>"
            role="group" aria-roledescription="<?= e(lt('Folie')) ?>" aria-label="<?= e(lt('{n} von {total}', ['n' => $n + 1, 'total' => $total])) ?>">
-        <div class="cms-slide__media"><?= img($s['file'], $sizes, ['ratio' => $bleed ? null : $height, 'eager' => 0 === $n && \FriendsOfRedaxo\Fluid\Block::firstImage()]) ?></div>
+        <div class="cms-slide__media"><?= img($s['file'], $sizes, ['ratio' => $bleed ? null : $height, 'eager' => 0 === $n && \Klxm\Fluid\Block::firstImage()]) ?></div>
         <?php if ($hasText): ?>
         <div class="cms-slide__body<?= $bleed ? ' wrap' : '' ?>"><div class="cms-slide__box">
           <?php if ('' !== $s['eyebrow']): ?><p class="cms-slide__eyebrow"<?= $b->edit("$p.eyebrow") ?>><?= e($s['eyebrow']) ?></p><?php endif; ?>

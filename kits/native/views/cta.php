@@ -4,11 +4,11 @@
  *   band  Farbfläche in Markenfarbe (.ncss-tile--brand, heller Text automatisch)
  *   box   Karte mit Rahmen auf getönter Fläche (.ncss-tile--muted)
  * „split“ (mit Bild) und „big“ (großer Schriftzug) kommen aus dem Kit fluid.
- * @var \FriendsOfRedaxo\Fluid\Block $b  @var array $d
+ * @var \Klxm\Fluid\Block $b  @var array $d
  */
 $v = in_array($b->variant(), ['band', 'box', 'split', 'big'], true) ? $b->variant() : 'band';
 if (!in_array($v, ['band', 'box'], true)) {
-    require \FriendsOfRedaxo\Fluid\Kit::get('fluid')->view('cta');
+    require \Klxm\Fluid\Kit::get('fluid')->view('cta');
 
     return;
 }

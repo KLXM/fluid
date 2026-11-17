@@ -1,8 +1,8 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Routing;
+namespace Klxm\Fluid\Routing;
 
-use FriendsOfRedaxo\Fluid\Routing\Attribute\AsEndpoint;
+use Klxm\Fluid\Routing\Attribute\AsEndpoint;
 use Redaxo\Core\ClassDiscovery;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\ExtensionPoint as ContentEp;

@@ -1,9 +1,9 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Data;
+namespace Klxm\Fluid\Data;
 
-use FriendsOfRedaxo\Fluid\ApiError;
-use FriendsOfRedaxo\Fluid\BlockModule;
+use Klxm\Fluid\ApiError;
+use Klxm\Fluid\BlockModule;
 use Redaxo\Core\Database\Sql;
 use Redaxo\Core\Security\User;
 use Yakamara\YForm\Field\CreatedAt;

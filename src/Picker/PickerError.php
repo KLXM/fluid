@@ -1,6 +1,6 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Picker;
+namespace Klxm\Fluid\Picker;
 
 use RuntimeException;
 

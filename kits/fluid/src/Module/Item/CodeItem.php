@@ -1,10 +1,10 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Kit\Fluid\Module\Item;
+namespace Klxm\Fluid\Kit\Fluid\Module\Item;
 
-use FriendsOfRedaxo\Fluid\Field\Choice;
-use FriendsOfRedaxo\Fluid\Field\Text;
-use FriendsOfRedaxo\Fluid\Field\Textarea;
+use Klxm\Fluid\Field\Choice;
+use Klxm\Fluid\Field\Text;
+use Klxm\Fluid\Field\Textarea;
 
 /** Eintrag von „Dateien“ im Block Code */
 final class CodeItem

@@ -6,7 +6,7 @@ Domains, SEO“.
 
 ## Regeln für diesen Ordner
 
-- **Kennt nichts von fluid.** Kein `use FriendsOfRedaxo\Fluid\…` außerhalb von `…\Routing`. fluid hängt sich an wie jedes
+- **Kennt nichts von fluid.** Kein `use Klxm\Fluid\…` außerhalb von `…\Routing`. fluid hängt sich an wie jedes
   andere AddOn: über Attribute, Extension Points und die Haken des Routers.
 - **REDAXO-6-Stil:** Einstellungen als unveränderliche Objekte im Projekt (`Router::$config`, `Head::$config`), Quellen und
   Endpunkte als Attribute (Klassenerkennung des Cores), Extension Points als Klassen, Erweiterungen am Core per

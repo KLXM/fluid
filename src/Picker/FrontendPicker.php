@@ -1,6 +1,6 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Picker;
+namespace Klxm\Fluid\Picker;
 
 use Redaxo\Core\Addon\Addon;
 use Redaxo\Core\Filesystem\Url;

@@ -1,7 +1,7 @@
 <?php
 /**
  * Code – eine oder mehrere Dateien als Codebeispiel, maskiert ausgegeben (kein HTML aus dem Feld), mit Kopier-Knopf (js/code.js).
- * @var \FriendsOfRedaxo\Fluid\Block $b  @var array $d
+ * @var \Klxm\Fluid\Block $b  @var array $d
  */
 $langs = ['php' => 'PHP', 'bash' => 'Terminal', 'env' => '.env', 'json' => 'JSON', 'yaml' => 'YAML', 'html' => 'HTML', 'css' => 'CSS', 'js' => 'JavaScript', 'text' => 'Text'];
 $items = array_values(array_filter((array) ($d['items'] ?? []), fn($i) => trim((string) ($i['code'] ?? '')) !== ''));

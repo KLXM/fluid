@@ -26,9 +26,9 @@ ohne das Kit zu ändern (`examples/block/`):
 // src/Block/Teaser.php
 namespace Project\Block;
 
-use FriendsOfRedaxo\Fluid\Field\AsBlock;
-use FriendsOfRedaxo\Fluid\Field\Link;
-use FriendsOfRedaxo\Fluid\Kit\Fluid\FluidBlock;
+use Klxm\Fluid\Field\AsBlock;
+use Klxm\Fluid\Field\Link;
+use Klxm\Fluid\Kit\Fluid\FluidBlock;
 use Redaxo\Core\Content\AsModule;
 use Redaxo\Core\Form\Field\{Text, Textarea};
 
@@ -73,7 +73,7 @@ Klasse – Felder und `output()` bleiben, wie sie sind. Für das Bearbeiten dire
 die Elemente setzen. Vorhandene Slices behalten ihren Modulschlüssel; neue Inhalte kommen mit dem Block.
 
 **Felder.** Alle Felder des Cores (`Redaxo\Core\Form\Field\…`) funktionieren in Blöcken und in der Seitenleiste – auch
-in gewöhnlichen Modulen. fluid bietet dieselben Felder unter **gleichem Namen** in `FriendsOfRedaxo\Fluid\Field\…` an: als
+in gewöhnlichen Modulen. fluid bietet dieselben Felder unter **gleichem Namen** in `Klxm\Fluid\Field\…` an: als
 Unterklassen mit allen Parametern des Cores und **zusätzlichen, optionalen** Parametern. Ohne sie verhalten sie sich
 genau wie die des Cores; der Core kann sie überall verwenden (im Backend zeigt er sein eigenes Formular).
 
@@ -212,7 +212,7 @@ beliebigen Paketen unter `vendor/`. Die Dateien des Kits (`kit.php`, `views/`, `
 {
     "name": "acme/fluid-kit-nature",
     "type": "redaxo-addon",
-    "require": { "friendsofredaxo/fluid": "*@dev" },
+    "require": { "klxm/fluid": "*@dev" },
     "autoload": { "psr-4": { "Acme\\FluidKitNature\\": "src/" } },
     "extra": { "redaxo": { "addon-class": "Acme\\FluidKitNature\\NatureAddon" } }
 }
@@ -243,7 +243,7 @@ Extension::register('FLUID_KIT', static fn (ExtensionPoint $ep) => 'shop.example
 | `FLUID_EDITOR_CONFIG` | Einstellungen des Editors | `article`, `user` | Blöcke/Menüpunkte für Rollen ausblenden |
 | `FLUID_KIT` | Schlüssel des Kits | – | Kit je Anfrage wählen, z. B. je Domain |
 
-Das Routing hat eigene Extension Points als Klassen (wie der Core), Namespace `FriendsOfRedaxo\Fluid\Routing\ExtensionPoint`:
+Das Routing hat eigene Extension Points als Klassen (wie der Core), Namespace `Klxm\Fluid\Routing\ExtensionPoint`:
 
 | Klasse | Subject | Eigenschaften | Zweck |
 |---|---|---|---|
@@ -302,7 +302,7 @@ fluid arbeitet mit den Mitteln von YForm 6 – Tabellen und Formulare sind Klass
 Jede YForm-Tabelle kann Inhalt aus den Blöcken von fluid haben – ein Feld wie jedes andere in der Tabellenklasse:
 
 ```php
-use FriendsOfRedaxo\Fluid\Data\FluidBlocks;
+use Klxm\Fluid\Data\FluidBlocks;
 
 yield FluidBlocks::new('inhalt')->label('Inhalt');
 yield FluidBlocks::new('inhalt')->label('Inhalt')->blocks('richtext', 'media_text', 'video');   // nur diese Blöcke
@@ -311,7 +311,7 @@ yield FluidBlocks::new('inhalt')->label('Inhalt')->blocks('richtext', 'media_tex
 - Bearbeiten in der YForm-Maske: Blöcke hinzufügen, bearbeiten (dieselben Felder wie auf der Website – Medienpool,
   Linkmap, Text-Editor), verschieben, entfernen. Gespeichert als JSON (`longtext`).
 - Ausgabe: Die Detailansicht der Datenliste zeigt das Feld automatisch als Blöcke. In eigenen Templates:
-  `echo \FriendsOfRedaxo\Fluid\BlockData::render($record->get('inhalt'));` – Klartext für Listen und Suche:
+  `echo \Klxm\Fluid\BlockData::render($record->get('inhalt'));` – Klartext für Listen und Suche:
   `BlockData::text(…)`.
 - **Auf der Website bearbeiten:** Im Bearbeiten-Modus sind die Blöcke eines Eintrags in der Detailansicht der Datenliste
   bearbeitbar wie Seiten-Blöcke – Texte direkt auf der Seite, Seitenleiste, Greifer, hinzufügen (nur die im Feld
@@ -328,7 +328,7 @@ Vorlagen: `examples/yform/` (`TerminTable`, `NewsTable`, `ProjectTable`, `Anfrag
 
 ## Adressen, Domains, SEO
 
-Der Rewriter liegt in `src/Routing/` (Namespace `FriendsOfRedaxo\Fluid\Routing`) und kennt nichts von fluid – er lässt
+Der Rewriter liegt in `src/Routing/` (Namespace `Klxm\Fluid\Routing`) und kennt nichts von fluid – er lässt
 sich als eigenes AddOn herauslösen oder später durch yrewrite und ein URL-AddOn ersetzen (`src/Routing/README.md`).
 Eingestellt wird er wie REDAXO 6 selbst im Code, ein Backend braucht er nicht.
 
@@ -353,8 +353,8 @@ Eingestellt wird er wie REDAXO 6 selbst im Code, ein Backend braucht er nicht.
 **Einstellen** in `Project::configure()`:
 
 ```php
-use FriendsOfRedaxo\Fluid\Routing\{Router, RoutingConfig, UrlFormat};
-use FriendsOfRedaxo\Fluid\Routing\Seo\{Head, HeadConfig, HeadTag};
+use Klxm\Fluid\Routing\{Router, RoutingConfig, UrlFormat};
+use Klxm\Fluid\Routing\Seo\{Head, HeadConfig, HeadTag};
 
 Router::$config = new RoutingConfig(
     format: UrlFormat::mixed(),   // none() /a/b · slash() /a/b/ · html() /a/b.html · mixed() /a/ + /a/b.html · suffix('.htm')
@@ -507,7 +507,7 @@ Extension::register('FLUID_SITE_TRANSLATIONS', static function (ExtensionPoint $
   als WebVTT unter `/fluid-track/{datei}` aus (SRT umgewandelt; nur erlaubte WebVTT-Tags). Option „gleich einschalten“
   wählt die Spur in der Sprache der Seite; „Transkript“ zeigt den Text darunter (`<details>`).
 - Eigene Ausgabe: `fluid_video_embed($url, $datei, $poster, $format, $titel, $spuren, $einschalten, $transkript)`
-  bzw. `FriendsOfRedaxo\Fluid\Media\Tracks` (`parse()`, `toVtt()`, `transcript()`).
+  bzw. `Klxm\Fluid\Media\Tracks` (`parse()`, `toVtt()`, `transcript()`).
 
 ## Blog
 
@@ -529,7 +529,7 @@ sich nicht mit Dritten. Detailkacheln gibt es nur rund um Orte, die auf der Webs
 
 ## Rechtstexte
 
-`FriendsOfRedaxo\Fluid\Legal\Legal` liefert Impressum, Datenschutz und Barrierefreiheit aus Website → Einstellungen →
+`Klxm\Fluid\Legal\Legal` liefert Impressum, Datenschutz und Barrierefreiheit aus Website → Einstellungen →
 „Recht & Suchmaschinen“ (`Legal::url('privacy')`, `Legal::links()`, `Legal::article('imprint')`). Ohne Einstellung gilt für
 den Datenschutz eine Seite der obersten Ebene, deren Name mit „Datenschutz“ bzw. „Privacy“ beginnt.
 
@@ -546,7 +546,7 @@ Der Endpunkt `/_legal/privacy?lang=ID` liefert Titel und bereinigtes HTML; das g
 
 ## Diagramme
 
-`FriendsOfRedaxo\Fluid\Chart\Chart` zeichnet Diagramme mit austauschbarer Engine (aus KLXM Studio). Aufrufer
+`Klxm\Fluid\Chart\Chart` zeichnet Diagramme mit austauschbarer Engine (aus KLXM Studio). Aufrufer
 beschreiben ein Diagramm in einem eigenen, schlichten Format – nie im Format einer Bibliothek:
 
 ```php
@@ -663,7 +663,7 @@ Ab Symfony 8.2 geht das auch in der DSN: `smtp://…?timeout=10`.
 
 ```php
 Core::getMailer()->send(new Email()->to('info@example.org')->subject('Neue Bestellung')
-    ->html(\FriendsOfRedaxo\Fluid\Mail\Mail::layout('Neue Bestellung', '<p>…</p>')));
+    ->html(\Klxm\Fluid\Mail\Mail::layout('Neue Bestellung', '<p>…</p>')));
 ```
 
 ## Suche
@@ -695,12 +695,12 @@ Eigener Block:
 
 ```php
 // an der Blockklasse: #[AsBlock(reload: true)]
-<div class="wrap …"<?= \FriendsOfRedaxo\Fluid\Live::region($b) ?>>
+<div class="wrap …"<?= \Klxm\Fluid\Live::region($b) ?>>
   <a href="?seite=2#<?= $b->domId() ?>" data-live-nav>Weiter</a>
   <form method="get" data-live-nav><input name="q" id="…" data-live-input data-live-delay="600" data-live-min="3"></form>
   <p role="status" data-live-count>12 Treffer</p>
 </div>
-<?= \FriendsOfRedaxo\Fluid\Live::assets() ?>
+<?= \Klxm\Fluid\Live::assets() ?>
 ```
 
 - Eingabefelder: `data-live-delay` = Pause nach dem letzten Tastendruck (Standard 350 ms), `data-live-min` = erst ab so
@@ -820,7 +820,7 @@ fluid nutzt die Rechte des Cores – eine Rolle wirkt auf der Website genau wie 
 ## Gastzugang (für AddOns)
 
 fluid selbst kennt nur angemeldete Backend-Benutzer. Ein AddOn kann Besucher ohne Anmeldung als **Gäste** zulassen,
-zum Beispiel [`fluid_demo`](https://github.com/FriendsOfREDAXO/fluid_demo), die Demo zum Ausprobieren. Ohne ein solches AddOn gibt es keine Gäste.
+zum Beispiel [`fluid_demo`](https://github.com/KLXM/fluid_demo), die Demo zum Ausprobieren. Ohne ein solches AddOn gibt es keine Gäste.
 
 - `FLUID_GUEST_USER` (Subjekt `null`): Liefert ein AddOn einen `User`, arbeitet der Besucher mit dessen Rechten.
   Admins werden abgewiesen. `Editing::isGuest()` ist dann `true`.
@@ -847,7 +847,7 @@ zum Beispiel [`fluid_demo`](https://github.com/FriendsOfREDAXO/fluid_demo), die 
 ## Bausteine (später eigene AddOns)
 
 fluid ist aus Bausteinen gebaut, die sich später einzeln als eigene AddOns herauslösen lassen – so wie der Bildeditor,
-der schon ein eigenes AddOn ist ([image_editor](https://github.com/FriendsOfREDAXO/image_editor)). Damit das ohne
+der schon ein eigenes AddOn ist ([image_editor](https://github.com/KLXM/image_editor)). Damit das ohne
 Umbau geht, gelten feste Regeln:
 
 1. **Abhängigkeiten zeigen nur in eine Richtung:** Bausteine nutzen den Kern von fluid und das Routing, aber das
@@ -869,10 +869,10 @@ Umbau geht, gelten feste Regeln:
 | MCP-Server | `src/Mcp/` | Endpunkt `/fluid-mcp` | Kern (Blöcke, Rechte) | herauslösbar |
 | E-Mail (Status, erneut senden, Layout, Aufbewahrung) | `src/Mail/` | Cronjob `fluid_mail_archive_purge` | Core-Mailer, Einstellungen, Kit (Farben) | herauslösbar |
 | Live, Präsenz | `src/Live.php`, `src/PresenceApi.php` | Endpunkte | Kern | bleibt im Kern |
-| Demo | eigenes AddOn [fluid_demo](https://github.com/FriendsOfREDAXO/fluid_demo) | Gastzugang | Kern | eigenständig |
-| Bildeditor | eigenes AddOn [image_editor](https://github.com/FriendsOfREDAXO/image_editor) | – | Core | eigenständig |
+| Demo | eigenes AddOn [fluid_demo](https://github.com/KLXM/fluid_demo) | Gastzugang | Kern | eigenständig |
+| Bildeditor | eigenes AddOn [image_editor](https://github.com/KLXM/image_editor) | – | Core | eigenständig |
 
-**Haken des Routings** (`FriendsOfRedaxo\Fluid\Routing`) – Attribute werden über die Klassenerkennung des Cores gefunden,
+**Haken des Routings** (`Klxm\Fluid\Routing`) – Attribute werden über die Klassenerkennung des Cores gefunden,
 die Aufrufe gehen in `boot()` jedes AddOns (aufgelöst wird erst bei `PACKAGES_INCLUDED`):
 
 ```php
@@ -899,7 +899,7 @@ Addon-Klasse, `Schema::TABLES` in `getOwnedSchema()`; alles andere hängt schon 
 
 | Pfad | Inhalt |
 |---|---|
-| `src/` | Namespace `FriendsOfRedaxo\Fluid`: Editor-API (`Api`), Blöcke (`BlockModule`, `Block`, `BlockData`), Routing, Blog, Daten (YForm), Medien, Suche |
+| `src/` | Namespace `Klxm\Fluid`: Editor-API (`Api`), Blöcke (`BlockModule`, `Block`, `BlockData`), Routing, Blog, Daten (YForm), Medien, Suche |
 | `src/Data/` | YForm-Anbindung: `YFormBridge`, Formular-Baukasten `BuiltForm`, Feld `FluidBlocks`, `RecordBlocks`, `Detail`, Postfach |
 | `src/Field/` | Felder: gleichnamige Unterklassen der Felder des Cores mit Ergänzungen, Felder nur von fluid (`RichText`, `Link` …), `AsBlock`, `BlockSchema` (Schema für fluid aus den Attributen) |
 | `kits/fluid/` | das Grund-Kit: `src/Module/` (Blockklassen mit Feld-Attributen), `views/` (Ausgaben), `kit.php` (Assets, Hintergründe), `design.php` (Design-Tokens, Vorlagen), `functions.php`, `lang/` |
@@ -913,12 +913,12 @@ Addon-Klasse, `Schema::TABLES` in `getOwnedSchema()`; alles andere hängt schon 
 ## Mitentwickeln
 
 ```bash
-git clone https://github.com/FriendsOfREDAXO/fluid.git
+git clone https://github.com/KLXM/fluid.git
 FLUID_SOURCE=$PWD/fluid bash fluid/install-dev.sh fluid-dev
 ```
 
 `FLUID_SOURCE` (ebenso `YFORM_SOURCE`, `IMAGE_EDITOR_SOURCE`) bindet die lokale Arbeitskopie als Composer-Pfad-Repository
-ein – als **Kopie** (`symlink: false`). Nach Änderungen: `composer reinstall friendsofredaxo/fluid && php bin/console migrate`.
+ein – als **Kopie** (`symlink: false`). Nach Änderungen: `composer reinstall klxm/fluid && php bin/console migrate`.
 
 > Vorsicht mit Symlinks: Ist `public/assets/addons/fluid` ein Symlink auf die Arbeitskopie, löscht `console migrate` beim
 > Neukopieren der Assets die Originale. Entweder kopieren lassen (wie oben) oder vor `migrate` den Symlink entfernen.

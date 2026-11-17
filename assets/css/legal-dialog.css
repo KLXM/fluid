@@ -1,4 +1,4 @@
-/* Rechtstexte im Dialog (assets/js/legal-dialog.js, FriendsOfRedaxo\Fluid\Legal\LegalDialog; aus KLXM Studio) – Schrift und Linkfarben kommen vom Kit */
+/* Rechtstexte im Dialog (assets/js/legal-dialog.js, Klxm\Fluid\Legal\LegalDialog; aus KLXM Studio) – Schrift und Linkfarben kommen vom Kit */
 .ldlg{width:min(46rem,100vw - 32px);max-height:min(86dvh,58rem);margin:auto;padding:0;border:1px solid color-mix(in srgb,CanvasText 14%,transparent);border-radius:16px;background:Canvas;color:CanvasText;box-shadow:0 30px 80px rgba(0,0,0,.35);overflow:hidden}
 .ldlg[open]{display:flex;flex-direction:column}
 .ldlg::backdrop{background:rgba(12,14,20,.55)}

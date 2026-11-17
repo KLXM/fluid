@@ -1,13 +1,13 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Kit\Fluid\Module;
+namespace Klxm\Fluid\Kit\Fluid\Module;
 
-use FriendsOfRedaxo\Fluid\Field\AsBlock;
-use FriendsOfRedaxo\Fluid\Field\{Checkbox, Collection, Link, Text, Textarea};
-use FriendsOfRedaxo\Fluid\Kit\Fluid\FluidBlock;
+use Klxm\Fluid\Field\AsBlock;
+use Klxm\Fluid\Field\{Checkbox, Collection, Link, Text, Textarea};
+use Klxm\Fluid\Kit\Fluid\FluidBlock;
 use Redaxo\Core\Content\AsModule;
-use FriendsOfRedaxo\Fluid\Kit\Fluid\Module\Item\PricingItem;
-use FriendsOfRedaxo\Fluid\Kit\Fluid\Module\Item\PricingRow;
+use Klxm\Fluid\Kit\Fluid\Module\Item\PricingItem;
+use Klxm\Fluid\Kit\Fluid\Module\Item\PricingRow;
 
 #[AsModule('fluid.pricing', 'Pakete / Vergleich')]
 #[AsBlock(

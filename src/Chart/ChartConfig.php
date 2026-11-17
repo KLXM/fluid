@@ -1,6 +1,6 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Chart;
+namespace Klxm\Fluid\Chart;
 
 /**
  * Einstellungen der Diagramme, gesetzt vom Projekt (wie die Policies des Cores) – in Project::configure():

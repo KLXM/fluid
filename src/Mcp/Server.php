@@ -1,10 +1,10 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Mcp;
+namespace Klxm\Fluid\Mcp;
 
-use FriendsOfRedaxo\Fluid\ApiError;
-use FriendsOfRedaxo\Fluid\Editing;
-use FriendsOfRedaxo\Fluid\FluidAddon;
+use Klxm\Fluid\ApiError;
+use Klxm\Fluid\Editing;
+use Klxm\Fluid\FluidAddon;
 use Redaxo\Core\Core;
 use Redaxo\Core\Filesystem\Url;
 use stdClass;
@@ -23,7 +23,7 @@ use function is_array;
 final class Server
 {
     /** @internal Endpunkt /fluid-mcp bzw. ?fluid_mcp=1 */
-    #[\FriendsOfRedaxo\Fluid\Routing\Attribute\AsEndpoint('/' . self::PATH, early: true, param: self::PARAM)]
+    #[\Klxm\Fluid\Routing\Attribute\AsEndpoint('/' . self::PATH, early: true, param: self::PARAM)]
     public static function serve(): void
     {
         self::handle();

@@ -1,11 +1,11 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Console;
+namespace Klxm\Fluid\Console;
 
-use FriendsOfRedaxo\Fluid\BlockModule;
-use FriendsOfRedaxo\Fluid\Data\YFormBridge;
-use FriendsOfRedaxo\Fluid\FluidAddon;
-use FriendsOfRedaxo\Fluid\Kit;
+use Klxm\Fluid\BlockModule;
+use Klxm\Fluid\Data\YFormBridge;
+use Klxm\Fluid\FluidAddon;
+use Klxm\Fluid\Kit;
 use Redaxo\Core\Cache;
 use Redaxo\Core\Console\AbstractCommand;
 use Redaxo\Core\Content\Article;
@@ -170,8 +170,8 @@ final class DemoCommand extends AbstractCommand
                 ArticleHandler::changeStatus($ids[$slug], $lang, 1);
                 if (isset($def['post']) && ($art = \Redaxo\Core\Content\Article::get($ids[$slug], $lang))) {
                     $post = (array) $def['post'];
-                    \FriendsOfRedaxo\Fluid\PageSettings::save($art, $art->name, true, (string) ($post['excerpt'] ?? ''), (string) ($post['image'] ?? ''), false);
-                    \FriendsOfRedaxo\Fluid\Blog\Blog::saveMeta($art, (string) ($post['date'] ?? date('Y-m-d')), (string) ($post['author'] ?? ''), (string) ($post['tags'] ?? ''));
+                    \Klxm\Fluid\PageSettings::save($art, $art->name, true, (string) ($post['excerpt'] ?? ''), (string) ($post['image'] ?? ''), false);
+                    \Klxm\Fluid\Blog\Blog::saveMeta($art, (string) ($post['date'] ?? date('Y-m-d')), (string) ($post['author'] ?? ''), (string) ($post['tags'] ?? ''));
                 }
                 if (!empty($def['is_home'])) {
                     Core::setConfig('start_article_id', $ids[$slug]);
@@ -211,7 +211,7 @@ final class DemoCommand extends AbstractCommand
             $sql->setQuery('UPDATE rex_article_translation SET template = ?, status = 1 WHERE article_id = ?', ['fluid', $id]);
             $ids[$slug] = $id;
             if (!empty($def['blog'])) {
-                \FriendsOfRedaxo\Fluid\Blog\Blog::setBlog($id, true);
+                \Klxm\Fluid\Blog\Blog::setBlog($id, true);
             }
         }
 
@@ -288,14 +288,14 @@ final class DemoCommand extends AbstractCommand
         // Website-Einstellungen der Demo (nur leere Felder) – Links auf Demo-Seiten werden zu redaxo://ID.
         // Als leer gilt auch ein Link auf eine gelöschte Seite: ein neuer Import legt die Seiten mit neuen IDs an.
         if (isset($demo['settings']) && '' === $page) {
-            $site = \FriendsOfRedaxo\Fluid\Settings::all();
+            $site = \Klxm\Fluid\Settings::all();
             $gone = static fn (mixed $v): bool => \is_string($v) && 1 === preg_match('~^redaxo://(\d+)~', $v, $m) && null === Article::get((int) $m[1]);
             foreach ((array) $mapLinks($demo['settings']) as $k => $v) {
                 if (!isset($site[$k]) || '' === $site[$k] || [] === $site[$k] || $gone($site[$k])) {
                     $site[$k] = $v;
                 }
             }
-            FluidAddon::instance()->setConfig(\FriendsOfRedaxo\Fluid\Settings::CONFIG, $site);
+            FluidAddon::instance()->setConfig(\Klxm\Fluid\Settings::CONFIG, $site);
         }
 
         if ('' !== $design) {
@@ -414,7 +414,7 @@ final class DemoCommand extends AbstractCommand
             }
             // Adresse aus dem übersetzten Titel (sonst bliebe der deutsche Teil, den die Sprache beim Anlegen übernommen hat)
             if (empty($def['is_home'])) {
-                \FriendsOfRedaxo\Fluid\Routing\Routes::setSlug($id, $lang, $title);
+                \Klxm\Fluid\Routing\Routes::setSlug($id, $lang, $title);
             }
             // vorhandene Blöcke dieser Sprache ersetzen (beide Fassungen)
             Sql::factory()->setQuery('DELETE FROM rex_article_slice WHERE article_id = ? AND language_id = ?', [$id, $lang]);
@@ -445,8 +445,8 @@ final class DemoCommand extends AbstractCommand
             }
             if (isset($def['post']) && ($art = \Redaxo\Core\Content\Article::get($id, $lang))) {
                 $post = (array) $tr($def['post']);
-                \FriendsOfRedaxo\Fluid\PageSettings::save($art, $title, true, (string) ($post['excerpt'] ?? ''), (string) ($post['image'] ?? ''), false);
-                \FriendsOfRedaxo\Fluid\Blog\Blog::saveMeta($art, (string) ($post['date'] ?? date('Y-m-d')), (string) ($post['author'] ?? ''), (string) ($post['tags'] ?? ''));
+                \Klxm\Fluid\PageSettings::save($art, $title, true, (string) ($post['excerpt'] ?? ''), (string) ($post['image'] ?? ''), false);
+                \Klxm\Fluid\Blog\Blog::saveMeta($art, (string) ($post['date'] ?? date('Y-m-d')), (string) ($post['author'] ?? ''), (string) ($post['tags'] ?? ''));
             }
             ArticleCache::delete($id);
             ++$pagesDone;
@@ -457,7 +457,7 @@ final class DemoCommand extends AbstractCommand
             $startCode = Language::get(Language::getStartId())?->code ?? '';
             foreach ($yform as $name => $t) {
                 $table = \Yakamara\YForm\Table\Tables::find((string) $name);
-                $langField = $table ? array_find($table->getFields(), static fn ($f) => $f instanceof \FriendsOfRedaxo\Fluid\Data\FluidLanguage) : null;
+                $langField = $table ? array_find($table->getFields(), static fn ($f) => $f instanceof \Klxm\Fluid\Data\FluidLanguage) : null;
                 if (!$table || !$langField || [] === ($t['rows'] ?? [])) {
                     continue;
                 }
@@ -479,7 +479,7 @@ final class DemoCommand extends AbstractCommand
             }
         }
 
-        \FriendsOfRedaxo\Fluid\Routing\Routes::rebuild();
+        \Klxm\Fluid\Routing\Routes::rebuild();
         Cache::delete();
         $io->success(sprintf('%s: %d Seiten mit %d Blöcken übersetzt.%s', $language->name, $pagesDone, $count, $notes ? ' Datensätze: ' . implode(', ', $notes) . '.' : ''));
 
@@ -549,7 +549,7 @@ final class DemoCommand extends AbstractCommand
         $kit->design()->save((array) $presets[$preset]['values']);
         $msg = 'Design-Vorlage „' . $presets[$preset]['label'] . '“ gesetzt.';
         // direkt aus der Konfiguration (Settings::all() puffert den Stand vor den Einstellungen der Demo)
-        $site = (array) FluidAddon::instance()->getConfig(\FriendsOfRedaxo\Fluid\Settings::CONFIG, []);
+        $site = (array) FluidAddon::instance()->getConfig(\Klxm\Fluid\Settings::CONFIG, []);
         $logo = \Redaxo\Core\Filesystem\Path::core('assets/redaxo-logo.svg');
         if ('redaxo' === $preset && '' === (string) ($site['logo'] ?? '') && is_file($logo)) {
             $svg = (string) file_get_contents($logo);
@@ -564,7 +564,7 @@ final class DemoCommand extends AbstractCommand
             }
             $site['logo'] = 'redaxo-logo.svg';
             $site['logo_dark'] = 'redaxo-logo-weiss.svg';
-            FluidAddon::instance()->setConfig(\FriendsOfRedaxo\Fluid\Settings::CONFIG, $site);
+            FluidAddon::instance()->setConfig(\Klxm\Fluid\Settings::CONFIG, $site);
             $msg .= ' Logo: REDAXO.';
         }
 
@@ -573,7 +573,7 @@ final class DemoCommand extends AbstractCommand
 
     /**
      * Beispielzeilen in die YForm-Tabellen der Demo (nur leere Tabellen). Die Tabellen selbst sind Klassen im Projekt
-     * (#[AsTable], Vorlage: vendor/friendsofredaxo/fluid/examples/yform) – YForm legt sie bei `console migrate` an.
+     * (#[AsTable], Vorlage: vendor/klxm/fluid/examples/yform) – YForm legt sie bei `console migrate` an.
      *
      * @param array<string, array{rows: list<array<string, mixed>>}> $tables
      */

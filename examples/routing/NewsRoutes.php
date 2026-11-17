@@ -2,14 +2,14 @@
 
 namespace Project\Routing;
 
-use FriendsOfRedaxo\Fluid\Routing\Attribute\AsRouteSource;
-use FriendsOfRedaxo\Fluid\Routing\Attribute\Description;
-use FriendsOfRedaxo\Fluid\Routing\Attribute\FromTable;
-use FriendsOfRedaxo\Fluid\Routing\Attribute\Image;
-use FriendsOfRedaxo\Fluid\Routing\Attribute\Modified;
-use FriendsOfRedaxo\Fluid\Routing\Attribute\Slug;
-use FriendsOfRedaxo\Fluid\Routing\Attribute\Title;
-use FriendsOfRedaxo\Fluid\Routing\TableSource;
+use Klxm\Fluid\Routing\Attribute\AsRouteSource;
+use Klxm\Fluid\Routing\Attribute\Description;
+use Klxm\Fluid\Routing\Attribute\FromTable;
+use Klxm\Fluid\Routing\Attribute\Image;
+use Klxm\Fluid\Routing\Attribute\Modified;
+use Klxm\Fluid\Routing\Attribute\Slug;
+use Klxm\Fluid\Routing\Attribute\Title;
+use Klxm\Fluid\Routing\TableSource;
 
 /**
  * News aus einer Tabelle unter der Seite „Aktuelles“ (ID 12): /aktuelles/sommerfest-im-garten

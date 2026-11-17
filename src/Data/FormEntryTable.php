@@ -1,6 +1,6 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Data;
+namespace Klxm\Fluid\Data;
 
 use Yakamara\YForm\Attribute\AsTable;
 use Yakamara\YForm\Field\CreatedAt;

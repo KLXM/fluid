@@ -1,8 +1,8 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Field;
+namespace Klxm\Fluid\Field;
 
-use FriendsOfRedaxo\Fluid\Form\Stored;
+use Klxm\Fluid\Form\Stored;
 use Redaxo\Core\Form\Field as Core;
 use ReflectionAttribute;
 use ReflectionClass;

@@ -1,11 +1,11 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Routing\Attribute;
+namespace Klxm\Fluid\Routing\Attribute;
 
 use Attribute;
 
 /**
- * Datensätze einer Tabelle als Adressen unter einer Seite ({@see \FriendsOfRedaxo\Fluid\Routing\TableSource}).
+ * Datensätze einer Tabelle als Adressen unter einer Seite ({@see \Klxm\Fluid\Routing\TableSource}).
  *
  * @see Slug, Title, Description, Image, Modified für die Spalten
  */

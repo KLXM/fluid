@@ -1,5 +1,5 @@
 /**
- * Live-Aktualisierung (FriendsOfRedaxo\Fluid\Live, aus KLXM Studio Core\Live, MIT): eine EventSource für alle [data-live]-Elemente der Seite.
+ * Live-Aktualisierung (Klxm\Fluid\Live, aus KLXM Studio Core\Live, MIT): eine EventSource für alle [data-live]-Elemente der Seite.
  * Ereignis „v“ = {abo: version}. Neuere Version → Element mit data-live-src neu laden ([data-live-list] tauschen, neue
  * [data-live-id] markieren und ansagen), sonst nur „cms:live“ am Element auslösen (für eigenes JavaScript von Kits/Erweiterungen).
  * Anhalten: [data-live-pause] (Änderungen werden gesammelt und beim Fortsetzen geladen). Ausgeblendeter Tab: Verbindung zu.

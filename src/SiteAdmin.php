@@ -1,14 +1,14 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid;
+namespace Klxm\Fluid;
 
-use FriendsOfRedaxo\Fluid\Form\FieldForm;
-use FriendsOfRedaxo\Fluid\Form\Picker;
-use FriendsOfRedaxo\Fluid\Maps\Maps;
-use FriendsOfRedaxo\Fluid\Routing\DomainRole;
-use FriendsOfRedaxo\Fluid\Routing\Domains;
-use FriendsOfRedaxo\Fluid\Routing\Redirects;
-use FriendsOfRedaxo\Fluid\Routing\Routes;
+use Klxm\Fluid\Form\FieldForm;
+use Klxm\Fluid\Form\Picker;
+use Klxm\Fluid\Maps\Maps;
+use Klxm\Fluid\Routing\DomainRole;
+use Klxm\Fluid\Routing\Domains;
+use Klxm\Fluid\Routing\Redirects;
+use Klxm\Fluid\Routing\Routes;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Database\Sql;
 use Redaxo\Core\Http\Request;

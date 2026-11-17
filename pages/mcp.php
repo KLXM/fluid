@@ -1,3 +1,3 @@
 <?php
 
-echo FriendsOfRedaxo\Fluid\Backend\McpPage::run();
+echo Klxm\Fluid\Backend\McpPage::run();

@@ -1,6 +1,6 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Chart\Attribute;
+namespace Klxm\Fluid\Chart\Attribute;
 
 use Attribute;
 

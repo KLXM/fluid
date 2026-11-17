@@ -2,7 +2,7 @@
 /**
  * Downloads – einzelne Dateien oder alle Dateien einer Medienkategorie (Medienpool). PDFs auf Wunsch mit „Ansehen“.
  * Aus KLXM Studio (dort mit PDF.js-Viewer und Sammlungen).
- * @var \FriendsOfRedaxo\Fluid\Block $b  @var array $d
+ * @var \Klxm\Fluid\Block $b  @var array $d
  */
 use Redaxo\Core\MediaPool\Media;
 use Redaxo\Core\MediaPool\MediaCategory;

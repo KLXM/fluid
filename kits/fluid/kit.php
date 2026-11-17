@@ -1,13 +1,13 @@
 <?php
 /*
- * Kit „fluid“ für friendsofredaxo/fluid – übernommen aus KLXM Studio (MIT): breakpointlos, Container-Queries,
+ * Kit „fluid“ für klxm/fluid – übernommen aus KLXM Studio (MIT): breakpointlos, Container-Queries,
  * fließende Schrift- und Abstandsstufen. Die Blöcke stehen als Klassen mit Feld-Attributen in src/Module/,
  * ihre Ausgaben in views/{typ}.php.
  */
 
 return [
     'label' => 'Fluid (breakpointlos)',
-    // Style-Editor: Farben, Schriften, Form, Kopf & Fuß, Vorlagen (FriendsOfRedaxo\Fluid\Design)
+    // Style-Editor: Farben, Schriften, Form, Kopf & Fuß, Vorlagen (Klxm\Fluid\Design)
     'design' => require __DIR__ . '/design.php',
     // Design-Optionen mit eigenem Stylesheet (nur das Gewählte wird geladen): css/opt-{option}-{wert}.css
     'design_css' => ['header', 'footer', 'pagebg', 'buttons', 'eyebrow', 'cards', 'dividers', 'palette', 'sections', 'transition'],

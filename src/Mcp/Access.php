@@ -1,9 +1,9 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Mcp;
+namespace Klxm\Fluid\Mcp;
 
-use FriendsOfRedaxo\Fluid\FluidAddon;
-use FriendsOfRedaxo\Fluid\Perm;
+use Klxm\Fluid\FluidAddon;
+use Klxm\Fluid\Perm;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\ModulePermission;
 use Redaxo\Core\Content\StructurePermission;

@@ -1,6 +1,6 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Routing\ExtensionPoint;
+namespace Klxm\Fluid\Routing\ExtensionPoint;
 
 use Redaxo\Core\ExtensionPoint\ExtensionPoint;
 

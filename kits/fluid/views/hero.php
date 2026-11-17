@@ -7,7 +7,7 @@
  *   scale    Fließende Skala: Überschrift füllt ihre Spalte (cqi), Seitenspalte + Stufenleiste ab 48 rem Platz (css/hx-scale.css)
  *   collage  Collage: 1–5 Bilder (Bild + Feld „gallery“) im Raster mit schwebender Textkarte ab 52 rem (css/hx-collage.css)
  *   compare  Vorher/Nachher mit Regler (fluid_compare() in functions.php, Tastatur: Pfeile, Pos1/Ende) (css/hx-compare.css)
- * @var \FriendsOfRedaxo\Fluid\Block $b  @var array $d
+ * @var \Klxm\Fluid\Block $b  @var array $d
  */
 $v = $b->variant() ?: 'split';
 $ratio = (string) ($d['ratio'] ?? '') ?: '4:5';
@@ -32,9 +32,9 @@ if ($v === 'fullbleed'):
     $poster = !empty($d['image']) ? media((string) $d['image']) : null;
     // AddOn video_editor (optional): kleinere Web-Fassung (720p/WebM) und dort gewähltes Poster
     $sources = $vid ? [['url' => media_url($vid), 'type' => (string) $vid['mime']]] : [];
-    if ($vid && class_exists(\FriendsOfRedaxo\VideoEditor\VideoEditor::class)) {
-        $sources = \FriendsOfRedaxo\VideoEditor\VideoEditor::sources((string) $d['video'], small: true) ?: $sources;
-        $vePoster = $poster ? null : \FriendsOfRedaxo\VideoEditor\VideoEditor::poster((string) $d['video']);
+    if ($vid && class_exists(\Klxm\VideoEditor\VideoEditor::class)) {
+        $sources = \Klxm\VideoEditor\VideoEditor::sources((string) $d['video'], small: true) ?: $sources;
+        $vePoster = $poster ? null : \Klxm\VideoEditor\VideoEditor::poster((string) $d['video']);
         $poster = $vePoster ? media($vePoster->fileName) : $poster;
     }
 ?>

@@ -1,8 +1,8 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Console;
+namespace Klxm\Fluid\Console;
 
-use FriendsOfRedaxo\Fluid\Search\Search;
+use Klxm\Fluid\Search\Search;
 use Redaxo\Core\Console\AbstractCommand;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;

@@ -1,13 +1,13 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Seo;
+namespace Klxm\Fluid\Seo;
 
-use FriendsOfRedaxo\Fluid\Block;
-use FriendsOfRedaxo\Fluid\Editing;
-use FriendsOfRedaxo\Fluid\PageSettings;
-use FriendsOfRedaxo\Fluid\Routing\Router;
-use FriendsOfRedaxo\Fluid\Routing\Seo\PageMeta;
-use FriendsOfRedaxo\Fluid\Settings;
+use Klxm\Fluid\Block;
+use Klxm\Fluid\Editing;
+use Klxm\Fluid\PageSettings;
+use Klxm\Fluid\Routing\Router;
+use Klxm\Fluid\Routing\Seo\PageMeta;
+use Klxm\Fluid\Settings;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\Category;
 use Redaxo\Core\Language\Language;

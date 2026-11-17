@@ -1,4 +1,4 @@
-/* friendsofredaxo/fluid – Block-Formulare im Backend (Slice bearbeiten, YForm-Maske).
+/* klxm/fluid – Block-Formulare im Backend (Slice bearbeiten, YForm-Maske).
    Felder, Knöpfe, Checkboxen, Eingabegruppen und die Einträge von Wiederholgruppen (Section, aufklappbar) kommen
    unverändert vom Core. Hier nur eigene Bausteine (Raster der Blöcke, Medienvorschau, Hinweise) – nie Klassen des Cores
    überschreiben, Farben nur über die Tokens des Cores (hell/dunkel). */

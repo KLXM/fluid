@@ -1,9 +1,9 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Kit\Fluid\Module\Item;
+namespace Klxm\Fluid\Kit\Fluid\Module\Item;
 
-use FriendsOfRedaxo\Fluid\Field\RichText;
-use FriendsOfRedaxo\Fluid\Field\Text;
+use Klxm\Fluid\Field\RichText;
+use Klxm\Fluid\Field\Text;
 
 /** Eintrag von „Fragen“ im Block Faq */
 final class FaqItem

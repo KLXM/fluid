@@ -1,14 +1,14 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Backend;
+namespace Klxm\Fluid\Backend;
 
-use FriendsOfRedaxo\Fluid\Kit;
-use FriendsOfRedaxo\Fluid\Mail\Mail;
-use FriendsOfRedaxo\Fluid\Media\Ffmpeg;
-use FriendsOfRedaxo\Fluid\Routing\Domains;
-use FriendsOfRedaxo\Fluid\Routing\Redirects;
-use FriendsOfRedaxo\Fluid\Routing\Routes;
-use FriendsOfRedaxo\Fluid\Search\Search;
+use Klxm\Fluid\Kit;
+use Klxm\Fluid\Mail\Mail;
+use Klxm\Fluid\Media\Ffmpeg;
+use Klxm\Fluid\Routing\Domains;
+use Klxm\Fluid\Routing\Redirects;
+use Klxm\Fluid\Routing\Routes;
+use Klxm\Fluid\Search\Search;
 use Redaxo\Core\Addon\Addon;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Core;
@@ -60,7 +60,7 @@ final class StatusPage
             [\extension_loaded('pdo_sqlite') ? 'ok' : 'warn', 'Suche', \extension_loaded('pdo_sqlite') ? 'Loupe (SQLite) verfügbar' : 'PHP-Erweiterung pdo_sqlite fehlt – Block „Suche“ ohne Treffer'],
             [Ffmpeg::available() ? 'ok' : 'info', 'Video-Vorschaubilder', Ffmpeg::available() ? 'ffmpeg ' . escape(Ffmpeg::bin()) : 'ffmpeg nicht gefunden – nur gewählte Vorschaubilder (Pfad über FFMPEG_BIN/FFPROBE_BIN)'],
             [Addon::exists('yform') ? 'ok' : 'info', 'YForm', Addon::exists('yform') ? 'vorhanden – Blöcke „Formular“, „Datenliste“, Postfach' : 'nicht installiert – Formulare und Datenlisten ausgeblendet'],
-            [class_exists(\FriendsOfRedaxo\ImageEditor\ImageEditorAddon::class) ? 'ok' : 'info', 'Bildbearbeitung', class_exists(\FriendsOfRedaxo\ImageEditor\ImageEditorAddon::class) ? 'image_editor vorhanden' : 'optional: friendsofredaxo/image_editor'],
+            [class_exists(\Klxm\ImageEditor\ImageEditorAddon::class) ? 'ok' : 'info', 'Bildbearbeitung', class_exists(\Klxm\ImageEditor\ImageEditorAddon::class) ? 'image_editor vorhanden' : 'optional: klxm/image_editor'],
             [$n404 > 0 ? 'info' : 'ok', '404-Protokoll', $n404 . ' nicht gefundene Adressen in 30 Tagen – auf der Website unter Website → Weiterleitungen'],
         ];
         // Kopf: Zusammenfassung (Ampel) und Absprung auf die Website
@@ -152,7 +152,7 @@ final class StatusPage
      */
     private static function mailSection(array $mail, string $csrf): string
     {
-        $keep = trim((string) \FriendsOfRedaxo\Fluid\Settings::get('mail_keep_days', ''));
+        $keep = trim((string) \Klxm\Fluid\Settings::get('mail_keep_days', ''));
         $facts = [
             'Versand' => '' !== $mail['error'] ? '<span class="rex-u-text-danger">' . escape($mail['error']) . '</span>' : '<code>' . escape($mail['transport']) . '</code>',
             'Absender' => '' !== $mail['from'] ? escape($mail['from']) : '<span class="rex-u-text-warning">REX_MAILER_FROM fehlt – Mails ohne eigenen Absender scheitern</span>',

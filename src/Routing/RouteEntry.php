@@ -1,6 +1,6 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Routing;
+namespace Klxm\Fluid\Routing;
 
 /**
  * Eine gespeicherte Adresse einer Quelle: ein Eintrag (Datensatz, Produkt …) in einer Sprache, angezeigt von einer Seite.

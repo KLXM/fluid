@@ -1,4 +1,4 @@
-/* Diagramme (FriendsOfRedaxo\Fluid\Chart\Chart, aus KLXM Studio).
+/* Diagramme (Klxm\Fluid\Chart\Chart, aus KLXM Studio).
    Farben als Variablen, die Kits überschreiben können: --chart-1 … --chart-8 (Reihen in fester Reihenfolge), --chart-ink (Text),
    --chart-muted (Achsen, Beschriftung), --chart-grid (Raster, Linien), --chart-bg (Fläche hinter dem Diagramm, Tooltip),
    --chart-dark (1 = dunkle Stufen). Standard: geprüfte Palette (Farbfehlsichtigkeit, Kontrast), hell und dunkel eigens gestuft.

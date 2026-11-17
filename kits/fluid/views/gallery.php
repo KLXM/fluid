@@ -1,7 +1,7 @@
 <?php
 /**
  * Bildergalerie: grid (gleiches Format) · masonry (Spalten, Originalformat) · justified (bündige Zeilen). Lightbox über
- * js/media.js – ohne JavaScript führen die Bilder als Links zur großen Fassung. @var \FriendsOfRedaxo\Fluid\Block $b  @var array $d
+ * js/media.js – ohne JavaScript führen die Bilder als Links zur großen Fassung. @var \Klxm\Fluid\Block $b  @var array $d
  */
 $layout = in_array($b->variant(), ['grid', 'masonry', 'justified'], true) ? $b->variant() : 'grid';
 $cols = in_array((string) ($d['columns'] ?? ''), ['2', '3', '4', '5'], true) ? (string) $d['columns'] : '3';

@@ -1,6 +1,6 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Routing\Attribute;
+namespace Klxm\Fluid\Routing\Attribute;
 
 use Attribute;
 

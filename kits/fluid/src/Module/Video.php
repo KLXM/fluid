@@ -1,12 +1,12 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Kit\Fluid\Module;
+namespace Klxm\Fluid\Kit\Fluid\Module;
 
-use FriendsOfRedaxo\Fluid\Field\AsBlock;
-use FriendsOfRedaxo\Fluid\Field\{Checkbox, Choice, Collection, MediaPicker, RichText, Text, Textarea, Url};
-use FriendsOfRedaxo\Fluid\Kit\Fluid\FluidBlock;
+use Klxm\Fluid\Field\AsBlock;
+use Klxm\Fluid\Field\{Checkbox, Choice, Collection, MediaPicker, RichText, Text, Textarea, Url};
+use Klxm\Fluid\Kit\Fluid\FluidBlock;
 use Redaxo\Core\Content\AsModule;
-use FriendsOfRedaxo\Fluid\Kit\Fluid\Module\Item\VideoTrack;
+use Klxm\Fluid\Kit\Fluid\Module\Item\VideoTrack;
 use Redaxo\Core\MediaPool\Media;
 
 #[AsModule('fluid.video', 'Video')]

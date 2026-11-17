@@ -1,12 +1,12 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Routing\Seo;
+namespace Klxm\Fluid\Routing\Seo;
 
-use FriendsOfRedaxo\Fluid\Routing\ExtensionPoint\ArticleMeta;
-use FriendsOfRedaxo\Fluid\Routing\ExtensionPoint\PageMetaResolved;
-use FriendsOfRedaxo\Fluid\Routing\Router;
-use FriendsOfRedaxo\Fluid\Routing\Routes;
-use FriendsOfRedaxo\Fluid\Routing\Sources;
+use Klxm\Fluid\Routing\ExtensionPoint\ArticleMeta;
+use Klxm\Fluid\Routing\ExtensionPoint\PageMetaResolved;
+use Klxm\Fluid\Routing\Router;
+use Klxm\Fluid\Routing\Routes;
+use Klxm\Fluid\Routing\Sources;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Core;
 use Redaxo\Core\ExtensionPoint\Extension;

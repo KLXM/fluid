@@ -1,9 +1,9 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Form;
+namespace Klxm\Fluid\Form;
 
-use FriendsOfRedaxo\Fluid\Data\YFormBridge;
-use FriendsOfRedaxo\Fluid\BlockModule;
+use Klxm\Fluid\Data\YFormBridge;
+use Klxm\Fluid\BlockModule;
 
 use function array_key_exists;
 use function array_values;
@@ -71,7 +71,7 @@ final class FieldForm
         if ($module::nestable()) {
             $cols = ['' => 'Nicht in einem Layout', '1' => 'Spalte 1', '2' => 'Spalte 2', '3' => 'Spalte 3', '4' => 'Spalte 4'];
             // neuer Block über „Block in Spalte n“ im Backend: Spalte vorgewählt
-            $col = (string) ($tunes['col'] ?? (\FriendsOfRedaxo\Fluid\Backend\SliceGrid::requestedCol() ?? ''));
+            $col = (string) ($tunes['col'] ?? (\Klxm\Fluid\Backend\SliceGrid::requestedCol() ?? ''));
             $h .= self::row('Spalte im Layout', self::select($p2 . '[col]', $cols, $col),
                 'Wirkt, wenn der Block direkt hinter einem Block „Layout (Spalten)“ steht (oder hinter weiteren Blöcken dieses Layouts).', false);
         }
@@ -141,7 +141,7 @@ final class FieldForm
                 : '<p class="rex-field-note">' . (YFormBridge::available() ? 'Noch keine Tabelle – im Projekt eine Klasse mit #[AsTable] anlegen (siehe YForm-README).' : 'Dafür wird das AddOn YForm benötigt.') . '</p>',
             'yform_field' => self::yformField($name, (string) $value, $id),
             // Blog (Kategorie mit „Blog / News“ in den Seiteneinstellungen); leer = alle Blogs
-            'blog' => [] !== ($bl = \FriendsOfRedaxo\Fluid\Blog\Blog::all())
+            'blog' => [] !== ($bl = \Klxm\Fluid\Blog\Blog::all())
                 ? self::select($name, ['' => 'Alle Blogs'] + $bl, (string) $value, ['id' => $id], false)
                 : '<p class="rex-field-note">Noch kein Blog – bei einer Menüseite in den Seiteneinstellungen „Blog / News“ anhaken.</p>',
             // Formular aus YForm (#[AsForm]-Klasse im Projekt)

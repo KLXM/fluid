@@ -1,5 +1,5 @@
 /**
- * Diagramme (FriendsOfRedaxo\Fluid\Chart\Chart, aus KLXM Studio) – Lader, unabhängig von der Engine.
+ * Diagramme (Klxm\Fluid\Chart\Chart, aus KLXM Studio) – Lader, unabhängig von der Engine.
  * Findet <figure data-chart>, lädt die Engine (data-chart-engine, ES-Modul) erst in Sichtweite und ruft
  *   render(el, spec, theme) → { update(theme, {animation, print}?), resize(), dispose() }
  * auf (optional image() → Bild-URL für den Druck). theme = Farben aus CSS-Variablen der Figur (--chart-1 … --chart-8, --chart-ink, --chart-muted, --chart-grid, --chart-bg)

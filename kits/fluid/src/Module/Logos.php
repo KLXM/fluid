@@ -1,12 +1,12 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Kit\Fluid\Module;
+namespace Klxm\Fluid\Kit\Fluid\Module;
 
-use FriendsOfRedaxo\Fluid\Field\AsBlock;
-use FriendsOfRedaxo\Fluid\Field\{Collection, Link, MediaPicker, Text};
-use FriendsOfRedaxo\Fluid\Kit\Fluid\FluidBlock;
+use Klxm\Fluid\Field\AsBlock;
+use Klxm\Fluid\Field\{Collection, Link, MediaPicker, Text};
+use Klxm\Fluid\Kit\Fluid\FluidBlock;
 use Redaxo\Core\Content\AsModule;
-use FriendsOfRedaxo\Fluid\Kit\Fluid\Module\Item\LogosItem;
+use Klxm\Fluid\Kit\Fluid\Module\Item\LogosItem;
 
 #[AsModule('fluid.logos', 'Logos (Partner, Kunden)')]
 #[AsBlock(

@@ -1,8 +1,8 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Console;
+namespace Klxm\Fluid\Console;
 
-use FriendsOfRedaxo\Fluid\Kit;
+use Klxm\Fluid\Kit;
 use Redaxo\Core\Console\AbstractCommand;
 use Redaxo\Core\Filesystem\File;
 use Redaxo\Core\Filesystem\Path;
@@ -67,8 +67,8 @@ final class KitCreateCommand extends AbstractCommand
 
             namespace {$ns};
 
-            use FriendsOfRedaxo\\Fluid\\AsKit;
-            use FriendsOfRedaxo\\Fluid\\Kit;
+            use Klxm\\Fluid\\AsKit;
+            use Klxm\\Fluid\\Kit;
 
             /**
              * Kit „{$label}“ – erbt von „{$parentKit->label()}“. Dateien in diesem Ordner ersetzen die des Eltern-Kits:

@@ -1,12 +1,12 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Mcp;
+namespace Klxm\Fluid\Mcp;
 
-use FriendsOfRedaxo\Fluid\ApiError;
-use FriendsOfRedaxo\Fluid\Blog\Blog;
-use FriendsOfRedaxo\Fluid\Data\YFormBridge;
-use FriendsOfRedaxo\Fluid\Search\Search;
-use FriendsOfRedaxo\Fluid\Settings;
+use Klxm\Fluid\ApiError;
+use Klxm\Fluid\Blog\Blog;
+use Klxm\Fluid\Data\YFormBridge;
+use Klxm\Fluid\Search\Search;
+use Klxm\Fluid\Settings;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Core;
 use Redaxo\Core\Language\Language;
@@ -223,8 +223,8 @@ final class Tools
     {
         $out = ['id' => (int) $r->get('id'), 'label' => $table->recordLabel($r)];
         foreach (YFormBridge::detailFields($table, true) as $f) {
-            if ($f instanceof \FriendsOfRedaxo\Fluid\Data\FluidBlocks) {
-                $out[$f->name] = \FriendsOfRedaxo\Fluid\BlockData::text($r->get($f->name));
+            if ($f instanceof \Klxm\Fluid\Data\FluidBlocks) {
+                $out[$f->name] = \Klxm\Fluid\BlockData::text($r->get($f->name));
                 continue;
             }
             $out[$f->name] = YFormBridge::text($r, $f);
@@ -275,7 +275,7 @@ final class Tools
         } catch (ValidationException $e) {
             throw new ApiError('Eingaben nicht gültig: ' . implode(' ', $e->errors->all()));
         }
-        \FriendsOfRedaxo\Fluid\Activity::log('save', null, $table->label() . ' #' . $r->get('id') . ' (MCP)');
+        \Klxm\Fluid\Activity::log('save', null, $table->label() . ' #' . $r->get('id') . ' (MCP)');
 
         return ['table' => $name, 'id' => (int) $r->get('id'), 'created' => 0 === $id, 'fields' => $known];
     }

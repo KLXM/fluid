@@ -1,12 +1,12 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Backend;
+namespace Klxm\Fluid\Backend;
 
-use FriendsOfRedaxo\Fluid\Data\YFormBridge;
-use FriendsOfRedaxo\Fluid\FluidAddon;
-use FriendsOfRedaxo\Fluid\Mcp\Access;
-use FriendsOfRedaxo\Fluid\Mcp\Server;
-use FriendsOfRedaxo\Fluid\Mcp\Tokens;
+use Klxm\Fluid\Data\YFormBridge;
+use Klxm\Fluid\FluidAddon;
+use Klxm\Fluid\Mcp\Access;
+use Klxm\Fluid\Mcp\Server;
+use Klxm\Fluid\Mcp\Tokens;
 use Redaxo\Core\Database\Sql;
 use Redaxo\Core\Http\Request;
 use Redaxo\Core\Security\CsrfToken;

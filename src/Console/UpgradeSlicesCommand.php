@@ -1,8 +1,8 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Console;
+namespace Klxm\Fluid\Console;
 
-use FriendsOfRedaxo\Fluid\BlockModule;
+use Klxm\Fluid\BlockModule;
 use Redaxo\Core\Console\AbstractCommand;
 use Redaxo\Core\Cache;
 use Redaxo\Core\Content\ArticleSlice;

@@ -3,11 +3,11 @@
  * Text + Bild im Kit „NativeCSS“ (.ncss-split: nebeneinander, stapelt sich per Container Query – Bild links bzw. rechts
  * allein über die Reihenfolge im Markup). auto wechselt die Seite in einer Folge von „Text + Bild“-Blöcken wie bei fluid.
  * „split“ (randlos 50/50) und „overlap“ (Karte über großem Bild) kommen aus dem Kit fluid.
- * @var \FriendsOfRedaxo\Fluid\Block $b  @var array $d
+ * @var \Klxm\Fluid\Block $b  @var array $d
  */
 $v = $b->variant() ?: 'auto';
 if (!in_array($v, ['auto', 'right', 'left'], true)) {
-    require \FriendsOfRedaxo\Fluid\Kit::get('fluid')->view('media_text');
+    require \Klxm\Fluid\Kit::get('fluid')->view('media_text');
 
     return;
 }

@@ -1,11 +1,11 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Legal;
+namespace Klxm\Fluid\Legal;
 
-use FriendsOfRedaxo\Fluid\BlockModule;
-use FriendsOfRedaxo\Fluid\FluidAddon;
-use FriendsOfRedaxo\Fluid\Routing\Attribute\AsEndpoint;
-use FriendsOfRedaxo\Fluid\Routing\Router;
+use Klxm\Fluid\BlockModule;
+use Klxm\Fluid\FluidAddon;
+use Klxm\Fluid\Routing\Attribute\AsEndpoint;
+use Klxm\Fluid\Routing\Router;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\ArticleRevision;
 use Redaxo\Core\Database\Sql;

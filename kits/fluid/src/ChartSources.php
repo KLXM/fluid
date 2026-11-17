@@ -1,8 +1,8 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Kit\Fluid;
+namespace Klxm\Fluid\Kit\Fluid;
 
-use FriendsOfRedaxo\Fluid\Chart\Attribute\AsChartSource;
+use Klxm\Fluid\Chart\Attribute\AsChartSource;
 use Redaxo\Core\Content\AsModule;
 use Redaxo\Core\Content\Module;
 use Redaxo\Core\Database\Sql;

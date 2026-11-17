@@ -1,13 +1,13 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Data;
+namespace Klxm\Fluid\Data;
 
-use FriendsOfRedaxo\Fluid\Routing\Sitemap;
-use FriendsOfRedaxo\Fluid\Routing\Router;
-use FriendsOfRedaxo\Fluid\BlockModule;
-use FriendsOfRedaxo\Fluid\Routing\RouteMatch;
-use FriendsOfRedaxo\Fluid\Routing\Routes;
-use FriendsOfRedaxo\Fluid\Routing\Seo\PageMeta;
+use Klxm\Fluid\Routing\Sitemap;
+use Klxm\Fluid\Routing\Router;
+use Klxm\Fluid\BlockModule;
+use Klxm\Fluid\Routing\RouteMatch;
+use Klxm\Fluid\Routing\Routes;
+use Klxm\Fluid\Routing\Seo\PageMeta;
 use Redaxo\Core\Language\Language;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\ArticleRevision;

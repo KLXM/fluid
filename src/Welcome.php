@@ -1,6 +1,6 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid;
+namespace Klxm\Fluid;
 
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\ArticleHandler;
@@ -24,8 +24,8 @@ final class Welcome
     /** Noch keine Startseite (frische Installation): „Erste Schritte“ statt Fehler – Endpunkte (Sitemap, Proxy …) bleiben erreichbar */
     public static function boot(): void
     {
-        \FriendsOfRedaxo\Fluid\Routing\Router::gate(static function (string $path): void {
-            if (self::needed() && !\FriendsOfRedaxo\Fluid\Routing\Router::isEndpoint($path)) {
+        \Klxm\Fluid\Routing\Router::gate(static function (string $path): void {
+            if (self::needed() && !\Klxm\Fluid\Routing\Router::isEndpoint($path)) {
                 self::handle();
             }
         });

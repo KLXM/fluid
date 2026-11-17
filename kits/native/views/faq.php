@@ -2,7 +2,7 @@
 /**
  * Fragen & Antworten im Kit „NativeCSS“: natives details/summary in der Optik .ncss-disclosure (ohne JavaScript;
  * name= schließt die anderen Antworten der Liste). split: Kopf neben der Liste · stacked: Kopf darüber.
- * @var \FriendsOfRedaxo\Fluid\Block $b  @var array $d
+ * @var \Klxm\Fluid\Block $b  @var array $d
  */
 $v = 'stacked' === $b->variant() ? 'stacked' : 'split';
 ?>

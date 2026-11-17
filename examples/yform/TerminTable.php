@@ -2,7 +2,7 @@
 
 namespace Project\YForm;
 
-use FriendsOfRedaxo\Fluid\Data\FluidLanguage;
+use Klxm\Fluid\Data\FluidLanguage;
 use Yakamara\YForm\Attribute\AsTable;
 use Yakamara\YForm\Field\Checkbox;
 use Yakamara\YForm\Field\Date;

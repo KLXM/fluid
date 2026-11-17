@@ -1,6 +1,6 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Picker;
+namespace Klxm\Fluid\Picker;
 
 use Redaxo\Core\MediaManager\MediaManager;
 use Redaxo\Core\MediaPool\Media;
@@ -78,8 +78,8 @@ final class MediaLibrary
     /** Vorschaubild; mit dem AddOn image_editor die bearbeitete Fassung */
     public static function thumb(string $file): string
     {
-        return class_exists(\FriendsOfRedaxo\ImageEditor\ImageEditor::class)
-            ? \FriendsOfRedaxo\ImageEditor\ImageEditor::url($file, 320)
+        return class_exists(\Klxm\ImageEditor\ImageEditor::class)
+            ? \Klxm\ImageEditor\ImageEditor::url($file, 320)
             : MediaManager::getUrl('rex_media_small', $file);
     }
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Routing;
+namespace Klxm\Fluid\Routing;
 
 use InvalidArgumentException;
 

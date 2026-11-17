@@ -1,6 +1,6 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid;
+namespace Klxm\Fluid;
 
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\ArticleHandler;
@@ -34,7 +34,7 @@ final class Structure
     {
         $cat = Category::get($categoryId);
 
-        return null !== $cat && \FriendsOfRedaxo\NavigationArray\NavigationMeta::of($cat)->navHidden;
+        return null !== $cat && \Klxm\NavigationArray\NavigationMeta::of($cat)->navHidden;
     }
 
     private static function setHidden(int $categoryId, int $languageId, bool $hidden): void
@@ -124,7 +124,7 @@ final class Structure
                     $msg = '„' . $a->name . '“ gelöscht.';
                     break;
             }
-            \FriendsOfRedaxo\Fluid\Routing\Routes::rebuild();
+            \Klxm\Fluid\Routing\Routes::rebuild();
         }
 
         return ['tree' => self::tree($languageId), 'message' => $msg];

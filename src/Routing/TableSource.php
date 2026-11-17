@@ -1,15 +1,15 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Routing;
+namespace Klxm\Fluid\Routing;
 
-use FriendsOfRedaxo\Fluid\Routing\Attribute\Description;
-use FriendsOfRedaxo\Fluid\Routing\Attribute\FromTable;
-use FriendsOfRedaxo\Fluid\Routing\Attribute\Image;
-use FriendsOfRedaxo\Fluid\Routing\Attribute\MetaColumn;
-use FriendsOfRedaxo\Fluid\Routing\Attribute\Modified;
-use FriendsOfRedaxo\Fluid\Routing\Attribute\Slug;
-use FriendsOfRedaxo\Fluid\Routing\Attribute\Title;
-use FriendsOfRedaxo\Fluid\Routing\Seo\PageMeta;
+use Klxm\Fluid\Routing\Attribute\Description;
+use Klxm\Fluid\Routing\Attribute\FromTable;
+use Klxm\Fluid\Routing\Attribute\Image;
+use Klxm\Fluid\Routing\Attribute\MetaColumn;
+use Klxm\Fluid\Routing\Attribute\Modified;
+use Klxm\Fluid\Routing\Attribute\Slug;
+use Klxm\Fluid\Routing\Attribute\Title;
+use Klxm\Fluid\Routing\Seo\PageMeta;
 use LogicException;
 use Redaxo\Core\Database\Sql;
 use Redaxo\Core\Language\Language;

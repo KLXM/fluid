@@ -1,8 +1,8 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Legal;
+namespace Klxm\Fluid\Legal;
 
-use FriendsOfRedaxo\Fluid\Settings;
+use Klxm\Fluid\Settings;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Language\Language;
 

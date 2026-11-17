@@ -134,7 +134,7 @@ Erste Fassung für REDAXO 6 (`redaxo/core` 6.x, YForm 6).
   der Core befüllt die Eigenschaften (typisiert: `?Media`, `DateTimeImmutable`, Objekte einer `Collection`). Vom Modul
   zum Block: `FluidBlock` statt `Module`, Schlüssel `fluid.…`, `#[AsBlock]` – Felder und `output()` bleiben.
   `$this->edit('feld')` für das Bearbeiten auf der Seite. Ohne eigenes `output()` die View des Kits (`$b`, `$d`, `$m`).
-- **Felder:** die des Cores, oder die gleichnamigen von fluid (`FriendsOfRedaxo\Fluid\Field\…`) als Unterklassen mit
+- **Felder:** die des Cores, oder die gleichnamigen von fluid (`Klxm\Fluid\Field\…`) als Unterklassen mit
   zusätzlichen, optionalen Parametern: `width`, `variants`, `placeholder`, `search`, bei `Collection` `itemLabel` und
   `titleField`. Felder nur von fluid: `RichText`, `Link`, `Icon`, `Geo`, `MediaCategory`, `Blog`, `YFormTable`,
   `YFormForm`, `YFormField` – auch in gewöhnlichen Modulen nutzbar. Neu in der Seitenleiste: `Email`,
@@ -320,7 +320,7 @@ Erste Fassung für REDAXO 6 (`redaxo/core` 6.x, YForm 6).
 ### Für Entwickler
 
 - **Felder der Blöcke als Attribute** – wie bei den Modulen des Cores. An der Klasse `#[AsBlock(icon:, group:, variants:,
-  nestable: …)]`, an den Eigenschaften die Felder aus `FriendsOfRedaxo\Fluid\Field`: `Text`, `Textarea`, `Choice`,
+  nestable: …)]`, an den Eigenschaften die Felder aus `Klxm\Fluid\Field`: `Text`, `Textarea`, `Choice`,
   `Checkbox`, `Number`, `DatePicker`, `TimePicker`, `Url` (Namen und Parameter wie im Core: `label`, `note`, `required`,
   `key`, `maxLength` …) sowie `RichText`, `Link`, `Media`, `File`, `Repeater`, `Icon`, `Geo`, `MediaCategory`, `Blog`,
   `YFormTable`, `YFormForm`, `YFormField`; dazu `width: 'half'` und `variants:`. Schlüssel = Eigenschaft in snake_case,
@@ -337,7 +337,7 @@ Erste Fassung für REDAXO 6 (`redaxo/core` 6.x, YForm 6).
   - Demo: Auf der Seite „Native Module“ stand unter „Derselbe Hinweis als fluid-Block“ der Code des Teasers (doppelter
     Schlüssel im Demo-Inhalt).
 
-- Menü über [navigation_array](https://github.com/FriendsOfREDAXO/navigation_array) (Branch 6.x) statt einer eigenen
+- Menü über [navigation_array](https://github.com/KLXM/navigation_array) (Branch 6.x) statt einer eigenen
   Klasse; fluid meldet über den Extension Point `NavigationStart` den Seitenbaum einer Landing-Domain als Start.
 - Blöcke speichern über `ContentHandler::editSlice()` des Cores (#6800) – im Editor und im MCP-Server.
 - `fluid:upgrade:slices` macht `ctype_id` optional, wenn `migrate` `content_section_id` schon angelegt hat (sonst

@@ -1,6 +1,6 @@
 <?php
 /*
- * Design-Tokens des Kits „fluid“ für den Style-Editor (aus KLXM Studio, MIT) – siehe FriendsOfRedaxo\Fluid\Design.
+ * Design-Tokens des Kits „fluid“ für den Style-Editor (aus KLXM Studio, MIT) – siehe Klxm\Fluid\Design.
  * Im REDAXO-Kit noch nicht umgesetzt (ausgeblendet, Ende der Datei): Kopf „Seitenleiste“.
  *
  * Jeder Token wird eine CSS-Variable (--f-…) oder eine Klasse am <html> (hdr-inline, btn-pill, cards-glass, has-dark …).

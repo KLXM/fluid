@@ -1,9 +1,9 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Routing;
+namespace Klxm\Fluid\Routing;
 
-use FriendsOfRedaxo\Fluid\Routing\Attribute\AsRouteSource;
-use FriendsOfRedaxo\Fluid\Routing\Seo\PageMeta;
+use Klxm\Fluid\Routing\Attribute\AsRouteSource;
+use Klxm\Fluid\Routing\Seo\PageMeta;
 use LogicException;
 use ReflectionClass;
 

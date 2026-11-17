@@ -1,8 +1,8 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Data;
+namespace Klxm\Fluid\Data;
 
-use FriendsOfRedaxo\Fluid\BlockData;
+use Klxm\Fluid\BlockData;
 use Override;
 use Redaxo\Core\Filesystem\Url;
 use Redaxo\Core\Http\Request;

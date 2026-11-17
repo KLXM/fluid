@@ -1,9 +1,9 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Kit\Fluid;
+namespace Klxm\Fluid\Kit\Fluid;
 
-use FriendsOfRedaxo\Fluid\AsKit;
-use FriendsOfRedaxo\Fluid\Kit;
+use Klxm\Fluid\AsKit;
+use Klxm\Fluid\Kit;
 use Override;
 use Redaxo\Core\Filesystem\Url;
 

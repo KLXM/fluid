@@ -1,6 +1,6 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Media;
+namespace Klxm\Fluid\Media;
 
 /**
  * ffmpeg/ffprobe aufrufen (Vorschaubilder von Videos). Ohne ffmpeg bleibt alles wirkungslos – Videos zeigen dann das

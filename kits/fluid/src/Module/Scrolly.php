@@ -1,12 +1,12 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Kit\Fluid\Module;
+namespace Klxm\Fluid\Kit\Fluid\Module;
 
-use FriendsOfRedaxo\Fluid\Field\AsBlock;
-use FriendsOfRedaxo\Fluid\Field\{Choice, Collection, MediaPicker, Text, Textarea};
-use FriendsOfRedaxo\Fluid\Kit\Fluid\FluidBlock;
+use Klxm\Fluid\Field\AsBlock;
+use Klxm\Fluid\Field\{Choice, Collection, MediaPicker, Text, Textarea};
+use Klxm\Fluid\Kit\Fluid\FluidBlock;
 use Redaxo\Core\Content\AsModule;
-use FriendsOfRedaxo\Fluid\Kit\Fluid\Module\Item\ScrollyItem;
+use Klxm\Fluid\Kit\Fluid\Module\Item\ScrollyItem;
 
 #[AsModule('fluid.scrolly', 'Scrollytelling')]
 #[AsBlock(

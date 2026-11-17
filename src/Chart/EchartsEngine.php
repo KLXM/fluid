@@ -1,9 +1,9 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Chart;
+namespace Klxm\Fluid\Chart;
 
-use FriendsOfRedaxo\Fluid\Chart\Attribute\AsChartEngine;
-use FriendsOfRedaxo\Fluid\FluidAddon;
+use Klxm\Fluid\Chart\Attribute\AsChartEngine;
+use Klxm\Fluid\FluidAddon;
 
 /**
  * Standard-Engine: Apache ECharts (Apache-2.0), gebündelt und selbst gehostet – nur Linie, Balken, Torte, Canvas

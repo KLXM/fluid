@@ -1,11 +1,11 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Routing\Attribute;
+namespace Klxm\Fluid\Routing\Attribute;
 
 use Attribute;
 
 /**
- * Kennzeichnet eine Quelle eigener Adressen ({@see \FriendsOfRedaxo\Fluid\Routing\RouteSource}) – gefunden über die
+ * Kennzeichnet eine Quelle eigener Adressen ({@see \Klxm\Fluid\Routing\RouteSource}) – gefunden über die
  * Klassenerkennung des Cores, wie #[AsModule] oder #[AsMetaSchema].
  *
  *     #[AsRouteSource('news', label: 'News')]

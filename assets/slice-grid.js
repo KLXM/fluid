@@ -1,5 +1,5 @@
 /*
- * Backend, Slice-Liste (FriendsOfRedaxo\Fluid\Backend\SliceGrid): Wird ein Block in einer Layout-Spalte bearbeitet oder
+ * Backend, Slice-Liste (Klxm\Fluid\Backend\SliceGrid): Wird ein Block in einer Layout-Spalte bearbeitet oder
  * über „+ Block in Spalte n“ neu angelegt, öffnet das Formular des Cores in einem Dialog über dem Raster – das Raster
  * bleibt nebeneinander stehen. Esc und ✕ wirken wie „Abbrechen“. Ohne Skript bzw. <dialog>: Spalten untereinander.
  */

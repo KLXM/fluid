@@ -7,9 +7,9 @@
  * (Medienpool statt Mediathek, REDAXO-Links, Sanitizer des Cores). Prototyp – im Paket kommen sie in einen Namespace.
  */
 
-use FriendsOfRedaxo\Fluid\Block;
-use FriendsOfRedaxo\Fluid\Editing;
-use FriendsOfRedaxo\Fluid\Kit\Fluid\FluidKit;
+use Klxm\Fluid\Block;
+use Klxm\Fluid\Editing;
+use Klxm\Fluid\Kit\Fluid\FluidKit;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\MediaPool\Media;
 
@@ -55,10 +55,10 @@ function is_editing(): bool
     return Editing::active();
 }
 
-/** Website-Einstellungen (FriendsOfRedaxo\Fluid\Settings) – wie setting() in KLXM Studio */
+/** Website-Einstellungen (Klxm\Fluid\Settings) – wie setting() in KLXM Studio */
 function setting(string $key, mixed $default = null): mixed
 {
-    return \FriendsOfRedaxo\Fluid\Settings::get($key, $default);
+    return \Klxm\Fluid\Settings::get($key, $default);
 }
 
 function filled(mixed $v): bool
@@ -70,7 +70,7 @@ function filled(mixed $v): bool
 
 function fluid_name(bool $short = false): string
 {
-    return \FriendsOfRedaxo\Fluid\Settings::name($short);
+    return \Klxm\Fluid\Settings::name($short);
 }
 
 function fluid_phone(): string
@@ -197,10 +197,10 @@ function fluid_quick_contact(string $class = 'quick'): string
     return $h . '</ul>';
 }
 
-/** Impressum, Datenschutz, Barrierefreiheit (Website → Recht; FriendsOfRedaxo\Fluid\Legal\Legal) @return list<array{label: string, href: string}> */
+/** Impressum, Datenschutz, Barrierefreiheit (Website → Recht; Klxm\Fluid\Legal\Legal) @return list<array{label: string, href: string}> */
 function fluid_legal_links(): array
 {
-    return \FriendsOfRedaxo\Fluid\Legal\Legal::links();
+    return \Klxm\Fluid\Legal\Legal::links();
 }
 
 function fluid_header_cta(): ?array
@@ -259,8 +259,8 @@ function img(?string $name, string $sizes = '100vw', array $opt = []): string
     }
     $alt = $opt['alt'] ?? (trim((string) $m->getValue('meta_alt')) ?: $m->title);
     // ohne Angabe: erstes Bild im ersten Block der Seite sofort und mit Vorrang (Einstieg), sonst lazy
-    $eager = \array_key_exists('eager', $opt) ? !empty($opt['eager']) : \FriendsOfRedaxo\Fluid\Block::firstImage();
-    $editor = class_exists(\FriendsOfRedaxo\ImageEditor\ImageEditor::class) ? \FriendsOfRedaxo\ImageEditor\ImageEditor::class : null;
+    $eager = \array_key_exists('eager', $opt) ? !empty($opt['eager']) : \Klxm\Fluid\Block::firstImage();
+    $editor = class_exists(\Klxm\ImageEditor\ImageEditor::class) ? \Klxm\ImageEditor\ImageEditor::class : null;
     $editable = $editor && null === $editor::editable($m);
     // Bildformat (16:9 …): Ausschnitt je Format aus image_editor – eigener Ausschnitt oder automatisch um den Fokuspunkt.
     // Nicht bei „Einpassen“ (contain): dann zeigt der Rahmen das ganze Bild.
@@ -283,13 +283,13 @@ function img(?string $name, string $sizes = '100vw', array $opt = []): string
     $style = $editable ? $editor::imgStyle($m->fileName) : '';
 
     return '<img src="' . e($src) . '"' . $srcset . ' alt="' . e($alt) . '"' . $wh . ($eager ? ' fetchpriority="high"' : ' loading="lazy"') . ' decoding="async"'
-        . \FriendsOfRedaxo\Fluid\InlineStyle::attr($style, (string) ($opt['class'] ?? '')) . $ie . '>';   // Fokuspunkt als Klasse (CSP: keine style-Attribute)
+        . \Klxm\Fluid\InlineStyle::attr($style, (string) ($opt['class'] ?? '')) . $ie . '>';   // Fokuspunkt als Klasse (CSP: keine style-Attribute)
 }
 
 /** Rich Text sicher ausgeben (Klassenvertrag der Formatierungsleiste, RichText) */
 function rich(?string $html): string
 {
-    return \FriendsOfRedaxo\Fluid\RichText::html($html);
+    return \Klxm\Fluid\RichText::html($html);
 }
 
 /** Link-Wert eines Feldes → Adresse: redaxo://12, page:12, 12, https://…, #anker, tel:, mailto: */
@@ -415,7 +415,7 @@ function fluid_min(array $d, string $key = 'size'): string
 function fluid_image(?string $id, string $sizes, string $ratio, string $class = '', array $opt = []): string
 {
     // Einpassen „Originalformat“ (image_editor): Rahmen ohne festes Seitenverhältnis
-    if ($id && class_exists(\FriendsOfRedaxo\ImageEditor\ImageEditor::class) && 'original' === (\FriendsOfRedaxo\ImageEditor\ImageEditor::stored($id)['fit'] ?? '')) {
+    if ($id && class_exists(\Klxm\ImageEditor\ImageEditor::class) && 'original' === (\Klxm\ImageEditor\ImageEditor::stored($id)['fit'] ?? '')) {
         $ratio = '';
     }
     $pic = img($id, $sizes, ('' !== $ratio ? ['ratio' => $ratio] : []) + $opt);
@@ -495,7 +495,7 @@ function strip_emphasis(string $text): string
 /** Datenschutzerklärung (Website → Recht, sonst Seite „Datenschutz“ der obersten Ebene) – oder '' */
 function privacy_url(): string
 {
-    return \FriendsOfRedaxo\Fluid\Legal\Legal::url('privacy');
+    return \Klxm\Fluid\Legal\Legal::url('privacy');
 }
 
 /**
@@ -547,15 +547,15 @@ function fluid_video_file(Media $video, string $poster, string $ratio, string $l
 {
     $mm = \Redaxo\Core\MediaManager\MediaManager::class;
     // AddOn video_editor (optional): dort gewähltes Poster und Web-Fassungen (WebM, 480p/720p/1080p je nach Bildschirm) – ohne es das Original
-    $ve = class_exists(\FriendsOfRedaxo\VideoEditor\VideoEditor::class);
-    $p = '' !== $poster ? Media::get($poster) : ($ve ? \FriendsOfRedaxo\VideoEditor\VideoEditor::poster($video->fileName) : null);
-    $posterUrl = $p ? $mm::getUrl('fluid_poster', $p) : (\FriendsOfRedaxo\Fluid\Media\Ffmpeg::available() ? $mm::getUrl('fluid_poster', $video) : '');
-    $sources = $ve ? \FriendsOfRedaxo\VideoEditor\VideoEditor::sources($video->fileName) : [];
+    $ve = class_exists(\Klxm\VideoEditor\VideoEditor::class);
+    $p = '' !== $poster ? Media::get($poster) : ($ve ? \Klxm\VideoEditor\VideoEditor::poster($video->fileName) : null);
+    $posterUrl = $p ? $mm::getUrl('fluid_poster', $p) : (\Klxm\Fluid\Media\Ffmpeg::available() ? $mm::getUrl('fluid_poster', $video) : '');
+    $sources = $ve ? \Klxm\VideoEditor\VideoEditor::sources($video->fileName) : [];
     $sources = $sources ?: [['url' => $video->getUrl(), 'type' => (string) $video->type]];
     // Untertitel aus dem Video-Editor, wenn im Block keine gewählt sind
     if ($ve && [] === $tracks) {
         $tracks = array_map(static fn (array $t) => ['file' => $t['file'], 'lang' => $t['lang'], 'kind' => $t['kind'], 'label' => $t['label']],
-            \FriendsOfRedaxo\VideoEditor\VideoEditor::tracks($video->fileName));
+            \Klxm\VideoEditor\VideoEditor::tracks($video->fileName));
     }
     $lang = \Redaxo\Core\Language\Language::getCurrent()->code;
     $out = '';
@@ -573,8 +573,8 @@ function fluid_video_file(Media $video, string $poster, string $ratio, string $l
         if ('chapters' !== $kind && (null === $first || $code === $lang && $first['lang'] !== $lang)) {
             $first = ['file' => $f, 'lang' => $code];
         }
-        $out .= '<track kind="' . e($kind) . '" src="' . e(\FriendsOfRedaxo\Fluid\Media\Tracks::url($f)) . '" srclang="' . e($code) . '" label="'
-            . e(\FriendsOfRedaxo\Fluid\Media\Tracks::label($kind, $code, (string) ($t['label'] ?? ''))) . '"' . ($default ? ' default' : '') . '>';
+        $out .= '<track kind="' . e($kind) . '" src="' . e(\Klxm\Fluid\Media\Tracks::url($f)) . '" srclang="' . e($code) . '" label="'
+            . e(\Klxm\Fluid\Media\Tracks::label($kind, $code, (string) ($t['label'] ?? ''))) . '"' . ($default ? ' default' : '') . '>';
     }
     // Untertitel von derselben Adresse (crossorigin nötig, sobald Medien von einer anderen Domain kommen)
     $h = '<div class="vembed r-' . e($ratio) . '"><video controls preload="none" playsinline' . ('' !== $posterUrl ? ' poster="' . e($posterUrl) . '"' : '')
@@ -582,7 +582,7 @@ function fluid_video_file(Media $video, string $poster, string $ratio, string $l
         . implode('', array_map(static fn (array $src) => '<source src="' . e($src['url']) . '" type="' . e($src['type']) . '"'
             . (($src['media'] ?? '') !== '' ? ' media="' . e($src['media']) . '"' : '') . '>', $sources)) . $out . '</video></div>';
     if ($transcript && $first) {
-        $paras = \FriendsOfRedaxo\Fluid\Media\Tracks::transcript(\FriendsOfRedaxo\Fluid\Media\Tracks::cuesOf($first['file']));
+        $paras = \Klxm\Fluid\Media\Tracks::transcript(\Klxm\Fluid\Media\Tracks::cuesOf($first['file']));
         if ($paras) {
             $h .= '<details class="vtranscript"><summary>' . e(lt('Text zum Video')) . '</summary><div class="vtranscript__body" lang="' . e($first['lang']) . '">'
                 . implode('', array_map(static fn ($t) => '<p>' . e($t) . '</p>', $paras)) . '</div></details>';
@@ -608,7 +608,7 @@ function fluid_date(\DateTimeInterface $d): string
 }
 
 /** Zeile „Datum · Autor“ eines Beitrags */
-function fluid_post_meta(\FriendsOfRedaxo\Fluid\Blog\Post $p, bool $author = true): string
+function fluid_post_meta(\Klxm\Fluid\Blog\Post $p, bool $author = true): string
 {
     $h = '<time datetime="' . e($p->date->format('Y-m-d')) . '">' . e(fluid_date($p->date)) . '</time>';
     if ($author && '' !== $p->author) {
@@ -621,15 +621,15 @@ function fluid_post_meta(\FriendsOfRedaxo\Fluid\Blog\Post $p, bool $author = tru
 /** Kopf einer Beitragsseite (Template): Zurück zur Übersicht, Titel, Datum, Autor, Schlagworte, Bild */
 function fluid_post_header(Article $a): string
 {
-    $blog = \FriendsOfRedaxo\Fluid\Blog\Blog::blogOf($a);
-    $p = $blog ? \FriendsOfRedaxo\Fluid\Blog\Post::get($a->id, $a->languageId) : null;
+    $blog = \Klxm\Fluid\Blog\Blog::blogOf($a);
+    $p = $blog ? \Klxm\Fluid\Blog\Post::get($a->id, $a->languageId) : null;
     if (!$p) {
         return '';
     }
     $over = Article::get($blog, $a->languageId);
     $tags = '';
     foreach ($p->tags as $t) {
-        $tags .= '<li><a href="' . e(($over?->getUrl() ?? '') . '?tag=' . rawurlencode(\FriendsOfRedaxo\Fluid\Blog\Blog::tagSlug($t))) . '">' . e($t) . '</a></li>';
+        $tags .= '<li><a href="' . e(($over?->getUrl() ?? '') . '?tag=' . rawurlencode(\Klxm\Fluid\Blog\Blog::tagSlug($t))) . '">' . e($t) . '</a></li>';
     }
     $img = '' !== $p->image ? '<div class="post-head__img ratio-16-9">' . img($p->image, '(min-width: 1280px) 1200px, 100vw', ['eager' => true]) . '</div>' : '';
 
@@ -644,11 +644,11 @@ function fluid_post_header(Article $a): string
 /** Fuß einer Beitragsseite (Template): älterer / neuerer Beitrag */
 function fluid_post_footer(Article $a): string
 {
-    [$older, $newer] = \FriendsOfRedaxo\Fluid\Blog\Blog::neighbors($a);
+    [$older, $newer] = \Klxm\Fluid\Blog\Blog::neighbors($a);
     if (!$older && !$newer) {
         return '';
     }
-    $l = static fn (?\FriendsOfRedaxo\Fluid\Blog\Post $p, string $label, string $cls) => $p
+    $l = static fn (?\Klxm\Fluid\Blog\Post $p, string $label, string $cls) => $p
         ? '<a class="post-nav__link ' . $cls . '" href="' . e($p->url) . '"><span class="post-nav__label">' . e(lt($label)) . '</span><span class="post-nav__title">' . e($p->article->name) . '</span></a>'
         : '<span></span>';
 
@@ -695,7 +695,7 @@ function fluid_lightbox_link(string $file, string $caption): string
     if (!$m) {
         return '';
     }
-    $editor = class_exists(\FriendsOfRedaxo\ImageEditor\ImageEditor::class) ? \FriendsOfRedaxo\ImageEditor\ImageEditor::class : null;
+    $editor = class_exists(\Klxm\ImageEditor\ImageEditor::class) ? \Klxm\ImageEditor\ImageEditor::class : null;
     $editable = $editor && null === $editor::editable($m);
 
     return ' href="' . e($editable ? $editor::url($m->fileName, 1920) : $m->getUrl()) . '"'

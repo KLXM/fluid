@@ -1,6 +1,6 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Routing\Seo;
+namespace Klxm\Fluid\Routing\Seo;
 
 /**
  * Meta-Angaben einer Seite bzw. eines Eintrags – daraus entsteht der Seitenkopf ({@see Head::render()}).

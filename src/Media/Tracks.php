@@ -1,6 +1,6 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Media;
+namespace Klxm\Fluid\Media;
 
 use Redaxo\Core\Filesystem\Path;
 use Redaxo\Core\MediaPool\Media;
@@ -15,7 +15,7 @@ use Redaxo\Core\MediaPool\Media;
 final class Tracks
 {
     /** @internal Untertitel aus dem Medienpool unter /fluid-track/{datei} (geprüft als WebVTT) */
-    #[\FriendsOfRedaxo\Fluid\Routing\Attribute\AsEndpoint(self::ROUTE . '*')]
+    #[\Klxm\Fluid\Routing\Attribute\AsEndpoint(self::ROUTE . '*')]
     public static function serve(string $path, string $rest): void
     {
         self::handle($rest);

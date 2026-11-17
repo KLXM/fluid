@@ -234,12 +234,12 @@ php bin/console migrate            # Tabellen von Core, AddOns und Projekt angle
 php bin/console migrate:cleanup    # Daten entfernter AddOns löschen (nach dem Umschalten)
 CODE,
     'rconfig' => <<<'CODE'
-use FriendsOfRedaxo\Fluid\Routing\Router;
-use FriendsOfRedaxo\Fluid\Routing\RoutingConfig;
-use FriendsOfRedaxo\Fluid\Routing\Seo\Head;
-use FriendsOfRedaxo\Fluid\Routing\Seo\HeadConfig;
-use FriendsOfRedaxo\Fluid\Routing\Seo\HeadTag;
-use FriendsOfRedaxo\Fluid\Routing\UrlFormat;
+use Klxm\Fluid\Routing\Router;
+use Klxm\Fluid\Routing\RoutingConfig;
+use Klxm\Fluid\Routing\Seo\Head;
+use Klxm\Fluid\Routing\Seo\HeadConfig;
+use Klxm\Fluid\Routing\Seo\HeadTag;
+use Klxm\Fluid\Routing\UrlFormat;
 
 public function configure(): void
 {
@@ -292,7 +292,7 @@ final class EventRoutes extends RouteSource
 }
 CODE,
     'chartRender' => <<<'CODE'
-use FriendsOfRedaxo\Fluid\Chart\Chart;
+use Klxm\Fluid\Chart\Chart;
 
 echo Chart::render([
     'type' => 'line',                              // line | area | bar | hbar | pie | donut
@@ -304,8 +304,8 @@ echo Chart::render([
 CODE,
     'chartSource' => (string) file_get_contents(__DIR__ . '/src/ChartSources.php'),
     'chartEngine' => <<<'CODE'
-use FriendsOfRedaxo\Fluid\Chart\Attribute\AsChartEngine;
-use FriendsOfRedaxo\Fluid\Chart\ChartEngine;
+use Klxm\Fluid\Chart\Attribute\AsChartEngine;
+use Klxm\Fluid\Chart\ChartEngine;
 
 #[AsChartEngine('apex')]
 final class ApexEngine implements ChartEngine
@@ -496,9 +496,9 @@ CODE,
     'nav' => <<<'CODE'
 <?php
 
-use FriendsOfRedaxo\NavigationArray\Component\NavigationBreadcrumb;
-use FriendsOfRedaxo\NavigationArray\Navigation;
-use FriendsOfRedaxo\NavigationArray\NavigationItem;
+use Klxm\NavigationArray\Component\NavigationBreadcrumb;
+use Klxm\NavigationArray\Navigation;
+use Klxm\NavigationArray\NavigationItem;
 
 use function Redaxo\Core\View\escape;
 
@@ -514,15 +514,15 @@ echo '<nav><ul>' . $nav->walk(static fn (NavigationItem $item, Closure $children
 echo new NavigationBreadcrumb($nav, label: 'Sie sind hier', jsonLd: true)->render();
 CODE,
     'navInstall' => <<<'CODE'
-composer config repositories.navigation_array '{"type": "vcs", "url": "https://github.com/FriendsOfREDAXO/navigation_array", "no-api": true}'
-composer require friendsofredaxo/navigation_array:6.x-dev
+composer config repositories.navigation_array '{"type": "vcs", "url": "https://github.com/KLXM/navigation_array", "no-api": true}'
+composer require klxm/navigation_array:1.x-dev
 php bin/console migrate
 CODE,
     'frequire' => <<<'CODE'
 composer config repositories.yform '{"type": "vcs", "url": "https://github.com/yakamara/yform", "no-api": true}'
-composer config repositories.navigation_array '{"type": "vcs", "url": "https://github.com/FriendsOfREDAXO/navigation_array", "no-api": true}'
-composer config repositories.fluid '{"type": "vcs", "url": "https://github.com/FriendsOfREDAXO/fluid", "no-api": true}'
-composer require yakamara/yform:6.x-dev@dev friendsofredaxo/fluid:*@dev
+composer config repositories.navigation_array '{"type": "vcs", "url": "https://github.com/KLXM/navigation_array", "no-api": true}'
+composer config repositories.fluid '{"type": "vcs", "url": "https://github.com/KLXM/fluid", "no-api": true}'
+composer require yakamara/yform:6.x-dev@dev klxm/fluid:*@dev
 php bin/console migrate
 CODE,
     'fdemo' => <<<'CODE'
@@ -688,8 +688,8 @@ CODE,
 
 namespace Project\Kit\Nature;
 
-use FriendsOfRedaxo\Fluid\AsKit;
-use FriendsOfRedaxo\Fluid\Kit;
+use Klxm\Fluid\AsKit;
+use Klxm\Fluid\Kit;
 
 /**
  * Kit „Nature“ – erbt von „Fluid“. Dateien in diesem Ordner ersetzen die des Eltern-Kits:
@@ -732,7 +732,7 @@ CODE,
 CODE,
     'kitView' => <<<'CODE'
 <?php
-/** Handlungsaufruf im Kit „Nature“ – wie in „fluid“, dazu die Variante „Mit Blatt“ (Band mit Blatt). @var \FriendsOfRedaxo\Fluid\Block $b  @var array $d */
+/** Handlungsaufruf im Kit „Nature“ – wie in „fluid“, dazu die Variante „Mit Blatt“ (Band mit Blatt). @var \Klxm\Fluid\Block $b  @var array $d */
 $leaf = 'leaf' === $b->variant();
 $v = $leaf ? 'band' : (in_array($b->variant(), ['band', 'box', 'split', 'big'], true) ? $b->variant() : 'band');
 $pic = $v === 'split' ? fluid_image($d['image'] ?? null, '(min-width: 1080px) 560px, 100vw', '4:3', 'cta__media') : '';
@@ -756,7 +756,7 @@ CODE,
 {
     "name": "acme/fluid-kit-nature",
     "type": "redaxo-addon",
-    "require": { "friendsofredaxo/fluid": "*@dev" },
+    "require": { "klxm/fluid": "*@dev" },
     "autoload": { "psr-4": { "Acme\\FluidKitNature\\": "src/" } },
     "extra": { "redaxo": { "addon-class": "Acme\\FluidKitNature\\NatureAddon" } }
 }
@@ -772,7 +772,7 @@ use Redaxo\Core\Addon\Addon;
 final class NatureAddon extends Addon {}
 CODE,
     'veHtml' => <<<'CODE'
-use FriendsOfRedaxo\VideoEditor\VideoEditor;
+use Klxm\VideoEditor\VideoEditor;
 
 // fertiges <video>: Poster, Web-Fassungen je Bildschirm, Untertitel in der Sprache der Seite
 echo VideoEditor::html('kaetzchen.mp4', ['label' => 'Kätzchen spielt', 'captions' => true]);
@@ -1248,7 +1248,7 @@ vollständig: Module, Templates, Schema'],
                     'measure' => 'normal', 'dropcap' => false, 'toc' => false, 'reveal' => 'off', 'scrollspy' => 'off',
                     'text' => '<p>Ein natives Modul funktioniert mit fluid ohne Änderung. Soll es sich anfühlen wie die Blöcke von fluid, sind es drei Schritte:</p>'
                         . '<ol><li><strong>Klasse:</strong> erbt von <code>FluidBlock</code> statt von <code>Module</code>; der Schlüssel beginnt mit <code>fluid.</code>.</li>'
-                        . '<li><strong>Felder:</strong> bleiben, wie sie sind – die Attribute des Cores samt <code>Collection</code>. Wer mag, nimmt die gleichnamigen aus <code>FriendsOfRedaxo\\Fluid\\Field</code>: dieselben Parameter, dazu optional <code>width</code>, <code>variants</code> oder <code>placeholder</code> für die Seitenleiste. Felder nur von fluid: <code>Link</code>, <code>RichText</code>, <code>Icon</code> und andere.</li>'
+                        . '<li><strong>Felder:</strong> bleiben, wie sie sind – die Attribute des Cores samt <code>Collection</code>. Wer mag, nimmt die gleichnamigen aus <code>Klxm\\Fluid\\Field</code>: dieselben Parameter, dazu optional <code>width</code>, <code>variants</code> oder <code>placeholder</code> für die Seitenleiste. Felder nur von fluid: <code>Link</code>, <code>RichText</code>, <code>Icon</code> und andere.</li>'
                         . '<li><strong>Ausgabe:</strong> <code>output()</code> bleibt <code>output()</code>; <code>$this-&gt;edit(\'feld\')</code> macht ein Feld direkt auf der Seite bearbeitbar.</li></ol>'
                         . '<p><strong>Was man gewinnt:</strong> Texte direkt auf der Seite, Vorschau beim Tippen, der Block erscheint in der Blockauswahl der Website, Hintergrund und Abstände je Abschnitt, Layout-Spalten, Kopieren und Einfügen, Greifer – und die Gestaltung kommt aus dem Kit, auch beim Wechsel der Design-Vorlage.</p>'
                         . '<p><strong>Gut zu wissen:</strong> Der Schlüssel ändert sich, vorhandene Slices des nativen Moduls werden nicht von selbst zu Blöcken. Beides darf nebeneinander bestehen – neue Inhalte mit dem Block, alte bleiben, bis sie ersetzt sind.</p>']],
@@ -1293,7 +1293,7 @@ vollständig: Module, Templates, Schema'],
                     'title' => 'Navigation als Array', 'text' => 'Menüs, Brotkrumen und strukturierte Daten – mit navigation_array, jetzt auch für REDAXO 6.']],
                 ['type' => 'richtext', 'data' => ['variant' => 'standard', 'eyebrow' => '', 'title' => '', 'intro' => '', 'meta' => '',
                     'measure' => 'normal', 'dropcap' => false, 'toc' => false, 'reveal' => 'off', 'scrollspy' => 'off',
-                    'text' => '<p class="t-warn"><strong>In Entwicklung:</strong> REDAXO 6 entsteht im Branch 6.x von redaxo/core. Die Beispiele entsprechen dem Stand vom November 2026 – Namen und Details können sich bis zur Veröffentlichung noch ändern.</p><p>Das AddOn <a href="https://github.com/FriendsOfREDAXO/navigation_array">navigation_array</a> gibt es jetzt auch für REDAXO 6 (Branch 6.x) – neu gebaut für PHP 8.5: <code>Navigation</code> liefert die Struktur als typisierte Einträge (<code>NavigationItem</code>: name, url, active, current, children …), <code>walk()</code> rendert sie verschachtelt, die Ausgabe bleibt bei dir. Offline-Kategorien und solche ohne Recht fehlen. fluid baut sein Menü selbst damit.</p>']],
+                    'text' => '<p class="t-warn"><strong>In Entwicklung:</strong> REDAXO 6 entsteht im Branch 6.x von redaxo/core. Die Beispiele entsprechen dem Stand vom November 2026 – Namen und Details können sich bis zur Veröffentlichung noch ändern.</p><p>Das AddOn <a href="https://github.com/KLXM/navigation_array">navigation_array</a> gibt es jetzt auch für REDAXO 6 – neu gebaut für PHP 8.5: <code>Navigation</code> liefert die Struktur als typisierte Einträge (<code>NavigationItem</code>: name, url, active, current, children …), <code>walk()</code> rendert sie verschachtelt, die Ausgabe bleibt bei dir. Offline-Kategorien und solche ohne Recht fehlen. fluid baut sein Menü selbst damit.</p>']],
                 ['type' => 'code', 'data' => ['eyebrow' => '', 'title' => 'navigation_array installieren', 'intro' => '', 'note' => '',
                     'items' => [
                         $c('navInstall', 'Terminal', 'bash'),
@@ -1400,7 +1400,7 @@ vollständig: Module, Templates, Schema'],
                     ['label' => 'Agentur', 'text' => '<p>Kits mit Design-System und Vorlagen: ein Projekt schnell auf das Erscheinungsbild der Kundschaft bringen – und die Redaktion pflegt danach selbst.</p>', 'image' => 'fluid-website.jpg'],
                 ]]],
                 ['type' => 'pricing', 'data' => ['variant' => 'cards', 'eyebrow' => 'Mitmachen', 'title' => 'Drei Wege zu fluid', 'intro' => 'Open Source unter MIT-Lizenz – Beispielwege, keine Preisliste.', 'items' => [
-                    ['name' => 'Ausprobieren', 'badge' => '', 'price' => '0 €', 'period' => 'MIT-Lizenz', 'text' => 'Lokal mit REDAXO 6 installieren und die Demo durchklicken.', 'features' => "REDAXO 6 (Branch 6.x)\nfluid:demo legt alles an\nKeine Anmeldung nötig", 'highlight' => false, 'button_label' => 'Technik', 'button_link' => '/technik'],
+                    ['name' => 'Ausprobieren', 'badge' => '', 'price' => '0 €', 'period' => 'MIT-Lizenz', 'text' => 'Lokal mit REDAXO 6 installieren und die Demo durchklicken.', 'features' => "REDAXO 6\nfluid:demo legt alles an\nKeine Anmeldung nötig", 'highlight' => false, 'button_label' => 'Technik', 'button_link' => '/technik'],
                     ['name' => 'Mitmachen', 'badge' => 'Empfohlen', 'price' => '0 €', 'period' => 'Friends Of REDAXO', 'text' => 'Ideen, Fehlerberichte und Blöcke beisteuern.', 'features' => "Issues und Pull Requests\nEigene Kits und Blöcke\nÜbersetzungen", 'highlight' => true, 'button_label' => 'Was sich ändert', 'button_link' => '/was-sich-aendert'],
                     ['name' => 'Einsetzen', 'badge' => '', 'price' => '0 €', 'period' => 'sobald stabil', 'text' => 'In Projekten nutzen, wenn REDAXO 6 erscheint.', 'features' => "Composer-Paket\nArbeitsversion und Historie\nRechte wie gewohnt", 'highlight' => false, 'button_label' => 'Bearbeiten', 'button_link' => '/bearbeiten'],
                 ], 'rows' => [], 'note' => '']],

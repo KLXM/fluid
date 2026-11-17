@@ -2,10 +2,10 @@
 
 namespace Project\Block;
 
-use FriendsOfRedaxo\Fluid\InlineStyle;
-use FriendsOfRedaxo\Fluid\Field\AsBlock;
-use FriendsOfRedaxo\Fluid\Field\Link;
-use FriendsOfRedaxo\Fluid\Kit\Fluid\FluidBlock;
+use Klxm\Fluid\InlineStyle;
+use Klxm\Fluid\Field\AsBlock;
+use Klxm\Fluid\Field\Link;
+use Klxm\Fluid\Kit\Fluid\FluidBlock;
 use Override;
 use Redaxo\Core\Content\AsModule;
 use Redaxo\Core\Form\Field\{Text, Textarea};

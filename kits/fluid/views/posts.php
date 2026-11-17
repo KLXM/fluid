@@ -3,9 +3,9 @@
  * Beiträge eines Blogs: cards · list · featured (erster Beitrag groß, Rest als Karten). Blättern über ?seite=2,
  * Filter über ?tag=slug. Markup der Karten wie die Datenliste (css/data.css), Zusätze in css/b-posts.css.
  * Im Bearbeiten-Modus: „+ Neuer Beitrag“ (legt eine Seite im Blog an) und Entwürfe/offline-Beiträge sichtbar.
- * @var \FriendsOfRedaxo\Fluid\Block $b  @var array $d
+ * @var \Klxm\Fluid\Block $b  @var array $d
  */
-use FriendsOfRedaxo\Fluid\Blog\Blog;
+use Klxm\Fluid\Blog\Blog;
 use Redaxo\Core\Filesystem\Url;
 use Redaxo\Core\Http\Request;
 use Redaxo\Core\Language\Language;
@@ -23,7 +23,7 @@ $limit = max(1, min(60, (int) ($d['limit'] ?? 9) ?: 9));
 $pager = !empty($d['pager']);
 $page = $pager ? max(1, Request::get('seite', 'int', 1)) : 1;
 $tag = !empty($d['tags']) ? preg_replace('~[^a-z0-9-]~', '', Request::get('tag', 'string', '')) : '';
-$res = Blog::posts($blog, ['limit' => $limit, 'offset' => ($page - 1) * $limit, 'tag' => $tag, 'drafts' => is_editing() && !\FriendsOfRedaxo\Fluid\Editing::isGuest()]);
+$res = Blog::posts($blog, ['limit' => $limit, 'offset' => ($page - 1) * $limit, 'tag' => $tag, 'drafts' => is_editing() && !\Klxm\Fluid\Editing::isGuest()]);
 $here = Url::article($b->articleId, Language::getCurrentId());
 $q = static fn (array $p) => $here . ([] !== ($p = array_filter($p)) ? '?' . http_build_query($p) : '') . '#' . $b->domId();
 $cols = ['s' => 4, 'm' => 3, 'l' => 2][$d['size'] ?? 'm'] ?? 3;
@@ -46,7 +46,7 @@ $card = static function ($p, string $sizes) use ($hTag, $layout) {
 };
 $pages = (int) ceil($res['total'] / $limit);
 // Filtern und Blättern ohne Seitenwechsel (Live::region – Links mit data-live-nav, ohne JavaScript normale Links)
-$reload = ($pager && $pages > 1) || !empty($d['tags']) ? \FriendsOfRedaxo\Fluid\Live::region($b) : '';
+$reload = ($pager && $pages > 1) || !empty($d['tags']) ? \Klxm\Fluid\Live::region($b) : '';
 ?>
 <div class="wrap dl dl--<?= e('list' === $layout ? 'list' : 'cards') ?> posts posts--<?= e($layout) ?>"<?= $reload ?>>
   <?= '' !== $pageH1 ? $pageH1 : fluid_head($b, 'dl-head', $top ? 'h1' : 'h2') ?>
@@ -87,4 +87,4 @@ $reload = ($pager && $pages > 1) || !empty($d['tags']) ? \FriendsOfRedaxo\Fluid\
   <?php endif; ?>
   <?php if (trim((string) ($d['more'] ?? '')) !== ''): ?><p class="posts-more"><a class="btn" <?= fluid_link_attrs((string) $d['more']) ?>><?= e(lt('Alle Beiträge')) ?> →</a></p><?php endif; ?>
 </div>
-<?= '' !== $reload ? \FriendsOfRedaxo\Fluid\Live::assets() : '' ?>
+<?= '' !== $reload ? \Klxm\Fluid\Live::assets() : '' ?>

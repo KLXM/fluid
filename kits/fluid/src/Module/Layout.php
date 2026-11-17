@@ -1,9 +1,9 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Kit\Fluid\Module;
+namespace Klxm\Fluid\Kit\Fluid\Module;
 
-use FriendsOfRedaxo\Fluid\Kit;
-use FriendsOfRedaxo\Fluid\LayoutBlock;
+use Klxm\Fluid\Kit;
+use Klxm\Fluid\LayoutBlock;
 use Override;
 use Redaxo\Core\Content\AsModule;
 

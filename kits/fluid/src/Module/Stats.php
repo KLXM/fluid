@@ -1,12 +1,12 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Kit\Fluid\Module;
+namespace Klxm\Fluid\Kit\Fluid\Module;
 
-use FriendsOfRedaxo\Fluid\Field\AsBlock;
-use FriendsOfRedaxo\Fluid\Field\{Collection, Text, Textarea};
-use FriendsOfRedaxo\Fluid\Kit\Fluid\FluidBlock;
+use Klxm\Fluid\Field\AsBlock;
+use Klxm\Fluid\Field\{Collection, Text, Textarea};
+use Klxm\Fluid\Kit\Fluid\FluidBlock;
 use Redaxo\Core\Content\AsModule;
-use FriendsOfRedaxo\Fluid\Kit\Fluid\Module\Item\StatsItem;
+use Klxm\Fluid\Kit\Fluid\Module\Item\StatsItem;
 
 #[AsModule('fluid.stats', 'Kennzahlen')]
 #[AsBlock(

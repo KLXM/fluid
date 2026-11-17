@@ -42,10 +42,10 @@ while [ $# -gt 0 ]; do
   shift
 done
 
-FLUID_REPO="https://github.com/FriendsOfREDAXO/fluid"
-IMAGE_EDITOR_REPO="https://github.com/FriendsOfREDAXO/image_editor"
+FLUID_REPO="https://github.com/KLXM/fluid"
+IMAGE_EDITOR_REPO="https://github.com/KLXM/image_editor"
 YFORM_REPO="https://github.com/yakamara/yform"
-NAVIGATION_ARRAY_REPO="https://github.com/FriendsOfREDAXO/navigation_array"
+NAVIGATION_ARRAY_REPO="https://github.com/KLXM/navigation_array"
 
 b() { printf '\n\033[1m%s\033[0m\n' "$*"; }
 ok() { printf '  \033[32m✓\033[0m %s\n' "$*"; }
@@ -118,13 +118,13 @@ repo() {   # Name, lokale Quelle (optional), GitHub-Adresse
   fi
 }
 repo yform "${YFORM_SOURCE:-}" "$YFORM_REPO"
-# navigation_array (Branch 6.x) – Abhängigkeit von fluid, noch nicht auf Packagist
+# navigation_array (KLXM) – Abhängigkeit von fluid, noch nicht auf Packagist
 repo navigation_array "${NAVIGATION_ARRAY_SOURCE:-}" "$NAVIGATION_ARRAY_REPO"
 repo fluid "${FLUID_SOURCE:-}" "$FLUID_REPO"
-PACKAGES="yakamara/yform:6.x-dev@dev friendsofredaxo/fluid:*@dev"
+PACKAGES="yakamara/yform:6.x-dev@dev klxm/fluid:*@dev"
 if [ -n "${IMAGE_EDITOR_SOURCE:-}" ] || git ls-remote "$IMAGE_EDITOR_REPO" >/dev/null 2>&1; then
   repo image_editor "${IMAGE_EDITOR_SOURCE:-}" "$IMAGE_EDITOR_REPO"
-  PACKAGES="$PACKAGES friendsofredaxo/image_editor:*@dev"
+  PACKAGES="$PACKAGES klxm/image_editor:*@dev"
 fi
 # shellcheck disable=SC2086
 $COMPOSER require $PACKAGES --no-interaction --quiet
@@ -151,7 +151,7 @@ ok "Admin „${ADMIN}“ angelegt"
 if [ "$MODE" = "demo" ]; then
   # Beispiel-Tabellen der Demo (YForm-Klassen im Projekt)
   mkdir -p src/YForm
-  for f in vendor/friendsofredaxo/fluid/examples/yform/*.php; do cp "$f" src/YForm/; done
+  for f in vendor/klxm/fluid/examples/yform/*.php; do cp "$f" src/YForm/; done
   $COMPOSER dump-autoload --quiet
   ok "YForm-Beispieltabellen nach src/YForm kopiert"
 fi

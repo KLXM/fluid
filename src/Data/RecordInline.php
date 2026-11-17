@@ -1,10 +1,10 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Data;
+namespace Klxm\Fluid\Data;
 
-use FriendsOfRedaxo\Fluid\ApiError;
-use FriendsOfRedaxo\Fluid\Editing;
-use FriendsOfRedaxo\Fluid\Routing\Router;
+use Klxm\Fluid\ApiError;
+use Klxm\Fluid\Editing;
+use Klxm\Fluid\Routing\Router;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Http\Request;
 use Redaxo\Core\Security\User;

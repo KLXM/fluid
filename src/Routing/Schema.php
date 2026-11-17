@@ -1,6 +1,6 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Routing;
+namespace Klxm\Fluid\Routing;
 
 use Redaxo\Core\Database\Column;
 use Redaxo\Core\Database\Index;

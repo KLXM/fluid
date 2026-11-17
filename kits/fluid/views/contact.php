@@ -2,11 +2,11 @@
 /**
  * Kontakt: Angaben (Adresse, Telefon/E-Mail, Öffnungszeiten) als Karten-Raster, daneben Karte und/oder Formular (aus KLXM
  * Studio). Sidebar-Muster: Formular/Karte nehmen den großen Teil ein und rutschen bei wenig Platz unter die Angaben.
- * Alles aus „Website“; Formular = #[AsForm]-Klasse aus YForm (FriendsOfRedaxo\Fluid\Data\YFormBridge).
- * @var \FriendsOfRedaxo\Fluid\Block $b  @var array $d
+ * Alles aus „Website“; Formular = #[AsForm]-Klasse aus YForm (Klxm\Fluid\Data\YFormBridge).
+ * @var \Klxm\Fluid\Block $b  @var array $d
  */
-use FriendsOfRedaxo\Fluid\Data\YFormBridge;
-use FriendsOfRedaxo\Fluid\Maps\Maps;
+use Klxm\Fluid\Data\YFormBridge;
+use Klxm\Fluid\Maps\Maps;
 
 $address = fluid_address_lines();
 $phone = fluid_phone();

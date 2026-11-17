@@ -2,7 +2,7 @@
 /**
  * Logos: grid (umbrechende Reihe, zentriert) · marquee (Laufband in reinem CSS: Liste doppelt, zweite Hälfte aria-hidden;
  * hält bei Maus/Fokus an, steht bei „Bewegung reduzieren“ oder ausgeschalteter Bewegung als umbrechende Reihe still).
- * @var \FriendsOfRedaxo\Fluid\Block $b  @var array $d
+ * @var \Klxm\Fluid\Block $b  @var array $d
  */
 $v = $b->variant() === 'marquee' ? 'marquee' : 'grid';
 $items = array_values((array) ($d['items'] ?? []));

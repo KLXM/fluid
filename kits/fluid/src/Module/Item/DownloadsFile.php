@@ -1,9 +1,9 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Kit\Fluid\Module\Item;
+namespace Klxm\Fluid\Kit\Fluid\Module\Item;
 
-use FriendsOfRedaxo\Fluid\Field\MediaPicker;
-use FriendsOfRedaxo\Fluid\Field\Text;
+use Klxm\Fluid\Field\MediaPicker;
+use Klxm\Fluid\Field\Text;
 use Redaxo\Core\MediaPool\Media;
 
 /** Eintrag von „Dateien (bei „Einzelne Dateien“)“ im Block Downloads */

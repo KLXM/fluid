@@ -1,6 +1,6 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Field;
+namespace Klxm\Fluid\Field;
 
 /**
  * Feld mit Ergänzungen von fluid (Breite, Darstellungen, Platzhalter … bzw. eigener Feldtyp). Die Felder des Cores

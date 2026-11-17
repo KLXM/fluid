@@ -1,5 +1,5 @@
 /*
- * Rechtstexte im Dialog (FriendsOfRedaxo\Fluid\Legal\LegalDialog, aus KLXM Studio): Links mit data-legal-src öffnen den
+ * Rechtstexte im Dialog (Klxm\Fluid\Legal\LegalDialog, aus KLXM Studio): Links mit data-legal-src öffnen den
  * Text über der Seite statt auf einer neuen Seite – Eingaben im Formular bleiben erhalten. Ohne <dialog>, mit Strg/⌘-Klick
  * oder bei Fehlern: gewöhnlicher Link.
  */

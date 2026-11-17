@@ -1,9 +1,9 @@
 <?php
 /**
- * Suche (FriendsOfRedaxo\Fluid\Search\Search, Loupe): Suchfeld und Treffer mit Textausschnitt. Ohne JavaScript (GET ?q=).
- * @var \FriendsOfRedaxo\Fluid\Block $b  @var array $d
+ * Suche (Klxm\Fluid\Search\Search, Loupe): Suchfeld und Treffer mit Textausschnitt. Ohne JavaScript (GET ?q=).
+ * @var \Klxm\Fluid\Block $b  @var array $d
  */
-use FriendsOfRedaxo\Fluid\Search\Search;
+use Klxm\Fluid\Search\Search;
 use Redaxo\Core\Http\Request;
 use Redaxo\Core\Language\Language;
 
@@ -11,7 +11,7 @@ $q = trim(mb_substr(Request::get('q', 'string', ''), 0, 100));
 $res = '' !== $q ? Search::search($q, Language::getCurrentId(), (int) ($d['limit'] ?? 20)) : null;
 $id = $b->domId() . '-q';
 ?>
-<div class="wrap fsearch"<?= \FriendsOfRedaxo\Fluid\Live::region($b) /* Treffer beim Tippen, ohne Seitenwechsel */ ?>>
+<div class="wrap fsearch"<?= \Klxm\Fluid\Live::region($b) /* Treffer beim Tippen, ohne Seitenwechsel */ ?>>
   <?= fluid_head($b, '', null === $b->prev ? 'h1' : 'h2') /* erster Block der Seite: Hauptüberschrift */ ?>
   <form class="fsearch__form" role="search" method="get" data-live-nav action="#<?= e($b->domId()) ?>">
     <label class="sr-only" for="<?= e($id) ?>"><?= e(lt('Suchbegriff')) ?></label>
@@ -29,4 +29,4 @@ $id = $b->domId() . '-q';
   <?php elseif ('' !== trim((string) ($d['empty_text'] ?? ''))): ?><p class="fsearch__empty"><?= e($d['empty_text']) ?></p><?php endif; ?>
   <?php endif; ?>
 </div>
-<?= \FriendsOfRedaxo\Fluid\Live::assets() ?>
+<?= \Klxm\Fluid\Live::assets() ?>

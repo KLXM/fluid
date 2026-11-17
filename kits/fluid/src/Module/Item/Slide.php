@@ -1,8 +1,8 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Kit\Fluid\Module\Item;
+namespace Klxm\Fluid\Kit\Fluid\Module\Item;
 
-use FriendsOfRedaxo\Fluid\Field\{Choice, Link, MediaPicker, Text, Textarea};
+use Klxm\Fluid\Field\{Choice, Link, MediaPicker, Text, Textarea};
 use Redaxo\Core\MediaPool\Media;
 
 /** Folie im Block „Slider“ */

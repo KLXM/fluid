@@ -1,10 +1,10 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Routing\Attribute;
+namespace Klxm\Fluid\Routing\Attribute;
 
 /**
  * Spalte einer Tabelle mit einer Rolle (Slug, Titel …). Editierbare Spalten kann ein Editor (z. B. fluid auf der Website)
- * anbieten – {@see \FriendsOfRedaxo\Fluid\Routing\RouteSource::editable()}.
+ * anbieten – {@see \Klxm\Fluid\Routing\RouteSource::editable()}.
  */
 abstract readonly class MetaColumn
 {

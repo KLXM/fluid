@@ -1,6 +1,6 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Mcp;
+namespace Klxm\Fluid\Mcp;
 
 use Redaxo\Core\Database\Sql;
 use Redaxo\Core\Security\User;

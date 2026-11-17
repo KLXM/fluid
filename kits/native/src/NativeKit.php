@@ -1,9 +1,9 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Kit\Native;
+namespace Klxm\Fluid\Kit\Native;
 
-use FriendsOfRedaxo\Fluid\AsKit;
-use FriendsOfRedaxo\Fluid\Kit;
+use Klxm\Fluid\AsKit;
+use Klxm\Fluid\Kit;
 use Override;
 
 /**

@@ -1,6 +1,6 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid;
+namespace Klxm\Fluid;
 
 use Override;
 use Redaxo\Core\Addon\Addon;
@@ -122,7 +122,7 @@ final class FluidAddon extends Addon
         // Kategorie „Seitenvorlagen“: nicht löschbar, solange fluid installiert ist
         PageTemplatesGuard::boot();
         // navigation_array: Start der Website (Navigation ohne start) = Unterseiten einer Landing-Domain mit eigenem Seitenbaum
-        Extension::register(\FriendsOfRedaxo\NavigationArray\ExtensionPoint\NavigationStart::class, static function (\FriendsOfRedaxo\NavigationArray\ExtensionPoint\NavigationStart $ep): mixed {
+        Extension::register(\Klxm\NavigationArray\ExtensionPoint\NavigationStart::class, static function (\Klxm\NavigationArray\ExtensionPoint\NavigationStart $ep): mixed {
             $landing = Routing\Router::landing();
 
             return $landing && $landing->subtree && null !== $landing->articleId ? $landing->articleId : $ep->subject;

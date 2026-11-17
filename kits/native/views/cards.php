@@ -5,11 +5,11 @@
  *   overlay     Text auf dem Bild
  *   horizontal  quer, sobald die Karte breit genug ist (.ncss-card--horizontal im .ncss-card-container)
  * „reel“ (wischbares Band) kommt aus dem Kit fluid.
- * @var \FriendsOfRedaxo\Fluid\Block $b  @var array $d
+ * @var \Klxm\Fluid\Block $b  @var array $d
  */
 $v = $b->variant() ?: 'image';
 if (!in_array($v, ['image', 'overlay', 'horizontal'], true)) {
-    require \FriendsOfRedaxo\Fluid\Kit::get('fluid')->view('cards');
+    require \Klxm\Fluid\Kit::get('fluid')->view('cards');
 
     return;
 }
@@ -21,7 +21,7 @@ $min = ['s' => '14rem', 'm' => '18rem', 'l' => '24rem'][$d['size'] ?? 'm'] ?? '1
 <div class="wrap">
   <?= fluid_head($b) ?>
   <?php if ($items): ?>
-  <ul class="ncss-grid nv-cards nv-cards--<?= e($v) ?> <?= e(\FriendsOfRedaxo\Fluid\InlineStyle::class('--ncss-grid-min:' . $min)) ?>" role="list">
+  <ul class="ncss-grid nv-cards nv-cards--<?= e($v) ?> <?= e(\Klxm\Fluid\InlineStyle::class('--ncss-grid-min:' . $min)) ?>" role="list">
     <?php foreach ($items as $i => $it):
         $link = trim((string) ($it['link'] ?? ''));
         $label = trim((string) ($it['link_label'] ?? ''));

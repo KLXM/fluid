@@ -1,9 +1,9 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Kit\Fluid\Module\Item;
+namespace Klxm\Fluid\Kit\Fluid\Module\Item;
 
-use FriendsOfRedaxo\Fluid\Field\Icon;
-use FriendsOfRedaxo\Fluid\Field\Text;
+use Klxm\Fluid\Field\Icon;
+use Klxm\Fluid\Field\Text;
 
 /** Eintrag von „Karten (nur „Mit gestapelten Karten“)“ im Block Hero */
 final class HeroCard

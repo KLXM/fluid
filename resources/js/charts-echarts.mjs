@@ -1,5 +1,5 @@
 /**
- * Engine „echarts“ für FriendsOfRedaxo\Fluid\Chart\Chart (aus KLXM Studio) – die einzige Datei, die ECharts kennt (Apache ECharts, Apache-2.0, gebündelt und selbst
+ * Engine „echarts“ für Klxm\Fluid\Chart\Chart (aus KLXM Studio) – die einzige Datei, die ECharts kennt (Apache ECharts, Apache-2.0, gebündelt und selbst
  * gehostet, nur Linie/Balken/Torte, Canvas). Vertrag jeder Engine:
  *   export function render(el, spec, theme) → { update(theme, {animation, print}?), resize(), dispose(), image()? }
  * spec = Chart::normalize() (type, labels, series[{name, data}], title, description, format, unit, stacked, height, locale)

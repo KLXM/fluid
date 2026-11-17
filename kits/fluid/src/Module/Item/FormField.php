@@ -1,12 +1,12 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Kit\Fluid\Module\Item;
+namespace Klxm\Fluid\Kit\Fluid\Module\Item;
 
-use FriendsOfRedaxo\Fluid\Data\YFormBridge;
-use FriendsOfRedaxo\Fluid\Field\Checkbox;
-use FriendsOfRedaxo\Fluid\Field\Choice;
-use FriendsOfRedaxo\Fluid\Field\Text;
-use FriendsOfRedaxo\Fluid\Field\Textarea;
+use Klxm\Fluid\Data\YFormBridge;
+use Klxm\Fluid\Field\Checkbox;
+use Klxm\Fluid\Field\Choice;
+use Klxm\Fluid\Field\Text;
+use Klxm\Fluid\Field\Textarea;
 
 /** Eintrag von „Felder des eigenen Formulars“ im Block Form */
 final class FormField

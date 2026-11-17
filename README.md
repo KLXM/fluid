@@ -20,7 +20,7 @@ dann fehlen nur diese Teile. Alles andere ist eingebaut:
 | Formular-Baukasten, Datenlisten, Postfach (auf Basis von YForm) | Formulare |
 | MCP-Server für KI-Werkzeuge | Schnittstellen |
 
-Optional dazu gibt es [image_editor](https://github.com/FriendsOfREDAXO/image_editor), ebenfalls von FriendsOfREDAXO,
+Optional dazu gibt es [image_editor](https://github.com/KLXM/image_editor), ebenfalls von FriendsOfREDAXO,
 zum Zuschneiden und Drehen von Bildern direkt auf der Website, mit Fokuspunkt und eigenem Ausschnitt je Bildformat.
 fluid läuft auch ohne.
 
@@ -68,7 +68,7 @@ fluid läuft auch ohne.
 - **Formulare** zum Zusammenklicken – auch mehrstufig, speichern und/oder per E-Mail (im Stil der Website), mit Bestätigung (YForm);
   ein Mailfehler verwirft keine Eingabe
 - **Daten aus YForm** als Karten oder Liste mit eigener Adresse je Eintrag – und Blöcke auch in Datensätzen
-- **Demo zum Ausprobieren** (eigenes AddOn [`fluid_demo`](https://github.com/FriendsOfREDAXO/fluid_demo), getrennt zu installieren): Besucher starten per Knopf eine
+- **Demo zum Ausprobieren** (eigenes AddOn [`fluid_demo`](https://github.com/KLXM/fluid_demo), getrennt zu installieren): Besucher starten per Knopf eine
   Demo und bearbeiten die Website – gespeichert wird nichts
 - **Videos** mit automatischem Vorschaubild und Untertiteln, **Karten** ohne Einwilligung, **Suche** mit Tippfehler-Toleranz und Treffern beim Tippen – findet nur, was
   öffentlich auf der Website steht
@@ -87,7 +87,7 @@ Stellen, YForm-Tabellen und -Formulare als Klassen – mehr in der [Entwickler-R
 ## Schnellstart
 
 Mit einem Befehl entsteht eine komplette Website: REDAXO 6, YForm 6, fluid, die Bildbearbeitung
-[image_editor](https://github.com/FriendsOfREDAXO/image_editor) und – wenn du möchtest – die Demo mit
+[image_editor](https://github.com/KLXM/image_editor) und – wenn du möchtest – die Demo mit
 allen Seiten, Beispieldaten, Bildern und dem Design „REDAXO · Blau“.
 
 ### 1. Das brauchst du
@@ -213,32 +213,32 @@ von GitHub:
 
 ```bash
 composer config repositories.yform '{"type": "vcs", "url": "https://github.com/yakamara/yform", "no-api": true}'
-composer config repositories.navigation_array '{"type": "vcs", "url": "https://github.com/FriendsOfREDAXO/navigation_array", "no-api": true}'
-composer config repositories.fluid '{"type": "vcs", "url": "https://github.com/FriendsOfREDAXO/fluid", "no-api": true}'
-composer require yakamara/yform:6.x-dev@dev friendsofredaxo/fluid:*@dev
+composer config repositories.navigation_array '{"type": "vcs", "url": "https://github.com/KLXM/navigation_array", "no-api": true}'
+composer config repositories.fluid '{"type": "vcs", "url": "https://github.com/KLXM/fluid", "no-api": true}'
+composer require yakamara/yform:6.x-dev@dev klxm/fluid:*@dev
 
 php bin/console migrate
 ```
 
 YForm ist das einzige externe AddOn, das fluid nutzt, und auch das ist optional: Ohne YForm fehlen nur Formulare,
 Datenlisten und das Postfach. Für die Bildbearbeitung auf der
-Website gibt es das AddOn [image_editor](https://github.com/FriendsOfREDAXO/image_editor) (optional, das
+Website gibt es das AddOn [image_editor](https://github.com/KLXM/image_editor) (optional, das
 Installationsskript nimmt es mit):
 
 ```bash
-composer config repositories.image_editor '{"type": "vcs", "url": "https://github.com/FriendsOfREDAXO/image_editor", "no-api": true}'
-composer require friendsofredaxo/image_editor:*@dev && php bin/console migrate
+composer config repositories.image_editor '{"type": "vcs", "url": "https://github.com/KLXM/image_editor", "no-api": true}'
+composer require klxm/image_editor:*@dev && php bin/console migrate
 ```
 
 Danach entweder auf der Website „Erste Schritte“ nutzen oder in der Konsole:
 
 ```bash
 # Beispiel-Tabellen der Demo (optional, für Daten/Presse/Projekte)
-mkdir -p src/YForm && cp vendor/friendsofredaxo/fluid/examples/yform/*.php src/YForm/ && php bin/console migrate
+mkdir -p src/YForm && cp vendor/klxm/fluid/examples/yform/*.php src/YForm/ && php bin/console migrate
 
 # Beispiel-Module ohne fluid-Felder und derselbe Hinweis als Block (optional, für die Seite „Native Module“)
-mkdir -p src/Module src/Block && cp vendor/friendsofredaxo/fluid/examples/module/*.php src/Module/ \
-  && cp vendor/friendsofredaxo/fluid/examples/block/Hinweis.php src/Block/
+mkdir -p src/Module src/Block && cp vendor/klxm/fluid/examples/module/*.php src/Module/ \
+  && cp vendor/klxm/fluid/examples/block/Hinweis.php src/Block/
 
 # komplette Demo mit Bildern und Design „REDAXO · Blau“
 php bin/console fluid:demo --set=redaxo6 --media --design=redaxo
@@ -433,20 +433,20 @@ final class Teaser extends FluidBlock
 `$this->edit('feld')` macht das Feld direkt auf der Website bearbeitbar – fertig ist der Block, mit Seitenleiste,
 Entwurf, Rechten und Historie.
 
-**Navigation:** fluid baut sein Menü mit [navigation_array](https://github.com/FriendsOfREDAXO/navigation_array)
+**Navigation:** fluid baut sein Menü mit [navigation_array](https://github.com/KLXM/navigation_array)
 (Branch 6.x) – im eigenen Template genauso nutzbar. Für Landing-Domains mit eigenem Seitenbaum liefert fluid den Start
 über den Extension Point `NavigationStart`.
 
 ```php
-use FriendsOfRedaxo\NavigationArray\Navigation;
-use FriendsOfRedaxo\NavigationArray\NavigationItem;
+use Klxm\NavigationArray\Navigation;
+use Klxm\NavigationArray\NavigationItem;
 
 echo '<ul>' . new Navigation(depth: 1)->walk(static fn (NavigationItem $item, Closure $children): string
     => '<li><a href="' . escape($item->url) . '">' . escape($item->name) . '</a>'
     . ($item->hasChildren() ? '<ul>' . $children() . '</ul>' : '') . '</li>') . '</ul>';
 ```
 
-**Mitmachen:** Fehler und Ideen gern als [Issue](https://github.com/FriendsOfREDAXO/fluid/issues), Pull Requests
+**Mitmachen:** Fehler und Ideen gern als [Issue](https://github.com/KLXM/fluid/issues), Pull Requests
 willkommen. Zum Entwickeln: Repo klonen und `FLUID_SOURCE=$PWD/fluid bash fluid/install-dev.sh fluid-dev`
 (siehe [Mitentwickeln](docs/entwickler.md#mitentwickeln)).
 

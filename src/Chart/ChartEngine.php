@@ -1,6 +1,6 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Chart;
+namespace Klxm\Fluid\Chart;
 
 /**
  * Engine, die Diagramme zeichnet – anmelden mit #[AsChartEngine('name')] an der Klasse.

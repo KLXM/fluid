@@ -1,11 +1,11 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid;
+namespace Klxm\Fluid;
 
-use FriendsOfRedaxo\Fluid\Data\Detail;
-use FriendsOfRedaxo\Fluid\Data\YFormBridge;
-use FriendsOfRedaxo\Fluid\Routing\Router;
-use FriendsOfRedaxo\Fluid\Routing\Routes;
+use Klxm\Fluid\Data\Detail;
+use Klxm\Fluid\Data\YFormBridge;
+use Klxm\Fluid\Routing\Router;
+use Klxm\Fluid\Routing\Routes;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\StructurePermission;
 use Redaxo\Core\Language\Language;

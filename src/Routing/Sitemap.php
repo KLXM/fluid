@@ -1,10 +1,10 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Routing;
+namespace Klxm\Fluid\Routing;
 
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\ExtensionPoint\Extension;
-use FriendsOfRedaxo\Fluid\Routing\ExtensionPoint\SitemapEntries;
+use Klxm\Fluid\Routing\ExtensionPoint\SitemapEntries;
 use Redaxo\Core\Language\Language;
 
 use function array_filter;

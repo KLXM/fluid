@@ -1,10 +1,10 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Blog;
+namespace Klxm\Fluid\Blog;
 
-use FriendsOfRedaxo\Fluid\PageSettings;
-use FriendsOfRedaxo\Fluid\Routing\Router;
-use FriendsOfRedaxo\Fluid\Settings;
+use Klxm\Fluid\PageSettings;
+use Klxm\Fluid\Routing\Router;
+use Klxm\Fluid\Settings;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\Category;
 use Redaxo\Core\Database\Sql;
@@ -28,8 +28,8 @@ final class Blog
     /** Beim Routing und SEO anmelden: RSS /{blog}/feed.xml, Feed-Link im Seitenkopf, schema.org Blog/BlogPosting */
     public static function boot(): void
     {
-        Router::resolver(static function (string $full, int $lang): ?\FriendsOfRedaxo\Fluid\Routing\RouteMatch {
-            if (preg_match('~^(.+)/feed\.xml$~', $full, $m) && null !== ($bid = \FriendsOfRedaxo\Fluid\Routing\Routes::find($m[1], $lang)) && self::isBlog($bid)) {
+        Router::resolver(static function (string $full, int $lang): ?\Klxm\Fluid\Routing\RouteMatch {
+            if (preg_match('~^(.+)/feed\.xml$~', $full, $m) && null !== ($bid = \Klxm\Fluid\Routing\Routes::find($m[1], $lang)) && self::isBlog($bid)) {
                 Language::setCurrentId($lang);
                 Router::respond(self::feed($bid), 'application/rss+xml; charset=utf-8');
             }
@@ -37,12 +37,12 @@ final class Blog
             return null;
         });
         // Feed-Link im Seitenkopf der Übersicht und der Beiträge
-        Extension::register(\FriendsOfRedaxo\Fluid\Routing\ExtensionPoint\PageMetaResolved::class, static function (\FriendsOfRedaxo\Fluid\Routing\ExtensionPoint\PageMetaResolved $ep): \FriendsOfRedaxo\Fluid\Routing\Seo\PageMeta {
+        Extension::register(\Klxm\Fluid\Routing\ExtensionPoint\PageMetaResolved::class, static function (\Klxm\Fluid\Routing\ExtensionPoint\PageMetaResolved $ep): \Klxm\Fluid\Routing\Seo\PageMeta {
             $article = $ep->article;
             $blog = self::isBlog($article->id) && $article->isStartArticle() ? $article->id : self::blogOf($article);
             if ($blog && ($b = Article::get($blog, $article->languageId))) {
                 $feed = self::feedUrl($blog, $article->languageId);
-                $ep->subject->add(\FriendsOfRedaxo\Fluid\Routing\Seo\HeadTag::link('alternate', $feed, ['type' => 'application/rss+xml', 'title' => $b->name]));
+                $ep->subject->add(\Klxm\Fluid\Routing\Seo\HeadTag::link('alternate', $feed, ['type' => 'application/rss+xml', 'title' => $b->name]));
             }
 
             return $ep->subject;
@@ -154,7 +154,7 @@ final class Blog
 
     public static function tagSlug(string $tag): string
     {
-        return \FriendsOfRedaxo\Fluid\Routing\Routes::slugify($tag);
+        return \Klxm\Fluid\Routing\Routes::slugify($tag);
     }
 
     /**

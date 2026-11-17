@@ -1,6 +1,6 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Routing\Seo;
+namespace Klxm\Fluid\Routing\Seo;
 
 use function implode;
 use function in_array;

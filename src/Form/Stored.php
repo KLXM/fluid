@@ -1,6 +1,6 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Form;
+namespace Klxm\Fluid\Form;
 
 use Attribute;
 use Override;

@@ -1,15 +1,15 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Data;
+namespace Klxm\Fluid\Data;
 
-use FriendsOfRedaxo\Fluid\Activity;
-use FriendsOfRedaxo\Fluid\Api;
-use FriendsOfRedaxo\Fluid\ApiError;
-use FriendsOfRedaxo\Fluid\BlockData;
-use FriendsOfRedaxo\Fluid\BlockModule;
-use FriendsOfRedaxo\Fluid\BlockOps;
-use FriendsOfRedaxo\Fluid\Editing;
-use FriendsOfRedaxo\Fluid\Form\FieldForm;
+use Klxm\Fluid\Activity;
+use Klxm\Fluid\Api;
+use Klxm\Fluid\ApiError;
+use Klxm\Fluid\BlockData;
+use Klxm\Fluid\BlockModule;
+use Klxm\Fluid\BlockOps;
+use Klxm\Fluid\Editing;
+use Klxm\Fluid\Form\FieldForm;
 use Redaxo\Core\Content\ModulePermission;
 use Redaxo\Core\Http\Request;
 use Redaxo\Core\Security\User;
@@ -89,12 +89,12 @@ final class RecordBlocks
             . $empty . $html . '</div>';
     }
 
-    /** @return array{0: \FriendsOfRedaxo\Fluid\Block, 1: string} */
+    /** @return array{0: \Klxm\Fluid\Block, 1: string} */
     private static function renderItem(string $table, int $rid, string $field, array $item, mixed $prev, int $articleId): array
     {
         $m = BlockData::module($item['module']) ?? throw new ApiError('Unbekannter Block.');
         $uid = (string) ($item['uid'] ?? '');
-        $b = $m::blockFromData('r-' . $uid, $item['data'], $item['tunes'], $prev instanceof \FriendsOfRedaxo\Fluid\Block ? $prev : null, $articleId);
+        $b = $m::blockFromData('r-' . $uid, $item['data'], $item['tunes'], $prev instanceof \Klxm\Fluid\Block ? $prev : null, $articleId);
 
         return [$b, $m::renderData($b, self::id($table, $rid, $field, $uid))];
     }

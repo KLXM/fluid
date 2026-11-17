@@ -1,6 +1,6 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Legal;
+namespace Klxm\Fluid\Legal;
 
 /**
  * Einstellungen der Rechtstexte, gesetzt vom Projekt (wie die Policies des Cores) – in Project::configure():

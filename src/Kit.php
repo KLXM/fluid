@@ -1,8 +1,8 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid;
+namespace Klxm\Fluid;
 
-use FriendsOfRedaxo\Fluid\Kit\Fluid\FluidKit;
+use Klxm\Fluid\Kit\Fluid\FluidKit;
 use ReflectionClass;
 use Redaxo\Core\ClassDiscovery;
 use Redaxo\Core\ExtensionPoint\Extension;

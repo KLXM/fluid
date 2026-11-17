@@ -1,11 +1,11 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Kit\Fluid\Module;
+namespace Klxm\Fluid\Kit\Fluid\Module;
 
-use FriendsOfRedaxo\Fluid\Field\AsBlock;
-use FriendsOfRedaxo\Fluid\Field\{Checkbox, Choice, Collection, Text, Textarea};
-use FriendsOfRedaxo\Fluid\Kit\Fluid\FluidBlock;
-use FriendsOfRedaxo\Fluid\Kit\Fluid\Module\Item\Slide;
+use Klxm\Fluid\Field\AsBlock;
+use Klxm\Fluid\Field\{Checkbox, Choice, Collection, Text, Textarea};
+use Klxm\Fluid\Kit\Fluid\FluidBlock;
+use Klxm\Fluid\Kit\Fluid\Module\Item\Slide;
 use Redaxo\Core\Content\AsModule;
 
 #[AsModule('fluid.slider', 'Slider')]

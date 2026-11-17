@@ -1,6 +1,6 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Routing\Seo;
+namespace Klxm\Fluid\Routing\Seo;
 
 /**
  * Einstellungen für den Seitenkopf, gesetzt vom Projekt in Project::configure():

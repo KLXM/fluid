@@ -1,9 +1,9 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Data;
+namespace Klxm\Fluid\Data;
 
-use FriendsOfRedaxo\Fluid\BlockData;
-use FriendsOfRedaxo\Fluid\Form\FieldForm;
+use Klxm\Fluid\BlockData;
+use Klxm\Fluid\Form\FieldForm;
 use Override;
 use Redaxo\Core\ApiFunction\ApiFunction;
 use Redaxo\Core\ApiFunction\AsApiFunction;

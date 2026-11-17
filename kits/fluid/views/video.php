@@ -2,7 +2,7 @@
 /**
  * Video (YouTube/Vimeo mit Zwei-Klick-Lösung, MP4 aus dem Medienpool): wide · text (Text daneben) · cinema (randlos, dunkel).
  * Aus KLXM Studio; Einbettung: fluid_video_embed() (functions.php), Skript js/embed.js (lädt den Player erst nach Klick).
- * @var \FriendsOfRedaxo\Fluid\Block $b  @var array $d
+ * @var \Klxm\Fluid\Block $b  @var array $d
  */
 $v = in_array($b->variant(), ['wide', 'text', 'cinema'], true) ? $b->variant() : 'wide';
 $embed = fluid_video_embed((string) $d['video_url'], (string) $d['video_file'], (string) $d['poster'], (string) ($d['ratio'] ?: '16-9'), strip_emphasis(trim((string) $d['title'])),

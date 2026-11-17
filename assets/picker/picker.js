@@ -1,6 +1,6 @@
 /*
  * FrontendPicker – Medien- und Seitenauswahl für die Website, das Gegenstück zu rex.pick() im Backend.
- * Für jedes AddOn nutzbar (PHP: FriendsOfRedaxo\Fluid\Picker\FrontendPicker::head()), ohne Abhängigkeit zu fluid.
+ * Für jedes AddOn nutzbar (PHP: Klxm\Fluid\Picker\FrontendPicker::head()), ohne Abhängigkeit zu fluid.
  *
  *   const [media] = await FrontendPicker.pick('media', { types: ['jpg', 'png'] });   // [{ value: 'datei.jpg', label: 'Titel' }]
  *   const [page] = await FrontendPicker.pick('article', { category: 5, value: 12 });  // [{ value: '12', label: 'Name [12]' }]

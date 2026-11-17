@@ -1,8 +1,8 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Routing;
+namespace Klxm\Fluid\Routing;
 
-use FriendsOfRedaxo\Fluid\Routing\ExtensionPoint\RoutesRebuilt;
+use Klxm\Fluid\Routing\ExtensionPoint\RoutesRebuilt;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Database\Sql;
 use Redaxo\Core\ExtensionPoint\Extension;

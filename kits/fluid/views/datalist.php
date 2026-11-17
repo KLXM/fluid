@@ -3,10 +3,10 @@
  * Datenliste: Einträge einer YForm-Tabelle als Karten, Liste oder Tabelle (Tabelle = #[AsTable]-Klasse aus YForm; Markup und CSS wie der Studio-Block
  * „Datenliste“, css/data.css). Detailansicht auf derselben Seite über ?eintrag={id} (alle Felder als Liste).
  * Angemeldete Redakteure sehen im Bearbeiten-Modus „Bearbeiten“ je Eintrag und „Neuer Eintrag“ (YForm im Backend).
- * @var \FriendsOfRedaxo\Fluid\Block $b  @var array $d
+ * @var \Klxm\Fluid\Block $b  @var array $d
  */
-use FriendsOfRedaxo\Fluid\Data\RecordInline;
-use FriendsOfRedaxo\Fluid\Data\YFormBridge;
+use Klxm\Fluid\Data\RecordInline;
+use Klxm\Fluid\Data\YFormBridge;
 use Redaxo\Core\Filesystem\Url;
 use Redaxo\Core\Http\Request;
 use Redaxo\Core\Language\Language;
@@ -33,7 +33,7 @@ $edit = is_editing() ? static fn (?int $id = null) => YFormBridge::editUrl($t, $
 $editBtn = static fn (?string $url, string $label) => $url ? '<a class="fdl-edit" href="' . e($url) . '" target="_blank" rel="noopener">' . e($label) . '</a>' : '';
 $title = static fn ($row) => $titleF ? YFormBridge::text($row, $titleF) : '#' . $row->id;
 // Detailansicht mit schöner Adresse /seite/titel-ID (Data\Detail, Router)
-$href = static fn ($row) => \FriendsOfRedaxo\Fluid\Data\Detail::url($here, $title($row), $row->id);
+$href = static fn ($row) => \Klxm\Fluid\Data\Detail::url($here, $title($row), $row->id);
 $pic = static fn ($row, string $sizes, string $ratio) => '' !== ($file = YFormBridge::file($row, $imageF)) ? img($file, $sizes, ['ratio' => $ratio]) : '';
 
 // ------------------------------------------------------------------ Detailansicht
@@ -67,7 +67,7 @@ if ($row):
   <dl class="df-dl">
     <?php $blocksHtml = ''; foreach (YFormBridge::detailFields($t) as $f):
         // Feld „Fluid-Blöcke“: als Blöcke unter der Detailansicht (volle Breite), nicht als Text
-        if ($f instanceof \FriendsOfRedaxo\Fluid\Data\FluidBlocks) { $blocksHtml .= \FriendsOfRedaxo\Fluid\Data\RecordBlocks::render($t, $row, $f, $b->articleId); continue; }
+        if ($f instanceof \Klxm\Fluid\Data\FluidBlocks) { $blocksHtml .= \Klxm\Fluid\Data\RecordBlocks::render($t, $row, $f, $b->articleId); continue; }
         if ($same($f, $titleF) || $same($f, $imageF) || $same($f, $filterF)) continue;
         // Bearbeitungsmodus: Textfelder direkt auf der Seite (Data\RecordInline) – auch leere, damit man sie füllen kann
         $inline = RecordInline::attrs($t, $row, $f);
@@ -93,7 +93,7 @@ $rows = $pg ? $pg['rows'] : YFormBridge::rows($t, $opt);
 $cols = ['s' => 4, 'm' => 3, 'l' => 2][$d['size'] ?? 'm'] ?? 3;
 $hTag = trim((string) ($d['title'] ?? '')) !== '' ? 'h3' : 'h2';
 // Blättern ohne Seitenwechsel (Live::region – Links mit data-live-nav, ohne JavaScript normale Links)
-$reload = $pg && $pg['pages'] > 1 ? \FriendsOfRedaxo\Fluid\Live::region($b) : '';
+$reload = $pg && $pg['pages'] > 1 ? \Klxm\Fluid\Live::region($b) : '';
 ?>
 <div class="wrap dl dl--<?= e($layout) ?>"<?= $reload ?>>
   <?= fluid_head($b, 'dl-head') ?>
@@ -139,4 +139,4 @@ $reload = $pg && $pg['pages'] > 1 ? \FriendsOfRedaxo\Fluid\Live::region($b) : ''
   <?php endif; ?>
   <?php if ($new = $edit()): ?><p class="fdl-new"><?= $editBtn($new, '+ Neuer Eintrag') ?></p><?php endif; ?>
 </div>
-<?= '' !== $reload ? \FriendsOfRedaxo\Fluid\Live::assets() : '' /* live.js nur, wenn die Liste nachladen kann */ ?>
+<?= '' !== $reload ? \Klxm\Fluid\Live::assets() : '' /* live.js nur, wenn die Liste nachladen kann */ ?>

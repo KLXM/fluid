@@ -1,8 +1,8 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid;
+namespace Klxm\Fluid;
 
-use FriendsOfRedaxo\Fluid\Form\FieldForm;
+use Klxm\Fluid\Form\FieldForm;
 use ReflectionMethod;
 use Redaxo\Core\Content\ArticleSlice;
 use Redaxo\Core\Content\ContentHandler;

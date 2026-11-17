@@ -1,13 +1,13 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Kit\Fluid\Module\Item;
+namespace Klxm\Fluid\Kit\Fluid\Module\Item;
 
-use FriendsOfRedaxo\Fluid\Field\Choice;
-use FriendsOfRedaxo\Fluid\Field\Icon;
-use FriendsOfRedaxo\Fluid\Field\Link;
-use FriendsOfRedaxo\Fluid\Field\MediaPicker;
-use FriendsOfRedaxo\Fluid\Field\Text;
-use FriendsOfRedaxo\Fluid\Field\Textarea;
+use Klxm\Fluid\Field\Choice;
+use Klxm\Fluid\Field\Icon;
+use Klxm\Fluid\Field\Link;
+use Klxm\Fluid\Field\MediaPicker;
+use Klxm\Fluid\Field\Text;
+use Klxm\Fluid\Field\Textarea;
 use Redaxo\Core\MediaPool\Media;
 
 /** Eintrag von „Kacheln“ im Block Bento */

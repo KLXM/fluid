@@ -1,9 +1,9 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Routing\Console;
+namespace Klxm\Fluid\Routing\Console;
 
-use FriendsOfRedaxo\Fluid\Routing\Routes;
-use FriendsOfRedaxo\Fluid\Routing\Sources;
+use Klxm\Fluid\Routing\Routes;
+use Klxm\Fluid\Routing\Sources;
 use Redaxo\Core\Console\AbstractCommand;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Attribute\Option;

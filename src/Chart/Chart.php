@@ -1,11 +1,11 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Chart;
+namespace Klxm\Fluid\Chart;
 
-use FriendsOfRedaxo\Fluid\Chart\Attribute\AsChartEngine;
-use FriendsOfRedaxo\Fluid\Chart\Attribute\AsChartSource;
-use FriendsOfRedaxo\Fluid\FluidAddon;
-use FriendsOfRedaxo\Fluid\Routing\Router;
+use Klxm\Fluid\Chart\Attribute\AsChartEngine;
+use Klxm\Fluid\Chart\Attribute\AsChartSource;
+use Klxm\Fluid\FluidAddon;
+use Klxm\Fluid\Routing\Router;
 use Redaxo\Core\Language\Language;
 use Redaxo\Core\ClassDiscovery;
 use Throwable;

@@ -1,10 +1,10 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Maps;
+namespace Klxm\Fluid\Maps;
 
-use FriendsOfRedaxo\Fluid\Editing;
-use FriendsOfRedaxo\Fluid\FluidAddon;
-use FriendsOfRedaxo\Fluid\Settings;
+use Klxm\Fluid\Editing;
+use Klxm\Fluid\FluidAddon;
+use Klxm\Fluid\Settings;
 
 use function is_array;
 use function is_numeric;
@@ -231,7 +231,7 @@ final class Maps
 
     private static function abs(string $url): string
     {
-        return \FriendsOfRedaxo\Fluid\Routing\Router::base() . '/' . ltrim((string) preg_replace('~^\./~', '', $url), '/');
+        return \Klxm\Fluid\Routing\Router::base() . '/' . ltrim((string) preg_replace('~^\./~', '', $url), '/');
     }
 
     /** @return array{google: string, apple: string, osm: string} */

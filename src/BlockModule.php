@@ -1,9 +1,9 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid;
+namespace Klxm\Fluid;
 
-use FriendsOfRedaxo\Fluid\Form\FieldForm;
-use FriendsOfRedaxo\Fluid\Form\Stored;
+use Klxm\Fluid\Form\FieldForm;
+use Klxm\Fluid\Form\Stored;
 use Override;
 use Redaxo\Core\Content\ArticleContentEditor;
 use Redaxo\Core\Content\ArticleSlice;
@@ -53,7 +53,7 @@ use function Redaxo\Core\View\escape;
  *     }
  *
  * Die Felder sind die des Cores (Redaxo\Core\Form\Field\…) oder die gleichnamigen von fluid mit optionalen Ergänzungen
- * (FriendsOfRedaxo\Fluid\Field\…: width, variants, placeholder …), dazu Felder, die es nur in fluid gibt (RichText,
+ * (Klxm\Fluid\Field\…: width, variants, placeholder …), dazu Felder, die es nur in fluid gibt (RichText,
  * Link, Icon …). Gespeichert wird wie beim Core: je Feld unter seinem Schlüssel in der JSON-Spalte `data` des Slices,
  * dazu `variant` (Darstellung) und `tunes` (Abschnitt).
  *

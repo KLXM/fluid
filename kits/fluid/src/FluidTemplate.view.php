@@ -1,9 +1,9 @@
 <?php
 
-use FriendsOfRedaxo\Fluid\Editing;
-use FriendsOfRedaxo\Fluid\Kit;
-use FriendsOfRedaxo\Fluid\Kit\Fluid\FluidTemplate;
-use FriendsOfRedaxo\Fluid\PageSettings;
+use Klxm\Fluid\Editing;
+use Klxm\Fluid\Kit;
+use Klxm\Fluid\Kit\Fluid\FluidTemplate;
+use Klxm\Fluid\PageSettings;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\ArticleContent;
 use Redaxo\Core\Core;
@@ -14,10 +14,10 @@ return static function (ArticleContent $content): void {
     // Inhalt zuerst: so ist bekannt, welche Blöcke (und damit welches CSS) die Seite braucht
     $main = $content->renderContent();
     $article = $content->article;
-    $name = \FriendsOfRedaxo\Fluid\Settings::name();
+    $name = \Klxm\Fluid\Settings::name();
     $isHome = $article->id === Article::getSiteStartArticleId();
     // Landing-Domain: Einstiegsseite der Landingpage statt Startseite der Website
-    $landing = \FriendsOfRedaxo\Fluid\Routing\Router::landing();
+    $landing = \Klxm\Fluid\Routing\Router::landing();
     $home = $landing ? (Article::get((int) $landing->articleId)?->getUrl() ?? '/') : (Article::getSiteStartArticle()?->getUrl() ?? '/');
     $isHome = $landing ? $article->id === $landing->articleId : $isHome;
     $menu = FluidTemplate::menu();
@@ -27,11 +27,11 @@ return static function (ArticleContent $content): void {
         $menu = array_values(array_filter($menu, static fn (array $m) => rtrim((string) parse_url((string) $m['href'], PHP_URL_PATH), '/') !== $searchHref || !empty($m['children'])));
     }
     // Sprachwahl: Sprachen, in denen diese Seite online ist
-    $langs = \FriendsOfRedaxo\Fluid\Routing\Router::alternates($article);
+    $langs = \Klxm\Fluid\Routing\Router::alternates($article);
     $title = PageSettings::title($article, $name);
     $design = $kit->design();
     // Blog-Beitrag: Kopf (Titel, Datum, Bild) und „Älterer/Neuerer Beitrag“ aus dem Template
-    $isPost = null !== \FriendsOfRedaxo\Fluid\Blog\Blog::blogOf($article);
+    $isPost = null !== \Klxm\Fluid\Blog\Blog::blogOf($article);
     if ($isPost) {
         $kit->markUsed('@post');
     }

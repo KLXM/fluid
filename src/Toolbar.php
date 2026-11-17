@@ -1,6 +1,6 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid;
+namespace Klxm\Fluid;
 
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\ArticleRevision;
@@ -99,7 +99,7 @@ final class Toolbar
             // Anfragen-Postfach: nur, wenn es Formulare mit YForm-Tabellen gibt
             'inbox' => !$guest && [] !== Data\Inbox::tables($user) ? ['new' => Data\Inbox::countNew($user)] : null,
             // Addon image_editor (optional): Bilder auf der Website bearbeiten
-            'imageEditor' => !$guest && class_exists(\FriendsOfRedaxo\ImageEditor\ImageEditorAddon::class) ? \FriendsOfRedaxo\ImageEditor\ImageEditorAddon::config() : null,
+            'imageEditor' => !$guest && class_exists(\Klxm\ImageEditor\ImageEditorAddon::class) ? \Klxm\ImageEditor\ImageEditorAddon::config() : null,
             'css' => $addon->getAssetsUrl('editor/editor.shadow.css') . '?v=' . self::version('editor/editor.shadow.css'),
             'rteCss' => $addon->getAssetsUrl('rte.css') . '?v=' . self::version('rte.css'),
             // Versionen-Ansicht (Zeitleiste, Vorschau, Vergleich) – lädt erst beim Öffnen

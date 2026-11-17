@@ -1,8 +1,8 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Routing\ExtensionPoint;
+namespace Klxm\Fluid\Routing\ExtensionPoint;
 
-use FriendsOfRedaxo\Fluid\Routing\Domain;
+use Klxm\Fluid\Routing\Domain;
 use Redaxo\Core\ExtensionPoint\ExtensionPoint;
 
 /**

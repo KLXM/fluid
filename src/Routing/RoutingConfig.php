@@ -1,6 +1,6 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Routing;
+namespace Klxm\Fluid\Routing;
 
 /**
  * Einstellungen des Routings, gesetzt vom Projekt (wie die Policies des Cores) – in Project::configure():

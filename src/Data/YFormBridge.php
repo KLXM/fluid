@@ -1,8 +1,8 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Data;
+namespace Klxm\Fluid\Data;
 
-use FriendsOfRedaxo\Fluid\Editing;
+use Klxm\Fluid\Editing;
 use Redaxo\Core\Addon\Addon;
 use Redaxo\Core\Filesystem\Url;
 use Yakamara\YForm\Data\Record;

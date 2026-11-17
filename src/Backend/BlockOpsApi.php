@@ -1,12 +1,12 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Backend;
+namespace Klxm\Fluid\Backend;
 
-use FriendsOfRedaxo\Fluid\ApiError;
-use FriendsOfRedaxo\Fluid\BlockModule;
-use FriendsOfRedaxo\Fluid\BlockOps;
-use FriendsOfRedaxo\Fluid\FluidAddon;
-use FriendsOfRedaxo\Fluid\Layout;
+use Klxm\Fluid\ApiError;
+use Klxm\Fluid\BlockModule;
+use Klxm\Fluid\BlockOps;
+use Klxm\Fluid\FluidAddon;
+use Klxm\Fluid\Layout;
 use Redaxo\Core\ApiFunction\ApiFunction;
 use Redaxo\Core\ApiFunction\AsApiFunction;
 use Redaxo\Core\ApiFunction\Exception\ApiFunctionException;

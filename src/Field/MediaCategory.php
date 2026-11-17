@@ -1,6 +1,6 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Field;
+namespace Klxm\Fluid\Field;
 
 use Attribute;
 use Redaxo\Core\Form\Field\Choice as CoreChoice;
@@ -27,7 +27,7 @@ class MediaCategory extends CoreChoice implements FluidField
         /** @var list<string>|null */
         public readonly ?array $variants = null,
     ) {
-        parent::__construct($label, static fn (): array => \FriendsOfRedaxo\Fluid\Form\FieldForm::mediaCategories(), placeholder: '–', note: $note, required: $required, key: $key);
+        parent::__construct($label, static fn (): array => \Klxm\Fluid\Form\FieldForm::mediaCategories(), placeholder: '–', note: $note, required: $required, key: $key);
     }
 
     public function fluid(): array

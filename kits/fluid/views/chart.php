@@ -1,7 +1,7 @@
 <?php
-/** Diagramm: standard (unter dem Kopf) · split (Kopf und Einleitung links, Diagramm rechts). Ausgabe FriendsOfRedaxo\Fluid\Chart\Chart. @var \FriendsOfRedaxo\Fluid\Block $b  @var array $d */
-use FriendsOfRedaxo\Fluid\Chart\Chart as Charts;
-use FriendsOfRedaxo\Fluid\Kit\Fluid\Module\Chart;
+/** Diagramm: standard (unter dem Kopf) · split (Kopf und Einleitung links, Diagramm rechts). Ausgabe Klxm\Fluid\Chart\Chart. @var \Klxm\Fluid\Block $b  @var array $d */
+use Klxm\Fluid\Chart\Chart as Charts;
+use Klxm\Fluid\Kit\Fluid\Module\Chart;
 
 $v = $b->variant() ?: 'standard';
 $chart = Charts::render(Chart::spec($d), ['table' => Chart::tableOption($d)]);

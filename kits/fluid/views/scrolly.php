@@ -4,7 +4,7 @@
  * passende Bild ein (IntersectionObserver). Container-Query: Unter ~46 rem Blockbreite steht jedes Bild direkt über
  * seinem Text (die stehende Spalte entfällt). Ohne JavaScript bleibt das erste Bild stehen – alle Bilder stehen zusätzlich
  * am Text. Bei „Bewegung reduzieren“ wechseln die Bilder ohne Überblendung.
- * @var \FriendsOfRedaxo\Fluid\Block $b  @var array $d
+ * @var \Klxm\Fluid\Block $b  @var array $d
  */
 $ratio = (string) ($d['ratio'] ?? '') ?: '4:5';
 $items = array_values(array_filter((array) ($d['items'] ?? []), fn($i) => trim((string) ($i['title'] ?? '')) !== '' || is_editing()));

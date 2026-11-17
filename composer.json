@@ -1,6 +1,7 @@
 {
-    "name": "friendsofredaxo/fluid",
+    "name": "klxm/fluid",
     "description": "Blöcke mit Feldschema und Bearbeiten direkt auf der Website für REDAXO 6",
+    "homepage": "https://github.com/KLXM/fluid",
     "type": "redaxo-addon",
     "license": "MIT",
     "keywords": [
@@ -13,41 +14,41 @@
         "yform",
         "cms"
     ],
-    "homepage": "https://github.com/FriendsOfREDAXO/fluid",
     "authors": [
         {
             "name": "Thomas Skerbis",
-            "homepage": "https://klxm.de"
+            "homepage": "https://github.com/skerbis",
+            "role": "Lead"
         },
         {
-            "name": "Friends Of REDAXO",
-            "homepage": "https://friendsofredaxo.github.io"
+            "name": "KLXM Crossmedia GmbH",
+            "homepage": "https://klxm.de"
         }
     ],
     "support": {
-        "issues": "https://github.com/FriendsOfREDAXO/fluid/issues",
-        "source": "https://github.com/FriendsOfREDAXO/fluid"
+        "issues": "https://github.com/KLXM/fluid/issues",
+        "source": "https://github.com/KLXM/fluid"
     },
     "require": {
         "php": "^8.5",
         "redaxo/core": "^6.0@dev",
         "loupe/loupe": "^1.1",
-        "friendsofredaxo/navigation_array": "6.x-dev"
+        "klxm/navigation_array": "1.x-dev"
     },
     "suggest": {
         "yakamara/yform": "Formulare, Datenlisten, Postfach und das Feld „Fluid-Blöcke“ (YForm 6)",
-        "friendsofredaxo/image_editor": "Bilder auf der Website zuschneiden, drehen, Fokuspunkt setzen"
+        "klxm/image_editor": "Bilder auf der Website zuschneiden, drehen, Fokuspunkt setzen"
     },
     "autoload": {
         "psr-4": {
-            "FriendsOfRedaxo\\Fluid\\": "src/",
-            "FriendsOfRedaxo\\Fluid\\Kit\\Fluid\\": "kits/fluid/src/",
-            "FriendsOfRedaxo\\Fluid\\Kit\\Native\\": "kits/native/src/"
+            "Klxm\\Fluid\\": "src/",
+            "Klxm\\Fluid\\Kit\\Fluid\\": "kits/fluid/src/",
+            "Klxm\\Fluid\\Kit\\Native\\": "kits/native/src/"
         }
     },
     "extra": {
         "redaxo": {
-            "addon-class": "FriendsOfRedaxo\\Fluid\\FluidAddon"
+            "addon-class": "Klxm\\Fluid\\FluidAddon"
         },
         "branch-alias": {
             "dev-main": "1.x-dev"

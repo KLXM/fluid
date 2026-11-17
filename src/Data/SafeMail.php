@@ -1,8 +1,8 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Data;
+namespace Klxm\Fluid\Data;
 
-use FriendsOfRedaxo\Fluid\Activity;
+use Klxm\Fluid\Activity;
 use Redaxo\Core\Log\Logger;
 use Throwable;
 use Yakamara\YForm\Form\Action\Action;

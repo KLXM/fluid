@@ -1,6 +1,6 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Routing;
+namespace Klxm\Fluid\Routing;
 
 /** Eine Domain der Website (siehe Domains) */
 final readonly class Domain

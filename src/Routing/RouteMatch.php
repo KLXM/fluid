@@ -1,8 +1,8 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Routing;
+namespace Klxm\Fluid\Routing;
 
-use FriendsOfRedaxo\Fluid\Routing\Seo\PageMeta;
+use Klxm\Fluid\Routing\Seo\PageMeta;
 
 /**
  * Ergebnis der Auflösung einer Adresse, die keine Seite ist: welche Seite angezeigt wird, mit welchen Parametern – und

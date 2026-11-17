@@ -1,9 +1,9 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Mail;
+namespace Klxm\Fluid\Mail;
 
-use FriendsOfRedaxo\Fluid\Kit;
-use FriendsOfRedaxo\Fluid\Settings;
+use Klxm\Fluid\Kit;
+use Klxm\Fluid\Settings;
 use Redaxo\Core\Core;
 use Redaxo\Core\Cronjob\AsCronjob;
 use Redaxo\Core\Env;
@@ -218,13 +218,13 @@ final class Mail
         $name = Settings::name();
         $logo = (string) Settings::get('logo', '');
         // SVG zeigen Gmail und Outlook in Mails nicht an – dann der Name als Schriftzug
-        $logoUrl = '' !== $logo && !str_ends_with(strtolower($logo), '.svg') && ($m = Media::get($logo)) ? \FriendsOfRedaxo\Fluid\Routing\Router::absolute($m->getUrl()) : '';
+        $logoUrl = '' !== $logo && !str_ends_with(strtolower($logo), '.svg') && ($m = Media::get($logo)) ? \Klxm\Fluid\Routing\Router::absolute($m->getUrl()) : '';
         $brand = '' !== $logoUrl
             ? '<img src="' . escape($logoUrl) . '" alt="' . escape($name) . '" height="40" style="display:block;height:40px;width:auto;border:0">'
             : '<span style="font:700 20px/1.2 Arial,Helvetica,sans-serif;color:' . $ink . '">' . escape($name) . '</span>';
         $address = implode(' · ', array_filter([trim((string) Settings::get('street', '')), trim(Settings::get('zip', '') . ' ' . Settings::get('city', '')), trim((string) Settings::get('phone', '')), trim((string) Settings::get('email', ''))]));
         $imprint = trim((string) Settings::get('imprint_page', ''));
-        $imprintUrl = '' !== $imprint && function_exists('link_href') ? \FriendsOfRedaxo\Fluid\Routing\Router::absolute(link_href($imprint)) : '';
+        $imprintUrl = '' !== $imprint && function_exists('link_href') ? \Klxm\Fluid\Routing\Router::absolute(link_href($imprint)) : '';
         $font = 'font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif';
 
         // kein <title>: der Textteil entsteht aus dem HTML (strip_tags) und hätte ihn sonst doppelt

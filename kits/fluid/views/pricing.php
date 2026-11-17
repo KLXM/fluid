@@ -2,7 +2,7 @@
 /**
  * Pakete / Vergleich: cards (Raster auto-fit, Hervorhebung) · table (Vergleichstabelle – scrollt bei wenig Platz waagerecht,
  * erste Spalte bleibt stehen; Paketnamen als Spaltenköpfe, Werte ja/nein als Symbol mit Text für Screenreader).
- * @var \FriendsOfRedaxo\Fluid\Block $b  @var array $d
+ * @var \Klxm\Fluid\Block $b  @var array $d
  */
 $v = $b->variant() === 'table' ? 'table' : 'cards';
 $items = array_values(array_filter((array) ($d['items'] ?? []), fn($i) => trim((string) ($i['name'] ?? '')) !== ''));

@@ -1,6 +1,6 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid;
+namespace Klxm\Fluid;
 
 use Redaxo\Core\Content\ExtensionPoint\ArticleUsageCheck;
 use Redaxo\Core\ExtensionPoint\Extension;

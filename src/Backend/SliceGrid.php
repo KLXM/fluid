@@ -1,10 +1,10 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Backend;
+namespace Klxm\Fluid\Backend;
 
-use FriendsOfRedaxo\Fluid\BlockModule;
-use FriendsOfRedaxo\Fluid\FluidAddon;
-use FriendsOfRedaxo\Fluid\Layout;
+use Klxm\Fluid\BlockModule;
+use Klxm\Fluid\FluidAddon;
+use Klxm\Fluid\Layout;
 use Redaxo\Core\Content\ArticleSlice;
 use Redaxo\Core\Content\ExtensionPoint\ContentPageModuleSelect;
 use Redaxo\Core\Content\ExtensionPoint\SliceMenu;

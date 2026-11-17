@@ -1,6 +1,6 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid;
+namespace Klxm\Fluid;
 
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\StructurePermission;
@@ -25,7 +25,7 @@ use function Redaxo\Core\View\escape;
 final class PresenceApi
 {
     /** @internal Endpunkt der Präsenz */
-    #[\FriendsOfRedaxo\Fluid\Routing\Attribute\AsEndpoint('/' . self::PATH, early: true)]
+    #[\Klxm\Fluid\Routing\Attribute\AsEndpoint('/' . self::PATH, early: true)]
     public static function serve(): void
     {
         self::handle();

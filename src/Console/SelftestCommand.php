@@ -1,10 +1,10 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Console;
+namespace Klxm\Fluid\Console;
 
-use FriendsOfRedaxo\Fluid\EditLock;
-use FriendsOfRedaxo\Fluid\Live;
-use FriendsOfRedaxo\Fluid\Presence;
+use Klxm\Fluid\EditLock;
+use Klxm\Fluid\Live;
+use Klxm\Fluid\Presence;
 use Redaxo\Core\Console\AbstractCommand;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;

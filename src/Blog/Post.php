@@ -1,9 +1,9 @@
 <?php
 
-namespace FriendsOfRedaxo\Fluid\Blog;
+namespace Klxm\Fluid\Blog;
 
 use DateTimeImmutable;
-use FriendsOfRedaxo\Fluid\PageSettings;
+use Klxm\Fluid\PageSettings;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Database\Sql;
 

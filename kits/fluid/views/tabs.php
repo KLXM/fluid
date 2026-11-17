@@ -3,7 +3,7 @@
  * Reiter (Tabs). Ohne JavaScript: alle Inhalte mit Zwischenüberschrift untereinander. js/tabs.js macht daraus eine
  * Reiterleiste (role=tablist, Pfeiltasten, Pos1/Ende). „Reiter links“: Sidebar-Muster – die Leiste steht links, solange
  * daneben ≥ 60 % Platz bleiben, sonst oben (waagerecht scrollbar).
- * @var \FriendsOfRedaxo\Fluid\Block $b  @var array $d
+ * @var \Klxm\Fluid\Block $b  @var array $d
  */
 $items = array_values(array_filter((array) $d['items'], fn($i) => trim((string) ($i['label'] ?? '')) !== ''));
 $id = $b->domId();

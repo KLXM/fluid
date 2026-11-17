@@ -7,11 +7,11 @@
  *   type      großer Schriftzug, Betonung *Wort* im Markenverlauf (.ncss-text-gradient-brand), Etikett als .ncss-badge
  *   fullbleed Bild/Video vollflächig mit Text darauf (.ncss-hero)
  * Übrige Varianten (cards, scale, collage, compare) kommen aus dem Kit fluid.
- * @var \FriendsOfRedaxo\Fluid\Block $b  @var array $d
+ * @var \Klxm\Fluid\Block $b  @var array $d
  */
 $v = $b->variant() ?: 'split';
 if (!in_array($v, ['split', 'centered', 'compact', 'type', 'fullbleed'], true)) {
-    require \FriendsOfRedaxo\Fluid\Kit::get('fluid')->view('hero');
+    require \Klxm\Fluid\Kit::get('fluid')->view('hero');
 
     return;
 }
