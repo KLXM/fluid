@@ -20,7 +20,7 @@ dann fehlen nur diese Teile. Alles andere ist eingebaut:
 | Formular-Baukasten, Datenlisten, Postfach (auf Basis von YForm) | Formulare |
 | MCP-Server für KI-Werkzeuge | Schnittstellen |
 
-Optional dazu gibt es [image_editor](https://github.com/KLXM/image_editor), ebenfalls von FriendsOfREDAXO,
+Optional dazu gibt es [image_editor](https://github.com/KLXM/image_editor), ebenfalls von KLXM,
 zum Zuschneiden und Drehen von Bildern direkt auf der Website, mit Fokuspunkt und eigenem Ausschnitt je Bildformat.
 fluid läuft auch ohne.
 
@@ -107,7 +107,7 @@ Prüfen kannst du PHP mit `php -v` – dort sollte `8.5` stehen.
 Im Terminal in den Ordner wechseln, in dem die Website entstehen soll, dann:
 
 ```bash
-curl -fsSLO https://raw.githubusercontent.com/FriendsOfREDAXO/fluid/main/install-dev.sh
+curl -fsSLO https://raw.githubusercontent.com/KLXM/fluid/main/install-dev.sh
 bash install-dev.sh meine-seite
 ```
 

@@ -16,7 +16,7 @@ Domains, SEO“.
 
 ## Als eigenes AddOn herauslösen
 
-1. Ordner in ein Paket verschieben (Namespace z. B. `FriendsOfRedaxo\Routing`), Tabellen `rex_fluid_route*` umbenennen
+1. Ordner in ein Paket verschieben (Namespace z. B. `Klxm\Routing`), Tabellen `rex_fluid_route*` umbenennen
    (Migration) oder behalten.
 2. Addon-Klasse: `install()` → `Schema::install()`, `getOwnedSchema()` → `Schema::TABLES`, `boot()` → `Router::boot()`.
 3. Alles andere (Auflösen, ArticleUrl, Neuaufbau, Endpunkte, Quellen, Konsole) hängt schon per Attribut am Core.
