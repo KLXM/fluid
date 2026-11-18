@@ -42,18 +42,50 @@ final class RichText
             return '<' . $m[1] . $m[2] . ($keep ? ' class="' . implode(' ', $keep) . '"' : '');
         }, $html);
 
-        // Links auf Artikel: aktuelle Adresse aus data-link="redaxo://ID"
+        // Links: aktuelle Adresse aus data-link – redaxo://ID (Seite), media://datei (Medienpool), detail://seite/id und
+        // route://quelle/id (Datensatz)
         return (string) preg_replace_callback('~<a\b([^>]*)>~i', static function (array $m): string {
             $attrs = $m[1];
-            if (!preg_match('~\sdata-link="redaxo://(\d+)(#[\w-]+)?"~', $attrs, $l)) {
+            if (!preg_match('~\sdata-link="([^"]+)"~', $attrs, $l)) {
                 return $m[0];
             }
-            $art = Article::get((int) $l[1]);
-            $url = ($art ? $art->getUrl() : '#') . ($l[2] ?? '');
+            $url = self::linkUrl(html_entity_decode($l[1], ENT_QUOTES));
+            if (null === $url) {
+                return $m[0];
+            }
             $attrs = preg_replace('~\shref="[^"]*"~', '', $attrs) ?? $attrs;
 
             return '<a href="' . htmlspecialchars($url, ENT_QUOTES) . '"' . $attrs . '>';
         }, $html);
+    }
+
+    /** Adresse zu einem gespeicherten Linkziel ('#' wenn es das Ziel nicht mehr gibt, null bei unbekanntem Format) */
+    public static function linkUrl(string $ref): ?string
+    {
+        if (preg_match('~^redaxo://(\d+)(#[\w-]+)?$~', $ref, $r)) {
+            $art = Article::get((int) $r[1]);
+
+            return $art ? $art->getUrl() . ($r[2] ?? '') : '#';
+        }
+        if (preg_match('~^media://(.+)$~', $ref, $r)) {
+            $media = \Redaxo\Core\MediaPool\Media::get(rawurldecode($r[1]));
+
+            return null !== $media ? $media->getUrl() : '#';
+        }
+        if (preg_match('~^detail://(\d+)/(\d+)(#[\w-]+)?$~', $ref, $r)) {
+            $lang = \Redaxo\Core\Language\Language::getCurrentId();
+            $cfg = \Klxm\Fluid\Data\Detail::config((int) $r[1], $lang);
+            $title = null !== $cfg ? \Klxm\Fluid\Data\Detail::title($cfg, (int) $r[2]) : null;
+
+            return null === $title ? '#' : \Klxm\Fluid\Data\Detail::url(\Klxm\Fluid\Routing\Router::url((int) $r[1], $lang), $title, (int) $r[2]) . ($r[3] ?? '');
+        }
+        if (preg_match('~^route://([\w.-]+)/([^/#]+)(#[\w-]+)?$~', $ref, $r)) {
+            $url = \Klxm\Fluid\Routing\Router::urlFor($r[1], rawurldecode($r[2]));
+
+            return ('' !== $url ? $url : '#') . ('' !== $url ? ($r[3] ?? '') : '');
+        }
+
+        return null;
     }
 
     private static function config(): HtmlSanitizerConfig

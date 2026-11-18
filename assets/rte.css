@@ -381,3 +381,11 @@ html.adm-ui[data-theme=dark] .rte-area mark{background:#6B5A12;color:#FFF7D6}
 .lp__list--tree .lp__item[data-depth="2"]{--lp-guide:38px}.lp__list--tree .lp__item[data-depth="3"]{--lp-guide:58px}.lp__list--tree .lp__item[data-depth="4"]{--lp-guide:78px}.lp__list--tree .lp__item[data-depth="5"]{--lp-guide:98px}.lp__list--tree .lp__item[data-depth="6"]{--lp-guide:118px}
 .lp__list--tree .lp__item:hover{background-color:var(--rte-hover)}
 .lp__empty{margin:0;padding:12px;color:var(--rte-muted)}
+/* Linkauswahl: Ziele (Seite, Datei, Datensatz, Anker) */
+.lp__kinds{display:flex;flex-wrap:wrap;gap:6px}
+.lp__kind{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 12px;border:1px solid var(--rte-border);border-radius:calc(var(--rte-radius) - 2px);background:var(--rte-bg);color:var(--rte-text);font:500 13.5px var(--adm-font);cursor:pointer}
+.lp__kind:hover{background:var(--rte-hover)}
+.lp__kind:focus-visible{outline:2px solid var(--rte-focus);outline-offset:1px}
+.lp__kind[aria-pressed=true]{border-color:color-mix(in srgb,var(--rte-accent) 40%,transparent);background:var(--rte-accent-subtle);color:var(--rte-accent)}
+.lp__kind .rte-icon{width:16px;height:16px}
+.lp__list[hidden]{display:none}

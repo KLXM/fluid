@@ -46,15 +46,21 @@ function resolve(v) {
 let dlg = null;
 function build() {
   if (dlg) return dlg;
+  const pick = typeof window.rex?.pick === 'function' || !!window.FrontendPicker;
   dlg = document.createElement('dialog');
   dlg.className = 'adm-dialog lp';
   dlg.innerHTML = `
     <form method="dialog" class="lp__form">
       <div class="adm-dialog__head"><h2 data-lp-title>${esc(t('Link einfügen'))}</h2></div>
-      <div class="f"><label for="blocks-lp-q">${esc(t('Seite suchen oder Adresse eingeben'))}</label>
+      <div class="f"><label for="blocks-lp-q" data-lp-qlabel>${esc(t('Adresse eingeben oder Seite suchen'))}</label>
         <input type="text" id="blocks-lp-q" autocomplete="off" placeholder="${esc(t('Seitenname, https://…, E-Mail, Telefon, #anker'))}"></div>
-      <div class="adm-row lp__map" ${typeof window.rex?.pick === 'function' || window.FrontendPicker ? '' : 'hidden'}><button type="button" class="adm-btn adm-btn--small adm-btn--ghost" data-lp-linkmap>${esc(t('Linkmap öffnen …'))}</button></div>
-      <div class="lp__list" role="listbox" data-lp-list></div>
+      <div class="lp__kinds" role="group" aria-label="${esc(t('Linkziel wählen'))}">
+        ${pick ? `<button type="button" class="lp__kind" data-lp-kind="page">${icon('page', 'rte-icon')}<span>${esc(t('Seite'))}</span></button>` : ''}
+        ${pick ? `<button type="button" class="lp__kind" data-lp-kind="media">${icon('file', 'rte-icon')}<span>${esc(t('Datei'))}</span></button>` : ''}
+        <button type="button" class="lp__kind" data-lp-kind="record" aria-pressed="false">${icon('record', 'rte-icon')}<span>${esc(t('Datensatz'))}</span></button>
+        <button type="button" class="lp__kind" data-lp-kind="anchor" aria-pressed="false">${icon('anchor', 'rte-icon')}<span>${esc(t('Anker'))}</span></button>
+      </div>
+      <div class="lp__list" role="listbox" data-lp-list hidden></div>
       <label class="f-check"><input type="checkbox" data-lp-tab> ${esc(t('In neuem Tab öffnen'))}</label>
       <p class="f-help" data-lp-error hidden></p>
       <div class="adm-row">
@@ -66,32 +72,72 @@ function build() {
   return dlg;
 }
 
+/** Angaben aus <script id="blocks-links">: Sprache, aktuelle Seite, API, Adresse des Medienordners */
+const meta = () => document.getElementById('blocks-links')?.dataset ?? {};
+
+async function api(params) {
+  const base = meta().api;
+  if (!base) return [];
+  try {
+    const res = await fetch(base + '&' + new URLSearchParams({ language: meta().language || '', ...params }), { credentials: 'same-origin' });
+    return res.ok ? (await res.json()).items ?? [] : [];
+  } catch {
+    return [];
+  }
+}
+
+const row = (attrs, ico, label, metaText, badge = '') => `<button type="button" role="option" class="lp__item" ${attrs}>${icon(ico, 'rte-icon lp__ico')}`
+  + `<span class="lp__txt"><span class="lp__label">${esc(label)}</span>${metaText ? `<span class="lp__meta">${esc(metaText)}</span>` : ''}</span>${badge}</button>`;
+
 export function openLinkPicker(opts = {}) {
   const d = build();
   layerBox().append(d);
   const q = d.querySelector('#blocks-lp-q');
   const box = d.querySelector('[data-lp-list]');
   const err = d.querySelector('[data-lp-error]');
+  const qLabel = d.querySelector('[data-lp-qlabel]');
   const cur = opts.current || null;
   d.querySelector('[data-lp-title]').textContent = cur ? t('Link bearbeiten') : t('Link einfügen');
   d.querySelector('[data-lp-remove]').hidden = !cur;
   d.querySelector('[data-lp-tab]').checked = !!cur?.newTab;
-  q.value = cur ? (cur.ref || cur.href || '') : '';
+  q.value = cur ? (cur.ref && /^redaxo:/.test(cur.ref) ? cur.ref : (cur.href || '')) : '';
   err.hidden = true;
-  let picked = null;
-  const render = () => {
-    const s = q.value.trim().toLowerCase();
-    // ohne Suche: Strukturbaum (eingerückt, Kategorien mit Ordner); mit Suche: Treffer mit Pfad
-    const tree = !s;
-    const items = list().filter((a) => tree || a.name.toLowerCase().includes(s) || a.path.toLowerCase().includes(s)).slice(0, tree ? 500 : 60);
-    box.classList.toggle('lp__list--tree', tree);
-    box.innerHTML = items.map((a) => `<button type="button" role="option" class="lp__item${a.category ? ' lp__item--cat' : ''}" data-id="${a.id}" data-depth="${Math.min(a.depth ?? 0, 6)}">`
-      + `${icon(a.category ? 'folder' : 'page', 'rte-icon lp__ico')}<span class="lp__txt"><span class="lp__label">${esc(a.name)}</span>${tree ? '' : `<span class="lp__meta">${esc(a.path)}</span>`}</span>`
-      + `${a.online ? '' : `<span class="lp__badge lp__badge--draft">${esc(t('offline'))}</span>`}</button>`).join('')
-      || `<p class="lp__empty">${esc(t('Keine Seite gefunden.'))}</p>`;
+  // mode: '' (Adresse/Seitenvorschläge beim Tippen), 'record', 'anchor'
+  let mode = '';
+  let timer = 0;
+  let records = [];
+
+  const setMode = (m) => {
+    mode = m;
+    d.querySelectorAll('[data-lp-kind="record"], [data-lp-kind="anchor"]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.lpKind === m)));
+    qLabel.textContent = m === 'record' ? t('Datensatz suchen') : m === 'anchor' ? t('Sprungmarke auf dieser Seite') : t('Adresse eingeben oder Seite suchen');
+    q.placeholder = m === 'record' ? t('Titel, z. B. einer News oder eines Termins …') : m === 'anchor' ? t('Filtern …') : t('Seitenname, https://…, E-Mail, Telefon, #anker');
+    if (m) q.value = '';
+    render();
+    q.focus();
   };
-  render();
-  return new Promise((resolve) => {
+
+  const render = async () => {
+    const s = q.value.trim();
+    const low = s.toLowerCase();
+    let html = '';
+    if (mode === 'record') {
+      records = await api({ kind: 'records', q: s });
+      html = records.map((r, i) => row(`data-lp-record="${i}"`, 'record', r.label, r.meta)).join('') || `<p class="lp__empty">${esc(t('Keine Datensätze gefunden.'))}</p>`;
+    } else if (mode === 'anchor') {
+      const items = (await api({ kind: 'anchors', article: meta().article || '' })).filter((a) => !low || a.anchor.includes(low) || a.label.toLowerCase().includes(low));
+      html = items.map((a) => row(`data-lp-anchor="${esc(a.anchor)}"`, 'anchor', a.label, '#' + a.anchor)).join('') || `<p class="lp__empty">${esc(t('Auf dieser Seite gibt es keine Sprungmarken. Im Block unter „Abschnitt“ eine Sprungmarke setzen.'))}</p>`;
+    } else if (s && !resolve(s)) {
+      // Seitenvorschläge nur beim Tippen eines Namens (keine Adresse)
+      html = list().filter((a) => a.name.toLowerCase().includes(low) || a.path.toLowerCase().includes(low)).slice(0, 8)
+        .map((a) => row(`data-id="${a.id}"`, a.category ? 'folder' : 'page', a.name, a.path, a.online ? '' : `<span class="lp__badge">${esc(t('offline'))}</span>`)).join('');
+    }
+    box.innerHTML = html;
+    box.hidden = !html;
+  };
+
+  return new Promise((done0) => {
+    const tab = () => d.querySelector('[data-lp-tab]').checked;
     const done = (v) => {
       d.close();
       d.remove();
@@ -99,33 +145,52 @@ export function openLinkPicker(opts = {}) {
       d.removeEventListener('click', onClick);
       d.removeEventListener('submit', onSubmit);
       d.removeEventListener('cancel', onCancel);
-      resolve(v);
+      done0(v);
     };
-    const tab = () => d.querySelector('[data-lp-tab]').checked;
-    const onInput = () => { picked = null; render(); };
-    const onClick = (e) => {
+    const onInput = () => {
+      clearTimeout(timer);
+      timer = setTimeout(render, mode === 'record' ? 200 : 0);
+    };
+    const onClick = async (e) => {
       const it = e.target.closest('.lp__item');
-      if (it) {
+      const kind = e.target.closest('[data-lp-kind]')?.dataset.lpKind;
+      if (it?.dataset.id) {
         const a = list().find((x) => String(x.id) === it.dataset.id);
-        picked = a;
         done({ href: a.url, ref: 'redaxo://' + a.id, label: a.name, newTab: tab() });
+      } else if (it?.dataset.lpRecord) {
+        const r = records[Number(it.dataset.lpRecord)];
+        done({ href: r.url || '#', ref: r.ref, label: r.label, newTab: tab() });
+      } else if (it?.dataset.lpAnchor) {
+        done({ href: '#' + it.dataset.lpAnchor, label: it.querySelector('.lp__label')?.textContent || it.dataset.lpAnchor, newTab: false });
+      } else if (kind === 'record' || kind === 'anchor') {
+        setMode(mode === kind ? '' : kind);
+      } else if (kind === 'page' && window.BlocksPick) {
+        // Linkmap: im Backend die des Cores (Overlay), auf der Website der FrontendPicker – Ergebnis redaxo://ID
+        const res = await window.BlocksPick.pick('link', { language: Number(meta().language) || 0 });
+        if (!res) return;
+        const id = String(res.value).replace('redaxo://', '');
+        const a = list().find((x) => String(x.id) === id);
+        done({ href: a ? a.url : '#', ref: 'redaxo://' + id, label: a ? a.name : res.name, newTab: tab() });
+      } else if (kind === 'media' && window.BlocksPick) {
+        const res = await window.BlocksPick.pick('media', {});
+        if (!res) return;
+        const file = String(res.value);
+        done({ href: (meta().media || '/media/') + encodeURIComponent(file), ref: 'media://' + file, label: res.name || file, newTab: tab() });
       } else if (e.target.closest('[data-lp-cancel]')) done(null);
       else if (e.target.closest('[data-lp-remove]')) done({ remove: true });
-      else if (e.target.closest('[data-lp-linkmap]')) {
-        // Linkmap: im Backend die des Cores (Overlay), auf der Website der FrontendPicker (assets/form.js: BlocksPick) – Ergebnis redaxo://ID
-        if (!window.BlocksPick) return;
-        window.BlocksPick.pick('link', { language: Number(document.getElementById('blocks-links')?.dataset.language) || 0 }).then((res) => {
-          if (!res) return;
-          const id = String(res.value).replace('redaxo://', '');
-          const a = list().find((x) => String(x.id) === id);
-          done({ href: a ? a.url : '#', ref: 'redaxo://' + id, label: a ? a.name : res.name, newTab: tab() });
-        });
-      }
     };
     const onSubmit = (e) => {
       e.preventDefault();
+      const first = box.querySelector('.lp__item');
+      if (mode && first) { first.click(); return; }
       const r = resolve(q.value);
-      if (!r || r.error) { err.textContent = r?.error || t('Bitte eine Seite wählen oder eine Adresse eingeben.'); err.hidden = false; return; }
+      if (!r || r.error) {
+        // ein Seitenname mit genau einem Vorschlag: den nehmen
+        if (first && box.querySelectorAll('.lp__item').length === 1) { first.click(); return; }
+        err.textContent = r?.error || t('Bitte eine Adresse eingeben oder ein Ziel wählen.');
+        err.hidden = false;
+        return;
+      }
       done({ ...r, newTab: tab() });
     };
     const onCancel = (e) => { e.preventDefault(); done(null); };
@@ -134,6 +199,8 @@ export function openLinkPicker(opts = {}) {
     d.addEventListener('submit', onSubmit);
     d.addEventListener('cancel', onCancel);
     d.showModal();
+    setMode('');
+    if (cur) q.value = cur.ref && /^redaxo:/.test(cur.ref) ? cur.ref : (cur.href || '');
     q.focus();
     q.select();
   });

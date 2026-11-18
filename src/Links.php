@@ -45,7 +45,15 @@ final class Links
 
     public static function json(?int $languageId = null): string
     {
-        return '<script type="application/json" id="blocks-links" data-language="' . ($languageId ?? Language::getCurrentId()) . '">'
+        $languageId ??= Language::getCurrentId();
+        // aktuelle Seite (Website: angezeigter Artikel, Backend: bearbeiteter Artikel) – für die Sprungmarken
+        $article = \Redaxo\Core\Core::isBackend() ? \Redaxo\Core\Http\Request::get('article_id', 'int', 0) : Article::getCurrentId();
+        $api = \Redaxo\Core\Core::isBackend()
+            ? \Redaxo\Core\Filesystem\Url::backendController(LinkApi::getUrlParams())
+            : \Redaxo\Core\Filesystem\Url::frontendController(LinkApi::getUrlParams());
+
+        return '<script type="application/json" id="blocks-links" data-language="' . $languageId . '" data-article="' . $article . '"'
+            . ' data-api="' . htmlspecialchars($api, ENT_QUOTES) . '" data-media="' . htmlspecialchars(\Redaxo\Core\Filesystem\Url::media(), ENT_QUOTES) . '">'
             . json_encode(self::all($languageId), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) . '</script>';
     }
 }
