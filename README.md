@@ -208,14 +208,11 @@ Installation neu auf (Ordner und Datenbank löschen, Skript erneut starten).
 ## fluid in ein bestehendes Projekt einbauen
 
 Du hast schon ein REDAXO-6-Projekt (`composer create-project redaxo/project:6.x-dev`)? Dann reichen drei Schritte.
-Solange fluid, YForm 6 und navigation_array (für das Menü) noch nicht auf Packagist stehen, holt Composer sie direkt
-von GitHub:
+fluid, navigation_array (Menü) und klxm_meta (Alternativtexte) kommen von Packagist, YForm 6 direkt von GitHub:
 
 ```bash
 composer config repositories.yform '{"type": "vcs", "url": "https://github.com/yakamara/yform", "no-api": true}'
-composer config repositories.navigation_array '{"type": "vcs", "url": "https://github.com/KLXM/navigation_array", "no-api": true}'
-composer config repositories.fluid '{"type": "vcs", "url": "https://github.com/KLXM/fluid", "no-api": true}'
-composer require yakamara/yform:6.x-dev@dev klxm/fluid:*@dev
+composer require yakamara/yform:6.x-dev@dev klxm/fluid:^1.0@beta
 
 php bin/console migrate
 ```
@@ -226,8 +223,7 @@ Website gibt es das AddOn [image_editor](https://github.com/KLXM/image_editor) (
 Installationsskript nimmt es mit):
 
 ```bash
-composer config repositories.image_editor '{"type": "vcs", "url": "https://github.com/KLXM/image_editor", "no-api": true}'
-composer require klxm/image_editor:*@dev && php bin/console migrate
+composer require klxm/image_editor:^1.0@beta && php bin/console migrate
 ```
 
 Danach entweder auf der Website „Erste Schritte“ nutzen oder in der Konsole:

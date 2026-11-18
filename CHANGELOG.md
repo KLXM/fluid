@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.0.0 – in Arbeit
+## 1.0.0-beta.1 – 2026-11-18
 
 Erste Fassung für REDAXO 6 (`redaxo/core` 6.x, YForm 6).
 
