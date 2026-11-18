@@ -5,6 +5,7 @@
  */
 import { t } from './_i18n.js';
 import { layerBox } from './_shadow.js';
+import { icon } from './_icons.js';
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
@@ -80,8 +81,14 @@ export function openLinkPicker(opts = {}) {
   let picked = null;
   const render = () => {
     const s = q.value.trim().toLowerCase();
-    const items = list().filter((a) => !s || a.name.toLowerCase().includes(s) || a.path.toLowerCase().includes(s)).slice(0, 40);
-    box.innerHTML = items.map((a) => `<button type="button" role="option" class="lp__item" data-id="${a.id}"><span class="lp__txt"><span class="lp__label">${esc(a.name)}</span><span class="lp__meta">${esc(a.path)}</span></span>${a.online ? '' : `<span class="lp__badge lp__badge--draft">${esc(t('offline'))}</span>`}</button>`).join('');
+    // ohne Suche: Strukturbaum (eingerückt, Kategorien mit Ordner); mit Suche: Treffer mit Pfad
+    const tree = !s;
+    const items = list().filter((a) => tree || a.name.toLowerCase().includes(s) || a.path.toLowerCase().includes(s)).slice(0, tree ? 500 : 60);
+    box.classList.toggle('lp__list--tree', tree);
+    box.innerHTML = items.map((a) => `<button type="button" role="option" class="lp__item${a.category ? ' lp__item--cat' : ''}" data-id="${a.id}" data-depth="${Math.min(a.depth ?? 0, 6)}">`
+      + `${icon(a.category ? 'folder' : 'page', 'rte-icon lp__ico')}<span class="lp__txt"><span class="lp__label">${esc(a.name)}</span>${tree ? '' : `<span class="lp__meta">${esc(a.path)}</span>`}</span>`
+      + `${a.online ? '' : `<span class="lp__badge lp__badge--draft">${esc(t('offline'))}</span>`}</button>`).join('')
+      || `<p class="lp__empty">${esc(t('Keine Seite gefunden.'))}</p>`;
   };
   render();
   return new Promise((resolve) => {

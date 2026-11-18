@@ -12,28 +12,33 @@ use Redaxo\Core\Language\Language;
  */
 final class Links
 {
-    /** @return list<array{id: int, name: string, path: string, url: string, online: bool}> */
+    /**
+     * Artikel in der Reihenfolge des Strukturbaums: depth = Einrückung, category = Startartikel einer Kategorie.
+     *
+     * @return list<array{id: int, name: string, path: string, url: string, online: bool, depth: int, category: bool}>
+     */
     public static function all(?int $languageId = null): array
     {
         $languageId ??= Language::getCurrentId();
         $out = [];
-        $add = static function (Article $a, string $path) use (&$out): void {
-            $out[] = ['id' => $a->id, 'name' => $a->name, 'path' => $path, 'url' => $a->getUrl(), 'online' => $a->isOnline()];
+        $add = static function (Article $a, string $path, int $depth, bool $category) use (&$out): void {
+            $out[] = ['id' => $a->id, 'name' => $a->name, 'path' => $path, 'url' => $a->getUrl(), 'online' => $a->isOnline(), 'depth' => $depth, 'category' => $category];
         };
-        $walk = static function (array $cats, string $path) use (&$walk, $add): void {
+        $walk = static function (array $cats, string $path, int $depth) use (&$walk, $add): void {
             foreach ($cats as $c) {
                 /** @var Category $c */
                 $p = '' === $path ? $c->name : $path . ' › ' . $c->name;
                 foreach ($c->getArticles() as $a) {
-                    $add($a, $a->isStartArticle() ? $p : $p . ' › ' . $a->name);
+                    $start = $a->isStartArticle();
+                    $add($a, $start ? $p : $p . ' › ' . $a->name, $start ? $depth : $depth + 1, $start);
                 }
-                $walk($c->getChildren(), $p);
+                $walk($c->getChildren(), $p, $depth + 1);
             }
         };
         foreach (Article::getRootArticles(false, $languageId) as $a) {
-            $add($a, 'Hauptebene');
+            $add($a, 'Hauptebene', 0, false);
         }
-        $walk(Category::getRootCategories(false, $languageId), '');
+        $walk(Category::getRootCategories(false, $languageId), '', 0);
 
         return $out;
     }

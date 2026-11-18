@@ -365,3 +365,19 @@ html.adm-ui[data-theme=dark] .rte-area mark{background:#6B5A12;color:#FFF7D6}
 .lp__label{overflow:hidden;font-weight:600;text-overflow:ellipsis;white-space:nowrap}
 .lp__meta{overflow:hidden;color:var(--rte-muted);font-size:12.5px;text-overflow:ellipsis;white-space:nowrap}
 .lp__badge{flex:none;padding:1px 8px;border-radius:999px;background:var(--adm-warn-bg,#fff4dc);color:var(--adm-warn,#8a5300);font-size:12px;font-weight:600}
+/* Linkauswahl als Baum: Einrückung je Ebene, Kategorien fett mit Ordner, Führungslinie links */
+.lp__ico{flex:none;width:16px;height:16px;color:var(--rte-muted)}
+.lp__item--cat .lp__ico{color:var(--rte-accent)}
+.lp__list--tree .lp__item{min-height:36px;padding-block:4px}
+.lp__list--tree .lp__item--cat .lp__label{font-weight:700}
+.lp__list--tree .lp__item:not(.lp__item--cat) .lp__label{font-weight:400}
+.lp__list--tree .lp__item[data-depth="1"]{padding-left:calc(10px + 1 * 20px)}
+.lp__list--tree .lp__item[data-depth="2"]{padding-left:calc(10px + 2 * 20px)}
+.lp__list--tree .lp__item[data-depth="3"]{padding-left:calc(10px + 3 * 20px)}
+.lp__list--tree .lp__item[data-depth="4"]{padding-left:calc(10px + 4 * 20px)}
+.lp__list--tree .lp__item[data-depth="5"]{padding-left:calc(10px + 5 * 20px)}
+.lp__list--tree .lp__item[data-depth="6"]{padding-left:calc(10px + 6 * 20px)}
+.lp__list--tree .lp__item[data-depth]:not([data-depth="0"]){background-image:linear-gradient(var(--rte-border-soft),var(--rte-border-soft));background-repeat:no-repeat;background-size:1px 100%;background-position:calc(var(--lp-guide,18px)) 0}
+.lp__list--tree .lp__item[data-depth="2"]{--lp-guide:38px}.lp__list--tree .lp__item[data-depth="3"]{--lp-guide:58px}.lp__list--tree .lp__item[data-depth="4"]{--lp-guide:78px}.lp__list--tree .lp__item[data-depth="5"]{--lp-guide:98px}.lp__list--tree .lp__item[data-depth="6"]{--lp-guide:118px}
+.lp__list--tree .lp__item:hover{background-color:var(--rte-hover)}
+.lp__empty{margin:0;padding:12px;color:var(--rte-muted)}
