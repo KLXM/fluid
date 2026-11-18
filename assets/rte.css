@@ -299,3 +299,59 @@ html.adm-ui[data-theme=dark] .rte-area mark{background:#6B5A12;color:#FFF7D6}
 
 /* Schwebende Leiste beim Bearbeiten auf der Website: immer fixiert (Reihenfolge der Studio-Regeln oben) */
 .cms-inline-bar.rte-bar{position:fixed;z-index:2147483050}
+
+/* ---------------------------------------------------------------------------------------------------------------
+ * Aussehen wie der Editor des AddOns tiptap (gleiche Leiste, Knöpfe, Menüs, Symbole) – Bedienung und Inhalte bleiben.
+ * Werte: REDAXO-Tokens wie bei tiptap, auf der Website die Werte dahinter.
+ * --------------------------------------------------------------------------------------------------------------- */
+:root, :host {
+  --rte-bg: var(--rex-color-surface, #fff);
+  --rte-surface: var(--rex-color-surface-subtle, #f6f7f9);
+  --rte-raised: var(--rex-color-surface-raised, #fff);
+  --rte-text: var(--rex-color-text, #1f2933);
+  --rte-muted: var(--rex-color-text-muted, #5f6b7a);
+  --rte-border: var(--rex-color-border-input, #c5ccd6);
+  --rte-border-soft: var(--rex-color-border, #e1e5eb);
+  --rte-accent: var(--rex-color-accent, #2f6fd6);
+  --rte-accent-subtle: var(--rex-color-accent-subtle, #e6eefb);
+  --rte-hover: var(--rex-color-control-hover, #eef1f5);
+  --rte-focus: var(--rex-color-focus, #2f6fd6);
+  --rte-radius: var(--rex-radius, 6px);
+  --rte-shadow: var(--rex-shadow-md, 0 6px 24px rgb(0 0 0 / .12));
+}
+
+/* Feld: Rahmen, Leiste oben, Inhalt */
+.rte{border:1px solid var(--rte-border);border-radius:var(--rte-radius);background:var(--rte-bg);overflow:visible}
+.rte:focus-within{border-color:var(--rte-accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--rte-accent) 18%,transparent)}
+.rte-area:focus{border:0;box-shadow:none}
+.rte-bar{gap:4px;padding:6px;border-bottom:1px solid var(--rte-border-soft);border-radius:var(--rte-radius) var(--rte-radius) 0 0;background:var(--rte-surface)}
+
+/* Gruppen mit Trennstrich */
+.rte-group,.cms-inline-bar .rte-group{gap:2px;padding-right:4px;margin-right:0;border-right:1px solid var(--rte-border-soft)}
+.rte-group:last-child,.cms-inline-bar .rte-group:last-child{border-right:0;padding-right:0}
+
+/* Knöpfe: 32 px, ohne Hintergrund, aktiv hinterlegt */
+.rte-bar button,.cms-inline-bar button{display:inline-flex;align-items:center;justify-content:center;gap:2px;min-width:32px;min-height:32px;height:32px;padding:0 6px;border:1px solid transparent;border-radius:calc(var(--rte-radius) - 2px);background:transparent;color:var(--rte-text);font:500 13px/1 var(--adm-font);cursor:pointer}
+.rte-bar button:hover,.cms-inline-bar button:hover{background:var(--rte-hover)}
+.rte-bar button:focus-visible,.cms-inline-bar button:focus-visible{outline:2px solid var(--rte-focus);outline-offset:1px}
+.rte-bar button[aria-pressed=true],.cms-inline-bar button[aria-pressed=true],
+.rte-bar button[aria-expanded=true],.cms-inline-bar button[aria-expanded=true]{border-color:color-mix(in srgb,var(--rte-accent) 30%,transparent);background:var(--rte-accent-subtle);color:var(--rte-accent)}
+.rte-icon{display:block;flex:none;width:18px;height:18px}
+.rte-caret{width:14px;height:14px;opacity:.7}
+.rte-ico-a{display:inline-flex;padding-bottom:0}
+.rte-ico-a .rte-icon{position:relative}
+.rte-cbar{left:3px;right:3px;bottom:1px;height:3px}
+.rte-style-l{min-width:5.5em;font-weight:500;text-align:start}
+
+/* Schwebende Leiste auf der Website: hell wie die Bubble von tiptap */
+.cms-inline-bar{gap:4px;padding:4px;border:1px solid var(--rte-border-soft);border-radius:var(--rte-radius);background:var(--rte-raised);color:var(--rte-text);box-shadow:var(--rte-shadow);font:500 13px/1.2 var(--adm-font)}
+
+/* Menüs */
+.rte-menu{gap:0;min-width:200px;padding:4px;border:1px solid var(--rte-border-soft);border-radius:var(--rte-radius);background:var(--rte-raised);color:var(--rte-text);box-shadow:var(--rte-shadow);font:400 14px/1.3 var(--adm-font)}
+.rte-bar .rte-menu button,.cms-inline-bar .rte-menu button{display:grid;justify-content:stretch;height:auto;min-height:32px;padding:4px 8px;column-gap:8px;border:0;border-radius:calc(var(--rte-radius) - 2px);color:var(--rte-text);font:400 14px/1.3 var(--adm-font)}
+.rte-bar .rte-menu button:hover,.rte-bar .rte-menu button:focus-visible,.cms-inline-bar .rte-menu button:hover,.cms-inline-bar .rte-menu button:focus-visible{background:var(--rte-hover);box-shadow:none}
+.rte-menu [aria-checked=true]{font-weight:600}
+.rte-menu [aria-checked=true]::after{color:var(--rte-accent)}
+.rte-mi__i{display:inline-flex;min-width:18px;color:var(--rte-muted)}
+.rte-mi__i .rte-icon{width:16px;height:16px}
+.rte-menu__sep{margin:4px 4px;background:var(--rte-border-soft)}
