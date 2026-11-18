@@ -512,22 +512,24 @@ final class DemoCommand extends AbstractCommand
         $added = [];
         foreach (glob($dir . '/*') ?: [] as $file) {
             $name = basename($file);
-            if (\Redaxo\Core\MediaPool\Media::get($name)) {
+            if ($existing = \Redaxo\Core\MediaPool\Media::get($name)) {
+                // vorhandene Demo-Bilder: fehlenden Alternativtext nachtragen (klxm_meta)
+                $alt = self::MEDIA_TEXTS[$name][1] ?? '';
+                if ('' !== $alt) {
+                    foreach (\Redaxo\Core\Language\Language::getAllIds() as $languageId) {
+                        if (null === \Klxm\Meta\Alt::of($name, $languageId) && !\Klxm\Meta\Alt::isDecorative($existing)) {
+                            \Redaxo\Core\MediaPool\MediaHandler::edit($name, $languageId, [], ['alt' => $alt]);
+                        }
+                    }
+                }
                 continue;
             }
             $tmp = self::tmpFile($name);
             copy($file, $tmp);
             [$title, $alt] = self::MEDIA_TEXTS[$name] ?? [pathinfo($name, PATHINFO_FILENAME), ''];
-            $res = \Redaxo\Core\MediaPool\MediaHandler::add(['category_id' => null, 'title' => $title, 'file' => new \Symfony\Component\HttpFoundation\File\File($tmp)], subindexing: false);
+            // Alternativtext (klxm_meta, je Sprache – alle Sprachen bekommen den Text) für Screenreader und img()/picture()
+            $res = \Redaxo\Core\MediaPool\MediaHandler::add(['category_id' => null, 'title' => $title, 'file' => new \Symfony\Component\HttpFoundation\File\File($tmp)], '' !== $alt ? ['alt' => $alt] : [], subindexing: false);
             @unlink($tmp);
-            // Alt-Text (Spalte meta_alt des Cores, je Sprache) – für Screenreader und für img()/picture()
-            if ('' !== $alt) {
-                try {
-                    \Redaxo\Core\Database\Sql::factory()->setQuery('UPDATE rex_media_translation t JOIN rex_media m ON m.id = t.media_id SET t.meta_alt = ? WHERE m.filename = ?', [$alt, $res->fileName]);
-                } catch (\Throwable) {
-                    // ohne Spalte meta_alt: nur Titel
-                }
-            }
             \Redaxo\Core\MediaPool\Media::clearInstances($name);   // „nicht vorhanden“ aus der Prüfung oben vergessen
             $added[] = $name;
         }

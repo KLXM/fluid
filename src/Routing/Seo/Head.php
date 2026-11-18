@@ -2,6 +2,7 @@
 
 namespace Klxm\Fluid\Routing\Seo;
 
+use Klxm\Meta\Alt;
 use Klxm\Fluid\Routing\ExtensionPoint\ArticleMeta;
 use Klxm\Fluid\Routing\ExtensionPoint\PageMetaResolved;
 use Klxm\Fluid\Routing\Router;
@@ -260,7 +261,7 @@ final class Head
             'type' => $m->imageType ?? $media?->type,
             'width' => $m->imageWidth ?? (null === $m->imageType ? $media?->width : null),
             'height' => $m->imageHeight ?? (null === $m->imageType ? $media?->height : null),
-            'alt' => $m->imageAlt ?? (null !== $media && '' !== ($alt = trim((string) ($media->getValue('meta_alt') ?? $media->getValue('med_alt') ?? ''))) ? $alt : null),
+            'alt' => $m->imageAlt ?? (Alt::of($media) ?: null),
         ];
     }
 

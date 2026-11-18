@@ -2,6 +2,7 @@
 
 namespace Klxm\Fluid\Seo;
 
+use Klxm\Meta\Alt;
 use Klxm\Fluid\Routing\Router;
 use Klxm\Fluid\Routing\ExtensionPoint\PageMetaResolved;
 use Klxm\Fluid\Routing\Seo\PageMeta;
@@ -26,7 +27,7 @@ final class Head
         // Netzwerke: 1200 × 630 als JPEG um den Fokuspunkt (LinkedIn kann kein WebP)
         if (null !== $m->image && '' !== $m->image && !preg_match('~^https?://~i', $m->image) && class_exists(\Klxm\ImageEditor\ImageEditor::class)
             && ($media = Media::get($m->image)) && null !== ($share = \Klxm\ImageEditor\ImageEditor::shareUrl($media->fileName))) {
-            $m->imageAlt ??= '' !== ($alt = trim((string) ($media->getValue('meta_alt') ?? ''))) ? $alt : null;
+            $m->imageAlt ??= Alt::of($media) ?: null;
             $m->image = Router::absolute($share);
             $m->imageType = 'image/jpeg';
             $m->imageWidth = 1200;

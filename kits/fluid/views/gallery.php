@@ -32,7 +32,7 @@ $r = 'r-' . str_replace(':', '-', $ratio);
     <?php foreach ($items as $n => $it):
         $pic = img($it['file'], $sizes, 'grid' === $layout ? ['ratio' => $ratio] : []);
         $cap = !empty($d['captions']) ? $it['caption'] : '';
-        $alt = (string) (\Redaxo\Core\MediaPool\Media::get($it['file'])?->getValue('meta_alt') ?? '');
+        $alt = \Klxm\Meta\Alt::attribute($it['file']);
         $cls = 'cms-gallery__link' . ('grid' === $layout ? ' ' . $r : '');
     ?>
     <li class="cms-gallery__item<?= 'justified' === $layout ? ' ' . fluid_aspect_class($it['file']) : '' ?>">
