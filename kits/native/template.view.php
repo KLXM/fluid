@@ -1,6 +1,7 @@
 <?php
 /*
- * Seitenrahmen des Kits „NativeCSS“: Topbar mit Navigation (dialog als Off-Canvas, Untermenüs mit details),
+ * Seitenrahmen des Kits „NativeCSS“: Topbar mit Navigation (dialog als Off-Canvas, Untermenüs mit details) in EINER Zeile –
+ * passt das Menü nicht neben Marke und Werkzeuge, erscheint die Menü-Schaltfläche (ncss/js/nav.js misst, ohne Skript 64rem),
  * Footer im Raster – Komponenten von NativeCSS. Gleiche Daten und Funktionen wie der Rahmen von fluid
  * (kits/fluid/src/FluidTemplate.view.php): Menü, Sprachen, Suche, Button im Kopf, Hinweisleiste, Blog, Editor.
  *
@@ -158,6 +159,7 @@ return static function (ArticleContent $content): void {
         <button type="button" class="ncss-dialog-close" command="close" commandfor="nv-menu" aria-label="<?= e(lt('Menü schließen')) ?>"><span class="ncss-icon ncss-icon-close" aria-hidden="true"></span></button>
         <ul class="ncss-nav-list" data-fluid-nav="main"><?= implode('', array_map($navItem, $menu)) ?></ul>
         <?= $langList('nv-nav__langs') ?>
+        <?php if ($cta): // Handlungsaufruf: in der Leiste, solange das Menü in die Zeile passt, sonst hier im Menü (wie fluid: mnav__cta) ?><a class="ncss-btn ncss-btn--primary nv-nav__cta" <?= fluid_link_attrs($cta['link']) ?>><?= e($cta['label']) ?></a><?php endif; ?>
         <?= $prefs ? $prefsEl('nv-nav__prefs') : '' ?>
       </dialog>
     </nav>
@@ -166,7 +168,7 @@ return static function (ArticleContent $content): void {
       <?= $prefs ? $prefsEl($menu ? 'nv-prefs' : 'nv-prefs nv-prefs--always') : '' ?>
       <?= $langList('nv-langs', true) ?>
       <?php if ('' !== $searchPage): ?><a class="nv-icon-link" href="<?= e(link_href($searchPage)) ?>" title="<?= e(lt('Suche')) ?>"><?= icon('magnifying-glass') ?><span class="sr-only"><?= e(lt('Suche')) ?></span></a><?php endif; ?>
-      <?php if ($cta): ?><a class="ncss-btn ncss-btn--primary nv-cta" <?= fluid_link_attrs($cta['link']) ?>><?= e($cta['label']) ?></a><?php endif; ?>
+      <?php if ($cta): ?><a class="ncss-btn ncss-btn--primary nv-head-cta" <?= fluid_link_attrs($cta['link']) ?>><?= e($cta['label']) ?></a><?php endif; ?>
     </div>
   </div>
 </header>

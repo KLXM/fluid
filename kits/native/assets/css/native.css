@@ -62,37 +62,67 @@
   html.is-dark .nv-brand__logo--light { display: none; }
   html.is-dark .nv-brand__logo.nv-brand__logo--dark { display: block; }
   .nv-nav { margin-inline-start: auto; min-inline-size: 0; }
-  /* breite Fenster: eine Zeile – Menü rechts neben der Marke, Werkzeuge daneben */
-  @media (min-width: 64rem) {
-    /* Menü bricht bei wenig Platz in sich um (z. B. bei offener Seitenleiste des Editors), Werkzeuge bleiben rechts */
-    .nv-topbar .ncss-topbar-inner { flex-wrap: nowrap; }
-    .nv-nav { flex: 1 1 auto; display: flex; justify-content: flex-end; }
-    .nv-nav .ncss-nav-list { flex-wrap: wrap; justify-content: flex-end; row-gap: 0; column-gap: 0; }
-    .nv-nav .ncss-nav-item > a, .nv-nav .ncss-nav-item summary { padding-inline: .55rem; }
-    .nv-topbar .ncss-topbar-actions { flex: 0 0 auto; }
-  }
   .nv-nav .ncss-nav-list a[aria-current="page"], .nv-nav [data-active] > summary, .nv-nav a[data-active] { color: var(--f-link, var(--f-a)); }
-  .nv-nav__langs, .nv-nav__prefs { display: none; }
+  .nv-nav__langs, .nv-nav__prefs, .nv-nav__cta { display: none; }
   .nv-topbar .ncss-topbar-actions { display: flex; align-items: center; gap: var(--f-s-s); }
   .nv-icon-link { display: inline-grid; place-items: center; inline-size: 2.5rem; block-size: 2.5rem; border-radius: var(--ncss-radius-full, 999px); color: var(--f-ink); }
   .nv-icon-link:hover { background: var(--f-surface); }
   .nv-icon-link .ico { inline-size: 1.25rem; block-size: 1.25rem; }
-  /* Off-Canvas (schmale Fenster): Sprachen unten im Panel statt in der Leiste */
-  @media (max-width: 63.99rem) {
+  /* Kopfleiste immer EINE Zeile. Ob das Menü in die Zeile passt, entscheidet NativeCSS (ncss/js/nav.js misst Marke, Menü und
+     Werkzeuge per ResizeObserver und setzt data-ncss-nav-auto="inline|compact" – kein fester Breakpoint, das Menü bricht nie
+     um, Hysterese gegen Hin-und-her). Ohne Skript gilt die Schwelle 64rem. Deshalb jede Regel zweimal: Zustand von nav.js und
+     Media Query (nur solange nav.js keinen Zustand gesetzt hat) – identisch halten.
+     Werkzeuge schrumpfen (Sprachen, Darstellung, Handlungsaufruf ins Menü) NUR im Kompakt-Zustand: sonst schüfe das Schrumpfen
+     Platz, das Menü passte wieder, und volle Leiste und Menü-Schaltfläche wechselten je nach Breite hin und her. */
+  /* Zeile – Menü rechts neben der Marke, Werkzeuge daneben */
+  .nv-topbar:has(.nv-nav[data-ncss-nav-auto="inline"]) {
+    .ncss-topbar-inner { flex-wrap: nowrap; }
+    .nv-nav { flex: 1 1 auto; display: flex; justify-content: flex-end; }
+    .nv-nav .ncss-nav-list { justify-content: flex-end; column-gap: 0; }
+    .nv-nav .ncss-nav-item > a, .nv-nav .ncss-nav-item summary { padding-inline: .5rem; }
+    .ncss-topbar-actions { flex: 0 0 auto; }
+  }
+  @media (min-width: 64rem) {
+    .nv-topbar:not(:has(.nv-nav[data-ncss-nav-auto])) {
+      .ncss-topbar-inner { flex-wrap: nowrap; }
+      .nv-nav { flex: 1 1 auto; display: flex; justify-content: flex-end; }
+      .nv-nav .ncss-nav-list { justify-content: flex-end; column-gap: 0; }
+      .nv-nav .ncss-nav-item > a, .nv-nav .ncss-nav-item summary { padding-inline: .5rem; }
+      .ncss-topbar-actions { flex: 0 0 auto; }
+    }
+  }
+  /* Menü-Schaltfläche (Off-Canvas): Sprachen, Darstellung und Handlungsaufruf unten im Panel statt in der Leiste */
+  .nv-topbar:has(.nv-nav[data-ncss-nav-auto="compact"]) {
     /* eine Zeile auch bei 360 px: Marke darf schrumpfen (Logo eingepasst, Name gekürzt), Werkzeuge und Menü bleiben */
-    .nv-topbar .ncss-topbar-inner { flex-wrap: nowrap; }
+    .ncss-topbar-inner { flex-wrap: nowrap; }
     .nv-brand { flex: 0 1 auto; min-inline-size: 0; }
     .nv-brand__logo { min-inline-size: 0; }
     .nv-brand__img { max-inline-size: 100%; }
     .nv-brand__name { min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .nv-topbar .ncss-topbar-actions { margin-inline-start: auto; }
+    .ncss-topbar-actions { margin-inline-start: auto; }
     .nv-nav { order: 3; flex: 0 0 auto; margin-inline-start: 0; }
-    .nv-langs { display: none; }
+    .nv-langs, .nv-head-cta { display: none; }
     .nv-nav__langs { display: flex; margin-block-start: var(--f-s-l); }
-    /* Darstellung: schmal im Menü (die Kopfleiste bleibt einzeilig), breit in der Leiste */
+    .nv-nav__cta { display: flex; justify-content: center; margin-block-start: var(--f-s-l); }
+    /* Darstellung: im Menü (die Kopfleiste bleibt einzeilig), in der Leiste nur in der Zeilen-Ansicht */
     .nv-prefs:not(.nv-prefs--always) { display: none; }
     .nv-nav__prefs:defined { display: inline-block; margin-block-start: var(--f-s-m); }
-    .nv-cta { display: none; }
+  }
+  @media (max-width: 63.99rem) {
+    .nv-topbar:not(:has(.nv-nav[data-ncss-nav-auto])) {
+      .ncss-topbar-inner { flex-wrap: nowrap; }
+      .nv-brand { flex: 0 1 auto; min-inline-size: 0; }
+      .nv-brand__logo { min-inline-size: 0; }
+      .nv-brand__img { max-inline-size: 100%; }
+      .nv-brand__name { min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .ncss-topbar-actions { margin-inline-start: auto; }
+      .nv-nav { order: 3; flex: 0 0 auto; margin-inline-start: 0; }
+      .nv-langs, .nv-head-cta { display: none; }
+      .nv-nav__langs { display: flex; margin-block-start: var(--f-s-l); }
+      .nv-nav__cta { display: flex; justify-content: center; margin-block-start: var(--f-s-l); }
+      .nv-prefs:not(.nv-prefs--always) { display: none; }
+      .nv-nav__prefs:defined { display: inline-block; margin-block-start: var(--f-s-m); }
+    }
   }
 
   /* ------------------------------------------------------------------ Footer */
@@ -174,10 +204,12 @@
   .ncss-card--linked:hover .nv-more .ico { translate: .2em 0; }
   /* Text auf dem Bild */
   .nv-card--overlay { position: relative; overflow: clip; border: 0; color: #fff; }
-  .nv-card--overlay .ncss-card-media { position: absolute; inset: 0; }
+  /* NativeCSS gibt .ncss-card-media 16:9 – hier füllt das Bild die ganze Karte */
+  .nv-card--overlay .ncss-card-media { position: absolute; inset: 0; aspect-ratio: auto; block-size: 100%; }
   .nv-card--overlay .ncss-card-media .frame, .nv-card--overlay .ncss-card-media img { block-size: 100%; aspect-ratio: auto; object-fit: cover; }
-  .nv-card--overlay .ncss-card-media::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgb(0 0 0 / 70%), rgb(0 0 0 / 0%) 70%); }
-  .nv-card--overlay .ncss-card-body, .nv-card--overlay .ncss-card-footer { position: relative; margin-block-start: auto; }
+  .nv-card--overlay .ncss-card-media::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgb(0 0 0 / 78%), rgb(0 0 0 / 45%) 40%, rgb(0 0 0 / 0%) 75%); }
+  /* Text unten auf dem dunklen Verlauf */
+  .nv-card--overlay .ncss-card-body, .nv-card--overlay .ncss-card-footer { position: relative; flex: 0 0 auto; margin-block-start: auto; }
   .nv-card--overlay { display: flex; flex-direction: column; min-block-size: 22rem; }
   .nv-card--overlay .nv-card__title, .nv-card--overlay .nv-card__text, .nv-card--overlay .nv-card__eyebrow, .nv-card--overlay .nv-more { color: #fff; }
 

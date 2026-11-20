@@ -1,5 +1,23 @@
 # Changelog
 
+## Unveröffentlicht
+
+### Kit „NativeCSS“: Kopfleiste immer einzeilig
+
+- **NativeCSS 1.2.2:** `ncss/js/nav.js` misst jetzt per ResizeObserver, ob Menü, Marke und Werkzeuge in **eine** Zeile
+  passen, und setzt `data-ncss-nav-auto="inline|compact"` – kein fester Breakpoint mehr, das Menü bricht nie in sich um,
+  eine Hysterese von 24 px verhindert Hin-und-her-Springen. Ohne JavaScript gilt weiter die Schwelle 64rem. Die
+  Menü-Schaltfläche meldet `aria-controls`/`aria-expanded`, der Fokus wandert beim Umschalten mit. Vorher brach das Menü
+  bei 1024–1440 px (langes Menü, Handlungsaufruf, offene Seitenleiste des Editors) in zwei Zeilen um.
+- `native.css`: Regeln für Zeile und Menü-Schaltfläche je zweimal – über den Zustand von `nav.js` und, solange es keinen
+  gesetzt hat, über die Media Query. Sprachen, Darstellungs-Knopf und Handlungsaufruf wandern **nur im Kompakt-Zustand**
+  ins Menü; würden sie vorher verschwinden, passte das Menü wieder in die Zeile und die Leiste wechselte hin und her.
+- **Handlungsaufruf im Menü** (`.nv-nav__cta`, wie `mnav__cta` im Kit fluid), sobald die Menü-Schaltfläche erscheint – vorher
+  fehlte er schmal ganz. Der Knopf in der Leiste heißt jetzt `.nv-head-cta`; die alte Klasse `.nv-cta` kollidierte mit dem
+  Block „Handlungsaufruf“ (gleicher Name, die Regel zum Ausblenden griff deshalb nie).
+- Karten „Text auf dem Bild“: NativeCSS gibt `.ncss-card-media` ein Seitenverhältnis von 16:9 – das Bild füllte nur den
+  oberen Teil der Karte. Jetzt füllt es die ganze Karte, der Text steht unten auf einem kräftigeren Verlauf.
+
 ## 1.0.0-beta.2 – 2026-11-20
 
 ### Kit „NativeCSS“: neue Komponenten von NativeCSS – wenige, klar benannte Funktionen

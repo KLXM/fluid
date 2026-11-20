@@ -241,6 +241,14 @@ Kit „NativeCSS“; `assets/kits/fluid/css/prefs.css` liefert die Tokens dafür
 Schrift, Bewegung, Schriftgröße, Textabstände, Links, Fokus), `Design::head(true)` die dunklen Werte auch bei
 Standard-Design. Platz: in den Werkzeugen der Kopfleiste, sobald die Navigation dort steht, sonst im Menü.
 
+**Kopfleiste.** Marke, Menü und Werkzeuge stehen immer in einer Zeile. Ob das Menü hineinpasst, misst `ncss/js/nav.js`
+(NativeCSS ab 1.2) und setzt an `.nv-nav` `data-ncss-nav-auto="inline"` bzw. `"compact"` (Hysterese 24 px, Ereignis
+`ncss-nav-change`); ohne JavaScript gilt die Media Query 64rem. `native.css` schreibt jede Regel deshalb zweimal:
+`.nv-topbar:has(.nv-nav[data-ncss-nav-auto="…"])` und in der Media Query `.nv-topbar:not(:has(.nv-nav[data-ncss-nav-auto]))`.
+Sprachen (`.nv-langs` → `.nv-nav__langs`), Darstellungs-Knopf und Handlungsaufruf (`.nv-head-cta` → `.nv-nav__cta`) wandern
+nur im Kompakt-Zustand ins Menü – wer eigene Werkzeuge ergänzt, blendet sie ebenfalls erst dort aus, sonst schafft das
+Ausblenden Platz, das Menü passt wieder, und die Leiste springt hin und her.
+
 #### NativeCSS aktualisieren
 
 ```bash
