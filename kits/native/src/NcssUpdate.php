@@ -44,6 +44,14 @@ final class NcssUpdate
         'components/video-bg.css',       // Einstieg „Vollflächig“ mit Hintergrundvideo (Schalter Pausieren/Abspielen)
         'components/preferences.css',    // Website → „Darstellungs-Knopf für Besucher anzeigen“ (<ncss-preferences>)
         'components/morph.css',          // Text + Bild, Darstellung „Morphing beim Scrollen“ (nur Kit NativeCSS)
+        'helpers/scroll-shadow.css',     // Tabellen in Fließtext, Datenliste, Pakete (@table)
+        'components/table-sort.css',     // „Spalten sortierbar“ (@tablesort)
+        'components/filter.css',         // Karten/Datenliste „Filter nach Kategorie“ (@filter)
+        'components/timeline.css',       // Ablauf „Zeitleiste“
+        'components/testimonial.css',    // Zitat „Groß“ und „Raster“
+        'components/pricing.css',        // Pakete „Karten“
+        'components/leaders.css',        // Pakete „Preisliste (Speisekarte)“
+        'components/dropdown.css',       // Sprachwahl im Kopf ab drei Sprachen (@dropdown)
     ];
 
     /** Komponenten von NativeCSS, die fluid (noch) nicht verwendet – nicht im Manifest, die Dateien liegen trotzdem bereit */
@@ -61,6 +69,8 @@ final class NcssUpdate
         'components/countdown.css', 'components/back-to-top.css', 'components/app-shell.css',
         // <ncss-map>: fluid hat einen eigenen Karten-Block (MapLibre, Proxy, ohne Einwilligung) – vendor/maplibre wird nicht kopiert
         'components/map.css',
+        // 1.1.0 (Runde 2): ohne Gegenstück in fluid
+        'components/pill-group.css', 'components/toolbar.css', 'components/stepper.css', 'components/comments.css', 'components/sortable.css',
     ];
 
     /** Dateien aus dist/: CSS im Wurzelordner, components/, helpers/, js/ und fonts/ (Schriften der Darstellungs-Einstellungen mit Lizenz) */
