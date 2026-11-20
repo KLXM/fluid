@@ -27,7 +27,7 @@ use Redaxo\Core\MediaPool\Media;
 )]
 final class Video extends FluidBlock
 {
-    /** Darstellungen mit Video (die Felder für Video fehlen bei „Audio“) */
+    /** Darstellungen mit Video (die Felder für Video fehlen bei „Audio“); „morph“ ergänzt das Kit „NativeCSS“ (kit.php → blocks) */
     public const array VIDEO = ['wide', 'text', 'cinema'];
 
     #[Text('Dachzeile (optional)', maxLength: 60, width: 'half')]
@@ -47,7 +47,7 @@ final class Video extends FluidBlock
         types: ['mp4', 'm4v', 'webm', 'mov'],
         width: 'half',
         note: 'Datei aus dem Medienpool (MP4 oder WebM).',
-        variants: self::VIDEO,
+        variants: [...self::VIDEO, 'morph'],
     )]
     public ?Media $videoFile = null;
 
@@ -80,7 +80,7 @@ final class Video extends FluidBlock
         required: true,
         choices: ['16-9' => '16:9', '4-3' => '4:3', '21-9' => '21:9'],
         width: 'half',
-        variants: self::VIDEO,
+        variants: [...self::VIDEO, 'morph'],
     )]
     public string $ratio = '16-9';
 
@@ -106,6 +106,6 @@ final class Video extends FluidBlock
     #[Text('Bildunterschrift (optional)', maxLength: 200)]
     public string $caption = '';
 
-    #[RichText('Text daneben', variants: ['text'])]
+    #[RichText('Text daneben', variants: ['text', 'morph'])]
     public string $text = '';
 }

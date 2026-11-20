@@ -41,6 +41,29 @@ if ('audio' === $b->variant()):
 </div>
 <?php return; endif;
 
+// „Video mit Morphing beim Scrollen“ (nur dieses Kit): eigene Datei stumm in Schleife in .ncss-morph, Pause-Schalter und
+// Laden/Pausieren wie beim Hintergrundvideo (data-ncss-video-bg, js/video-bg.js: nie bei „Bewegung reduzieren“/„Daten sparen“).
+// Beim Bearbeiten und ohne eigene Datei: wie „Video mit Text daneben“.
+if ('morph' === $b->variant()) {
+    $mv = !empty($d['video_file']) ? media((string) $d['video_file']) : null;
+    $mv = $mv && str_starts_with((string) $mv['mime'], 'video/') ? $mv : null;
+    if ($mv && !is_editing()) {
+        \Klxm\Fluid\Kit::active()->markUsed('video', '@morph');
+        $mm = \Redaxo\Core\MediaManager\MediaManager::class;
+        $posterFile = (string) ($d['poster'] ?? '');
+        $posterUrl = '' !== $posterFile && \Redaxo\Core\MediaPool\Media::get($posterFile) ? $mm::getUrl('fluid_poster', $posterFile) : (\Klxm\Fluid\Media\Ffmpeg::available() ? $mm::getUrl('fluid_poster', (string) $mv['file']) : '');
+        echo '<div class="wrap nv-morph"><div class="ncss-morph ncss-morph--card"><div class="ncss-morph-stage">'
+            . '<div class="ncss-morph-media" data-ncss-video-bg><video muted loop playsinline preload="none" aria-hidden="true"' . ('' !== $posterUrl ? ' poster="' . e($posterUrl) . '"' : '') . '>'
+            . '<source data-src="' . e(media_url($mv)) . '" type="' . e((string) $mv['mime']) . '"></video></div>'
+            . '<div class="ncss-morph-content">' . fluid_head($b)
+            . ('' !== trim(strip_tags((string) $d['text'])) ? '<div class="prose">' . rich((string) $d['text']) . '</div>' : '')
+            . (trim((string) $d['caption']) !== '' ? '<p class="video__cap">' . fluid_title((string) $d['caption']) . '</p>' : '')
+            . '</div></div></div></div>';
+
+        return;
+    }
+}
+
 // Video: Ausgabe von fluid, eine eigene Videodatei bekommt den Player von NativeCSS
 $embed = fluid_video_embed((string) $d['video_url'], (string) $d['video_file'], (string) $d['poster'], (string) ($d['ratio'] ?: '16-9'), strip_emphasis(trim((string) $d['title'])),
     (array) ($d['tracks'] ?? []), !empty($d['cc_on']), !empty($d['transcript']));
@@ -49,7 +72,7 @@ $embed = (string) preg_replace('~<div class="vembed[^"]*">(<video\b.*?</video>)<
 if (str_contains($embed, '<ncss-video-player>')) {
     \Klxm\Fluid\Kit::active()->markUsed('video', '@player');
 }
-$v = in_array($b->variant(), ['wide', 'text', 'cinema'], true) ? $b->variant() : 'wide';
+$v = 'morph' === $b->variant() ? 'text' : (in_array($b->variant(), ['wide', 'text', 'cinema'], true) ? $b->variant() : 'wide');
 $fig = '<figure class="video">' . $embed
     . ((trim((string) $d['caption']) !== '' || is_editing()) ? '<figcaption class="video__cap"' . $b->edit('caption') . '>' . fluid_title((string) $d['caption']) . '</figcaption>' : '')
     . '</figure>' . fluid_caption_hint($d);

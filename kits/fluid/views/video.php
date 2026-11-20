@@ -31,7 +31,8 @@ if ('audio' === $b->variant()):
   <?php elseif (is_editing()): ?><p class="empty-hint">Noch keine Audiodatei – in der Seitenleiste hinzufügen.</p><?php endif; ?>
 </div>
 <?php return; endif;
-$v = in_array($b->variant(), ['wide', 'text', 'cinema'], true) ? $b->variant() : 'wide';
+// „morph“ (Kit NativeCSS) nach einem Kit-Wechsel: Video mit Text daneben
+$v = 'morph' === $b->variant() ? 'text' : (in_array($b->variant(), ['wide', 'text', 'cinema'], true) ? $b->variant() : 'wide');
 $embed = fluid_video_embed((string) $d['video_url'], (string) $d['video_file'], (string) $d['poster'], (string) ($d['ratio'] ?: '16-9'), strip_emphasis(trim((string) $d['title'])),
     (array) ($d['tracks'] ?? []), !empty($d['cc_on']), !empty($d['transcript']));
 $fig = '<figure class="video">' . $embed
