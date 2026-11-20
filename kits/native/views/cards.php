@@ -21,6 +21,9 @@ $min = ['s' => '14rem', 'm' => '18rem', 'l' => '24rem'][$d['size'] ?? 'm'] ?? '1
 <div class="wrap">
   <?= fluid_head($b) ?>
   <?php if ($items): ?>
+  <?php // Filter nach Kategorie (fluid_filter(): CSS-Filter mit Optionsfeldern, js/filter.js für die Ansage der Trefferzahl)
+  $flt = !empty($d['filter']) && 'reel' !== $v ? fluid_filter($b, array_map(static fn ($it) => (string) ($it['category'] ?? ''), $items)) : ['bar' => '', 'item' => []];
+  if ('' !== $flt['bar']): ?><ncss-filter class="ncss-filter"><?= $flt['bar'] ?><?php endif; ?>
   <ul class="ncss-grid nv-cards nv-cards--<?= e($v) ?> <?= e(\Klxm\Fluid\InlineStyle::class('--ncss-grid-min:' . $min)) ?>" role="list">
     <?php foreach ($items as $i => $it):
         $link = trim((string) ($it['link'] ?? ''));
@@ -32,7 +35,7 @@ $min = ['s' => '14rem', 'm' => '18rem', 'l' => '24rem'][$d['size'] ?? 'm'] ?? '1
         $card .= $featured ? ' ncss-card--featured' : '';
         $badge = $featured ? (trim((string) ($it['badge'] ?? '')) ?: lt('Empfohlen')) : '';
     ?>
-    <li class="<?= 'horizontal' === $v ? 'ncss-card-container' : 'nv-cards__item' ?>" data-reveal><?= $b->targetEdit($link, (string) ($it['title'] ?? '')) ?>
+    <li class="<?= 'horizontal' === $v ? 'ncss-card-container' : 'nv-cards__item' ?><?= isset($flt['item'][$i]) ? ' ncss-filter-item' : '' ?>"<?= isset($flt['item'][$i]) ? ' data-category="' . e($flt['item'][$i]) . '"' : '' ?> data-reveal><?= $b->targetEdit($link, (string) ($it['title'] ?? '')) ?>
       <article class="<?= e($card) ?>">
         <?php if ('' !== $badge): ?><span class="ncss-card-badge"<?= $b->edit("items.$i.badge") ?>><?= e($badge) ?></span><?php endif; ?>
         <?php if ('' !== $pic): ?><div class="ncss-card-media"><?= $pic ?></div><?php endif; ?>
@@ -46,6 +49,7 @@ $min = ['s' => '14rem', 'm' => '18rem', 'l' => '24rem'][$d['size'] ?? 'm'] ?? '1
     </li>
     <?php endforeach; ?>
   </ul>
+  <?php if ('' !== $flt['bar']): ?></ncss-filter><?php endif; ?>
   <?php if ('' !== trim((string) ($d['more_label'] ?? '')) && '' !== trim((string) ($d['more_link'] ?? ''))): ?>
   <p class="more-row"><a class="ncss-btn ncss-btn--secondary" <?= fluid_link_attrs($d['more_link']) ?>><span<?= $b->edit('more_label') ?>><?= e($d['more_label']) ?></span></a></p>
   <?php endif; ?>

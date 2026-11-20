@@ -160,7 +160,8 @@
 
   /* ------------------------------------------------------------------ Karten */
   .nv-cards { list-style: none; margin: 0; padding: 0; gap: var(--f-s-l); }
-  .nv-cards__item, .nv-cards > .ncss-card-container { display: flex; }
+  /* gleich hohe Karten ohne display am Eintrag – sonst schlüge dieser Layer das Ausblenden des Filters (display: none) */
+  .nv-cards__item > .ncss-card, .nv-cards > .ncss-card-container > .ncss-card { block-size: 100%; }
   .nv-cards .ncss-card { inline-size: 100%; background: var(--f-bg); color: var(--f-text); }
   .nv-cards .ncss-card-media .frame { margin: 0; border-radius: 0; }
   .nv-cards .ncss-card-media img { border-radius: 0; }

@@ -1,0 +1,2 @@
+/* NativeCSS components/table-sort.css – nur auf Seiten, die es brauchen (kit.php → assets). Layer wie in ncss.css von NativeCSS. */
+@import url("../ncss/components/table-sort.css") layer(components);

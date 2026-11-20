@@ -48,6 +48,9 @@ return static function (ArticleContent $content): void {
     $prefsSettings = implode(' ', array_filter(['theme' => $design->get('dark') ? 'theme' : '', 'contrast', 'motion', 'text',
         'font' => (bool) setting('visitor_prefs_fonts', true) ? 'font' : '', 'spacing', 'links', 'focus']));
     $prefsEl = static fn (string $class): string => '<ncss-preferences class="' . $class . '" settings="' . e($prefsSettings) . '"></ncss-preferences>';
+    if (\count($langs) > 2) {
+        $kit->markUsed('@dropdown');
+    }
     $css = [$kit->assetUrl('css/ncss-base.css'), ...array_map($kit->assetUrl(...), $prefsCss), ...$kit->designCss(), ...$kit->blockCss(Editing::active()), ...$kit->kitCss()];
     $designClasses = $design->classes();
     $bg = (string) $design->get('background');
@@ -84,9 +87,21 @@ return static function (ArticleContent $content): void {
 
         return $h . '</ul></details></li>';
     };
-    $langList = static function (string $class) use ($langs): string {
+    $langList = static function (string $class, bool $menu = false) use ($langs): string {
         if (\count($langs) < 2) {
             return '';
+        }
+        // ab drei Sprachen in der Kopfleiste: Aufklapp-Liste (Dropdown von NativeCSS, Links bleiben Links, ohne Skript)
+        if ($menu && \count($langs) > 2) {
+            $cur = array_values(array_filter($langs, static fn ($l) => $l['current']))[0] ?? $langs[0];
+            $h = '<div class="ncss-dropdown ' . $class . '"><button type="button" class="ncss-btn ncss-dropdown-toggle nv-langmenu__btn" popovertarget="nv-langmenu" aria-label="'
+                . e(lt('Sprache')) . ': ' . e($cur['name']) . '"><span lang="' . e($cur['code']) . '">' . e(strtoupper($cur['code'])) . '</span></button>'
+                . '<div class="ncss-dropdown-menu ncss-dropdown-menu--end" id="nv-langmenu" popover><ul role="list">';
+            foreach ($langs as $l) {
+                $h .= '<li><a class="ncss-dropdown-item" href="' . e($l['url']) . '" hreflang="' . e($l['code']) . '" lang="' . e($l['code']) . '"' . ($l['current'] ? ' aria-current="true"' : '') . '>' . e($l['name']) . '</a></li>';
+            }
+
+            return $h . '</ul></div></div>';
         }
         $h = '<ul class="langswitch ' . $class . '" role="list" aria-label="' . e(lt('Sprache')) . '">';
         foreach ($langs as $l) {
@@ -149,7 +164,7 @@ return static function (ArticleContent $content): void {
     <?php endif; ?>
     <div class="ncss-topbar-actions">
       <?= $prefs ? $prefsEl($menu ? 'nv-prefs' : 'nv-prefs nv-prefs--always') : '' ?>
-      <?= $langList('nv-langs') ?>
+      <?= $langList('nv-langs', true) ?>
       <?php if ('' !== $searchPage): ?><a class="nv-icon-link" href="<?= e(link_href($searchPage)) ?>" title="<?= e(lt('Suche')) ?>"><?= icon('magnifying-glass') ?><span class="sr-only"><?= e(lt('Suche')) ?></span></a><?php endif; ?>
       <?php if ($cta): ?><a class="ncss-btn ncss-btn--primary nv-cta" <?= fluid_link_attrs($cta['link']) ?>><?= e($cta['label']) ?></a><?php endif; ?>
     </div>

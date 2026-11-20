@@ -92,6 +92,17 @@ return [
         'css/hx-compare.css' => ['hero:compare'], 'js/compare.js' => ['hero:compare'], 'js/scrolly.js' => [],
         'css/ncss-reveal.css' => ['@reveal'], 'ncss/js/reveal.js' => ['@reveal'],
         'css/ncss-morph.css' => ['media_text:@morph', 'video:@morph'],
+        // Runde 2: Tabellen, Filter, Zeitleiste, Kundenstimmen, Preistabelle, Preisliste, Sprachwahl ab drei Sprachen –
+        // die eigenen Dateien des Kits fluid dafür (css/tables.css, css/filter.css) hier nicht
+        'css/tables.css' => [], 'css/filter.css' => [],
+        'css/ncss-scroll-shadow.css' => ['@table'],
+        'css/ncss-table-sort.css' => ['@tablesort'], 'ncss/js/table-sort.js' => ['@tablesort'],
+        'css/ncss-filter.css' => ['@filter'], 'ncss/js/filter.js' => ['@filter'],
+        'css/ncss-timeline.css' => ['steps:@timeline'],
+        'css/ncss-testimonial.css' => ['quote:@testimonial'],
+        'css/ncss-pricing.css' => ['pricing:@plans'],
+        'css/ncss-leaders.css' => ['pricing:@leaders'],
+        'css/ncss-dropdown.css' => ['@dropdown'],
         'css/ncss-count-up.css' => ['stats:@count'], 'ncss/js/count-up.js' => ['stats:@count'],
         'css/ncss-marquee.css' => ['logos:@marquee'], 'ncss/js/marquee.js' => ['logos:@marquee'],
         'css/ncss-scrolly.css' => ['scrolly'], 'ncss/js/scrolly.js' => ['scrolly'],
