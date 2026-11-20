@@ -1,6 +1,6 @@
 # Changelog
 
-## Unveröffentlicht
+## 1.0.0-beta.2 – 2026-11-20
 
 ### Kit „NativeCSS“: neue Komponenten von NativeCSS – wenige, klar benannte Funktionen
 
