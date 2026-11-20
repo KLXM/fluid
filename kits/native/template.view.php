@@ -39,7 +39,9 @@ return static function (ArticleContent $content): void {
         $kit->markUsed('@post');
     }
     $fluidCss = Kit::get(Kit::DEFAULT)?->assetUrl('css/site.css') ?? '';
-    $css = [$kit->assetUrl('ncss/ncss.css'), ...$kit->designCss(), ...$kit->blockCss(Editing::active()), ...$kit->kitCss()];
+    // NativeCSS ohne die Komponenten, die nur einzelne Blöcke brauchen (css/ncss-base.css, erzeugt von fluid:kit:ncss-update) –
+    // die kommen über kit.php → assets mit dem Block (blockCss)
+    $css = [$kit->assetUrl('css/ncss-base.css'), ...$kit->designCss(), ...$kit->blockCss(Editing::active()), ...$kit->kitCss()];
     $designClasses = $design->classes();
     $bg = (string) $design->get('background');
     $rgb = sscanf($bg, '#%02x%02x%02x') ?: [255, 255, 255];

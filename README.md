@@ -63,6 +63,9 @@ fluid läuft auch ohne.
   Kontrastprüfung, live auf der Seite
 - **Kits:** zwei Gestaltungen zur Wahl – „Fluid“ und „NativeCSS“ (auf Basis von [NativeCSS](https://github.com/skerbis/nativecss)),
   umschaltbar unter Website → Kit; die Inhalte bleiben. Eigene Kits erben von „Fluid“ (Entwickler-Referenz).
+  Im Kit „NativeCSS“ zusätzlich: Video- und Audio-Player mit Kapiteln und Playlist, Kennzahlen, die hochzählen, und je
+  Abschnitt ein **Einblend-Effekt** (Keiner · Sanft einblenden · Von unten · Kreis · Vorhang) – NativeCSS lädt nur, was
+  die Seite braucht; aktualisieren mit `fluid:kit:ncss-update`.
 - **Mehrsprachig:** Sprachwahl in der Leiste, Inhalte einer Sprache übernehmen und übersetzen, Sprachwahl für Besucher
 - **Blog / News** mit Schlagworten, RSS und „Neuer Beitrag“ direkt in der Übersicht
 - **Formulare** zum Zusammenklicken – auch mehrstufig, speichern und/oder per E-Mail (im Stil der Website), mit Bestätigung (YForm);
@@ -70,7 +73,8 @@ fluid läuft auch ohne.
 - **Daten aus YForm** als Karten oder Liste mit eigener Adresse je Eintrag – und Blöcke auch in Datensätzen
 - **Demo zum Ausprobieren** (eigenes AddOn [`fluid_demo`](https://github.com/KLXM/fluid_demo), getrennt zu installieren): Besucher starten per Knopf eine
   Demo und bearbeiten die Website – gespeichert wird nichts
-- **Videos** mit automatischem Vorschaubild und Untertiteln, **Karten** ohne Einwilligung, **Suche** mit Tippfehler-Toleranz und Treffern beim Tippen – findet nur, was
+- **Videos und Audio** mit automatischem Vorschaubild, Untertiteln, Kapiteln und Transkript, **Vorher/Nachher** mit
+  Regler, **Karten** ohne Einwilligung, **Suche** mit Tippfehler-Toleranz und Treffern beim Tippen – findet nur, was
   öffentlich auf der Website steht
 
 **Für Besucher:** schnelle, barrierearme Seiten, Blättern, Filtern und Suchen ohne Seitenwechsel, schöne Adressen, Sitemap, strukturierte Daten, keine Cookies für Karten.
@@ -457,5 +461,5 @@ MIT – siehe [LICENSE](LICENSE).
 - Symbole: [Phosphor Icons](https://phosphoricons.com) (MIT) · Schriften: SIL Open Font License (Lizenzen in `assets/fonts/`)
 - Karten: [MapLibre GL JS](https://maplibre.org) (BSD-3), [OpenFreeMap](https://openfreemap.org), Daten © OpenStreetMap-Mitwirkende (ODbL)
 - Suche: [Loupe](https://github.com/loupe-php/loupe) (MIT)
-- Kit „NativeCSS“: [NativeCSS](https://github.com/skerbis/nativecss) von Thomas Skerbis / KLXM Crossmedia (MIT, unverändert in `kits/native/assets/ncss/`)
+- Kit „NativeCSS“: [NativeCSS](https://github.com/skerbis/nativecss) von Thomas Skerbis / KLXM Crossmedia (MIT, unverändert in `kits/native/assets/ncss/`, Stand in `VERSION.txt`, aktualisieren mit `fluid:kit:ncss-update`)
 - Das REDAXO-Logo in der Demo gehört dem REDAXO-Projekt; es kommt aus dem Core und wird nur in der Demo verwendet.

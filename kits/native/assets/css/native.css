@@ -138,7 +138,6 @@
   .nv-hero--bleed .ncss-hero-content--transparent .nv-hero__title, .nv-hero--bleed .ncss-hero-content--transparent .nv-hero__lead { color: #fff; }
   .nv-hero--bleed .ncss-hero-content--filled .nv-hero__title { color: var(--f-ink); }
   .nv-hero--medium .ncss-hero-media::after { background: linear-gradient(to top, rgb(0 0 0 / 45%), rgb(0 0 0 / 0%) 70%); }
-  .nv-hero__pause { margin-block-start: var(--f-s-m); }
 
   /* ------------------------------------------------------------------ Karten */
   .nv-cards { list-style: none; margin: 0; padding: 0; gap: var(--f-s-l); }
@@ -202,4 +201,30 @@
   .feat.card, .card { border-radius: var(--ncss-radius-lg); }
   .eyebrow { letter-spacing: .06em; }
   .more-row { margin-block-start: var(--f-s-xl); }
+
+  /* ------------------------------------------------------------------ Neue Komponenten von NativeCSS (bei Bedarf geladen) */
+  /* Logos „Laufband“ (.ncss-marquee): Pause-Schaltfläche klein und mittig */
+  .nv-logos__marquee { --ncss-marquee-gap: var(--f-s-2xl); }
+  .nv-logos__marquee .logos__item { list-style: none; }
+  .nv-logos__pause { margin: var(--f-s-s) 0 0; text-align: center; }
+  .nv-logos__toggle { font-size: var(--f-t-1); padding: .35em .9em; }
+  .nv-logos__toggle[aria-pressed="true"] { background: var(--f-surface); }
+
+  /* Kennzahlen: Zahl beim Hochzählen ohne Springen der Breite */
+  .stat__value .ncss-count-up { font-variant-numeric: tabular-nums; }
+
+  /* Video & Audio, Vorher/Nachher: Player bzw. Vergleich in voller Breite des Inhalts, Bildunterschrift darunter */
+  .nv-vplayer ncss-video-player, .nv-audio__fig, .nv-compare__fig { display: block; margin: 0; }
+  .nv-audio__fig { max-inline-size: 52rem; }
+  .nv-compare__fig ncss-compare { border-radius: var(--ncss-radius-lg); }
+  .nv-audio__fig .video__cap, .nv-compare__fig .video__cap { margin-block-start: var(--f-s-s); color: var(--f-muted); font-size: var(--f-t-1); }
+
+  /* Scrollytelling (<ncss-scrolly>): Bühne unter der festen Kopfleiste, Abschnitte als Karten im Design von fluid */
+  .nv-scrolly ncss-scrolly { --ncss-scrolly-top: 4.5rem; margin-block-start: var(--f-s-l); }
+  .nv-scrolly .ncss-scrolly-steps { margin: 0; padding-inline: 0; list-style: none; }
+  .nv-scrolly .ncss-scrolly-step > * { background: var(--f-bg); }
+  .nv-scrolly__title { margin: 0 0 var(--f-s-xs); color: var(--f-ink); font-size: var(--f-t-3); }
+
+  /* Einblend-Effekt aus, wenn im Design „Dezente Animationen“ ausgeschaltet ist (Vorschau im Style-Editor) */
+  html:not(.has-motion) .ncss-reveal { animation: none; clip-path: none; opacity: 1; translate: none; scale: none; }
 }

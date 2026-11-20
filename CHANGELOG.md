@@ -1,5 +1,36 @@
 # Changelog
 
+## Unveröffentlicht
+
+### Kit „NativeCSS“: neue Komponenten von NativeCSS – wenige, klar benannte Funktionen
+
+- **Video & Audio** (bisher „Video“, Modul `fluid.video` bleibt): neue Darstellung „Audio (Podcast, Musik)“ mit
+  Audiodateien (Titel, Sprecher, Kapitel je Datei; ab zwei Dateien Playlist), Cover und Transkript („Text zum Audio“).
+  Im Kit NativeCSS spielen eigene Videodateien im `<ncss-video-player>` (Kapitel in der Zeitleiste, Untertitel-Menü,
+  Tasten, Vollbild), Audio im `<ncss-audio-player>`; im Kit fluid der Player des Browsers. YouTube/Vimeo unverändert.
+  Die Felder für Video erscheinen bei „Audio“ nicht, „Text daneben“ nur bei „Video mit Text daneben“.
+- **Vorher/Nachher** (`fluid.compare`, Gruppe Medien): zwei Bilder mit Regler (echtes `input range`: Maus, Touch,
+  Tastatur, Screenreader), ohne JavaScript nebeneinander. Kit NativeCSS: `<ncss-compare>`; Kit fluid: `fluid_compare()`
+  (bisher leer) mit `css/hx-compare.css` und neuem `js/compare.js`.
+- **Einblend-Effekt** als Abschnitts-Option (nicht als Block): Keiner (Standard) · Sanft einblenden · Von unten · Kreis ·
+  Vorhang – `.ncss-reveal` von NativeCSS, einmal beim Hereinscrollen. Nur für Besucher, nicht beim ersten Block, aus mit
+  „Bewegung reduzieren“ und mit „Dezente Animationen“ aus im Design. Ein Kit bietet Effekte über `kit.php` → `'reveal'`
+  an; ohne Angabe (Kit fluid) fehlt die Option.
+- Kit NativeCSS, ohne neue Einstellungen: **Kennzahlen** zählen hoch (`.ncss-count-up`; nicht Jahreszahlen), **Logos
+  „Laufband“** mit `.ncss-marquee` und Schaltfläche „Laufband anhalten“, **Scrollytelling** mit `<ncss-scrolly>`,
+  **Hintergrundvideo** im Einstieg „Vollflächig“ mit `js/video-bg.js` von NativeCSS – lädt erst bei Bedarf, spielt nie
+  bei „Bewegung reduzieren“ oder „Daten sparen“, Schalter „Pause/Abspielen“ immer sichtbar (vorher fehlte er im Kit
+  NativeCSS, weil das Skript von fluid ihn nur in `.hero-bleed` suchte).
+- Barrierefreiheit beim Bearbeiten: Hinweis bei Vorher/Nachher-Bildern ohne Alternativtext (klxm_meta, „dekorativ“
+  zählt) und bei eigenen Videos ohne Untertitel; Hilfetexte zu Untertiteln, Transkript und Titeln.
+- **Nur laden, was die Seite braucht:** `css/ncss-base.css` (erzeugt) ersetzt `ncss/ncss.css` im Seitenrahmen – ohne die
+  großen neuen Komponenten; die kommen je Block über `kit.php` → `assets` (`css/ncss-*.css` mit `layer(…)`, Skripte aus
+  `ncss/js/`). Video-Player-Dateien nur bei eigener Videodatei, nicht bei YouTube.
+- **`fluid:kit:ncss-update`** (bzw. `php tools/ncss-update.php` im Repo): NativeCSS aus einer Arbeitskopie (`--from`,
+  optional `--ref`) oder von GitHub (`--tag`) übernehmen, mit Übersicht (neu/geändert/entfernt), `--dry-run`,
+  `VERSION.txt` mit Stand und Commit; erzeugt `css/ncss-base.css` neu. Eigene Dateien des Kits bleiben unberührt.
+- NativeCSS aktualisiert auf 15fe8fc (+ nicht committete Komponenten von feat/marija-integration, siehe VERSION.txt).
+
 ## 1.0.0-beta.1 – 2026-11-18
 
 Erste Fassung für REDAXO 6 (`redaxo/core` 6.x, YForm 6).

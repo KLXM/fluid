@@ -441,7 +441,7 @@ abstract class BlockModule extends Module
         $titled = str_contains($inner, 'id="' . $b->titleId() . '"');
 
         return '<section id="' . escape($b->domId()) . '" class="' . escape($b->sectionClass()) . '"'
-            . ($titled ? ' aria-labelledby="' . escape($b->titleId()) . '"' : '') . $this->editAttrs($b->type) . '>'
+            . ($titled ? ' aria-labelledby="' . escape($b->titleId()) . '"' : '') . $b->revealAttrs() . $this->editAttrs($b->type) . '>'
             . $b->sectionBg() . $inner . "</section>\n";
     }
 
@@ -529,7 +529,7 @@ abstract class BlockModule extends Module
             : '';
 
         return '<section id="' . escape($b->domId()) . '" class="' . escape($b->sectionClass()) . '"'
-            . ($titled ? ' aria-labelledby="' . escape($b->titleId()) . '"' : '') . $edit . '>' . $b->sectionBg() . $inner . "</section>\n";
+            . ($titled ? ' aria-labelledby="' . escape($b->titleId()) . '"' : '') . $b->revealAttrs() . $edit . '>' . $b->sectionBg() . $inner . "</section>\n";
     }
 
     /** @internal */

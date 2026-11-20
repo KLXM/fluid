@@ -202,6 +202,48 @@ Eltern-Kits – nach dem Wechsel sieht die Website also zunächst aus wie vorher
 **Assets** veröffentlicht fluid nach `assets/fluid-kits/{kit}/`: bei `console migrate` komplett, im Betrieb je Datei,
 sobald sie fehlt oder sich geändert hat. Relative Pfade im CSS zeigen auf `assets/` des eigenen Kits.
 
+### NativeCSS im Kit „NativeCSS“
+
+**Nur laden, was die Seite braucht.** Der Seitenrahmen lädt `assets/css/ncss-base.css` – das Manifest `ncss.css` von
+NativeCSS ohne die Komponenten, die nur einzelne Blöcke brauchen (`Kit\Native\NcssUpdate::ON_DEMAND`) oder die fluid nicht
+verwendet (`::UNUSED`). Die Komponenten für Blöcke stehen in `kit.php` → `assets` als kleine Wrapper (`css/ncss-video-player.css`
+= `@import url("../ncss/components/video-player.css") layer(components);`) und mit ihren Skripten aus `ncss/js/` – geladen
+werden sie wie das CSS der Blöcke von fluid nur auf Seiten mit diesem Block bzw. dieser Variante. Feinere Schlüssel setzt die
+View selbst: `Kit::active()->markUsed('video', '@player')` nur bei eigener Videodatei, `'stats', '@count'` nur bei zählbaren
+Werten, `'@reveal'` (Block) bei einem Einblend-Effekt. Beim Bearbeiten lädt fluid alle CSS-Dateien, aber keine Skripte der
+Blöcke: Player, Laufband & Co. zeigen dann ihre Form ohne JavaScript (Player des Browsers, statischer Vergleich).
+
+**Einblend-Effekt (Abschnitt).** Ein Kit bietet Effekte über `kit.php` an; ohne den Eintrag fehlt die Option:
+
+```php
+'reveal' => [
+    'fade' => ['label' => 'Sanft einblenden', 'class' => 'ncss-reveal ncss-reveal--fade ncss-reveal--once', 'attr' => 'data-ncss-reveal'],
+],
+```
+
+Gespeichert wird `tunes.reveal`; `Block::sectionClass()`/`revealAttrs()` setzen Klasse und Attribut – nicht beim
+Bearbeiten, nicht beim ersten Block, nicht bei „Dezente Animationen“ aus. „Bewegung reduzieren“ regelt das CSS des Kits.
+
+#### NativeCSS aktualisieren
+
+```bash
+# im Repo von fluid, ohne REDAXO
+php tools/ncss-update.php --from=../nativecss --dry-run     # zeigen, was sich ändert
+php tools/ncss-update.php --from=../nativecss --ref=v1.3.0  # genau diesen Git-Stand übernehmen
+php tools/ncss-update.php --tag=v1.3.0                      # Release/Tag/Branch von GitHub (Zip)
+
+# in einer Installation (schreibt nach kits/native/assets – unter vendor/ nur zum Ausprobieren, --target für die Arbeitskopie)
+php bin/console fluid:kit:ncss-update --from=/pfad/zu/nativecss [--ref=HEAD] [--tag=…] [--target=…/kits/native/assets] [--dry-run]
+```
+
+Kopiert `dist/` unverändert nach `assets/ncss/` (CSS, `components/`, `helpers/`, `js/` und die LICENSE; nicht
+`integrations/`), entfernt Dateien, die es upstream nicht mehr gibt, schreibt `assets/ncss/VERSION.txt` (Stand, Commit,
+Datum, Quelle; „nicht committete Änderungen“, wenn die Arbeitskopie ohne `--ref` schmutzig war) und erzeugt
+`assets/css/ncss-base.css` neu. Eigenes von fluid (`assets/css/native.css`, Wrapper, Views, Seitenrahmen) bleibt
+unberührt. Fehlt upstream eine Datei aus `ON_DEMAND`, bricht der Befehl ab. Danach die Seiten im Kit ansehen
+(Komponenten mit neuen Klassen brauchen ggf. Anpassungen in `native.css`) und `VERSION.txt` mit committen. Neue
+Komponenten, die fluid nutzen soll: in `ON_DEMAND` eintragen, Wrapper anlegen und in `kit.php` → `assets` abbilden.
+
 ### Als Composer-Paket
 
 Ein Kit für mehrere Projekte ist ein eigenes Composer-Paket – und zwar ein **AddOn** (Typ `redaxo-addon` mit
@@ -801,6 +843,7 @@ Ohne Live-Kanal funktioniert es auch, dann mit 15 Sekunden Verzögerung.
 | `… --page=slug` | nur eine Demo-Seite anhängen, z. B. `--page=projekte` |
 | `… --yform` | nur die Beispielzeilen der YForm-Tabellen schreiben |
 | `fluid:kit:create name` | eigenes Kit im Projekt anlegen (`--label`, `--parent`, `--view=hero,cards`, `--template`) |
+| `fluid:kit:ncss-update --from=…` | NativeCSS im Kit „NativeCSS“ aktualisieren – siehe [NativeCSS aktualisieren](#nativecss-aktualisieren) |
 | `fluid:search-index` | Suchindex neu aufbauen (sonst automatisch nach dem Veröffentlichen) |
 | `fluid:selftest` | Live-Aktualisierung und Präsenz prüfen |
 | `fluid:upgrade:slices` | Blöcke älterer REDAXO-6-Datenbanken in die Spalte `data` übernehmen (`--drop-old` entfernt die alten Spalten) |
@@ -904,7 +947,7 @@ Addon-Klasse, `Schema::TABLES` in `getOwnedSchema()`; alles andere hängt schon 
 | `src/Field/` | Felder: gleichnamige Unterklassen der Felder des Cores mit Ergänzungen, Felder nur von fluid (`RichText`, `Link` …), `AsBlock`, `BlockSchema` (Schema für fluid aus den Attributen) |
 | `kits/fluid/` | das Grund-Kit: `src/Module/` (Blockklassen mit Feld-Attributen), `views/` (Ausgaben), `kit.php` (Assets, Hintergründe), `design.php` (Design-Tokens, Vorlagen), `functions.php`, `lang/` |
 | `src/Kit.php`, `src/AsKit.php` | Kits: Anmeldung, Auswahl (`Kit::active()`), Vererbung, Assets |
-| `kits/native/` | Kit „NativeCSS“: `template.view.php`, `views/`, `kit.php`, `assets/css/native.css`, NativeCSS in `assets/ncss/` |
+| `kits/native/` | Kit „NativeCSS“: `template.view.php`, `views/`, `kit.php`, `assets/css/native.css`, NativeCSS in `assets/ncss/`, `src/NcssUpdate.php` (Aktualisierung) |
 | `assets/` | Editor (`editor/`), Formulare (`form.js`, `rte.js`), Kit-CSS/JS (`kits/fluid/`), Schriften, MapLibre |
 | `examples/` | Vorlagen für eigene Blöcke und YForm-Tabellen |
 | `pages/` | Backend-Seite AddOns → fluid |
@@ -930,5 +973,6 @@ Repo-Variable `UPSTREAM_NOTIFY` ein (GitHub-Namen, mit Leerzeichen getrennt). Ei
 lässt sich der Wächter auch von Hand (Actions → Upstream-Wächter → Run workflow).
 
 - PHPStan (Stufe 5): mit der PHPStan-Installation des Cores, Pfade `src`, `kits/fluid/src`, `kits/fluid/functions.php`.
+- NativeCSS aktualisieren: `php tools/ncss-update.php --from=../nativecss` (siehe [Eigene Kits](#nativecss-aktualisieren)).
 - Video: `node tools/video/trailer.mjs` bzw. `redaxo6-demo.mjs` – braucht Playwright, ffmpeg und eine lokale Anmelde-Hilfe
   (`LOGIN=…`), siehe Kopf der Skripte. Nur gegen Testinstallationen.

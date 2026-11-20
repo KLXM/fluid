@@ -68,6 +68,11 @@ final class FieldForm
         $space = ['none' => 'Kein', 'small' => 'Klein', 'normal' => 'Normal', 'large' => 'Groß'];
         $h .= self::row('Abstand oben', self::select($p2 . '[spaceTop]', $space, (string) ($tunes['spaceTop'] ?? 'normal')), '', true);
         $h .= self::row('Abstand unten', self::select($p2 . '[spaceBottom]', $space, (string) ($tunes['spaceBottom'] ?? 'normal')), '', true);
+        // Einblend-Effekt: nur, wenn das Kit welche anbietet (kit.php → 'reveal', z. B. Kit „NativeCSS“)
+        if ([] !== ($reveal = $module::kit()->revealOptions())) {
+            $h .= self::row('Einblend-Effekt', self::select($p2 . '[reveal]', ['' => 'Keiner'] + array_map(static fn (array $o) => (string) $o['label'], $reveal), (string) ($tunes['reveal'] ?? '')),
+                'Der Abschnitt erscheint beim Hereinscrollen. Sichtbar auf der veröffentlichten Seite, nicht beim Bearbeiten und nicht beim ersten Block. Wer „Bewegung reduzieren“ eingestellt hat, sieht ihn sofort.', false);
+        }
         if ($module::nestable()) {
             $cols = ['' => 'Nicht in einem Layout', '1' => 'Spalte 1', '2' => 'Spalte 2', '3' => 'Spalte 3', '4' => 'Spalte 4'];
             // neuer Block über „Block in Spalte n“ im Backend: Spalte vorgewählt

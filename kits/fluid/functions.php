@@ -481,9 +481,56 @@ function fluid_pairs(mixed $s): array
     }, fluid_lines((string) $s));
 }
 
+/**
+ * Vorher/Nachher (Block „Vorher/Nachher“, $d mit before, after, label_before, label_after): zwei Bilder, darüber ein
+ * Regler (input range, js/compare.js setzt .is-ready und --hx-pos). Ohne Skript stehen die Bilder nebeneinander.
+ * Leer, solange eines der Bilder fehlt.
+ */
 function fluid_compare(array $d, string $sizes, string $ratio, string $class): string
 {
-    return '';
+    $before = img((string) ($d['before'] ?? ''), $sizes, ['ratio' => $ratio]);
+    $after = img((string) ($d['after'] ?? ''), $sizes, ['ratio' => $ratio]);
+    if ('' === $before || '' === $after) {
+        return '';
+    }
+    $lb = trim((string) ($d['label_before'] ?? '')) ?: lt('Vorher');
+    $la = trim((string) ($d['label_after'] ?? '')) ?: lt('Nachher');
+
+    return '<div class="' . e($class) . '" data-compare>'
+        . '<figure class="' . e($class) . '__pane ' . e($class) . '__pane--before">' . $before . '<span class="' . e($class) . '__tag" aria-hidden="true">' . e($lb) . '</span></figure>'
+        . '<figure class="' . e($class) . '__pane ' . e($class) . '__pane--after">' . $after . '<span class="' . e($class) . '__tag" aria-hidden="true">' . e($la) . '</span></figure>'
+        . '<input class="' . e($class) . '__range" type="range" min="0" max="100" value="50" hidden aria-label="' . e(lt('Trennlinie verschieben: links {a}, rechts {b}', ['a' => $lb, 'b' => $la])) . '">'
+        . '</div>';
+}
+
+/**
+ * Hinweis nur beim Bearbeiten: Bild ohne Alternativtext und nicht als dekorativ markiert (klxm_meta). Für Bilder mit
+ * Aussage (z. B. Vorher/Nachher) – Besucher sehen nichts davon.
+ */
+function fluid_alt_hint(?string $file): string
+{
+    $file = trim((string) $file);
+    if (!is_editing() || '' === $file || !class_exists(\Klxm\Meta\Alt::class) || !Media::get($file)
+        || null !== \Klxm\Meta\Alt::of($file) || \Klxm\Meta\Alt::isDecorative($file)) {
+        return '';
+    }
+
+    return '<p class="empty-hint">' . e('Alternativtext fehlt für „' . $file . '“ – im Medienpool beschreiben, was zu sehen ist.') . '</p>';
+}
+
+/** Hinweis nur beim Bearbeiten: eigene Videodatei ohne Untertitel (Videos mit Sprache brauchen sie) */
+function fluid_caption_hint(array $d): string
+{
+    if (!is_editing() || '' === trim((string) ($d['video_file'] ?? ''))) {
+        return '';
+    }
+    foreach ((array) ($d['tracks'] ?? []) as $t) {
+        if ('' !== trim((string) ($t['file'] ?? '')) && 'chapters' !== ($t['kind'] ?? 'subtitles')) {
+            return '';
+        }
+    }
+
+    return '<p class="empty-hint">Ohne Untertitel: Wird im Video gesprochen, bitte unter „Untertitel und Kapitel“ eine .vtt- oder .srt-Datei ergänzen.</p>';
 }
 
 /** Text ohne *Betonung*-Sternchen (Attribute, Screenreader) */
@@ -590,6 +637,29 @@ function fluid_video_file(Media $video, string $poster, string $ratio, string $l
     }
 
     return $h;
+}
+
+/**
+ * Audiodateien des Blocks „Video & Audio“ (Darstellung Audio) für die Ausgabe: nur vorhandene Audiodateien, Titel aus dem
+ * Block oder dem Medienpool, Kapitel als geprüftes WebVTT (/fluid-track/…).
+ *
+ * @return list<array{url: string, mime: string, title: string, artist: string, chapters: string}>
+ */
+function fluid_audio_tracks(array $items): array
+{
+    $out = [];
+    foreach ($items as $it) {
+        $m = media((string) ($it['file'] ?? ''));
+        if (!$m || !str_starts_with($m['mime'], 'audio/')) {
+            continue;
+        }
+        $ch = trim((string) ($it['chapters'] ?? ''));
+        $title = trim((string) ($it['title'] ?? ''));
+        $out[] = ['url' => media_url($m), 'mime' => $m['mime'], 'title' => '' !== $title ? $title : ((string) $m['title'] ?: (string) $m['file']),
+            'artist' => trim((string) ($it['artist'] ?? '')), 'chapters' => '' !== $ch && Media::get($ch) ? \Klxm\Fluid\Media\Tracks::url($ch) : ''];
+    }
+
+    return $out;
 }
 
 /** Datum in der Sprache der Seite, z. B. „13. Oktober 2026“ / „October 13, 2026“ */

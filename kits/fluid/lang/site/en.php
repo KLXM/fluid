@@ -423,4 +423,10 @@ return array (
   'Blöcke' => 'Blocks',
   'Die häufigsten Blöcke auf dieser Website, gezählt aus der Datenbank' => 'The most frequent blocks on this website, counted from the database',
   // Bildergalerie, Slider
+  // Vorher/Nachher, Logos (Laufband)
+  'Vorher' => 'Before',
+  'Nachher' => 'After',
+  'Trennlinie verschieben: links {a}, rechts {b}' => 'Move the divider: {a} on the left, {b} on the right',
+  'Laufband anhalten' => 'Pause marquee',
+  'Text zum Audio' => 'Transcript',
 );
