@@ -1427,6 +1427,32 @@ vollständig: Module, Templates, Schema'],
                     'intro' => 'Den Griff ziehen – oder mit Tab hinspringen und die Pfeiltasten nutzen. Im Kit NativeCSS öffnet sich der Abschnitt beim Hereinscrollen wie ein Vorhang (Abschnitt → Einblend-Effekt).',
                     'before' => 'pexels-wohnzimmer-vorher.jpg', 'after' => 'pexels-wohnzimmer-nachher.jpg', 'label_before' => 'Vorher', 'label_after' => 'Nachher', 'ratio' => '3:2',
                     'caption' => 'Foto: Curtis Adams, Pexels (Pexels-Lizenz). „Vorher“ ist dasselbe Foto, für das Beispiel flau bearbeitet.']],
+                // Runde 2: Filter und „Hervorheben“ bei Karten, Preisliste, Zeitleiste, Kundenstimmen, sortierbare Tabelle
+                ['type' => 'cards', 'data' => ['variant' => 'image', 'eyebrow' => 'Karten', 'title' => 'Filtern und hervorheben', 'intro' => 'Kategorie je Karte, „Filter nach Kategorie“ am Block – und eine Karte hervorgehoben.',
+                    'size' => 'm', 'ratio' => '16:9', 'filter' => true, 'more_label' => '', 'more_link' => '', 'items' => [
+                        ['image' => 'redaxo6-backend-struktur.jpg', 'eyebrow' => '', 'title' => 'Struktur', 'text' => 'Seiten und Kategorien im Baum.', 'link_label' => '', 'link' => '', 'category' => 'Backend', 'featured' => false, 'badge' => ''],
+                        ['image' => 'fluid-website.jpg', 'eyebrow' => '', 'title' => 'Bearbeiten auf der Website', 'text' => 'Texte dort ändern, wo sie stehen.', 'link_label' => '', 'link' => '', 'category' => 'Website', 'featured' => true, 'badge' => 'Neu'],
+                        ['image' => 'redaxo6-backend-medienpool.jpg', 'eyebrow' => '', 'title' => 'Medienpool', 'text' => 'Bilder, Videos, Dokumente.', 'link_label' => '', 'link' => '', 'category' => 'Backend', 'featured' => false, 'badge' => ''],
+                        ['image' => 'fluid-design.jpg', 'eyebrow' => '', 'title' => 'Design-Leiste', 'text' => 'Farben und Schriften live.', 'link_label' => '', 'link' => '', 'category' => 'Website', 'featured' => false, 'badge' => ''],
+                    ]]],
+                ['type' => 'pricing', 'tunes' => ['background' => 'muted'], 'data' => ['variant' => 'list', 'eyebrow' => 'Preisliste', 'title' => 'Wie auf der Speisekarte', 'intro' => '', 'items' => [], 'rows' => [], 'note' => 'Beispielpreise.',
+                    'entries' => [
+                        ['name' => 'Espresso', 'price' => '2,40 €', 'text' => ''],
+                        ['name' => 'Cappuccino', 'price' => '3,50 €', 'text' => 'Hafermilch +0,50 €'],
+                        ['name' => 'Hausgemachte Limonade mit Minze und Zitrone', 'price' => '4,20 €', 'text' => ''],
+                    ]]],
+                ['type' => 'steps', 'data' => ['variant' => 'timeline', 'eyebrow' => 'Ablauf', 'title' => 'Zeitleiste', 'intro' => '', 'marker' => 'auto', 'colors' => 'auto', 'motion' => 'auto', 'items' => [
+                    ['meta' => '2004', 'title' => 'REDAXO erscheint', 'text' => 'Open Source, seitdem gepflegt von der Community.', 'icon' => ''],
+                    ['meta' => '2026', 'title' => 'REDAXO 6', 'text' => 'Module als Klassen, Composer, PHP 8.5.', 'icon' => ''],
+                    ['meta' => 'Heute', 'title' => 'fluid', 'text' => 'Bearbeiten direkt auf der Website.', 'icon' => 'sparkle'],
+                ]]],
+                ['type' => 'quote', 'tunes' => ['background' => 'muted'], 'data' => ['variant' => 'grid', 'eyebrow' => 'Stimmen', 'title' => 'Kundenstimmen', 'items' => [
+                    ['text' => 'Wir ändern Texte in Minuten – genau dort, wo Besucher sie lesen.', 'name' => 'Erika Musterfrau', 'role' => 'Online-Redaktion', 'image' => null],
+                    ['text' => 'Endlich sieht die Redaktion, was sie tut.', 'name' => 'Max Beispiel', 'role' => 'Agentur', 'image' => null],
+                ]]],
+                ['type' => 'datalist', 'data' => ['variant' => 'table', 'eyebrow' => 'Tabelle', 'title' => 'Sortierbar und scrollbar', 'intro' => 'Ein Klick auf einen Spaltenkopf sortiert. Ist die Tabelle breiter als der Platz, scrollt sie – mit Schatten an der Kante.',
+                    'table' => 'rex_yf_termin', 'title_field' => 'rex_yf_termin.title', 'image_field' => '', 'text_field' => 'rex_yf_termin.place', 'meta_field' => 'rex_yf_termin.date',
+                    'filter_field' => 'rex_yf_termin.online', 'filter_value' => '1', 'sort_field' => 'rex_yf_termin.date', 'sort_dir' => 'asc', 'limit' => 0, 'size' => 'm', 'detail' => false, 'empty_text' => '', 'table_sort' => true]],
                 // Darstellung „Morphing beim Scrollen“ gibt es nur im Kit NativeCSS – im Kit fluid erscheint der Block wie „Bild rechts“
                 ['type' => 'media_text', 'data' => ['variant' => 'morph', 'eyebrow' => 'Text + Bild', 'title' => 'Morphing beim Scrollen',
                     'text' => '<p>Im Kit NativeCSS startet das Bild groß und rückt beim Scrollen zur Seite – der Text erscheint daneben. Wer „Bewegung reduzieren“ eingestellt hat, sieht Bild und Text gleich nebeneinander.</p>',

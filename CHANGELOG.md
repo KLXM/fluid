@@ -63,6 +63,21 @@
   reduzierter Bewegung; im Kit fluid ausgeblendet.
 - Demo „REDAXO 6“: Morphing-Beispiele (Text + Bild auf „Bausteine“, Video auf „Video“). Doku: nach dem Update-Befehl
   `console migrate`.
+- **NativeCSS 1.1.0 auf 8bb3e3f (Runde 2)** – neue Komponenten als Optionen bestehender Blöcke, keine neuen Blöcke:
+  - **Tabellen** (beide Kits): Datenliste „Tabelle“ und Paketvergleich scrollen waagerecht mit Schatten an der Kante;
+    Datenliste „Spalten zum Sortieren anklickbar“ (`js/table-sort.js` von NativeCSS, auch im Kit fluid). Fließtext kennt
+    keine Tabellen – dort keine Option. Paketvergleich ohne Sortieren (Zeilen sind Merkmale, keine Daten).
+  - **Filter nach Kategorie** (beide Kits): Karten („Kategorie“ je Karte, Option am Block) und Datenliste („Filter für
+    Besucher nach …“, ein Feld der Tabelle) – Optionsfelder als Pillen, Filtern per CSS, Trefferzahl per `js/filter.js`.
+    Beiträge haben das schon (Schlagworte).
+  - **Pakete „Preisliste (Speisekarte)“** (beide Kits): Name, Führungspunkte, Preis, Beschreibung – NativeCSS
+    `.ncss-leaders`, im Kit fluid eigenes CSS.
+  - Kit NativeCSS: Pakete „Karten“ als Preistabelle (`.ncss-pricing`, Subgrid, „Nicht enthalten“ mit „–“ am Zeilenanfang;
+    kein Monatlich/Jährlich-Umschalter – der Block kennt einen Preis), Ablauf „Zeitleiste“ (`.ncss-timeline`), Zitat
+    „Groß“/„Raster“ als Kundenstimmen (`.ncss-testimonial`), Sprachwahl ab drei Sprachen als Aufklapp-Liste (Dropdown).
+  - Bewusst nicht übernommen: Slideshow-Pfeile/-Punkte (der Slider von fluid hat beides), Stepper (Fortschritt, keine
+    Anleitung), sortierbare Liste, Kommentare, Toolbar, Pillen-Gruppe.
+  - Demo „Bausteine“: Karten mit Filter und „Hervorheben“, Preisliste, Zeitleiste, Kundenstimmen, sortierbare Tabelle.
 
 ## 1.0.0-beta.1 – 2026-11-18
 

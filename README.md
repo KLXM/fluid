@@ -68,7 +68,10 @@ fluid läuft auch ohne.
   die Seite braucht; aktualisieren mit `fluid:kit:ncss-update` (danach `php bin/console migrate`). Stand: NativeCSS 1.1.0. Nur im Kit „NativeCSS“ außerdem:
   „Text + Bild“ mit der Darstellung **Morphing beim Scrollen** (das Bild startet groß und rückt zur Seite, der Text
   erscheint daneben; bei „Bewegung reduzieren“ statisch) – ebenso „Video & Audio“ mit stummem Video in Schleife und
-  Pause-Schalter. Karten lassen sich in beiden Kits **hervorheben** (Rahmen und Hinweis wie „Empfohlen“).
+  Pause-Schalter. Karten lassen sich in beiden Kits **hervorheben** (Rahmen und Hinweis wie „Empfohlen“) und **nach
+  Kategorie filtern** (ebenso die Datenliste); Datenlisten als Tabelle sind **sortierbar**, Pakete gibt es auch als
+  **Preisliste (Speisekarte)**. Im Kit „NativeCSS“ erscheinen Preistabelle, Zeitleiste und Kundenstimmen im Stil von
+  NativeCSS.
 - **Darstellung für Besucher** (beide Kits, Website → Kopf, Fuß & Hinweis → „Darstellungs-Knopf für Besucher anzeigen“,
   Standard aus): ein Knopf „Darstellung“ im Kopf, mit dem Besucher Farbschema, Kontrast, Bewegung, Schriftgröße, eine
   Lese-Schrift (Atkinson Hyperlegible, Lexend, OpenDyslexic – abschaltbar), Textabstände, unterstrichene Links und einen
