@@ -1,6 +1,6 @@
 # Changelog
 
-## Unveröffentlicht
+## 1.0.0-beta.4 – 2026-11-21
 
 ### Editor: Kontraste der Leiste und der Spaltenmarken
 
