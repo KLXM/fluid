@@ -50,8 +50,19 @@
 - **Text + Bild „Morphing beim Scrollen“** (nur Kit NativeCSS, über `kit.php` → `blocks`): `.ncss-morph`, beim Bearbeiten
   und bei „Bewegung reduzieren“ als Bild neben Text. Im Kit fluid fehlt die Darstellung in der Auswahl; gespeicherte
   Blöcke erscheinen dort wie „Bild rechts“.
-- Website → Kit: die Schalter für den Darstellungs-Knopf erscheinen nur, wenn das Kit „NativeCSS“ (oder ein davon
-  abgeleitetes) gewählt ist – im Kit fluid keine Einstellung ohne Wirkung.
+- **Darstellungs-Knopf für Besucher auch im Kit fluid:** die Schalter stehen jetzt unter Website → Kopf, Fuß & Hinweis
+  (beide Kits, Standard aus). Im Kit fluid: `preferences.js`/`-early.js` und das Bedienfeld aus dem Kit NativeCSS,
+  Tokens und Wirkung (Kontrast, Lese-Schrift, Bewegung, Schriftgröße, Textabstände, Links, Fokus) in `css/prefs.css`,
+  Bedienfeld in den Farben der Seite auch im farbigen Kopf; `js/prefs-theme.js` (jetzt im Kit fluid, für beide) gleicht
+  `is-dark`/`has-dark` und bei „Bewegung: Reduziert“ `has-motion` ab; dunkle Design-Werte per `Design::head(true)` auch
+  beim Standard-Design. Knopf in der Kopfleiste, sobald die Navigation dort steht, sonst im Menü.
+- **Karten „Hervorheben“** (beide Kits): je Karte Rahmen in der Akzentfarbe und ein Hinweis an der Ecke (Text
+  bearbeitbar, Standard „Empfohlen“); NativeCSS `.ncss-card--featured` + `.ncss-card-badge`, im Kit fluid eigenes CSS.
+- **„Video & Audio“ mit Morphing beim Scrollen** (nur Kit NativeCSS): eigene Videodatei stumm in Schleife in
+  `.ncss-morph`, Pause-Schalter und Laden wie beim Hintergrundvideo (`js/video-bg.js`), statisch beim Bearbeiten und bei
+  reduzierter Bewegung; im Kit fluid ausgeblendet.
+- Demo „REDAXO 6“: Morphing-Beispiele (Text + Bild auf „Bausteine“, Video auf „Video“). Doku: nach dem Update-Befehl
+  `console migrate`.
 
 ## 1.0.0-beta.1 – 2026-11-18
 

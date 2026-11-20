@@ -228,14 +228,18 @@ Bearbeiten, nicht beim ersten Block, nicht bei „Dezente Animationen“ aus. �
 `.ncss-morph`, CSS `css/ncss-morph.css` über `media_text:@morph`). Im Kit fluid fehlt die Darstellung in der Auswahl;
 ein so gespeicherter Block erscheint dort wie „Bild rechts“.
 
-**Darstellung für Besucher.** Website → Kit → „Darstellungs-Knopf für Besucher anzeigen“ (`visitor_prefs`, Standard
-aus, nur sichtbar, wenn das Kit „NativeCSS“ oder ein davon abgeleitetes gewählt ist; `visitor_prefs_fonts` für die Lese-Schriften) gibt im Seitenrahmen `ncss/js/preferences-early.js` und
+**Darstellung für Besucher.** Website → Kopf, Fuß & Hinweis → „Darstellungs-Knopf für Besucher anzeigen“ (`visitor_prefs`,
+Standard aus, für beide Kits – im Kit fluid mit `kits/fluid/assets → css/prefs.css` als Brücke, siehe unten; `visitor_prefs_fonts` für die Lese-Schriften) gibt im Seitenrahmen `ncss/js/preferences-early.js` und
 `js/prefs-theme.js` synchron vor den Stylesheets aus, dazu `css/ncss-preferences.css` (+ `-fonts.css`), `preferences.js`
 (defer) und `<ncss-preferences settings="…">` zweimal: in der Kopfleiste (breit) und im Menü (schmal). `theme` fehlt in
 `settings`, wenn das Design kein dunkles Schema erlaubt. Die Attribute am `<html>` (`data-theme`, `data-contrast`,
 `data-motion`, `data-text-scale`, `data-ncss-font` …) wirken über NativeCSS; damit auch die Blöcke von fluid folgen:
 Design-Werte mit `'dark' => ['attr' => 'data-theme']` (dunkle Werte bei `dark`, nicht bei `light`), `js/prefs-theme.js`
-setzt `is-dark` bzw. nimmt `has-dark` zurück, `native.css` leitet Kontrast und Lese-Schrift auf `--f-…` um.
+setzt `is-dark` bzw. nimmt `has-dark` (bei „Bewegung: Reduziert“ auch `has-motion`) zurück, `native.css` leitet Kontrast und
+Lese-Schrift auf `--f-…` um. Im **Kit fluid** kommen `preferences.js`, `preferences-early.js` und das Bedienfeld-CSS aus dem
+Kit „NativeCSS“; `assets/kits/fluid/css/prefs.css` liefert die Tokens dafür und die Wirkung der Attribute (Kontrast,
+Schrift, Bewegung, Schriftgröße, Textabstände, Links, Fokus), `Design::head(true)` die dunklen Werte auch bei
+Standard-Design. Platz: in den Werkzeugen der Kopfleiste, sobald die Navigation dort steht, sonst im Menü.
 
 #### NativeCSS aktualisieren
 
@@ -253,7 +257,9 @@ Kopiert `dist/` unverändert nach `assets/ncss/` (CSS, `components/`, `helpers/`
 und die LICENSE; nicht `integrations/`), entfernt Dateien, die es upstream nicht mehr gibt, schreibt `assets/ncss/VERSION.txt` (Version aus `package.json`, Commit,
 Datum, Quelle; „nicht committete Änderungen“, wenn die Arbeitskopie ohne `--ref` schmutzig war) und erzeugt
 `assets/css/ncss-base.css` neu. Eigenes von fluid (`assets/css/native.css`, Wrapper, Views, Seitenrahmen) bleibt
-unberührt. Fehlt upstream eine Datei aus `ON_DEMAND`, bricht der Befehl ab. Danach die Seiten im Kit ansehen
+unberührt. Fehlt upstream eine Datei aus `ON_DEMAND`, bricht der Befehl ab. In einer Installation danach `php bin/console migrate` – das veröffentlicht die neuen Dateien nach
+`assets/fluid-kits/native/` (Dateien, die nur per `@import` geladen werden, kopiert fluid im Betrieb nicht einzeln; ohne
+`migrate` fehlen sie, z. B. eine neue Komponente). Danach die Seiten im Kit ansehen
 (Komponenten mit neuen Klassen brauchen ggf. Anpassungen in `native.css`) und `VERSION.txt` mit committen. Neue
 Komponenten, die fluid nutzen soll: in `ON_DEMAND` eintragen, Wrapper anlegen und in `kit.php` → `assets` abbilden.
 

@@ -65,11 +65,12 @@ fluid läuft auch ohne.
   umschaltbar unter Website → Kit; die Inhalte bleiben. Eigene Kits erben von „Fluid“ (Entwickler-Referenz).
   Im Kit „NativeCSS“ zusätzlich: Video- und Audio-Player mit Kapiteln und Playlist, Kennzahlen, die hochzählen, und je
   Abschnitt ein **Einblend-Effekt** (Keiner · Sanft einblenden · Von unten · Kreis · Vorhang) – NativeCSS lädt nur, was
-  die Seite braucht; aktualisieren mit `fluid:kit:ncss-update`. Stand: NativeCSS 1.1.0. Nur im Kit „NativeCSS“ außerdem:
+  die Seite braucht; aktualisieren mit `fluid:kit:ncss-update` (danach `php bin/console migrate`). Stand: NativeCSS 1.1.0. Nur im Kit „NativeCSS“ außerdem:
   „Text + Bild“ mit der Darstellung **Morphing beim Scrollen** (das Bild startet groß und rückt zur Seite, der Text
-  erscheint daneben; bei „Bewegung reduzieren“ statisch).
-- **Darstellung für Besucher** (Kit „NativeCSS“, Website → Kit → „Darstellungs-Knopf für Besucher anzeigen“, Standard
-  aus; die Schalter erscheinen nur, wenn das Kit gewählt ist): ein Knopf „Darstellung“ im Kopf, mit dem Besucher Farbschema, Kontrast, Bewegung, Schriftgröße, eine
+  erscheint daneben; bei „Bewegung reduzieren“ statisch) – ebenso „Video & Audio“ mit stummem Video in Schleife und
+  Pause-Schalter. Karten lassen sich in beiden Kits **hervorheben** (Rahmen und Hinweis wie „Empfohlen“).
+- **Darstellung für Besucher** (beide Kits, Website → Kopf, Fuß & Hinweis → „Darstellungs-Knopf für Besucher anzeigen“,
+  Standard aus): ein Knopf „Darstellung“ im Kopf, mit dem Besucher Farbschema, Kontrast, Bewegung, Schriftgröße, eine
   Lese-Schrift (Atkinson Hyperlegible, Lexend, OpenDyslexic – abschaltbar), Textabstände, unterstrichene Links und einen
   kräftigeren Fokus-Rahmen wählen. Gespeichert im Browser, ohne Wahl gilt das Gerät; Deutsch/Englisch nach Sprache
   der Seite. Kein „Barrierefreiheits-Overlay“: ergänzt eine barrierearme Website, ersetzt sie nicht.
