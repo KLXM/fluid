@@ -53,6 +53,10 @@ return [
         'css/b-posts.css' => ['posts', '@post', 'datalist'],
         'js/tabs.js' => ['tabs'],
         'css/b-code.css' => ['code'],
+        // Tabellen (Scroll-Schatten, „Spalten sortierbar“) und „Filter nach Kategorie“ – Skripte dazu von NativeCSS
+        // (FluidTemplate.view.php, Kit::used('@tablesort' | '@filter'))
+        'css/tables.css' => ['@table', '@tablesort'],
+        'css/filter.css' => ['@filter'],
         'js/code.js' => ['code'],
         'js/reel.js' => ['quote', 'cards'],
         'js/scrolly.js' => ['scrolly'],

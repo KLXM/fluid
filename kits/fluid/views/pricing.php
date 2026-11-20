@@ -4,7 +4,8 @@
  * erste Spalte bleibt stehen; Paketnamen als Spaltenköpfe, Werte ja/nein als Symbol mit Text für Screenreader).
  * @var \Klxm\Fluid\Block $b  @var array $d
  */
-$v = $b->variant() === 'table' ? 'table' : 'cards';
+$v = in_array($b->variant(), ['table', 'list'], true) ? $b->variant() : 'cards';
+$entries = array_values(array_filter((array) ($d['entries'] ?? []), fn($i) => trim((string) ($i['name'] ?? '')) !== ''));
 $items = array_values(array_filter((array) ($d['items'] ?? []), fn($i) => trim((string) ($i['name'] ?? '')) !== ''));
 $rows = array_values(array_filter((array) ($d['rows'] ?? []), fn($r) => trim((string) ($r['label'] ?? '')) !== ''));
 $tag = fluid_htag($d);
@@ -26,8 +27,21 @@ $button = function (array $it, int $i, string $class = '') use ($b): string {
 ?>
 <div class="wrap">
   <?= fluid_head($b, 'sec-head--center') ?>
-  <?php if ($items && $v === 'table'): ?>
-  <div class="cmp-wrap" role="region" tabindex="0" aria-labelledby="<?= e($b->titleId()) ?>">
+  <?php if ($v === 'list'): ?>
+  <?php if ($entries): ?>
+  <dl class="pricelist">
+    <?php foreach ($entries as $i => $it): ?>
+    <div class="pricelist__item">
+      <dt<?= $b->edit("entries.$i.name") ?>><?= fluid_title((string) $it['name']) ?></dt>
+      <dd class="pricelist__price"<?= $b->edit("entries.$i.price") ?>><?= e((string) ($it['price'] ?? '')) ?></dd>
+      <?php if (trim((string) ($it['text'] ?? '')) !== ''): ?><dd class="pricelist__desc"<?= $b->edit("entries.$i.text") ?>><?= e($it['text']) ?></dd><?php endif; ?>
+    </div>
+    <?php endforeach; ?>
+  </dl>
+  <?php elseif (is_editing()): ?><p class="empty-hint">Noch keine Einträge – in der Seitenleiste unter „Preisliste“ hinzufügen.</p><?php endif; ?>
+  <?php elseif ($items && $v === 'table'): ?>
+  <?php \Klxm\Fluid\Kit::active()->markUsed('@table'); ?>
+  <div class="cmp-wrap ncss-scroll-shadow tbl-shadow" role="region" tabindex="0" aria-labelledby="<?= e($b->titleId()) ?>">
     <table class="cmp">
       <thead>
         <tr><td class="cmp__corner"></td>

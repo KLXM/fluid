@@ -356,6 +356,12 @@ abstract class Kit
         }
     }
 
+    /** Wurde in dieser Anfrage ein Blocktyp bzw. Schlüssel (`@tablesort` …) ausgegeben? */
+    final public function used(string $key): bool
+    {
+        return isset($this->used[$key]);
+    }
+
     final public function markUsed(string $type, string $variant = ''): void
     {
         $this->used[$type] = true;

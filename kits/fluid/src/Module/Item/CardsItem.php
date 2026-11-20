@@ -35,4 +35,7 @@ final class CardsItem
 
     #[Text('Hinweis am Rand (bei „Hervorheben“)', maxLength: 24, width: 'half', placeholder: 'Empfohlen')]
     public string $badge = '';
+
+    #[Text('Kategorie (für den Filter, optional)', maxLength: 60, width: 'half', placeholder: 'z. B. Beratung, Technik')]
+    public string $category = '';
 }

@@ -21,6 +21,9 @@ $id = $b->domId() . '-reel';
   </div>
   <?php else: ?><?= fluid_head($b) ?><?php endif; ?>
   <?php if ($items): ?>
+  <?php // Filter nach Kategorie (fluid_filter(): CSS-Filter mit Optionsfeldern, js/filter.js für die Ansage der Trefferzahl)
+  $flt = !empty($d['filter']) && 'reel' !== $v ? fluid_filter($b, array_map(static fn ($it) => (string) ($it['category'] ?? ''), $items)) : ['bar' => '', 'item' => []];
+  if ('' !== $flt['bar']): ?><ncss-filter class="ncss-filter"><?= $flt['bar'] ?><?php endif; ?>
   <ul class="<?= $v === 'reel' ? 'reel ' : 'grid ' ?><?= e(fluid_min($d)) ?> cards cards--<?= e($v) ?>" role="list"<?= $v === 'reel' ? ' id="' . e($id) . '" tabindex="0" aria-label="' . e(trim((string) $d['title']) ?: lt('Karten')) . '"' : '' ?>>
     <?php foreach ($items as $i => $it):
         $link = trim((string) ($it['link'] ?? ''));
@@ -29,7 +32,7 @@ $id = $b->domId() . '-reel';
         $badge = $featured ? (trim((string) ($it['badge'] ?? '')) ?: lt('Empfohlen')) : '';
         $pic = fluid_image(!empty($it['image']) ? (string) $it['image'] : null, $v === 'horizontal' ? '(min-width: 1080px) 320px, 100vw' : '(min-width: 1080px) 420px, (min-width: 640px) 50vw, 90vw', $ratio, 'tcard__media');
     ?>
-    <li class="tcard tcard--<?= e($v) ?><?= $v === 'overlay' ? '' : ' card' ?><?= $link !== '' ? ' tcard--link' : '' ?><?= $featured ? ' tcard--featured' : '' ?>" data-reveal><?= $b->targetEdit($link, (string) ($it['title'] ?? '')) ?>
+    <li class="tcard tcard--<?= e($v) ?><?= $v === 'overlay' ? '' : ' card' ?><?= $link !== '' ? ' tcard--link' : '' ?><?= $featured ? ' tcard--featured' : '' ?><?= isset($flt['item'][$i]) ? ' ncss-filter-item' : '' ?>"<?= isset($flt['item'][$i]) ? ' data-category="' . e($flt['item'][$i]) . '"' : '' ?> data-reveal><?= $b->targetEdit($link, (string) ($it['title'] ?? '')) ?>
       <?php if ($badge !== ''): ?><span class="tcard__badge"<?= $b->edit("items.$i.badge") ?>><?= e($badge) ?></span><?php endif; ?>
       <div class="tcard__in">
         <?= $pic ?>
@@ -43,6 +46,7 @@ $id = $b->domId() . '-reel';
     </li>
     <?php endforeach; ?>
   </ul>
+  <?php if ('' !== $flt['bar']): ?></ncss-filter><?php endif; ?>
   <?php if (trim((string) ($d['more_label'] ?? '')) !== '' && trim((string) ($d['more_link'] ?? '')) !== ''): ?>
   <p class="more-row"><a class="btn btn--secondary" <?= fluid_link_attrs($d['more_link']) ?>><span<?= $b->edit('more_label') ?>><?= e($d['more_label']) ?></span></a></p>
   <?php endif; ?>

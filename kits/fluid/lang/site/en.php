@@ -430,4 +430,9 @@ return array (
   'Laufband anhalten' => 'Pause marquee',
   'Text zum Audio' => 'Transcript',
   'Empfohlen' => 'Recommended',
+  'Filtern nach Kategorie' => 'Filter by category',
+  'Alle' => 'All',
+  'Tabelle' => 'Table',
+  'Enthalten:' => 'Included:',
+  'Nicht enthalten:' => 'Not included:',
 );

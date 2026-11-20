@@ -128,6 +128,9 @@ return static function (ArticleContent $content): void {
 <?php if (!Editing::active()): ?><script src="<?= e($kit->assetUrl('js/site.js')) ?>" defer></script>
 <?php foreach ($kit->blockJs() as $js): ?><script src="<?= e($js) ?>" defer></script>
 <?php endforeach; ?>
+<?php // Skripte von NativeCSS (ohne Abhängigkeiten), die auch dieses Kit nutzt – nur auf Seiten mit diesen Funktionen
+foreach (['@tablesort' => 'ncss/js/table-sort.js', '@filter' => 'ncss/js/filter.js'] as $key => $file): if ($kit->used($key) && null !== ($nk = Kit::get('native'))): ?><script src="<?= e($nk->assetUrl($file)) ?>" defer></script>
+<?php endif; endforeach; ?>
 <?php endif; ?>
 </head>
 <body class="<?= $isHome ? 'is-home' : 'is-sub' ?>">

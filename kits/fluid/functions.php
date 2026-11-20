@@ -533,6 +533,46 @@ function fluid_caption_hint(array $d): string
     return '<p class="empty-hint">Ohne Untertitel: Wird im Video gesprochen, bitte unter „Untertitel und Kapitel“ eine .vtt- oder .srt-Datei ergänzen.</p>';
 }
 
+/**
+ * Filter für Besucher („Filter nach Kategorie“ bei Karten und Datenliste): aus den Kategorien je Eintrag (Komma trennt
+ * mehrere) eine Leiste mit Optionsfeldern – gefiltert wird per CSS (:has(), Kategorien als Nummern 1–12, Markup der
+ * Komponente filter von NativeCSS), js/filter.js ergänzt die Trefferzahl als Ansage. Leer, wenn weniger als zwei
+ * Kategorien vorkommen oder beim Bearbeiten.
+ *
+ * @param list<string> $cats Kategorien je Eintrag (Index wie die Einträge)
+ * @return array{bar: string, item: list<string>} Leiste und data-category je Eintrag
+ */
+function fluid_filter(\Klxm\Fluid\Block $b, array $cats): array
+{
+    $names = [];
+    $item = [];
+    foreach ($cats as $i => $raw) {
+        $nums = [];
+        foreach (array_filter(array_map('trim', explode(',', (string) $raw))) as $c) {
+            $key = mb_strtolower($c);
+            if (!isset($names[$key]) && count($names) < 12) {
+                $names[$key] = ['n' => count($names) + 1, 'label' => $c];
+            }
+            if (isset($names[$key])) {
+                $nums[] = $names[$key]['n'];
+            }
+        }
+        $item[$i] = implode(' ', array_unique($nums));
+    }
+    if (count($names) < 2 || is_editing()) {
+        return ['bar' => '', 'item' => []];
+    }
+    \Klxm\Fluid\Kit::active()->markUsed('@filter');
+    $id = $b->domId() . '-f';
+    $bar = '<fieldset class="ncss-filter-bar"><legend>' . e(lt('Filtern nach Kategorie')) . '</legend>'
+        . '<input type="radio" name="' . e($id) . '" id="' . e($id) . '-0" value="" checked><label for="' . e($id) . '-0">' . e(lt('Alle')) . '</label>';
+    foreach ($names as $c) {
+        $bar .= '<input type="radio" name="' . e($id) . '" id="' . e($id) . '-' . $c['n'] . '" value="' . $c['n'] . '"><label for="' . e($id) . '-' . $c['n'] . '">' . e($c['label']) . '</label>';
+    }
+
+    return ['bar' => $bar . '</fieldset>', 'item' => $item];
+}
+
 /** Text ohne *Betonung*-Sternchen (Attribute, Screenreader) */
 function strip_emphasis(string $text): string
 {
