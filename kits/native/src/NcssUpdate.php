@@ -43,6 +43,7 @@ final class NcssUpdate
         'components/audio-player.css',   // Video & Audio (Audio)
         'components/video-bg.css',       // Einstieg „Vollflächig“ mit Hintergrundvideo (Schalter Pausieren/Abspielen)
         'components/preferences.css',    // Website → „Darstellungs-Knopf für Besucher anzeigen“ (<ncss-preferences>)
+        'components/morph.css',          // Text + Bild, Darstellung „Morphing beim Scrollen“ (nur Kit NativeCSS)
     ];
 
     /** Komponenten von NativeCSS, die fluid (noch) nicht verwendet – nicht im Manifest, die Dateien liegen trotzdem bereit */
@@ -58,6 +59,8 @@ final class NcssUpdate
         'components/tag.css', 'components/stat.css', 'components/empty-state.css', 'components/spinner.css', 'components/kbd.css',
         'components/floating-label.css', 'components/segmented.css', 'components/rating.css', 'components/dropzone.css',
         'components/countdown.css', 'components/back-to-top.css', 'components/app-shell.css',
+        // <ncss-map>: fluid hat einen eigenen Karten-Block (MapLibre, Proxy, ohne Einwilligung) – vendor/maplibre wird nicht kopiert
+        'components/map.css',
     ];
 
     /** Dateien aus dist/: CSS im Wurzelordner, components/, helpers/, js/ und fonts/ (Schriften der Darstellungs-Einstellungen mit Lizenz) */
