@@ -29,6 +29,10 @@
 - **`fluid:kit:ncss-update`** (bzw. `php tools/ncss-update.php` im Repo): NativeCSS aus einer Arbeitskopie (`--from`,
   optional `--ref`) oder von GitHub (`--tag`) übernehmen, mit Übersicht (neu/geändert/entfernt), `--dry-run`,
   `VERSION.txt` mit Stand und Commit; erzeugt `css/ncss-base.css` neu. Eigene Dateien des Kits bleiben unberührt.
+- Demo „REDAXO 6“: Seite Video mit eigenem Video (Kapitel, Untertitel de/en, Transkript) und Audio (Playlist, Kapitel,
+  Transkript), Seite Bausteine mit Vorher/Nachher und Einblend-Effekten (Bento, Vorher/Nachher), englische Texte.
+  Medien: Kurzfilm, Untertitel, Kapitel, Musik aus der Demo von NativeCSS (MIT), Foto von Curtis Adams (Pexels-Lizenz) –
+  Nachweis in den Bildunterschriften, Titeln im Medienpool und im README.
 - NativeCSS aktualisiert auf 15fe8fc (+ nicht committete Komponenten von feat/marija-integration, siehe VERSION.txt).
 
 ## 1.0.0-beta.1 – 2026-11-18

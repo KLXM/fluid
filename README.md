@@ -52,8 +52,8 @@ fluid läuft auch ohne.
 **Für Redakteure** – alles auf der Website, über eine Leiste oben:
 
 - **Texte direkt auf der Seite** ändern, mit Formatierungsleiste; alle Felder eines Blocks in der Seitenleiste
-- **Blöcke** einfügen, verschieben (ziehen oder ↑ ↓), verdoppeln, kopieren, online/offline – 24 Blöcke im Kit,
-  vom Einstieg über Text + Bild, Zahlen, Fragen & Antworten, Preise und Karten bis zum Video
+- **Blöcke** einfügen, verschieben (ziehen oder ↑ ↓), verdoppeln, kopieren, online/offline – 29 Blöcke im Kit,
+  vom Einstieg über Text + Bild, Zahlen, Fragen & Antworten, Preise und Karten bis zu Video & Audio und Vorher/Nachher
 - **Layout und Greifer:** Spalten, Abstände, Textbreite und Aufteilung Bild/Text mit der Maus ziehen
 - **Entwurf und Veröffentlichen:** Änderungen erst im Entwurf, dann „Veröffentlichen“; ältere Stände wiederherstellen
 - **Wer arbeitet gerade wo:** In der Leiste und im Seitenbaum steht, wer eine Seite gerade bearbeitet. Hat jemand
@@ -193,7 +193,8 @@ Im Backend findest du unter **AddOns → fluid** eine Statusseite, die prüft, o
 |---|---|
 | **Start** | Einstieg, Merkmale, Zahlen, Layout mit Text und Zitat in Spalten, Handlungsaufruf |
 | **Technik**, **Was sich ändert**, **Bearbeiten** | Schritte, Fließtext, Fragen & Antworten, Merkmale, Zitat, Spalten |
-| **Bausteine** | weitere Blöcke des Kits: Logos, Bento, Reiter, Preise |
+| **Bausteine** | weitere Blöcke des Kits: Logos, Bento, Reiter, Preise, Vorher/Nachher (mit Einblend-Effekt im Kit NativeCSS) |
+| **Video** | eigenes Video mit Kapiteln und Untertiteln, Audio mit Playlist und Transkript |
 | **Daten** | YForm: Termine als Datenliste, Kontaktformular mit Postfach |
 | **Presse** | Kurzmeldungen aus YForm – nach Datum, mit Blättern und eigener Adresse je Meldung |
 | **Projekte** | Fallstudien: YForm-Einträge, deren Inhalt aus Blöcken besteht – direkt auf der Website bearbeitbar |
@@ -459,6 +460,9 @@ MIT – siehe [LICENSE](LICENSE).
 - Konzept und Teile des Codes aus [KLXM Studio](https://github.com/KLXM-Opensource/studio) (MIT)
 - [REDAXO](https://redaxo.org) und [YForm](https://github.com/yakamara/yform) von Yakamara und der REDAXO-Community
 - Symbole: [Phosphor Icons](https://phosphoricons.com) (MIT) · Schriften: SIL Open Font License (Lizenzen in `assets/fonts/`)
+- Demo-Medien: Kurzfilm, Untertitel, Kapitel und Musik (`ncss-*` in `kits/fluid/demo/media/`) aus der Demo von
+  [NativeCSS](https://github.com/skerbis/nativecss) (MIT); Foto Wohnzimmer: Curtis Adams,
+  [Pexels](https://www.pexels.com/photo/empty-living-room-6835103/) (Pexels-Lizenz), „Vorher“ für die Demo flau bearbeitet
 - Karten: [MapLibre GL JS](https://maplibre.org) (BSD-3), [OpenFreeMap](https://openfreemap.org), Daten © OpenStreetMap-Mitwirkende (ODbL)
 - Suche: [Loupe](https://github.com/loupe-php/loupe) (MIT)
 - Kit „NativeCSS“: [NativeCSS](https://github.com/skerbis/nativecss) von Thomas Skerbis / KLXM Crossmedia (MIT, unverändert in `kits/native/assets/ncss/`, Stand in `VERSION.txt`, aktualisieren mit `fluid:kit:ncss-update`)
