@@ -226,10 +226,11 @@ final class Design
     }
 
     /** Öffentliche CSS-Datei der Werte → URL (null = Standardwerte des Kits, keine Datei nötig) */
-    public function fileUrl(): ?string
+    public function fileUrl(bool $force = false): ?string
     {
-        // Standardwerte des Kits fluid stehen schon in dessen Grund-CSS; abgeleitete Kits haben eigene und brauchen die Datei immer
-        if (Kit::DEFAULT === $this->kit->key() && $this->values() == $this->defaults()) {
+        // Standardwerte des Kits fluid stehen schon in dessen Grund-CSS; abgeleitete Kits haben eigene und brauchen die Datei immer.
+        // $force: trotzdem ausgeben – z. B. für die dunklen Werte bei data-theme="dark" (Darstellungs-Knopf für Besucher)
+        if (!$force && Kit::DEFAULT === $this->kit->key() && $this->values() == $this->defaults()) {
             return null;
         }
         $css = $this->css();
@@ -246,13 +247,13 @@ final class Design
     }
 
     /** <link>-Tags: Schriften + Design-Variablen (nach dem CSS des Kits einbinden) */
-    public function head(): string
+    public function head(bool $force = false): string
     {
         $h = '';
         foreach ($this->fontLinks() as $href) {
             $h .= '<link rel="stylesheet" href="' . escape($href) . '" data-fluid-font>' . "\n";
         }
-        $url = $this->fileUrl();
+        $url = $this->fileUrl($force);
 
         return $h . ($url ? '<link rel="stylesheet" href="' . escape($url) . '" data-fluid-design>' . "\n" : '');
     }

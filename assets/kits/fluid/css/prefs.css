@@ -1,0 +1,70 @@
+/*
+ * Kit fluid: Darstellungs-Einstellungen der Besucher (Website → „Darstellungs-Knopf für Besucher anzeigen“). Das Bedienfeld
+ * ist <ncss-preferences> von NativeCSS (preferences.js, preferences.css aus dem Kit „NativeCSS“); hier die Tokens, die es
+ * braucht (aus den Design-Werten --f-…), und die Wirkung der Attribute am <html> auf fluid – im Kit „NativeCSS“ erledigen
+ * das colors.css/reset.css von NativeCSS und native.css. !important wie bei NativeCSS: eine Wahl der Besucher schlägt das Design.
+ */
+:root {
+  --ncss-border-width: 1px; --ncss-focus-ring-width: 2px;
+  --ncss-color-brand: var(--f-a); --ncss-color-brand-contrast: var(--f-a-on); --ncss-color-focus-ring: var(--f-a);
+  --ncss-color-surface: var(--f-bg); --ncss-color-bg: var(--f-bg); --ncss-color-bg-subtle: var(--f-surface);
+  --ncss-color-text: var(--f-text); --ncss-color-text-muted: var(--f-muted); --ncss-color-border: var(--f-line);
+  --ncss-font-size-sm: .875rem; --ncss-font-size-md: 1.125rem; --ncss-font-weight-medium: 500; --ncss-font-weight-semibold: 600;
+  --ncss-space-3xs: .25rem; --ncss-space-2xs: .5rem; --ncss-space-xs: .75rem; --ncss-space-sm: 1rem;
+  --ncss-radius-sm: calc(var(--f-radius) * .5); --ncss-radius-lg: calc(var(--f-radius) * 1.5); --ncss-radius-full: 999px;
+  --ncss-shadow-lg: 0 18px 48px -16px var(--f-sh2), 0 2px 6px var(--f-sh1);
+  --ncss-motion-duration-fast: 100ms; --ncss-motion-easing: cubic-bezier(.4, 0, .2, 1);
+}
+ncss-preferences { font-family: var(--f-font); }
+/* Bedienfeld in den Farben der Seite, nicht des (ggf. farbigen) Kopfs: Der Kopf definiert --f-… für sich neu – die Kopien
+   --fp-… werden am :root aufgelöst und erben unverändert. Knöpfe ohne Browser-Grau (NativeCSS hat dafür reset.css). */
+:root { --fp-bg: var(--f-bg); --fp-surface: var(--f-surface); --fp-text: var(--f-text); --fp-muted: var(--f-muted); --fp-line: var(--f-line); --fp-a: var(--f-a); --fp-a-on: var(--f-a-on); }
+html .ncss-preferences-panel {
+  --ncss-color-surface: var(--fp-bg); --ncss-color-bg: var(--fp-bg); --ncss-color-bg-subtle: var(--fp-surface);
+  --ncss-color-text: var(--fp-text); --ncss-color-text-muted: var(--fp-muted); --ncss-color-border: var(--fp-line);
+  --ncss-color-brand: var(--fp-a); --ncss-color-brand-contrast: var(--fp-a-on); --ncss-color-focus-ring: var(--fp-a);
+  color: var(--fp-text); background-color: var(--fp-bg);
+}
+.ncss-preferences-panel button { background-color: transparent; color: inherit; font: inherit; font-weight: 600; cursor: pointer; }
+
+/* Platz im Kopf: breit in den Werkzeugen, sobald die Navigation in der Leiste steht; sonst im Menü (Menü-Knopf) */
+.hdr__prefs { display: none; }
+.hdr__prefs--always { display: inline-block; }
+@container hdr (min-width: 60rem) { .hdr:not(.is-overflow) .hdr__prefs { display: inline-block; } }
+.mnav__prefs { display: block; margin-block-start: var(--f-s-m); }
+.mnav__prefs:not(:defined) { display: none; }
+/* Knopf übernimmt die Farbe des Kopfs (auch auf Akzent- oder dunklem Kopf), statt der Knopf-Gestaltung von fluid */
+:is(.hdr, .mnav) .ncss-preferences-toggle { background: transparent; color: inherit; font: 600 var(--f-t-1)/1 var(--f-font); border-color: color-mix(in oklab, currentColor 35%, transparent); }
+:is(.hdr, .mnav) .ncss-preferences-toggle:hover { background: color-mix(in oklab, currentColor 10%, transparent); }
+/* farbiger Kopf: Schriftfarbe des Kopfs (wie die Lupe) */
+.hbg-accent .hdr .ncss-preferences-toggle { color: var(--f-a-on); }
+.hbg-secondary .hdr .ncss-preferences-toggle { color: var(--f-b-on); }
+.hbg-dark .hdr .ncss-preferences-toggle { color: #fff; }
+
+/* Farbschema: „Dunkel“ braucht das dunkle Farbschema des Browsers (Werte: Design-Datei mit data-theme, js/prefs-theme.js) */
+html.has-dark[data-theme="dark"] { color-scheme: dark; }
+html[data-theme="light"] { color-scheme: light; }
+html.is-dark .brand__logo--light { display: none; }
+html.is-dark .brand__logo--dark { display: block; }
+
+/* Kontrast */
+:root[data-contrast="more"] {
+  --f-text: light-dark(#000000, #ffffff) !important; --f-ink: light-dark(#000000, #ffffff) !important;
+  --f-muted: light-dark(#2b2f36, #dcdfe5) !important; --f-line: light-dark(#5c6370, #a3a9b4) !important;
+}
+/* Lese-Schrift (preferences-fonts.css setzt --ncss-font-family-base/-heading) */
+:root[data-ncss-font] { --f-font: var(--ncss-font-family-base) !important; --f-font-head: var(--ncss-font-family-heading) !important; }
+/* Bewegung (zusätzlich nimmt js/prefs-theme.js has-motion zurück) */
+:root[data-motion="reduce"] *, :root[data-motion="reduce"] *::before, :root[data-motion="reduce"] *::after {
+  animation-duration: .01ms !important; animation-iteration-count: 1 !important; animation-timeline: auto !important;
+  transition-duration: .01ms !important; scroll-behavior: auto !important;
+}
+/* Schriftgröße, Textabstände (WCAG 1.4.12), Links, Fokus – wie reset.css von NativeCSS */
+:root[data-text-scale="115"] { font-size: 115% !important; }
+:root[data-text-scale="130"] { font-size: 130% !important; }
+:root[data-text-spacing] * { line-height: 1.5 !important; letter-spacing: .12em !important; word-spacing: .16em !important; }
+:root[data-text-spacing] :is(p, li, dd, blockquote) { margin-block-end: 2em !important; }
+:root[data-links="underline"] a[href]:not(.btn, [role="tab"], [role="button"]) {
+  text-decoration-line: underline !important; text-decoration-thickness: max(1px, .08em) !important; text-underline-offset: .18em !important;
+}
+:root[data-focus="strong"] :focus-visible { outline: 4px solid var(--f-a) !important; outline-offset: 3px !important; box-shadow: 0 0 0 7px var(--f-bg) !important; }
