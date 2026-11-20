@@ -45,10 +45,12 @@
 @import url("helpers/surfaces.css") layer(helpers);
 @import url("helpers/float.css") layer(helpers);
 @import url("helpers/animations.css") layer(helpers);
+@import url("helpers/reveal.css") layer(helpers);
 @import url("helpers/elevation.css") layer(helpers);
 
 @import url("components/hero.css") layer(components);
 @import url("components/search.css") layer(components);
+@import url("components/livesearch.css") layer(components);
 @import url("components/select.css") layer(components);
 @import url("components/input-group.css") layer(components);
 @import url("components/combobox.css") layer(components);
@@ -56,6 +58,14 @@
 @import url("components/sparkline.css") layer(components);
 @import url("components/video.css") layer(components);
 @import url("components/audio.css") layer(components);
+@import url("components/video-player.css") layer(components);
+@import url("components/audio-player.css") layer(components);
+@import url("components/scroll-video.css") layer(components);
+@import url("components/scroll-frames.css") layer(components);
+@import url("components/video-bg.css") layer(components);
+@import url("components/video-text.css") layer(components);
+@import url("components/video-float.css") layer(components);
+@import url("components/video-card.css") layer(components);
 @import url("components/card.css") layer(components);
 @import url("components/split.css") layer(components);
 @import url("components/tile.css") layer(components);
@@ -63,7 +73,9 @@
 @import url("components/marginnote.css") layer(components);
 @import url("components/slideshow.css") layer(components);
 @import url("components/dialog-close.css") layer(components);
+@import url("components/theme-toggle.css") layer(components);
 @import url("components/modal.css") layer(components);
+@import url("components/lightbox.css") layer(components);
 @import url("components/scroll-progress.css") layer(components);
 @import url("components/scroll-stack.css") layer(components);
 @import url("components/roadmap.css") layer(components);
@@ -73,14 +85,30 @@
 @import url("components/disclosure.css") layer(components);
 @import url("components/badge.css") layer(components);
 @import url("components/breadcrumb.css") layer(components);
+@import url("components/subnav.css") layer(components);
 @import url("components/lists.css") layer(components);
 @import url("components/cover.css") layer(components);
 @import url("components/overlay.css") layer(components);
 @import url("components/footer.css") layer(components);
 @import url("components/effects.css") layer(components);
+@import url("components/spotlight.css") layer(components);
+@import url("components/compare.css") layer(components);
+@import url("components/expand-panels.css") layer(components);
+@import url("components/command-palette.css") layer(components);
+@import url("components/hovercard.css") layer(components);
+@import url("components/notification.css") layer(components);
+@import url("components/aurora.css") layer(components);
+@import url("components/backdrop.css") layer(components);
 @import url("components/code-block.css") layer(components);
 @import url("components/events.css") layer(components);
 @import url("components/downloads.css") layer(components);
+@import url("components/curtain.css") layer(components);
+@import url("components/scroll-horizontal.css") layer(components);
+@import url("components/text-reveal.css") layer(components);
+@import url("components/scrolly.css") layer(components);
+@import url("components/count-up.css") layer(components);
+@import url("components/marquee.css") layer(components);
+@import url("components/reveal-pin.css") layer(components);
 /* Weitere Komponenten (Tabs, Accordion, ...) folgen hier, je eine Datei.
    JS liegt gesammelt unter js/, nicht neben dem jeweiligen Komponenten-CSS - separat
    einbinden (<script src="ncss/js/command-fallback.js">) - generischer Fallback für

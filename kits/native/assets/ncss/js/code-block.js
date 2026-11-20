@@ -29,20 +29,48 @@
     return found;
   }
 
-  var canHighlight = window.Prism && typeof window.Prism.highlightElement === "function";
-
-  var blocks = deepQueryAll('pre > code[class*="language-"]');
-  for (var i = 0; i < blocks.length; i++) {
-    if (canHighlight) {
-      window.Prism.highlightElement(blocks[i]);
+  // Prism erst beim jeweiligen Aufruf prüfen (nicht einmalig beim Laden) - ein später
+  // eingefügter Block soll auch dann hervorgehoben werden, wenn Prism nach diesem Script
+  // fertig geladen wurde.
+  function highlight(codeEl) {
+    if (window.Prism && typeof window.Prism.highlightElement === "function") {
+      window.Prism.highlightElement(codeEl);
     }
-    addCopyButton(blocks[i]);
   }
+
+  // Dynamische Inhalte (htmx, fetch+innerHTML, REDAXO-Frontend-Editing): scan() ist
+  // idempotent - bereits verarbeitete Elemente merkt sich ein WeakSet, bewusst KEIN
+  // data-Attribut (per innerHTML kopiertes Markup trüge sonst eine veraltete Markierung
+  // mit). Läuft beim Laden und bei jedem "ncss-content-change"-Event (detail.root = neu
+  // eingefügtes Element, ohne Angabe das ganze Dokument), siehe js/content-observer.js.
+  var SELECTOR = "pre > code[class*=\"language-\"]";
+  var seen = new WeakSet();
+  function scan(root) {
+    if (!root || !root.querySelectorAll) return;
+    var list = deepQueryAll(SELECTOR, root);
+    if (root.matches && root.matches(SELECTOR)) list.unshift(root);
+    list.forEach(function (el) {
+      if (seen.has(el)) return;
+      seen.add(el);
+      highlight(el);
+      addCopyButton(el);
+    });
+  }
+  scan(document);
+  document.addEventListener("ncss-content-change", function (event) {
+    scan((event.detail && event.detail.root) || document);
+  });
 
   function addCopyButton(codeEl) {
     var pre = codeEl.parentElement;
-    if (!pre || pre.querySelector(".ncss-code-copy")) {
+    if (!pre) {
       return;
+    }
+    // Ein vorhandener Button stammt aus per innerHTML kopiertem Markup (ohne Listener) -
+    // ersetzen statt übernehmen. addCopyButton() läuft pro <code> nur einmal (siehe scan()).
+    var stale = pre.querySelector(".ncss-code-copy");
+    if (stale) {
+      stale.remove();
     }
 
     var button = document.createElement("button");
