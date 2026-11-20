@@ -20,6 +20,9 @@ $defaults = array_combine($colorKeys, $light) + [
 $darkDefaults = array_combine($colorKeys, $dark) + ['secondary' => '#9DB0D8', 'on_secondary' => '#0A1628'];
 
 $design = $parent['design'];
+// Farbschema der Besucher (Website → „Darstellungs-Knopf für Besucher anzeigen“): <html data-theme="light|dark">
+// schlägt die Geräte-Einstellung – nur wenn das Design ein dunkles Schema erlaubt (has-dark)
+$design['dark']['attr'] = 'data-theme';
 // „Kopf & Fuß“ gehört zum Seitenrahmen von fluid – der Rahmen dieses Kits kommt aus NativeCSS
 $design['groups'] = array_values(array_filter($design['groups'], static fn (array $g) => 'navigation' !== ($g['id'] ?? '')));
 foreach ($design['groups'] as &$group) {

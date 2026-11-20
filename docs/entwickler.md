@@ -224,6 +224,15 @@ Blöcke: Player, Laufband & Co. zeigen dann ihre Form ohne JavaScript (Player de
 Gespeichert wird `tunes.reveal`; `Block::sectionClass()`/`revealAttrs()` setzen Klasse und Attribut – nicht beim
 Bearbeiten, nicht beim ersten Block, nicht bei „Dezente Animationen“ aus. „Bewegung reduzieren“ regelt das CSS des Kits.
 
+**Darstellung für Besucher.** Website → Kit → „Darstellungs-Knopf für Besucher anzeigen“ (`visitor_prefs`, Standard
+aus; `visitor_prefs_fonts` für die Lese-Schriften) gibt im Seitenrahmen `ncss/js/preferences-early.js` und
+`js/prefs-theme.js` synchron vor den Stylesheets aus, dazu `css/ncss-preferences.css` (+ `-fonts.css`), `preferences.js`
+(defer) und `<ncss-preferences settings="…">` zweimal: in der Kopfleiste (breit) und im Menü (schmal). `theme` fehlt in
+`settings`, wenn das Design kein dunkles Schema erlaubt. Die Attribute am `<html>` (`data-theme`, `data-contrast`,
+`data-motion`, `data-text-scale`, `data-ncss-font` …) wirken über NativeCSS; damit auch die Blöcke von fluid folgen:
+Design-Werte mit `'dark' => ['attr' => 'data-theme']` (dunkle Werte bei `dark`, nicht bei `light`), `js/prefs-theme.js`
+setzt `is-dark` bzw. nimmt `has-dark` zurück, `native.css` leitet Kontrast und Lese-Schrift auf `--f-…` um.
+
 #### NativeCSS aktualisieren
 
 ```bash
@@ -236,8 +245,8 @@ php tools/ncss-update.php --tag=v1.3.0                      # Release/Tag/Branch
 php bin/console fluid:kit:ncss-update --from=/pfad/zu/nativecss [--ref=HEAD] [--tag=…] [--target=…/kits/native/assets] [--dry-run]
 ```
 
-Kopiert `dist/` unverändert nach `assets/ncss/` (CSS, `components/`, `helpers/`, `js/` und die LICENSE; nicht
-`integrations/`), entfernt Dateien, die es upstream nicht mehr gibt, schreibt `assets/ncss/VERSION.txt` (Stand, Commit,
+Kopiert `dist/` unverändert nach `assets/ncss/` (CSS, `components/`, `helpers/`, `js/`, `fonts/` mit den OFL-Lizenzen
+und die LICENSE; nicht `integrations/`), entfernt Dateien, die es upstream nicht mehr gibt, schreibt `assets/ncss/VERSION.txt` (Version aus `package.json`, Commit,
 Datum, Quelle; „nicht committete Änderungen“, wenn die Arbeitskopie ohne `--ref` schmutzig war) und erzeugt
 `assets/css/ncss-base.css` neu. Eigenes von fluid (`assets/css/native.css`, Wrapper, Views, Seitenrahmen) bleibt
 unberührt. Fehlt upstream eine Datei aus `ON_DEMAND`, bricht der Befehl ab. Danach die Seiten im Kit ansehen

@@ -65,7 +65,12 @@ fluid läuft auch ohne.
   umschaltbar unter Website → Kit; die Inhalte bleiben. Eigene Kits erben von „Fluid“ (Entwickler-Referenz).
   Im Kit „NativeCSS“ zusätzlich: Video- und Audio-Player mit Kapiteln und Playlist, Kennzahlen, die hochzählen, und je
   Abschnitt ein **Einblend-Effekt** (Keiner · Sanft einblenden · Von unten · Kreis · Vorhang) – NativeCSS lädt nur, was
-  die Seite braucht; aktualisieren mit `fluid:kit:ncss-update`.
+  die Seite braucht; aktualisieren mit `fluid:kit:ncss-update`. Stand: NativeCSS 1.1.0.
+- **Darstellung für Besucher** (Kit „NativeCSS“, Website → Kit → „Darstellungs-Knopf für Besucher anzeigen“, aus
+  Standard): ein Knopf „Darstellung“ im Kopf, mit dem Besucher Farbschema, Kontrast, Bewegung, Schriftgröße, eine
+  Lese-Schrift (Atkinson Hyperlegible, Lexend, OpenDyslexic – abschaltbar), Textabstände, unterstrichene Links und einen
+  kräftigeren Fokus-Rahmen wählen. Gespeichert im Browser, ohne Wahl gilt das Gerät; Deutsch/Englisch nach Sprache
+  der Seite. Kein „Barrierefreiheits-Overlay“: ergänzt eine barrierearme Website, ersetzt sie nicht.
 - **Mehrsprachig:** Sprachwahl in der Leiste, Inhalte einer Sprache übernehmen und übersetzen, Sprachwahl für Besucher
 - **Blog / News** mit Schlagworten, RSS und „Neuer Beitrag“ direkt in der Übersicht
 - **Formulare** zum Zusammenklicken – auch mehrstufig, speichern und/oder per E-Mail (im Stil der Website), mit Bestätigung (YForm);
@@ -466,5 +471,5 @@ MIT – siehe [LICENSE](LICENSE).
   [Pexels](https://www.pexels.com/photo/empty-living-room-6835103/) (Pexels-Lizenz), „Vorher“ für die Demo flau bearbeitet
 - Karten: [MapLibre GL JS](https://maplibre.org) (BSD-3), [OpenFreeMap](https://openfreemap.org), Daten © OpenStreetMap-Mitwirkende (ODbL)
 - Suche: [Loupe](https://github.com/loupe-php/loupe) (MIT)
-- Kit „NativeCSS“: [NativeCSS](https://github.com/skerbis/nativecss) von Thomas Skerbis / KLXM Crossmedia (MIT, unverändert in `kits/native/assets/ncss/`, Stand in `VERSION.txt`, aktualisieren mit `fluid:kit:ncss-update`)
+- Kit „NativeCSS“: [NativeCSS](https://github.com/skerbis/nativecss) von Thomas Skerbis / KLXM Crossmedia (MIT, unverändert in `kits/native/assets/ncss/`, Stand in `VERSION.txt` – 1.1.0, aktualisieren mit `fluid:kit:ncss-update`; Schriften der Darstellungs-Einstellungen unter SIL Open Font License, `ncss/fonts/*/OFL.txt`)
 - Das REDAXO-Logo in der Demo gehört dem REDAXO-Projekt; es kommt aus dem Core und wird nur in der Demo verwendet.

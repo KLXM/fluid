@@ -1,0 +1,2 @@
+/* NativeCSS components/preferences.css – nur mit Website → „Darstellungs-Knopf für Besucher anzeigen“. Layer wie in ncss.css von NativeCSS. */
+@import url("../ncss/components/preferences.css") layer(components);

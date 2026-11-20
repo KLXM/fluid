@@ -33,7 +33,17 @@
   Transkript), Seite Bausteine mit Vorher/Nachher und Einblend-Effekten (Bento, Vorher/Nachher), englische Texte.
   Medien: Kurzfilm, Untertitel, Kapitel, Musik aus der Demo von NativeCSS (MIT), Foto von Curtis Adams (Pexels-Lizenz) –
   Nachweis in den Bildunterschriften, Titeln im Medienpool und im README.
-- NativeCSS aktualisiert auf 15fe8fc (+ nicht committete Komponenten von feat/marija-integration, siehe VERSION.txt).
+- **NativeCSS 1.1.0** (0c4f60d): u. a. Darstellungs-Einstellungen `<ncss-preferences>`, Lese-Schriften mit OFL-Lizenzen
+  (`ncss/fonts/`, kopiert der Update-Befehl jetzt mit), Kontrast-Tokens, `data-motion` in den Skripten, „Klick daneben
+  schließt“ für Dialoge (`js/dialog-light-dismiss.js`, im Kit für das Menü geladen). Neue Komponenten ohne Block in fluid
+  (Tabs, Tooltip, Pagination, Alert …) stehen nicht im Manifest `css/ncss-base.css`. Der Update-Befehl liest die
+  Version aus `package.json`.
+- **Darstellungs-Knopf für Besucher** (Kit NativeCSS, Website → Kit, Standard aus; Lese-Schriften abschaltbar):
+  `<ncss-preferences>` im Kopf (breit in der Leiste, schmal im Menü), `preferences-early.js` vor den Stylesheets,
+  CSS/JS nur bei eingeschalteter Option. Die Wahl wirkt auch auf die Blöcke von fluid: Farbschema über die dunklen
+  Design-Werte (`Design` mit `'dark' => ['attr' => 'data-theme']`) und die Klassen `has-dark`/`is-dark`
+  (`js/prefs-theme.js`), Kontrast und Lese-Schrift über `--f-…`.
+- Kit NativeCSS: Kopfleiste bleibt auch bei 360 px einzeilig (Marke schrumpft); Kennzahlen wie „6.x“ zählen nicht hoch.
 
 ## 1.0.0-beta.1 – 2026-11-18
 

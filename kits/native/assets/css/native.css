@@ -30,6 +30,16 @@
   /* Dunkles Schema nur, wenn die Design-Leiste es erlaubt (wie die --f-Werte) – light-dark() in NativeCSS folgt */
   html.has-dark { color-scheme: light dark; }
   html.is-dark { color-scheme: dark; }
+  /* Darstellungs-Einstellungen der Besucher (<ncss-preferences>, Attribute am <html>): Farbschema-Wahl schlägt das Gerät
+     (die dunklen --f-Werte: Design::css() mit 'attr'), Kontrast und Lese-Schrift auch für die Blöcke von fluid (--f-…).
+     !important: gewinnt gegen die Design-Werte ohne Layer – wie die Regeln von NativeCSS selbst. */
+  html[data-theme="light"] { color-scheme: light; }
+  html.has-dark[data-theme="dark"] { color-scheme: dark; }
+  :root[data-contrast="more"] {
+    --f-text: light-dark(#000000, #ffffff) !important; --f-ink: light-dark(#000000, #ffffff) !important;
+    --f-muted: light-dark(#2b2f36, #dcdfe5) !important; --f-line: light-dark(#5c6370, #a3a9b4) !important;
+  }
+  :root[data-ncss-font] { --f-font: var(--ncss-font-family-base) !important; --f-font-head: var(--ncss-font-family-heading) !important; }
 
   body { background: var(--f-bg); color: var(--f-text); font-family: var(--f-font); }
 
@@ -62,17 +72,26 @@
     .nv-topbar .ncss-topbar-actions { flex: 0 0 auto; }
   }
   .nv-nav .ncss-nav-list a[aria-current="page"], .nv-nav [data-active] > summary, .nv-nav a[data-active] { color: var(--f-link, var(--f-a)); }
-  .nv-nav__langs { display: none; }
+  .nv-nav__langs, .nv-nav__prefs { display: none; }
   .nv-topbar .ncss-topbar-actions { display: flex; align-items: center; gap: var(--f-s-s); }
   .nv-icon-link { display: inline-grid; place-items: center; inline-size: 2.5rem; block-size: 2.5rem; border-radius: var(--ncss-radius-full, 999px); color: var(--f-ink); }
   .nv-icon-link:hover { background: var(--f-surface); }
   .nv-icon-link .ico { inline-size: 1.25rem; block-size: 1.25rem; }
   /* Off-Canvas (schmale Fenster): Sprachen unten im Panel statt in der Leiste */
   @media (max-width: 63.99rem) {
+    /* eine Zeile auch bei 360 px: Marke darf schrumpfen (Logo eingepasst, Name gekürzt), Werkzeuge und Menü bleiben */
+    .nv-topbar .ncss-topbar-inner { flex-wrap: nowrap; }
+    .nv-brand { flex: 0 1 auto; min-inline-size: 0; }
+    .nv-brand__logo { min-inline-size: 0; }
+    .nv-brand__img { max-inline-size: 100%; }
+    .nv-brand__name { min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .nv-topbar .ncss-topbar-actions { margin-inline-start: auto; }
     .nv-nav { order: 3; flex: 0 0 auto; margin-inline-start: 0; }
     .nv-langs { display: none; }
     .nv-nav__langs { display: flex; margin-block-start: var(--f-s-l); }
+    /* Darstellung: schmal im Menü (die Kopfleiste bleibt einzeilig), breit in der Leiste */
+    .nv-prefs:not(.nv-prefs--always) { display: none; }
+    .nv-nav__prefs:defined { display: inline-block; margin-block-start: var(--f-s-m); }
     .nv-cta { display: none; }
   }
 

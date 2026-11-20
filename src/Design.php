@@ -174,8 +174,15 @@ final class Design
         $out = ':root{' . implode(';', $light) . '}';
         $d = (array) ($this->def()['dark'] ?? []);
         if ($dark && !empty($d['scope'])) {
-            $rule = $d['scope'] . '{' . implode(';', $dark) . '}';
+            // 'attr' (z. B. data-theme): ausdrückliche Wahl der Besucher am <html> schlägt die Geräte-Einstellung –
+            // „light“ nimmt das dunkle Schema zurück, „dark“ erzwingt es (Kit „NativeCSS“, <ncss-preferences>)
+            $attr = (string) ($d['attr'] ?? '');
+            $scope = (string) $d['scope'] . ('' !== $attr && !empty($d['media']) ? ':not([' . $attr . '="light"])' : '');
+            $rule = $scope . '{' . implode(';', $dark) . '}';
             $out .= "\n" . (!empty($d['media']) ? '@media ' . $d['media'] . '{' . $rule . '}' : $rule);
+            if ('' !== $attr) {
+                $out .= "\n" . $d['scope'] . '[' . $attr . '="dark"]{' . implode(';', $dark) . '}';
+            }
         }
 
         return $out . "\n";
