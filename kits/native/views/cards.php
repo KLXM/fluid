@@ -27,9 +27,14 @@ $min = ['s' => '14rem', 'm' => '18rem', 'l' => '24rem'][$d['size'] ?? 'm'] ?? '1
         $label = trim((string) ($it['link_label'] ?? ''));
         $pic = fluid_image(!empty($it['image']) ? (string) $it['image'] : null, 'horizontal' === $v ? '(min-width: 1080px) 320px, 100vw' : '(min-width: 1080px) 420px, (min-width: 640px) 50vw, 90vw', $ratio);
         $card = 'ncss-card ncss-border ncss-radius-lg ncss-shadow-sm' . ('' !== $link ? ' ncss-card--linked ncss-shadow-hover-md' : '') . ('horizontal' === $v ? ' ncss-card--horizontal' : '') . ('overlay' === $v ? ' nv-card--overlay' : '');
+        // „Hervorheben“: Rahmen in der Akzentfarbe und ein Hinweis an der Ecke (Text echt im DOM, Standard „Empfohlen“)
+        $featured = !empty($it['featured']);
+        $card .= $featured ? ' ncss-card--featured' : '';
+        $badge = $featured ? (trim((string) ($it['badge'] ?? '')) ?: lt('Empfohlen')) : '';
     ?>
     <li class="<?= 'horizontal' === $v ? 'ncss-card-container' : 'nv-cards__item' ?>" data-reveal><?= $b->targetEdit($link, (string) ($it['title'] ?? '')) ?>
       <article class="<?= e($card) ?>">
+        <?php if ('' !== $badge): ?><span class="ncss-card-badge"<?= $b->edit("items.$i.badge") ?>><?= e($badge) ?></span><?php endif; ?>
         <?php if ('' !== $pic): ?><div class="ncss-card-media"><?= $pic ?></div><?php endif; ?>
         <div class="ncss-card-body">
           <?php if ('' !== trim((string) ($it['eyebrow'] ?? ''))): ?><p class="nv-card__eyebrow"<?= $b->edit("items.$i.eyebrow") ?>><?= e($it['eyebrow']) ?></p><?php endif; ?>

@@ -2,6 +2,7 @@
 
 namespace Klxm\Fluid\Kit\Fluid\Module\Item;
 
+use Klxm\Fluid\Field\Checkbox;
 use Klxm\Fluid\Field\Link;
 use Klxm\Fluid\Field\MediaPicker;
 use Klxm\Fluid\Field\Text;
@@ -28,4 +29,10 @@ final class CardsItem
 
     #[Link('Link', width: 'half')]
     public string $link = '';
+
+    #[Checkbox('Hervorheben', width: 'half')]
+    public bool $featured = false;
+
+    #[Text('Hinweis am Rand (bei „Hervorheben“)', maxLength: 24, width: 'half', placeholder: 'Empfohlen')]
+    public string $badge = '';
 }

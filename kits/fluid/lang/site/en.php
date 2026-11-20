@@ -429,4 +429,5 @@ return array (
   'Trennlinie verschieben: links {a}, rechts {b}' => 'Move the divider: {a} on the left, {b} on the right',
   'Laufband anhalten' => 'Pause marquee',
   'Text zum Audio' => 'Transcript',
+  'Empfohlen' => 'Recommended',
 );

@@ -25,9 +25,12 @@ $id = $b->domId() . '-reel';
     <?php foreach ($items as $i => $it):
         $link = trim((string) ($it['link'] ?? ''));
         $label = trim((string) ($it['link_label'] ?? ''));
+        $featured = !empty($it['featured']);
+        $badge = $featured ? (trim((string) ($it['badge'] ?? '')) ?: lt('Empfohlen')) : '';
         $pic = fluid_image(!empty($it['image']) ? (string) $it['image'] : null, $v === 'horizontal' ? '(min-width: 1080px) 320px, 100vw' : '(min-width: 1080px) 420px, (min-width: 640px) 50vw, 90vw', $ratio, 'tcard__media');
     ?>
-    <li class="tcard tcard--<?= e($v) ?><?= $v === 'overlay' ? '' : ' card' ?><?= $link !== '' ? ' tcard--link' : '' ?>" data-reveal><?= $b->targetEdit($link, (string) ($it['title'] ?? '')) ?>
+    <li class="tcard tcard--<?= e($v) ?><?= $v === 'overlay' ? '' : ' card' ?><?= $link !== '' ? ' tcard--link' : '' ?><?= $featured ? ' tcard--featured' : '' ?>" data-reveal><?= $b->targetEdit($link, (string) ($it['title'] ?? '')) ?>
+      <?php if ($badge !== ''): ?><span class="tcard__badge"<?= $b->edit("items.$i.badge") ?>><?= e($badge) ?></span><?php endif; ?>
       <div class="tcard__in">
         <?= $pic ?>
         <div class="tcard__body">
