@@ -85,7 +85,9 @@ img.ncss-avatar {
   display: flex;
 }
 .ncss-avatar-group > * + * {
-  margin-inline-start: calc(var(--ncss-space-xs) * -1);
+  /* Feste, kleine Überlappung statt eines fluiden Space-Tokens - die Initialen des
+     vorderen Kreises müssen lesbar bleiben. */
+  margin-inline-start: -0.5rem;
 }
 .ncss-avatar-group .ncss-avatar {
   box-shadow: 0 0 0 2px var(--ncss-avatar-ring);

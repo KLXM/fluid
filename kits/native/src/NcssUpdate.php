@@ -19,7 +19,7 @@ use function sha1_file;
  * Aktualisiert NativeCSS im Kit „NativeCSS“ (`assets/ncss/`) aus einer Arbeitskopie oder einem Release von
  * https://github.com/skerbis/nativecss – ohne REDAXO lauffähig (Konsole `fluid:kit:ncss-update`, `tools/ncss-update.php`).
  *
- * - kopiert `dist/` unverändert (CSS im Wurzelordner, `components/`, `helpers/`, `js/`; nicht `integrations/` – Web Awesome
+ * - kopiert `dist/` unverändert (CSS im Wurzelordner, `components/`, `helpers/`, `js/`, `fonts/` mit OFL-Lizenzen; nicht `integrations/` – Web Awesome
  *   nutzt fluid nicht) und die LICENSE; Dateien, die es upstream nicht mehr gibt, werden entfernt
  * - schreibt `assets/ncss/VERSION.txt` (Stand, Commit, Datum, Quelle)
  * - erzeugt `assets/css/ncss-base.css`: das Manifest `ncss.css` von NativeCSS ohne die Komponenten, die fluid nur auf
@@ -42,6 +42,7 @@ final class NcssUpdate
         'components/video-player.css',   // Video & Audio (Video)
         'components/audio-player.css',   // Video & Audio (Audio)
         'components/video-bg.css',       // Einstieg „Vollflächig“ mit Hintergrundvideo (Schalter Pausieren/Abspielen)
+        'components/preferences.css',    // Website → „Darstellungs-Knopf für Besucher anzeigen“ (<ncss-preferences>)
     ];
 
     /** Komponenten von NativeCSS, die fluid (noch) nicht verwendet – nicht im Manifest, die Dateien liegen trotzdem bereit */
@@ -52,9 +53,15 @@ final class NcssUpdate
         'components/command-palette.css', 'components/hovercard.css', 'components/notification.css', 'components/aurora.css',
         'components/backdrop.css', 'components/curtain.css', 'components/scroll-horizontal.css', 'components/text-reveal.css',
         'components/reveal-pin.css',
+        // seit 1.1.0 im Manifest, in fluid (noch) ohne Block
+        'components/tabs.css', 'components/tooltip.css', 'components/pagination.css', 'components/alert.css', 'components/avatar.css',
+        'components/tag.css', 'components/stat.css', 'components/empty-state.css', 'components/spinner.css', 'components/kbd.css',
+        'components/floating-label.css', 'components/segmented.css', 'components/rating.css', 'components/dropzone.css',
+        'components/countdown.css', 'components/back-to-top.css', 'components/app-shell.css',
     ];
 
-    private const string DIRS = '~^(components|helpers|js)/[a-z0-9-]+\.(css|js)$|^[a-z0-9-]+\.css$~';
+    /** Dateien aus dist/: CSS im Wurzelordner, components/, helpers/, js/ und fonts/ (Schriften der Darstellungs-Einstellungen mit Lizenz) */
+    private const string DIRS = '~^(components|helpers|js)/[a-z0-9-]+\.(css|js)$|^[a-z0-9-]+\.css$|^fonts/([a-z0-9-]+/)?[A-Za-z0-9._-]+\.(woff2|txt|md)$~';
 
     /** @var array<string, string> Pfad relativ zu dist → absolute Quelle */
     private array $files = [];
@@ -94,15 +101,15 @@ final class NcssUpdate
             }
             $tmp = $this->tmpDir();
             $tar = $tmp . '/dist.tar';
-            self::run(['git', '-C', $root, 'archive', '--format=tar', '-o', $tar, $ref, 'dist', 'LICENSE']);
+            self::run(['git', '-C', $root, 'archive', '--format=tar', '-o', $tar, $ref, 'dist', 'LICENSE', 'package.json']);
             self::run(['tar', '-xf', $tar, '-C', $tmp]);
-            $this->info = ['version' => self::gitOut($root, ['describe', '--tags', '--always', $ref]), 'commit' => self::gitOut($root, ['rev-parse', '--short', $ref]),
+            $this->info = ['version' => self::packageVersion($tmp) ?? self::gitOut($root, ['describe', '--tags', '--always', $ref]), 'commit' => self::gitOut($root, ['rev-parse', '--short', $ref]),
                 'date' => self::gitOut($root, ['log', '-1', '--format=%cs', $ref]), 'source' => $root . ' @ ' . $ref, 'dirty' => false];
 
             return $this->scan($tmp . '/dist', $tmp . '/LICENSE');
         }
         if ($git) {
-            $this->info = ['version' => self::gitOut($root, ['describe', '--tags', '--always']), 'commit' => self::gitOut($root, ['rev-parse', '--short', 'HEAD']),
+            $this->info = ['version' => self::packageVersion($root) ?? self::gitOut($root, ['describe', '--tags', '--always']), 'commit' => self::gitOut($root, ['rev-parse', '--short', 'HEAD']),
                 'date' => self::gitOut($root, ['log', '-1', '--format=%cs']), 'source' => $root,
                 'dirty' => '' !== self::gitOut($root, ['status', '--porcelain', '--', 'dist'])];
         } else {
@@ -140,7 +147,7 @@ final class NcssUpdate
         if (1 !== count($top) || !is_dir($top[0] . '/dist')) {
             throw new RuntimeException('Im Archiv fehlt dist/.');
         }
-        $this->info = ['version' => $ref, 'commit' => '', 'date' => date('Y-m-d'), 'source' => 'https://github.com/' . $repo . ' (' . $ref . ')', 'dirty' => false];
+        $this->info = ['version' => self::packageVersion($top[0]) ?? $ref, 'commit' => '', 'date' => date('Y-m-d'), 'source' => 'https://github.com/' . $repo . ' (' . $ref . ')', 'dirty' => false];
 
         return $this->scan($top[0] . '/dist', $top[0] . '/LICENSE');
     }
@@ -273,6 +280,15 @@ final class NcssUpdate
         $this->cleanup[] = $dir;
 
         return $dir;
+    }
+
+    /** Version aus package.json von NativeCSS („1.1.0“), sonst null */
+    private static function packageVersion(string $root): ?string
+    {
+        $json = is_file($root . '/package.json') ? json_decode((string) file_get_contents($root . '/package.json'), true) : null;
+        $v = \is_array($json) ? (string) ($json['version'] ?? '') : '';
+
+        return 1 === preg_match('~^\d+\.\d+\.\d+[\w.+-]*$~', $v) ? $v : null;
     }
 
     /** @param list<string> $cmd */

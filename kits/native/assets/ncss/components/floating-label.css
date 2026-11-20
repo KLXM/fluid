@@ -58,7 +58,10 @@
   font-size: 1em;
 }
 .ncss-field--floating > :is(.ncss-input, .ncss-textarea):not(:focus)::placeholder {
+  /* opacity zusätzlich zu transparent: im Hochkontrastmodus erzwingt das System eine
+     Platzhalter-Farbe (GrayText) - sonst überlagerten sich Label und Platzhalter. */
   color: transparent;
+  opacity: 0;
 }
 /* Ein Fehler-Zustand färbt auch das Label - nicht nur den Rahmen. */
 .ncss-field--floating:has(> :user-invalid) > .ncss-label {

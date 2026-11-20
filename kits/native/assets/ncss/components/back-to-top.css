@@ -52,7 +52,10 @@
 @supports (animation-timeline: scroll()) {
   .ncss-back-to-top {
     position: fixed;
-    inset-block-end: max(var(--ncss-space-sm), env(safe-area-inset-bottom));
+    /* --ncss-back-to-top-offset verschiebt den Link nach oben, wenn die Ecke schon belegt
+       ist (z.B. ein eigener schwebender Button) - zwei überlappende Ziele wären zu klein
+       (WCAG 2.5.8, per axe-core gefunden). Parametrisierbar per style="--...: 4.5rem". */
+    inset-block-end: calc(max(var(--ncss-space-sm), env(safe-area-inset-bottom)) + var(--ncss-back-to-top-offset, 0px));
     inset-inline-end: max(var(--ncss-space-sm), env(safe-area-inset-right));
     z-index: var(--ncss-sticky-z, 10);
     inline-size: 3rem;

@@ -107,3 +107,15 @@
 .ncss-rating--sm {
   --ncss-rating-size: 1.1rem;
 }
+
+/* WebKit/Safari: nach einem Pfeiltasten-Wechsel innerhalb der Radio-Gruppe matcht der
+   neu fokussierte Input NICHT :focus-visible (per Playwright-WebKit-Test gefunden - der
+   Ring verschwand nach dem ersten Pfeil). Dort deshalb :focus - Safari fokussiert Radios
+   per Mausklick ohnehin nicht, es entsteht also kein Ring nach einem Klick. Gleiche
+   WebKit-Erkennung wie components/select.css. */
+@supports (hanging-punctuation: first) and (font: -apple-system-body) and (-webkit-appearance: none) {
+  .ncss-rating > input:focus + label {
+    outline: var(--ncss-focus-ring-width, 2px) solid var(--ncss-color-focus-ring);
+    outline-offset: 0;
+  }
+}

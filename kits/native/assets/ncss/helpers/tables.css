@@ -74,3 +74,12 @@
     font-weight: 600;
   }
 }
+
+/* --- Kompakte Tabelle -------------------------------------------------------------------
+   Dichtere Zeilen für Daten-/Verwaltungsansichten mit vielen Einträgen. Markup:
+   <table class="ncss-table--compact"> - auch auf einem Wrapper (z.B. .ncss-table-scroll)
+   nutzbar, gilt dann für alle Tabellen darin. */
+.ncss-table--compact :is(th, td) {
+  padding: var(--ncss-space-3xs) var(--ncss-space-2xs);
+  font-size: var(--ncss-font-size-sm);
+}

@@ -20,6 +20,10 @@
 .ncss-segmented {
   display: inline-flex;
   flex-wrap: wrap;
+  /* Auch als Kind eines streckenden Flex-/Grid-Layouts (.ncss-stack) nur so breit wie
+     der Inhalt - volle Breite ist die eigene Variante --block. */
+  align-self: start;
+  justify-self: start;
   gap: var(--ncss-space-3xs);
   margin: 0;
   padding: var(--ncss-space-3xs);
@@ -84,6 +88,8 @@
 }
 .ncss-segmented--block {
   display: flex;
+  align-self: stretch;
+  justify-self: stretch;
 }
 .ncss-segmented--block > label {
   flex: 1 1 0;
@@ -98,5 +104,17 @@
   .ncss-segmented > input:checked + label {
     border-color: Highlight;
     border-width: calc(var(--ncss-border-width) * 2);
+  }
+}
+
+/* WebKit/Safari: nach einem Pfeiltasten-Wechsel innerhalb der Radio-Gruppe matcht der
+   neu fokussierte Input NICHT :focus-visible (per Playwright-WebKit-Test gefunden - der
+   Ring verschwand nach dem ersten Pfeil). Dort deshalb :focus - Safari fokussiert Radios
+   per Mausklick ohnehin nicht, es entsteht also kein Ring nach einem Klick. Gleiche
+   WebKit-Erkennung wie components/select.css. */
+@supports (hanging-punctuation: first) and (font: -apple-system-body) and (-webkit-appearance: none) {
+  .ncss-segmented > input:focus + label {
+    outline: var(--ncss-focus-ring-width, 2px) solid var(--ncss-color-focus-ring);
+    outline-offset: 1px;
   }
 }

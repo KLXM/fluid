@@ -10,7 +10,7 @@
  *     <label class="ncss-dropzone-area">
  *       <span class="ncss-dropzone-text"><strong>Dateien hierher ziehen</strong> oder klicken zum Auswählen</span>
  *       <span class="ncss-dropzone-hint">PDF oder Bild, max. 10 MB</span>
- *       <input type="file" name="belege" multiple accept="image/*,.pdf">
+ *       <input type="file" name="belege" multiple accept="image/png,image/jpeg,.pdf">
  *     </label>
  *   </ncss-dropzone>
  * Das Script hängt eine Dateiliste (.ncss-dropzone-list) mit Vorschau + Entfernen-Button
@@ -18,6 +18,8 @@
  */
 
 ncss-dropzone {
+  /* Bezugsrahmen für die nur optisch versteckte Status-Zeile (kein Überlauf). */
+  position: relative;
   display: block;
 }
 .ncss-dropzone-area {

@@ -87,9 +87,13 @@ button.ncss-tag:active {
 .ncss-tag-remove {
   display: inline-grid;
   place-items: center;
-  inline-size: 1.35em;
-  block-size: 1.35em;
-  margin-inline: 0.1em -0.4em;
+  /* Mindestens 24 x 24 px Trefferfläche (WCAG 2.5.8), optisch trotzdem klein: negative
+     Block-Margins lassen den Button über das Tag-Padding hinausragen, statt das Tag
+     höher zu machen. */
+  inline-size: max(1.5rem, 1.35em);
+  block-size: max(1.5rem, 1.35em);
+  margin-block: -0.35em;
+  margin-inline: 0.1em -0.55em;
   padding: 0;
   border: 0;
   border-radius: var(--ncss-radius-full);

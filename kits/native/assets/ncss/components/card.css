@@ -117,6 +117,18 @@
   padding: 0;
 }
 
+/* Kompakte Karte für dichte Oberflächen (Dashboards, Seitenleisten, Listen vieler
+   Karten): festes, kleines Padding statt des mit der Containerbreite wachsenden
+   cqi-Werts oben, engerer Rhythmus im Body. */
+.ncss-card--compact .ncss-card-header,
+.ncss-card--compact .ncss-card-body,
+.ncss-card--compact .ncss-card-footer {
+  padding: var(--ncss-space-xs);
+}
+.ncss-card--compact .ncss-card-body > * + * {
+  margin-block-start: var(--ncss-space-2xs);
+}
+
 /* Entfernt die einzige verbliebene Deko, die .ncss-card selbst mitbringt
    (background-color) - kombiniert mit --flush (kein Padding) und ohne
    .ncss-border/.ncss-radius-.../.ncss-shadow-... wird die Karte damit optisch zu einem

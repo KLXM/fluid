@@ -1,2 +1,2 @@
-NativeCSS 15fe8fc (2026-11-20) + nicht committete Änderungen – https://github.com/skerbis/nativecss
-Übernommen mit fluid:kit:ncss-update am 2026-11-20 aus /Users/thomas/Documents/nativecss
+NativeCSS 1.1.0 0c4f60d (2026-11-20) – https://github.com/skerbis/nativecss
+Übernommen mit fluid:kit:ncss-update am 2026-11-20 aus /Users/thomas/Documents/nativecss @ 0c4f60d

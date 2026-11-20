@@ -28,6 +28,10 @@
   /* Eigener Container: der Wert skaliert mit der Kartenbreite (cqi), nicht mit dem
      Viewport - dieselbe Kennzahl passt in eine schmale Sidebar und ein breites Raster. */
   container-type: inline-size;
+  /* Bezugsrahmen für den absolut positionierten .ncss-visually-hidden-Trendtext - sonst
+     hängt er sich an einen fernen Vorfahren und kann horizontalen Überlauf erzeugen
+     (per WebKit-Test gefunden). */
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: var(--ncss-space-3xs);
