@@ -461,7 +461,8 @@ MIT – siehe [LICENSE](LICENSE).
 - [REDAXO](https://redaxo.org) und [YForm](https://github.com/yakamara/yform) von Yakamara und der REDAXO-Community
 - Symbole: [Phosphor Icons](https://phosphoricons.com) (MIT) · Schriften: SIL Open Font License (Lizenzen in `assets/fonts/`)
 - Demo-Medien: Kurzfilm, Untertitel, Kapitel und Musik (`ncss-*` in `kits/fluid/demo/media/`) aus der Demo von
-  [NativeCSS](https://github.com/skerbis/nativecss) (MIT); Foto Wohnzimmer: Curtis Adams,
+  [NativeCSS](https://github.com/skerbis/nativecss) – für NativeCSS erzeugt (gerenderte Szenen, synthetisierte Musik,
+  eigene Untertitel), MIT, © Thomas Skerbis / KLXM Crossmedia; Herkunft in `demo/assets/media/README.md` von NativeCSS; Foto Wohnzimmer: Curtis Adams,
   [Pexels](https://www.pexels.com/photo/empty-living-room-6835103/) (Pexels-Lizenz), „Vorher“ für die Demo flau bearbeitet
 - Karten: [MapLibre GL JS](https://maplibre.org) (BSD-3), [OpenFreeMap](https://openfreemap.org), Daten © OpenStreetMap-Mitwirkende (ODbL)
 - Suche: [Loupe](https://github.com/loupe-php/loupe) (MIT)

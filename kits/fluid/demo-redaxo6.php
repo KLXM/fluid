@@ -1675,7 +1675,7 @@ vollständig: Module, Templates, Schema'],
                     : ['type' => 'hero', 'tunes' => ['background' => 'muted'], 'data' => ['variant' => 'compact', 'eyebrow' => 'fluid · Video',
                         'title' => 'Videos, die *mitspielen*', 'text' => 'Hintergrundvideo, Player mit Untertiteln und Transkript, Fassungen für jeden Bildschirm – und ein Video-Editor im Medienpool.']],
                 ...(is_file(\Redaxo\Core\Filesystem\Path::media('kaetzchen.mp4')) ? [
-                    ['type' => 'video', 'data' => ['variant' => 'text', 'eyebrow' => 'Block „Video“', 'title' => 'Ein Kätzchen, zwölf Sekunden',
+                    ['type' => 'video', 'data' => ['variant' => 'text', 'eyebrow' => 'Block „Video & Audio“', 'title' => 'Ein Kätzchen, zwölf Sekunden',
                         'intro' => '', 'video_url' => '', 'video_file' => 'kaetzchen.mp4', 'poster' => null, 'tracks' => [],
                         'cc_on' => true, 'transcript' => true, 'ratio' => '16-9',
                         'caption' => 'Video: Kätzchen beim Spielen, Pixabay (Inhaltslizenz). Untertitel als Beispiel.',
