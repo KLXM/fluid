@@ -44,6 +44,14 @@
   Design-Werte (`Design` mit `'dark' => ['attr' => 'data-theme']`) und die Klassen `has-dark`/`is-dark`
   (`js/prefs-theme.js`), Kontrast und Lese-Schrift über `--f-…`.
 - Kit NativeCSS: Kopfleiste bleibt auch bei 360 px einzeilig (Marke schrumpft); Kennzahlen wie „6.x“ zählen nicht hoch.
+- NativeCSS 1.1.0 auf 8701f90: Morphing (`components/morph.css`, bei Bedarf), Karten-Ausbau und A11y-Korrekturen
+  (Audio-Player, Laufband, Scrollytelling-Kontrast, „Mehr“-Menü); `<ncss-map>` nicht übernommen – fluid hat einen
+  eigenen Karten-Block mit Proxy.
+- **Text + Bild „Morphing beim Scrollen“** (nur Kit NativeCSS, über `kit.php` → `blocks`): `.ncss-morph`, beim Bearbeiten
+  und bei „Bewegung reduzieren“ als Bild neben Text. Im Kit fluid fehlt die Darstellung in der Auswahl; gespeicherte
+  Blöcke erscheinen dort wie „Bild rechts“.
+- Website → Kit: die Schalter für den Darstellungs-Knopf erscheinen nur, wenn das Kit „NativeCSS“ (oder ein davon
+  abgeleitetes) gewählt ist – im Kit fluid keine Einstellung ohne Wirkung.
 
 ## 1.0.0-beta.1 – 2026-11-18
 

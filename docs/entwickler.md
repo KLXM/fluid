@@ -224,8 +224,12 @@ Blöcke: Player, Laufband & Co. zeigen dann ihre Form ohne JavaScript (Player de
 Gespeichert wird `tunes.reveal`; `Block::sectionClass()`/`revealAttrs()` setzen Klasse und Attribut – nicht beim
 Bearbeiten, nicht beim ersten Block, nicht bei „Dezente Animationen“ aus. „Bewegung reduzieren“ regelt das CSS des Kits.
 
+**Darstellungen nur in diesem Kit.** `kit.php` → `blocks` → `media_text` ergänzt „Morphing beim Scrollen“ (`morph`,
+`.ncss-morph`, CSS `css/ncss-morph.css` über `media_text:@morph`). Im Kit fluid fehlt die Darstellung in der Auswahl;
+ein so gespeicherter Block erscheint dort wie „Bild rechts“.
+
 **Darstellung für Besucher.** Website → Kit → „Darstellungs-Knopf für Besucher anzeigen“ (`visitor_prefs`, Standard
-aus; `visitor_prefs_fonts` für die Lese-Schriften) gibt im Seitenrahmen `ncss/js/preferences-early.js` und
+aus, nur sichtbar, wenn das Kit „NativeCSS“ oder ein davon abgeleitetes gewählt ist; `visitor_prefs_fonts` für die Lese-Schriften) gibt im Seitenrahmen `ncss/js/preferences-early.js` und
 `js/prefs-theme.js` synchron vor den Stylesheets aus, dazu `css/ncss-preferences.css` (+ `-fonts.css`), `preferences.js`
 (defer) und `<ncss-preferences settings="…">` zweimal: in der Kopfleiste (breit) und im Menü (schmal). `theme` fehlt in
 `settings`, wenn das Design kein dunkles Schema erlaubt. Die Attribute am `<html>` (`data-theme`, `data-contrast`,
