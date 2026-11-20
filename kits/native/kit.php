@@ -78,11 +78,19 @@ return [
         'circle' => ['label' => 'Kreis', 'class' => 'ncss-reveal ncss-reveal--circle ncss-reveal--once', 'attr' => 'data-ncss-reveal'],
         'curtain' => ['label' => 'Vorhang', 'class' => 'ncss-reveal ncss-reveal--split ncss-reveal--once', 'attr' => 'data-ncss-reveal'],
     ],
+    // Zusätzliche Darstellung nur in diesem Kit (im Kit fluid fehlt sie in der Auswahl; gespeicherte Blöcke zeigen dort „Abwechselnd“)
+    'blocks' => [
+        'media_text' => [
+            'variants' => ['morph' => 'Morphing beim Scrollen'],
+            'variant_help' => ['morph' => 'Das Bild startet groß und rückt beim Scrollen zur Seite, der Text erscheint daneben. Bei „Bewegung reduzieren“ stehen Bild und Text einfach nebeneinander. Beim Bearbeiten wie „Bild rechts“.'],
+        ],
+    ],
     'assets' => [
         // NativeCSS nur auf Seiten, die es brauchen (nicht in css/ncss-base.css, siehe Kit\Native\NcssUpdate::ON_DEMAND)
         // Vorher/Nachher und Scrollytelling kommen hier von NativeCSS – Skript und CSS von fluid nur für dessen Ausgaben
         'css/hx-compare.css' => ['hero:compare'], 'js/compare.js' => ['hero:compare'], 'js/scrolly.js' => [],
         'css/ncss-reveal.css' => ['@reveal'], 'ncss/js/reveal.js' => ['@reveal'],
+        'css/ncss-morph.css' => ['media_text:@morph'],
         'css/ncss-count-up.css' => ['stats:@count'], 'ncss/js/count-up.js' => ['stats:@count'],
         'css/ncss-marquee.css' => ['logos:@marquee'], 'ncss/js/marquee.js' => ['logos:@marquee'],
         'css/ncss-scrolly.css' => ['scrolly'], 'ncss/js/scrolly.js' => ['scrolly'],

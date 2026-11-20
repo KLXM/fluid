@@ -244,6 +244,11 @@
   .nv-scrolly .ncss-scrolly-step > * { background: var(--f-bg); }
   .nv-scrolly__title { margin: 0 0 var(--f-s-xs); color: var(--f-ink); font-size: var(--f-t-3); }
 
+  /* Text + Bild „Morphing beim Scrollen“ (.ncss-morph): unter der festen Kopfleiste kleben */
+  .nv-morph .ncss-morph { --ncss-morph-top: 4.5rem; }
+  .nv-morph .ncss-morph-media img { display: block; block-size: auto; }
+  .nv-morph .ncss-morph-content > * + * { margin-block-start: var(--f-s-m); }
+
   /* Einblend-Effekt aus, wenn im Design „Dezente Animationen“ ausgeschaltet ist (Vorschau im Style-Editor) */
   html:not(.has-motion) .ncss-reveal { animation: none; clip-path: none; opacity: 1; translate: none; scale: none; }
 }
