@@ -13,7 +13,7 @@ $counting = false;
 $value = static function (string $raw) use ($count, &$counting): string {
     $raw = trim($raw);
     // Präfix (nicht Ziffer), Zahl mit Tausenderpunkt/-leerzeichen, Suffix ohne weitere Ziffern
-    if (!$count || !preg_match('~^(\D{0,3}?)(\d{1,3}(?:[.\x{202F}\x{00A0} ]\d{3})+|\d{1,7})(\D{0,6})$~u', $raw, $m) || preg_match('~^[,/:]~', $m[3]) || preg_match('~[;"\\\\{}<>]~', $m[1] . $m[3])) {
+    if (!$count || !preg_match('~^(\D{0,3}?)(\d{1,3}(?:[.\x{202F}\x{00A0} ]\d{3})+|\d{1,7})(\D{0,6})$~u', $raw, $m) || preg_match('~^[,./:]~', $m[3]) || preg_match('~[;"\\\\{}<>]~', $m[1] . $m[3])) {
         return e($raw);
     }
     $n = (int) preg_replace('~\D~', '', $m[2]);
