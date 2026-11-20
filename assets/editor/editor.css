@@ -59,10 +59,11 @@ html.blocks-editing .lay-item[data-blocks-selected], html.blocks-editing .lay-it
 html.blocks-editing .lay-item[data-offline] { opacity: .45; }
 [data-blocks-coladd] {
   align-self: flex-start; margin-top: 4px; padding: 8px 12px; border: 1px dashed var(--blocks-accent); border-radius: 8px;
-  background: color-mix(in srgb, var(--blocks-accent) 6%, transparent); color: var(--blocks-accent);
+  /* deckender Grund: Kontrast ≥ 4,5:1 auch auf dunklen Websites */
+  background: color-mix(in srgb, var(--blocks-accent) 6%, #fff); color: var(--blocks-accent);
   font: 600 13px/1.2 system-ui, sans-serif; cursor: pointer;
 }
-[data-blocks-coladd]:hover { background: color-mix(in srgb, var(--blocks-accent) 14%, transparent); }
+[data-blocks-coladd]:hover { background: color-mix(in srgb, var(--blocks-accent) 14%, #fff); }
 .blocks-invalid { font: 600 13px/1.4 system-ui, sans-serif; color: #b42318; }
 
 /* Hervorhebung *Wort* in Überschriften: Sternchen beim Bearbeiten nur angedeutet */

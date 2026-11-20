@@ -12,6 +12,9 @@
   --danger-ink: #c0392b;
   --ok: #1e8e5a;
   --warn: #b26a00;
+  /* Text in Statusfarbe (Chip, Hinweise) – ≥ 4,5:1 auf --bg und der 14–16-%-Tönung */
+  --ok-ink: #146c43;
+  --warn-ink: #8a5200;
   --radius: 8px;
   --bar-h: 52px;
   --panel-w: min(440px, 100vw);
@@ -19,7 +22,7 @@
   color: var(--ink);
 }
 @media (prefers-color-scheme: dark) {
-  :host { --bg: #1c1f27; --surface: #252935; --line: #353b4a; --ink: #eceef3; --muted: #a3a9b8; --accent: #8a96ff; --accent-ink: #11131a; --danger-ink: #f0857a; }
+  :host { --bg: #1c1f27; --surface: #252935; --line: #353b4a; --ink: #eceef3; --muted: #a3a9b8; --accent: #8a96ff; --accent-ink: #11131a; --danger-ink: #f0857a; --ok-ink: #5fd39a; --warn-ink: #f0a64a; }
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
@@ -54,10 +57,10 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .chip {
   flex: none; border: 0; border-radius: 99px; padding: 4px 10px; font-size: 12px; font-weight: 600; cursor: pointer;
-  background: color-mix(in srgb, var(--ok) 14%, transparent); color: var(--ok);
+  background: color-mix(in srgb, var(--ok) 14%, transparent); color: var(--ok-ink);
 }
 .chip[data-state="draft"] { background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent); }
-.chip[data-state="warn"] { background: color-mix(in srgb, var(--warn) 16%, transparent); color: var(--warn); }
+.chip[data-state="warn"] { background: color-mix(in srgb, var(--warn) 16%, transparent); color: var(--warn-ink); }
 .chip[data-state="busy"] { background: var(--surface); color: var(--muted); }
 .modes { display: flex; padding: 3px; background: var(--surface); border-radius: 9px; }
 .modes a { padding: 6px 12px; border-radius: 7px; color: var(--muted); text-decoration: none; font-weight: 600; }
@@ -326,7 +329,7 @@ textarea[data-blocks-rte] { display: none !important; }
 /* Menüpunkt „nicht im Menü“: ☰ schräg durchgestrichen in Warnfarbe, Etikett ebenso */
 .tree__btn.is-off { position: relative; color: var(--warn); }
 .tree__btn.is-off::after { content: ""; position: absolute; left: 22%; right: 22%; top: 50%; height: 2px; margin-top: -1px; border-radius: 1px; background: currentColor; transform: rotate(-45deg); box-shadow: 0 0 0 1.5px var(--bg); }
-.tree__badge.is-hidden { color: var(--warn); font-weight: 600; }
+.tree__badge.is-hidden { color: var(--warn-ink); font-weight: 600; }
 /* Status im Seitenbaum: online grün, offline grau, gesperrt (weiterer Status eines AddOns) rot */
 .tree__st { font-size: 15px; }
 .tree__st.st-on { color: var(--ok); }

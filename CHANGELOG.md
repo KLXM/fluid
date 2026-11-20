@@ -1,5 +1,14 @@
 # Changelog
 
+## Unveröffentlicht
+
+### Editor: Kontraste der Leiste und der Spaltenmarken
+
+- Status-Chip in der Leiste („Veröffentlicht“, „Hinweis“): Text in eigener Statusfarbe (`--ok-ink`, `--warn-ink` in
+  `editor.shadow.css`), hell #146c43/#8a5200, dunkel #5fd39a/#f0a64a – vorher 3,3–3,5:1 (axe `color-contrast`),
+  jetzt ≥ 5:1 auf der getönten Fläche. Gleiche Farbe für „nicht im Menü“ im Seitenbaum.
+- „+ Block in diese Spalte“ hat einen deckenden Grund und bleibt so auch auf dunklen Websites lesbar (vorher 3,1:1).
+
 ## 1.0.0-beta.3 – 2026-11-21
 
 ### Kit „NativeCSS“: Kopfleiste immer einzeilig
