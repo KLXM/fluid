@@ -1,6 +1,6 @@
 # Changelog
 
-## Unveröffentlicht
+## 1.0.0-beta.3 – 2026-11-21
 
 ### Kit „NativeCSS“: Kopfleiste immer einzeilig
 
