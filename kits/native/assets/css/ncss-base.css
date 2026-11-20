@@ -1,0 +1,60 @@
+/*
+ * NativeCSS für das Kit „NativeCSS“ – ERZEUGT von `fluid:kit:ncss-update`, nicht von Hand ändern.
+ * Das Manifest ncss.css von NativeCSS ohne die Komponenten, die fluid nur bei Bedarf lädt (css/ncss-*.css, kit.php →
+ * assets) oder nicht verwendet (Kit\Native\NcssUpdate::ON_DEMAND / ::UNUSED).
+ */
+@layer wa-native, wa-base, wa-utilities, wa-color-palette, wa-color-variant, wa-theme, wa-theme-dimension, wa-theme-overrides,
+  tokens, reset, base, helpers, components, webawesome-bridge, browser-fixes;
+
+@import url("../ncss/colors.css") layer(tokens);
+@import url("../ncss/tokens.css") layer(tokens);
+@import url("../ncss/reset.css") layer(reset);
+@import url("../ncss/base.css") layer(base);
+@import url("../ncss/helpers/icons.css") layer(helpers);
+@import url("../ncss/helpers/layout.css") layer(helpers);
+@import url("../ncss/helpers/typography.css") layer(helpers);
+@import url("../ncss/helpers/a11y.css") layer(helpers);
+@import url("../ncss/helpers/visibility.css") layer(helpers);
+@import url("../ncss/helpers/forms.css") layer(helpers);
+@import url("../ncss/helpers/tables.css") layer(helpers);
+@import url("../ncss/helpers/media.css") layer(helpers);
+@import url("../ncss/helpers/scroll.css") layer(helpers);
+@import url("../ncss/helpers/surfaces.css") layer(helpers);
+@import url("../ncss/helpers/float.css") layer(helpers);
+@import url("../ncss/helpers/animations.css") layer(helpers);
+@import url("../ncss/helpers/elevation.css") layer(helpers);
+@import url("../ncss/components/hero.css") layer(components);
+@import url("../ncss/components/search.css") layer(components);
+@import url("../ncss/components/select.css") layer(components);
+@import url("../ncss/components/input-group.css") layer(components);
+@import url("../ncss/components/combobox.css") layer(components);
+@import url("../ncss/components/placeholder.css") layer(components);
+@import url("../ncss/components/sparkline.css") layer(components);
+@import url("../ncss/components/video.css") layer(components);
+@import url("../ncss/components/audio.css") layer(components);
+@import url("../ncss/components/card.css") layer(components);
+@import url("../ncss/components/split.css") layer(components);
+@import url("../ncss/components/tile.css") layer(components);
+@import url("../ncss/components/accordion-split.css") layer(components);
+@import url("../ncss/components/marginnote.css") layer(components);
+@import url("../ncss/components/slideshow.css") layer(components);
+@import url("../ncss/components/dialog-close.css") layer(components);
+@import url("../ncss/components/modal.css") layer(components);
+@import url("../ncss/components/scroll-progress.css") layer(components);
+@import url("../ncss/components/scroll-stack.css") layer(components);
+@import url("../ncss/components/roadmap.css") layer(components);
+@import url("../ncss/components/topbar.css") layer(components);
+@import url("../ncss/components/off-canvas.css") layer(components);
+@import url("../ncss/components/nav.css") layer(components);
+@import url("../ncss/components/disclosure.css") layer(components);
+@import url("../ncss/components/badge.css") layer(components);
+@import url("../ncss/components/breadcrumb.css") layer(components);
+@import url("../ncss/components/lists.css") layer(components);
+@import url("../ncss/components/cover.css") layer(components);
+@import url("../ncss/components/overlay.css") layer(components);
+@import url("../ncss/components/footer.css") layer(components);
+@import url("../ncss/components/effects.css") layer(components);
+@import url("../ncss/components/code-block.css") layer(components);
+@import url("../ncss/components/events.css") layer(components);
+@import url("../ncss/components/downloads.css") layer(components);
+@import url("../ncss/browser-fixes.css") layer(browser-fixes);

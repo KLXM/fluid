@@ -1,8 +1,8 @@
 /**
  * ncss - Off-Canvas-Komponente (Layer "components"): natives <dialog> als seitlich
  * einschiebende Sidebar statt zentriertem Modal. Gleiche command/commandfor-Mechanik wie
- * components/lightbox.css (siehe dort für den Fallback-JS-Hinweis - lightbox.js deckt
- * BEIDE Komponenten ab, kein zweites Script nötig).
+ * components/modal.css - für Browser ohne Invoker Commands deckt js/command-fallback.js
+ * BEIDE Komponenten ab, kein zweites Script nötig.
  *
  * Markup:
  * <button type="button" command="show-modal" commandfor="sidebar1">Menü öffnen</button>
@@ -11,6 +11,12 @@
  *           commandfor="sidebar1" aria-label="Schließen">&times;</button>
  *   <nav>...</nav>
  * </dialog>
+ * Klick daneben (Backdrop) schließt: natives closedby="any" am <dialog> - js/dialog-light-
+ * dismiss.js setzt das für jedes ncss-Modal/-Off-Canvas ohne eigenes closedby automatisch
+ * (Default AN) und emuliert es in Browsern ohne closedby. Abschalten pro Dialog:
+ * closedby="closerequest" (nur Esc + Buttons) oder closedby="none" (nur Buttons, z.B. lange
+ * Formulare). Trefferfläche: der <dialog> selbst ist das Panel, alles außerhalb seiner Box
+ * ist Backdrop.
  */
 
 .ncss-offcanvas {
@@ -66,7 +72,7 @@
   background-color: var(--ncss-color-overlay);
 }
 
-/* Einschieben von der jeweiligen Kante statt Skalieren (siehe lightbox.css für dieselbe
+/* Einschieben von der jeweiligen Kante statt Skalieren (siehe modal.css für dieselbe
    @starting-style/allow-discrete-Mechanik, dort mit scale statt translate). */
 .ncss-offcanvas,
 .ncss-offcanvas::backdrop {

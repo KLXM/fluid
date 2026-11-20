@@ -1,0 +1,2 @@
+/* NativeCSS components/video-bg.css – nur auf Seiten, die es brauchen (kit.php → assets). Layer wie in ncss.css von NativeCSS. */
+@import url("../ncss/components/video-bg.css") layer(components);

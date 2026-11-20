@@ -1,5 +1,84 @@
 # Changelog
 
+## Unveröffentlicht
+
+### Kit „NativeCSS“: neue Komponenten von NativeCSS – wenige, klar benannte Funktionen
+
+- **Video & Audio** (bisher „Video“, Modul `fluid.video` bleibt): neue Darstellung „Audio (Podcast, Musik)“ mit
+  Audiodateien (Titel, Sprecher, Kapitel je Datei; ab zwei Dateien Playlist), Cover und Transkript („Text zum Audio“).
+  Im Kit NativeCSS spielen eigene Videodateien im `<ncss-video-player>` (Kapitel in der Zeitleiste, Untertitel-Menü,
+  Tasten, Vollbild), Audio im `<ncss-audio-player>`; im Kit fluid der Player des Browsers. YouTube/Vimeo unverändert.
+  Die Felder für Video erscheinen bei „Audio“ nicht, „Text daneben“ nur bei „Video mit Text daneben“.
+- **Vorher/Nachher** (`fluid.compare`, Gruppe Medien): zwei Bilder mit Regler (echtes `input range`: Maus, Touch,
+  Tastatur, Screenreader), ohne JavaScript nebeneinander. Kit NativeCSS: `<ncss-compare>`; Kit fluid: `fluid_compare()`
+  (bisher leer) mit `css/hx-compare.css` und neuem `js/compare.js`.
+- **Einblend-Effekt** als Abschnitts-Option (nicht als Block): Keiner (Standard) · Sanft einblenden · Von unten · Kreis ·
+  Vorhang – `.ncss-reveal` von NativeCSS, einmal beim Hereinscrollen. Nur für Besucher, nicht beim ersten Block, aus mit
+  „Bewegung reduzieren“ und mit „Dezente Animationen“ aus im Design. Ein Kit bietet Effekte über `kit.php` → `'reveal'`
+  an; ohne Angabe (Kit fluid) fehlt die Option.
+- Kit NativeCSS, ohne neue Einstellungen: **Kennzahlen** zählen hoch (`.ncss-count-up`; nicht Jahreszahlen), **Logos
+  „Laufband“** mit `.ncss-marquee` und Schaltfläche „Laufband anhalten“, **Scrollytelling** mit `<ncss-scrolly>`,
+  **Hintergrundvideo** im Einstieg „Vollflächig“ mit `js/video-bg.js` von NativeCSS – lädt erst bei Bedarf, spielt nie
+  bei „Bewegung reduzieren“ oder „Daten sparen“, Schalter „Pause/Abspielen“ immer sichtbar (vorher fehlte er im Kit
+  NativeCSS, weil das Skript von fluid ihn nur in `.hero-bleed` suchte).
+- Barrierefreiheit beim Bearbeiten: Hinweis bei Vorher/Nachher-Bildern ohne Alternativtext (klxm_meta, „dekorativ“
+  zählt) und bei eigenen Videos ohne Untertitel; Hilfetexte zu Untertiteln, Transkript und Titeln.
+- **Nur laden, was die Seite braucht:** `css/ncss-base.css` (erzeugt) ersetzt `ncss/ncss.css` im Seitenrahmen – ohne die
+  großen neuen Komponenten; die kommen je Block über `kit.php` → `assets` (`css/ncss-*.css` mit `layer(…)`, Skripte aus
+  `ncss/js/`). Video-Player-Dateien nur bei eigener Videodatei, nicht bei YouTube.
+- **`fluid:kit:ncss-update`** (bzw. `php tools/ncss-update.php` im Repo): NativeCSS aus einer Arbeitskopie (`--from`,
+  optional `--ref`) oder von GitHub (`--tag`) übernehmen, mit Übersicht (neu/geändert/entfernt), `--dry-run`,
+  `VERSION.txt` mit Stand und Commit; erzeugt `css/ncss-base.css` neu. Eigene Dateien des Kits bleiben unberührt.
+- Demo „REDAXO 6“: Seite Video mit eigenem Video (Kapitel, Untertitel de/en, Transkript) und Audio (Playlist, Kapitel,
+  Transkript), Seite Bausteine mit Vorher/Nachher und Einblend-Effekten (Bento, Vorher/Nachher), englische Texte.
+  Medien: Kurzfilm, Untertitel, Kapitel, Musik aus der Demo von NativeCSS (MIT), Foto von Curtis Adams (Pexels-Lizenz) –
+  Nachweis in den Bildunterschriften, Titeln im Medienpool und im README.
+- **NativeCSS 1.1.0** (0c4f60d): u. a. Darstellungs-Einstellungen `<ncss-preferences>`, Lese-Schriften mit OFL-Lizenzen
+  (`ncss/fonts/`, kopiert der Update-Befehl jetzt mit), Kontrast-Tokens, `data-motion` in den Skripten, „Klick daneben
+  schließt“ für Dialoge (`js/dialog-light-dismiss.js`, im Kit für das Menü geladen). Neue Komponenten ohne Block in fluid
+  (Tabs, Tooltip, Pagination, Alert …) stehen nicht im Manifest `css/ncss-base.css`. Der Update-Befehl liest die
+  Version aus `package.json`.
+- **Darstellungs-Knopf für Besucher** (Kit NativeCSS, Website → Kit, Standard aus; Lese-Schriften abschaltbar):
+  `<ncss-preferences>` im Kopf (breit in der Leiste, schmal im Menü), `preferences-early.js` vor den Stylesheets,
+  CSS/JS nur bei eingeschalteter Option. Die Wahl wirkt auch auf die Blöcke von fluid: Farbschema über die dunklen
+  Design-Werte (`Design` mit `'dark' => ['attr' => 'data-theme']`) und die Klassen `has-dark`/`is-dark`
+  (`js/prefs-theme.js`), Kontrast und Lese-Schrift über `--f-…`.
+- Kit NativeCSS: Kopfleiste bleibt auch bei 360 px einzeilig (Marke schrumpft); Kennzahlen wie „6.x“ zählen nicht hoch.
+- NativeCSS 1.1.0 auf 8701f90: Morphing (`components/morph.css`, bei Bedarf), Karten-Ausbau und A11y-Korrekturen
+  (Audio-Player, Laufband, Scrollytelling-Kontrast, „Mehr“-Menü); `<ncss-map>` nicht übernommen – fluid hat einen
+  eigenen Karten-Block mit Proxy.
+- **Text + Bild „Morphing beim Scrollen“** (nur Kit NativeCSS, über `kit.php` → `blocks`): `.ncss-morph`, beim Bearbeiten
+  und bei „Bewegung reduzieren“ als Bild neben Text. Im Kit fluid fehlt die Darstellung in der Auswahl; gespeicherte
+  Blöcke erscheinen dort wie „Bild rechts“.
+- **Darstellungs-Knopf für Besucher auch im Kit fluid:** die Schalter stehen jetzt unter Website → Kopf, Fuß & Hinweis
+  (beide Kits, Standard aus). Im Kit fluid: `preferences.js`/`-early.js` und das Bedienfeld aus dem Kit NativeCSS,
+  Tokens und Wirkung (Kontrast, Lese-Schrift, Bewegung, Schriftgröße, Textabstände, Links, Fokus) in `css/prefs.css`,
+  Bedienfeld in den Farben der Seite auch im farbigen Kopf; `js/prefs-theme.js` (jetzt im Kit fluid, für beide) gleicht
+  `is-dark`/`has-dark` und bei „Bewegung: Reduziert“ `has-motion` ab; dunkle Design-Werte per `Design::head(true)` auch
+  beim Standard-Design. Knopf in der Kopfleiste, sobald die Navigation dort steht, sonst im Menü.
+- **Karten „Hervorheben“** (beide Kits): je Karte Rahmen in der Akzentfarbe und ein Hinweis an der Ecke (Text
+  bearbeitbar, Standard „Empfohlen“); NativeCSS `.ncss-card--featured` + `.ncss-card-badge`, im Kit fluid eigenes CSS.
+- **„Video & Audio“ mit Morphing beim Scrollen** (nur Kit NativeCSS): eigene Videodatei stumm in Schleife in
+  `.ncss-morph`, Pause-Schalter und Laden wie beim Hintergrundvideo (`js/video-bg.js`), statisch beim Bearbeiten und bei
+  reduzierter Bewegung; im Kit fluid ausgeblendet.
+- Demo „REDAXO 6“: Morphing-Beispiele (Text + Bild auf „Bausteine“, Video auf „Video“). Doku: nach dem Update-Befehl
+  `console migrate`.
+- **NativeCSS 1.1.0 auf 8bb3e3f (Runde 2)** – neue Komponenten als Optionen bestehender Blöcke, keine neuen Blöcke:
+  - **Tabellen** (beide Kits): Datenliste „Tabelle“ und Paketvergleich scrollen waagerecht mit Schatten an der Kante;
+    Datenliste „Spalten zum Sortieren anklickbar“ (`js/table-sort.js` von NativeCSS, auch im Kit fluid). Fließtext kennt
+    keine Tabellen – dort keine Option. Paketvergleich ohne Sortieren (Zeilen sind Merkmale, keine Daten).
+  - **Filter nach Kategorie** (beide Kits): Karten („Kategorie“ je Karte, Option am Block) und Datenliste („Filter für
+    Besucher nach …“, ein Feld der Tabelle) – Optionsfelder als Pillen, Filtern per CSS, Trefferzahl per `js/filter.js`.
+    Beiträge haben das schon (Schlagworte).
+  - **Pakete „Preisliste (Speisekarte)“** (beide Kits): Name, Führungspunkte, Preis, Beschreibung – NativeCSS
+    `.ncss-leaders`, im Kit fluid eigenes CSS.
+  - Kit NativeCSS: Pakete „Karten“ als Preistabelle (`.ncss-pricing`, Subgrid, „Nicht enthalten“ mit „–“ am Zeilenanfang;
+    kein Monatlich/Jährlich-Umschalter – der Block kennt einen Preis), Ablauf „Zeitleiste“ (`.ncss-timeline`), Zitat
+    „Groß“/„Raster“ als Kundenstimmen (`.ncss-testimonial`), Sprachwahl ab drei Sprachen als Aufklapp-Liste (Dropdown).
+  - Bewusst nicht übernommen: Slideshow-Pfeile/-Punkte (der Slider von fluid hat beides), Stepper (Fortschritt, keine
+    Anleitung), sortierbare Liste, Kommentare, Toolbar, Pillen-Gruppe.
+  - Demo „Bausteine“: Karten mit Filter und „Hervorheben“, Preisliste, Zeitleiste, Kundenstimmen, sortierbare Tabelle.
+
 ## 1.0.0-beta.1 – 2026-11-18
 
 Erste Fassung für REDAXO 6 (`redaxo/core` 6.x, YForm 6).

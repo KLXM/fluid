@@ -17,7 +17,7 @@ return [
     // Stylesheets und Skripte je Blocktyp (bzw. Typ:Variante) – nur auf Seiten, die sie brauchen
     'assets' => [
         'css/hero-x.css' => ['hero:fullbleed', 'hero:cards', 'hero:type'],
-        'css/hx-scale.css' => ['hero:scale'], 'css/hx-collage.css' => ['hero:collage'], 'css/hx-compare.css' => ['hero:compare'],   // neue Einstiege
+        'css/hx-scale.css' => ['hero:scale'], 'css/hx-collage.css' => ['hero:collage'], 'css/hx-compare.css' => ['hero:compare', 'compare'],   // neue Einstiege
         'css/prose.css' => ['richtext', 'tabs', 'faq', 'media_text', '@rich'],
         'css/rich-extra.css' => ['richtext', 'faq', 'media_text'],   // Absatz-Stile der Formatierungsleiste (Tipp, Achtung, Dachzeile, Zentriert)   // @rich: Rich-Text-Stile in anderen Blöcken (Core\Sanitizer::styled)
         'css/layout.css' => ['layout'],
@@ -44,6 +44,7 @@ return [
         'css/b-search.css' => ['search'],
         'css/b-video.css' => ['video'],
         'js/embed.js' => ['video'],
+        'js/compare.js' => ['hero:compare', 'compare'],
         'css/b-downloads.css' => ['downloads'],
         'css/dataform.css' => ['contact', 'form'],
         'css/b-form.css' => ['form', 'contact'],
@@ -52,6 +53,10 @@ return [
         'css/b-posts.css' => ['posts', '@post', 'datalist'],
         'js/tabs.js' => ['tabs'],
         'css/b-code.css' => ['code'],
+        // Tabellen (Scroll-Schatten, „Spalten sortierbar“) und „Filter nach Kategorie“ – Skripte dazu von NativeCSS
+        // (FluidTemplate.view.php, Kit::used('@tablesort' | '@filter'))
+        'css/tables.css' => ['@table', '@tablesort'],
+        'css/filter.css' => ['@filter'],
         'js/code.js' => ['code'],
         'js/reel.js' => ['quote', 'cards'],
         'js/scrolly.js' => ['scrolly'],

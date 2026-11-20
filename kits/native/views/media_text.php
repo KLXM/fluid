@@ -6,6 +6,25 @@
  * @var \Klxm\Fluid\Block $b  @var array $d
  */
 $v = $b->variant() ?: 'auto';
+// „Morphing beim Scrollen“ (nur dieses Kit, kit.php → blocks): beim Bearbeiten als „Bild rechts“ – die hohe Scroll-Strecke
+// stört dort nur; für Besucher .ncss-morph von NativeCSS (bei „Bewegung reduzieren“ statisch nebeneinander)
+if ('morph' === $v && !is_editing()) {
+    \Klxm\Fluid\Kit::active()->markUsed('media_text', '@morph');
+    $mpic = img(!empty($d['image']) ? (string) $d['image'] : null, '(min-width: 1080px) 1200px, 100vw', ['ratio' => (string) ($d['ratio'] ?? '') ?: '4:3']);
+    if ('' !== $mpic) {
+        echo '<div class="wrap nv-morph"><div class="ncss-morph ncss-morph--card"><div class="ncss-morph-stage">'
+            . '<div class="ncss-morph-media">' . $mpic . '</div>'
+            . '<div class="ncss-morph-content">' . fluid_head($b, 'nv-mt__head')
+            . ('' !== trim(strip_tags((string) $d['text'])) ? '<div class="prose">' . rich((string) $d['text']) . '</div>' : '')
+            . fluid_checks(fluid_lines($d['list'] ?? '')) . fluid_buttons($b) . '</div>'
+            . '</div></div></div>';
+
+        return;
+    }
+}
+if ('morph' === $v) {
+    $v = 'right';
+}
 if (!in_array($v, ['auto', 'right', 'left'], true)) {
     require \Klxm\Fluid\Kit::get('fluid')->view('media_text');
 

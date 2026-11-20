@@ -30,6 +30,16 @@
   /* Dunkles Schema nur, wenn die Design-Leiste es erlaubt (wie die --f-Werte) – light-dark() in NativeCSS folgt */
   html.has-dark { color-scheme: light dark; }
   html.is-dark { color-scheme: dark; }
+  /* Darstellungs-Einstellungen der Besucher (<ncss-preferences>, Attribute am <html>): Farbschema-Wahl schlägt das Gerät
+     (die dunklen --f-Werte: Design::css() mit 'attr'), Kontrast und Lese-Schrift auch für die Blöcke von fluid (--f-…).
+     !important: gewinnt gegen die Design-Werte ohne Layer – wie die Regeln von NativeCSS selbst. */
+  html[data-theme="light"] { color-scheme: light; }
+  html.has-dark[data-theme="dark"] { color-scheme: dark; }
+  :root[data-contrast="more"] {
+    --f-text: light-dark(#000000, #ffffff) !important; --f-ink: light-dark(#000000, #ffffff) !important;
+    --f-muted: light-dark(#2b2f36, #dcdfe5) !important; --f-line: light-dark(#5c6370, #a3a9b4) !important;
+  }
+  :root[data-ncss-font] { --f-font: var(--ncss-font-family-base) !important; --f-font-head: var(--ncss-font-family-heading) !important; }
 
   body { background: var(--f-bg); color: var(--f-text); font-family: var(--f-font); }
 
@@ -62,17 +72,26 @@
     .nv-topbar .ncss-topbar-actions { flex: 0 0 auto; }
   }
   .nv-nav .ncss-nav-list a[aria-current="page"], .nv-nav [data-active] > summary, .nv-nav a[data-active] { color: var(--f-link, var(--f-a)); }
-  .nv-nav__langs { display: none; }
+  .nv-nav__langs, .nv-nav__prefs { display: none; }
   .nv-topbar .ncss-topbar-actions { display: flex; align-items: center; gap: var(--f-s-s); }
   .nv-icon-link { display: inline-grid; place-items: center; inline-size: 2.5rem; block-size: 2.5rem; border-radius: var(--ncss-radius-full, 999px); color: var(--f-ink); }
   .nv-icon-link:hover { background: var(--f-surface); }
   .nv-icon-link .ico { inline-size: 1.25rem; block-size: 1.25rem; }
   /* Off-Canvas (schmale Fenster): Sprachen unten im Panel statt in der Leiste */
   @media (max-width: 63.99rem) {
+    /* eine Zeile auch bei 360 px: Marke darf schrumpfen (Logo eingepasst, Name gekürzt), Werkzeuge und Menü bleiben */
+    .nv-topbar .ncss-topbar-inner { flex-wrap: nowrap; }
+    .nv-brand { flex: 0 1 auto; min-inline-size: 0; }
+    .nv-brand__logo { min-inline-size: 0; }
+    .nv-brand__img { max-inline-size: 100%; }
+    .nv-brand__name { min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .nv-topbar .ncss-topbar-actions { margin-inline-start: auto; }
     .nv-nav { order: 3; flex: 0 0 auto; margin-inline-start: 0; }
     .nv-langs { display: none; }
     .nv-nav__langs { display: flex; margin-block-start: var(--f-s-l); }
+    /* Darstellung: schmal im Menü (die Kopfleiste bleibt einzeilig), breit in der Leiste */
+    .nv-prefs:not(.nv-prefs--always) { display: none; }
+    .nv-nav__prefs:defined { display: inline-block; margin-block-start: var(--f-s-m); }
     .nv-cta { display: none; }
   }
 
@@ -138,11 +157,11 @@
   .nv-hero--bleed .ncss-hero-content--transparent .nv-hero__title, .nv-hero--bleed .ncss-hero-content--transparent .nv-hero__lead { color: #fff; }
   .nv-hero--bleed .ncss-hero-content--filled .nv-hero__title { color: var(--f-ink); }
   .nv-hero--medium .ncss-hero-media::after { background: linear-gradient(to top, rgb(0 0 0 / 45%), rgb(0 0 0 / 0%) 70%); }
-  .nv-hero__pause { margin-block-start: var(--f-s-m); }
 
   /* ------------------------------------------------------------------ Karten */
   .nv-cards { list-style: none; margin: 0; padding: 0; gap: var(--f-s-l); }
-  .nv-cards__item, .nv-cards > .ncss-card-container { display: flex; }
+  /* gleich hohe Karten ohne display am Eintrag – sonst schlüge dieser Layer das Ausblenden des Filters (display: none) */
+  .nv-cards__item > .ncss-card, .nv-cards > .ncss-card-container > .ncss-card { block-size: 100%; }
   .nv-cards .ncss-card { inline-size: 100%; background: var(--f-bg); color: var(--f-text); }
   .nv-cards .ncss-card-media .frame { margin: 0; border-radius: 0; }
   .nv-cards .ncss-card-media img { border-radius: 0; }
@@ -202,4 +221,47 @@
   .feat.card, .card { border-radius: var(--ncss-radius-lg); }
   .eyebrow { letter-spacing: .06em; }
   .more-row { margin-block-start: var(--f-s-xl); }
+
+  /* ------------------------------------------------------------------ Neue Komponenten von NativeCSS (bei Bedarf geladen) */
+  /* Logos „Laufband“ (.ncss-marquee): Pause-Schaltfläche klein und mittig */
+  .nv-logos__marquee { --ncss-marquee-gap: var(--f-s-2xl); }
+  .nv-logos__marquee .logos__item { list-style: none; }
+  .nv-logos__pause { margin: var(--f-s-s) 0 0; text-align: center; }
+  .nv-logos__toggle { font-size: var(--f-t-1); padding: .35em .9em; }
+  .nv-logos__toggle[aria-pressed="true"] { background: var(--f-surface); }
+
+  /* Kennzahlen: Zahl beim Hochzählen ohne Springen der Breite */
+  .stat__value .ncss-count-up { font-variant-numeric: tabular-nums; }
+
+  /* Video & Audio, Vorher/Nachher: Player bzw. Vergleich in voller Breite des Inhalts, Bildunterschrift darunter */
+  .nv-vplayer ncss-video-player, .nv-audio__fig, .nv-compare__fig { display: block; margin: 0; }
+  .nv-audio__fig { max-inline-size: 52rem; }
+  .nv-compare__fig ncss-compare { border-radius: var(--ncss-radius-lg); }
+  .nv-audio__fig .video__cap, .nv-compare__fig .video__cap { margin-block-start: var(--f-s-s); color: var(--f-muted); font-size: var(--f-t-1); }
+
+  /* Scrollytelling (<ncss-scrolly>): Bühne unter der festen Kopfleiste, Abschnitte als Karten im Design von fluid */
+  .nv-scrolly ncss-scrolly { --ncss-scrolly-top: 4.5rem; margin-block-start: var(--f-s-l); }
+  .nv-scrolly .ncss-scrolly-steps { margin: 0; padding-inline: 0; list-style: none; }
+  .nv-scrolly .ncss-scrolly-step > * { background: var(--f-bg); }
+  .nv-scrolly__title { margin: 0 0 var(--f-s-xs); color: var(--f-ink); font-size: var(--f-t-3); }
+
+  /* Text + Bild „Morphing beim Scrollen“ (.ncss-morph): unter der festen Kopfleiste kleben */
+  .nv-morph .ncss-morph { --ncss-morph-top: 4.5rem; }
+  .nv-morph .ncss-morph-media img { display: block; block-size: auto; }
+  .nv-morph .ncss-morph-content > * + * { margin-block-start: var(--f-s-m); }
+
+  /* Ablauf „Zeitleiste“ (.ncss-timeline): Optionen „Kreise“ und „Farben“ des Blocks */
+  .nv-timeline .ncss-timeline { --nv-tl-c: var(--f-a); --nv-tl-on: var(--f-a-on); }
+  .nv-tl--c-neutral { --nv-tl-c: var(--f-ink) !important; --nv-tl-on: var(--f-bg) !important; }
+  .nv-tl--c-alternate > .ncss-timeline-item:nth-child(even) { --nv-tl-c: var(--f-b); --nv-tl-on: var(--f-b-on); }
+  .nv-timeline .ncss-timeline:not(.nv-tl--m-dot) .ncss-timeline-marker {
+    border: 2px solid var(--nv-tl-c);
+    background: color-mix(in oklab, var(--nv-tl-c) 14%, var(--f-bg)); color: var(--nv-tl-c); font: 700 .875rem/1 var(--f-font); }
+  .nv-tl--m-filled .ncss-timeline-marker { background: var(--nv-tl-c) !important; color: var(--nv-tl-on) !important; }
+  .nv-tl--m-ring .ncss-timeline-marker { background: var(--f-bg) !important; }
+  .nv-tl--m-dot .ncss-timeline-marker { --ncss-timeline-marker-color: var(--nv-tl-c); }
+  .nv-timeline .ncss-timeline-marker .ico { inline-size: 1rem; block-size: 1rem; }
+
+  /* Einblend-Effekt aus, wenn im Design „Dezente Animationen“ ausgeschaltet ist (Vorschau im Style-Editor) */
+  html:not(.has-motion) .ncss-reveal { animation: none; clip-path: none; opacity: 1; translate: none; scale: none; }
 }

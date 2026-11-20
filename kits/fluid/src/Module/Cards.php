@@ -3,7 +3,7 @@
 namespace Klxm\Fluid\Kit\Fluid\Module;
 
 use Klxm\Fluid\Field\AsBlock;
-use Klxm\Fluid\Field\{Choice, Collection, Link, MediaPicker, Text, Textarea};
+use Klxm\Fluid\Field\{Checkbox, Choice, Collection, Link, MediaPicker, Text, Textarea};
 use Klxm\Fluid\Kit\Fluid\FluidBlock;
 use Redaxo\Core\Content\AsModule;
 use Klxm\Fluid\Kit\Fluid\Module\Item\CardsItem;
@@ -46,6 +46,9 @@ final class Cards extends FluidBlock
 
     #[Collection('Karten', item: CardsItem::class, itemLabel: 'Karte', titleField: 'title', max: 12)]
     public array $items = [];
+
+    #[Checkbox('Filter nach Kategorie anzeigen', width: 'half', variants: ['image', 'overlay', 'horizontal'], note: 'Knöpfe über den Karten – je Karte unter „Kategorie“ eintragen (ab zwei verschiedenen).')]
+    public bool $filter = false;
 
     #[Text('Button unter den Karten (optional)', maxLength: 32, width: 'half')]
     public string $moreLabel = '';

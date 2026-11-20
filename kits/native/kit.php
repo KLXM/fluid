@@ -63,9 +63,53 @@ return [
     'design' => $design,
     // Optionen mit eigenem Stylesheet von fluid, die auch hier wirken (Kopf/Fuß nicht – eigener Rahmen)
     'design_css' => array_values(array_diff((array) $parent['design_css'], ['header', 'footer'])),
-    // Einstieg, Karten, Text + Bild, Handlungsaufruf, FAQ: eigene Views mit NativeCSS – deren CSS steht in native.css.
+    // Einstieg, Karten, Text + Bild, Handlungsaufruf, FAQ, Kennzahlen, Logos (Laufband), Scrollytelling, Video & Audio,
+    // Vorher/Nachher: eigene Views mit NativeCSS – deren CSS steht in native.css.
     // Varianten ohne eigene View (Einstieg „Karten“, „Skala“, „Collage“, „Vergleich“, Karten „Band“) nutzen die von fluid.
+    // Einblend-Effekte für Abschnitte (Abschnitt → „Einblend-Effekt“, Standard „Keiner“) – .ncss-reveal von NativeCSS, einmal
+    // beim Hereinscrollen; „Bewegung reduzieren“ zeigt den Abschnitt sofort (CSS von NativeCSS), „Dezente Animationen“ aus im
+    // Design schaltet alle ab (Block::revealOption()). Auf Seiten mit Effekt: css/ncss-reveal.css und ncss/js/reveal.js (@reveal).
+    'reveal' => [
+        'fade' => ['label' => 'Sanft einblenden', 'class' => 'ncss-reveal ncss-reveal--fade ncss-reveal--once', 'attr' => 'data-ncss-reveal'],
+        'rise' => ['label' => 'Von unten', 'class' => 'ncss-reveal ncss-reveal--slide-up ncss-reveal--once', 'attr' => 'data-ncss-reveal'],
+        'circle' => ['label' => 'Kreis', 'class' => 'ncss-reveal ncss-reveal--circle ncss-reveal--once', 'attr' => 'data-ncss-reveal'],
+        'curtain' => ['label' => 'Vorhang', 'class' => 'ncss-reveal ncss-reveal--split ncss-reveal--once', 'attr' => 'data-ncss-reveal'],
+    ],
+    // Zusätzliche Darstellung nur in diesem Kit (im Kit fluid fehlt sie in der Auswahl; gespeicherte Blöcke zeigen dort „Abwechselnd“)
+    'blocks' => [
+        'media_text' => [
+            'variants' => ['morph' => 'Morphing beim Scrollen'],
+            'variant_help' => ['morph' => 'Das Bild startet groß und rückt beim Scrollen zur Seite, der Text erscheint daneben. Bei „Bewegung reduzieren“ stehen Bild und Text einfach nebeneinander. Beim Bearbeiten wie „Bild rechts“.'],
+        ],
+        'video' => [
+            'variants' => ['morph' => 'Video mit Morphing beim Scrollen'],
+            'variant_help' => ['morph' => 'Eigene Videodatei, stumm in Schleife (wie ein Hintergrundvideo, mit Pause-Schalter): startet groß und rückt beim Scrollen zur Seite, der Text daneben erscheint. Bei „Bewegung reduzieren“ nur das Standbild neben dem Text. Beim Bearbeiten wie „Video mit Text daneben“.'],
+        ],
+    ],
     'assets' => [
+        // NativeCSS nur auf Seiten, die es brauchen (nicht in css/ncss-base.css, siehe Kit\Native\NcssUpdate::ON_DEMAND)
+        // Vorher/Nachher und Scrollytelling kommen hier von NativeCSS – Skript und CSS von fluid nur für dessen Ausgaben
+        'css/hx-compare.css' => ['hero:compare'], 'js/compare.js' => ['hero:compare'], 'js/scrolly.js' => [],
+        'css/ncss-reveal.css' => ['@reveal'], 'ncss/js/reveal.js' => ['@reveal'],
+        'css/ncss-morph.css' => ['media_text:@morph', 'video:@morph'],
+        // Runde 2: Tabellen, Filter, Zeitleiste, Kundenstimmen, Preistabelle, Preisliste, Sprachwahl ab drei Sprachen –
+        // die eigenen Dateien des Kits fluid dafür (css/tables.css, css/filter.css) hier nicht
+        'css/tables.css' => [], 'css/filter.css' => [],
+        'css/ncss-scroll-shadow.css' => ['@table'],
+        'css/ncss-table-sort.css' => ['@tablesort'], 'ncss/js/table-sort.js' => ['@tablesort'],
+        'css/ncss-filter.css' => ['@filter'], 'ncss/js/filter.js' => ['@filter'],
+        'css/ncss-timeline.css' => ['steps:@timeline'],
+        'css/ncss-testimonial.css' => ['quote:@testimonial'],
+        'css/ncss-pricing.css' => ['pricing:@plans'],
+        'css/ncss-leaders.css' => ['pricing:@leaders'],
+        'css/ncss-dropdown.css' => ['@dropdown'],
+        'css/ncss-count-up.css' => ['stats:@count'], 'ncss/js/count-up.js' => ['stats:@count'],
+        'css/ncss-marquee.css' => ['logos:@marquee'], 'ncss/js/marquee.js' => ['logos:@marquee'],
+        'css/ncss-scrolly.css' => ['scrolly'], 'ncss/js/scrolly.js' => ['scrolly'],
+        'css/ncss-compare.css' => ['compare'], 'ncss/js/compare.js' => ['compare'],
+        'css/ncss-video-player.css' => ['video:@player'], 'ncss/js/video-player.js' => ['video:@player'],
+        'css/ncss-audio-player.css' => ['video:audio'], 'ncss/js/audio-player.js' => ['video:audio'],
+        'css/ncss-video-bg.css' => ['hero:@videobg', 'video:@morph'], 'ncss/js/video-bg.js' => ['hero:@videobg', 'video:@morph'],
         'css/hero-x.css' => ['hero:cards'],
         'css/b-cards.css' => ['cards:reel'],
         'css/b-media-text.css' => ['media_text:split', 'media_text:overlap'],

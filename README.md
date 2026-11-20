@@ -52,8 +52,8 @@ fluid läuft auch ohne.
 **Für Redakteure** – alles auf der Website, über eine Leiste oben:
 
 - **Texte direkt auf der Seite** ändern, mit Formatierungsleiste; alle Felder eines Blocks in der Seitenleiste
-- **Blöcke** einfügen, verschieben (ziehen oder ↑ ↓), verdoppeln, kopieren, online/offline – 24 Blöcke im Kit,
-  vom Einstieg über Text + Bild, Zahlen, Fragen & Antworten, Preise und Karten bis zum Video
+- **Blöcke** einfügen, verschieben (ziehen oder ↑ ↓), verdoppeln, kopieren, online/offline – 29 Blöcke im Kit,
+  vom Einstieg über Text + Bild, Zahlen, Fragen & Antworten, Preise und Karten bis zu Video & Audio und Vorher/Nachher
 - **Layout und Greifer:** Spalten, Abstände, Textbreite und Aufteilung Bild/Text mit der Maus ziehen
 - **Entwurf und Veröffentlichen:** Änderungen erst im Entwurf, dann „Veröffentlichen“; ältere Stände wiederherstellen
 - **Wer arbeitet gerade wo:** In der Leiste und im Seitenbaum steht, wer eine Seite gerade bearbeitet. Hat jemand
@@ -63,6 +63,20 @@ fluid läuft auch ohne.
   Kontrastprüfung, live auf der Seite
 - **Kits:** zwei Gestaltungen zur Wahl – „Fluid“ und „NativeCSS“ (auf Basis von [NativeCSS](https://github.com/skerbis/nativecss)),
   umschaltbar unter Website → Kit; die Inhalte bleiben. Eigene Kits erben von „Fluid“ (Entwickler-Referenz).
+  Im Kit „NativeCSS“ zusätzlich: Video- und Audio-Player mit Kapiteln und Playlist, Kennzahlen, die hochzählen, und je
+  Abschnitt ein **Einblend-Effekt** (Keiner · Sanft einblenden · Von unten · Kreis · Vorhang) – NativeCSS lädt nur, was
+  die Seite braucht; aktualisieren mit `fluid:kit:ncss-update` (danach `php bin/console migrate`). Stand: NativeCSS 1.1.0. Nur im Kit „NativeCSS“ außerdem:
+  „Text + Bild“ mit der Darstellung **Morphing beim Scrollen** (das Bild startet groß und rückt zur Seite, der Text
+  erscheint daneben; bei „Bewegung reduzieren“ statisch) – ebenso „Video & Audio“ mit stummem Video in Schleife und
+  Pause-Schalter. Karten lassen sich in beiden Kits **hervorheben** (Rahmen und Hinweis wie „Empfohlen“) und **nach
+  Kategorie filtern** (ebenso die Datenliste); Datenlisten als Tabelle sind **sortierbar**, Pakete gibt es auch als
+  **Preisliste (Speisekarte)**. Im Kit „NativeCSS“ erscheinen Preistabelle, Zeitleiste und Kundenstimmen im Stil von
+  NativeCSS.
+- **Darstellung für Besucher** (beide Kits, Website → Kopf, Fuß & Hinweis → „Darstellungs-Knopf für Besucher anzeigen“,
+  Standard aus): ein Knopf „Darstellung“ im Kopf, mit dem Besucher Farbschema, Kontrast, Bewegung, Schriftgröße, eine
+  Lese-Schrift (Atkinson Hyperlegible, Lexend, OpenDyslexic – abschaltbar), Textabstände, unterstrichene Links und einen
+  kräftigeren Fokus-Rahmen wählen. Gespeichert im Browser, ohne Wahl gilt das Gerät; Deutsch/Englisch nach Sprache
+  der Seite. Kein „Barrierefreiheits-Overlay“: ergänzt eine barrierearme Website, ersetzt sie nicht.
 - **Mehrsprachig:** Sprachwahl in der Leiste, Inhalte einer Sprache übernehmen und übersetzen, Sprachwahl für Besucher
 - **Blog / News** mit Schlagworten, RSS und „Neuer Beitrag“ direkt in der Übersicht
 - **Formulare** zum Zusammenklicken – auch mehrstufig, speichern und/oder per E-Mail (im Stil der Website), mit Bestätigung (YForm);
@@ -70,7 +84,8 @@ fluid läuft auch ohne.
 - **Daten aus YForm** als Karten oder Liste mit eigener Adresse je Eintrag – und Blöcke auch in Datensätzen
 - **Demo zum Ausprobieren** (eigenes AddOn [`fluid_demo`](https://github.com/KLXM/fluid_demo), getrennt zu installieren): Besucher starten per Knopf eine
   Demo und bearbeiten die Website – gespeichert wird nichts
-- **Videos** mit automatischem Vorschaubild und Untertiteln, **Karten** ohne Einwilligung, **Suche** mit Tippfehler-Toleranz und Treffern beim Tippen – findet nur, was
+- **Videos und Audio** mit automatischem Vorschaubild, Untertiteln, Kapiteln und Transkript, **Vorher/Nachher** mit
+  Regler, **Karten** ohne Einwilligung, **Suche** mit Tippfehler-Toleranz und Treffern beim Tippen – findet nur, was
   öffentlich auf der Website steht
 
 **Für Besucher:** schnelle, barrierearme Seiten, Blättern, Filtern und Suchen ohne Seitenwechsel, schöne Adressen, Sitemap, strukturierte Daten, keine Cookies für Karten.
@@ -189,7 +204,8 @@ Im Backend findest du unter **AddOns → fluid** eine Statusseite, die prüft, o
 |---|---|
 | **Start** | Einstieg, Merkmale, Zahlen, Layout mit Text und Zitat in Spalten, Handlungsaufruf |
 | **Technik**, **Was sich ändert**, **Bearbeiten** | Schritte, Fließtext, Fragen & Antworten, Merkmale, Zitat, Spalten |
-| **Bausteine** | weitere Blöcke des Kits: Logos, Bento, Reiter, Preise |
+| **Bausteine** | weitere Blöcke des Kits: Logos, Bento, Reiter, Preise, Vorher/Nachher (mit Einblend-Effekt im Kit NativeCSS) |
+| **Video** | eigenes Video mit Kapiteln und Untertiteln, Audio mit Playlist und Transkript |
 | **Daten** | YForm: Termine als Datenliste, Kontaktformular mit Postfach |
 | **Presse** | Kurzmeldungen aus YForm – nach Datum, mit Blättern und eigener Adresse je Meldung |
 | **Projekte** | Fallstudien: YForm-Einträge, deren Inhalt aus Blöcken besteht – direkt auf der Website bearbeitbar |
@@ -455,7 +471,11 @@ MIT – siehe [LICENSE](LICENSE).
 - Konzept und Teile des Codes aus [KLXM Studio](https://github.com/KLXM-Opensource/studio) (MIT)
 - [REDAXO](https://redaxo.org) und [YForm](https://github.com/yakamara/yform) von Yakamara und der REDAXO-Community
 - Symbole: [Phosphor Icons](https://phosphoricons.com) (MIT) · Schriften: SIL Open Font License (Lizenzen in `assets/fonts/`)
+- Demo-Medien: Kurzfilm, Untertitel, Kapitel und Musik (`ncss-*` in `kits/fluid/demo/media/`) aus der Demo von
+  [NativeCSS](https://github.com/skerbis/nativecss) – für NativeCSS erzeugt (gerenderte Szenen, synthetisierte Musik,
+  eigene Untertitel), MIT, © Thomas Skerbis / KLXM Crossmedia; Herkunft in `demo/assets/media/README.md` von NativeCSS; Foto Wohnzimmer: Curtis Adams,
+  [Pexels](https://www.pexels.com/photo/empty-living-room-6835103/) (Pexels-Lizenz), „Vorher“ für die Demo flau bearbeitet
 - Karten: [MapLibre GL JS](https://maplibre.org) (BSD-3), [OpenFreeMap](https://openfreemap.org), Daten © OpenStreetMap-Mitwirkende (ODbL)
 - Suche: [Loupe](https://github.com/loupe-php/loupe) (MIT)
-- Kit „NativeCSS“: [NativeCSS](https://github.com/skerbis/nativecss) von Thomas Skerbis / KLXM Crossmedia (MIT, unverändert in `kits/native/assets/ncss/`)
+- Kit „NativeCSS“: [NativeCSS](https://github.com/skerbis/nativecss) von Thomas Skerbis / KLXM Crossmedia (MIT, unverändert in `kits/native/assets/ncss/`, Stand in `VERSION.txt` – 1.1.0, aktualisieren mit `fluid:kit:ncss-update`; Schriften der Darstellungs-Einstellungen unter SIL Open Font License, `ncss/fonts/*/OFL.txt`)
 - Das REDAXO-Logo in der Demo gehört dem REDAXO-Projekt; es kommt aus dem Core und wird nur in der Demo verwendet.

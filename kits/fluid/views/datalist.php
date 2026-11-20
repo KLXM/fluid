@@ -100,7 +100,8 @@ $reload = $pg && $pg['pages'] > 1 ? \Klxm\Fluid\Live::region($b) : '';
   <?php if (!$rows): ?>
   <p class="dl-empty"><?= e(trim((string) ($d['empty_text'] ?? '')) ?: lt('Zurzeit gibt es hier keine Einträge.')) ?></p>
   <?php elseif ($layout === 'table'): ?>
-  <div class="dl-tablewrap"><table class="dl-table">
+  <?php \Klxm\Fluid\Kit::active()->markUsed('@table'); if (!empty($d['table_sort']) && !is_editing()) \Klxm\Fluid\Kit::active()->markUsed('@tablesort'); ?>
+  <div class="dl-tablewrap tbl-scroll ncss-table-scroll ncss-scroll-shadow" role="region" tabindex="0" aria-label="<?= e(lt('Tabelle') . ('' !== trim((string) $d['title']) ? ': ' . strip_emphasis(trim((string) $d['title'])) : '')) ?>"><table class="dl-table"<?= !empty($d['table_sort']) && !is_editing() ? ' data-ncss-sort' : '' ?>>
     <thead><tr>
       <th scope="col"><?= e($titleF ? $titleF->translatedLabel() : lt('Eintrag')) ?></th>
       <?php foreach ([$metaF, $textF] as $f): if (!$f || $same($f, $titleF)) continue; ?><th scope="col"><?= e($f->translatedLabel()) ?></th><?php endforeach; ?>
@@ -115,9 +116,14 @@ $reload = $pg && $pg['pages'] > 1 ? \Klxm\Fluid\Live::region($b) : '';
     </tbody>
   </table></div>
   <?php else: ?>
+  <?php // Filter für Besucher (Feld „Filter für Besucher nach …“): Kategorien aus dem Feld, Leiste über der Liste (fluid_filter())
+  $visF = YFormBridge::field($t, (string) ($d['visitor_filter'] ?? ''));
+  $rowsL = is_array($rows) ? array_values($rows) : iterator_to_array($rows, false);
+  $flt = $visF ? fluid_filter($b, array_map(static fn ($r) => trim(html_entity_decode(strip_tags(YFormBridge::html($r, $visF)))), $rowsL)) : ['bar' => '', 'item' => []];
+  if ('' !== $flt['bar']): ?><ncss-filter class="ncss-filter"><?= $flt['bar'] ?><?php endif; ?>
   <ul class="dl-items<?= $layout === 'cards' ? ' dl-cols-' . $cols : '' ?>" role="list">
-    <?php foreach ($rows as $r): $name = $title($r); $url = $detailOn ? $href($r) : null; ?>
-    <li class="dl-item"><?= $editBtn($edit($r->id), 'Eintrag bearbeiten') ?>
+    <?php foreach ($rowsL as $ri => $r): $name = $title($r); $url = $detailOn ? $href($r) : null; ?>
+    <li class="dl-item<?= isset($flt['item'][$ri]) ? ' ncss-filter-item' : '' ?>"<?= isset($flt['item'][$ri]) ? ' data-category="' . e($flt['item'][$ri]) . '"' : '' ?>><?= $editBtn($edit($r->id), 'Eintrag bearbeiten') ?>
       <?php if ($imageF): $p = $pic($r, $layout === 'cards' ? '(min-width: 1080px) 400px, 100vw' : '(min-width: 1080px) 320px, 40vw', '16:10'); ?>
       <div class="dl-img ratio-16-10"><?= $p !== '' ? $p : '<span class="dl-ph" aria-hidden="true"></span>' ?></div>
       <?php endif; ?>
@@ -129,6 +135,7 @@ $reload = $pg && $pg['pages'] > 1 ? \Klxm\Fluid\Live::region($b) : '';
     </li>
     <?php endforeach; ?>
   </ul>
+  <?php if ('' !== $flt['bar']): ?></ncss-filter><?php endif; ?>
   <?php endif; ?>
   <?php if ($pg && $pg['pages'] > 1): $pq = static fn (int $n) => $here . ($n > 1 ? (str_contains($here, '?') ? '&' : '?') . 'seite=' . $n : '') . '#' . $b->domId(); ?>
   <nav class="posts-pager" aria-label="<?= e(lt('Blättern')) ?>">

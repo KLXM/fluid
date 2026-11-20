@@ -153,8 +153,42 @@ final class Block
         if ('' !== $this->variant()) {
             $c[] = 'v-' . $this->variant();
         }
+        if (null !== ($r = $this->revealOption())) {
+            $c[] = $r['class'];
+        }
 
         return implode(' ', $c);
+    }
+
+    /** Zusätzliche Attribute des Abschnitts für den Einblend-Effekt (z. B. data-ncss-reveal für das Skript des Kits) */
+    public function revealAttrs(): string
+    {
+        $attr = (string) ($this->revealOption()['attr'] ?? '');
+
+        return '' !== $attr ? ' ' . $attr : '';
+    }
+
+    /**
+     * Einblend-Effekt (Abschnitt → „Einblend-Effekt“, Optionen aus kit.php → 'reveal') – nur für Besucher: nicht beim
+     * Bearbeiten, nicht beim ersten Block der Seite (wichtig für den ersten Eindruck/LCP) und nicht, wenn im Design
+     * „Dezente Animationen“ aus ist. „Bewegung reduzieren“ beachtet das CSS des Kits.
+     *
+     * @return array{label: string, class: string, attr?: string}|null
+     */
+    private function revealOption(): ?array
+    {
+        $key = (string) ($this->tunes['reveal'] ?? '');
+        if ('' === $key || Editing::active()) {
+            return null;
+        }
+        $kit = $this->module::kit();
+        $opt = $kit->revealOptions()[$key] ?? null;
+        if (null === $opt || $this->isFirst() || false === (bool) ($kit->design()->get('motion') ?? true)) {
+            return null;
+        }
+        $kit->markUsed('@reveal');
+
+        return $opt;
     }
 
     public function sectionBg(): string

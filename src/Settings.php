@@ -37,7 +37,8 @@ final class Settings
         $kits = Kit::options();
         $kitTab = \count($kits) > 1 ? ['kit' => ['label' => 'Kit', 'fields' => [
             ['name' => 'kit', 'label' => 'Kit der Website', 'type' => 'select', 'required' => true, 'default' => Kit::DEFAULT, 'options' => $kits,
-                'help' => 'Das Kit bestimmt die Gestaltung der ganzen Website. Inhalte und Blöcke bleiben beim Wechsel erhalten; jedes Kit hat eigene Design-Einstellungen.'],
+                'help' => 'Das Kit bestimmt die Gestaltung der ganzen Website. Inhalte und Blöcke bleiben beim Wechsel erhalten; jedes Kit hat eigene Design-Einstellungen.'
+],
         ]]] : [];
 
         $days = ['1' => 'Montag', '2' => 'Dienstag', '3' => 'Mittwoch', '4' => 'Donnerstag', '5' => 'Freitag', '6' => 'Samstag', '0' => 'Sonntag'];
@@ -91,6 +92,14 @@ final class Settings
                 ['name' => 'footer_statement', 'translate' => true, 'label' => 'Großer Satz im Fuß (Design „Statement“)', 'type' => 'text', 'max' => 120, 'help' => '*Wort* hebt hervor.'],
                 ['name' => 'notice_active', 'label' => 'Hinweisleiste zeigen', 'type' => 'bool', 'default' => false],
                 ['name' => 'notice_text', 'translate' => true, 'label' => 'Hinweis', 'type' => 'text', 'max' => 200, 'placeholder' => 'z. B. Vom 22.12. bis 6.1. geschlossen.'],
+                // <ncss-preferences> von NativeCSS im Kopf – Kit „NativeCSS“ und Kit fluid (Seitenrahmen beider Kits); Skripte und
+                // Bedienfeld kommen aus kits/native, deshalb nur, wenn es das Kit gibt
+                ...(null !== Kit::get('native') ? [
+                    ['name' => 'visitor_prefs', 'label' => 'Darstellungs-Knopf für Besucher anzeigen', 'type' => 'bool', 'default' => false,
+                        'help' => 'Ein Knopf „Darstellung“ im Kopf der Website: Besucher wählen Farbschema, Kontrast, Bewegung, Schriftgröße, Lese-Schrift, Textabstände, unterstrichene Links und einen deutlicheren Fokus-Rahmen – gespeichert in ihrem Browser. Ohne Wahl gelten die Einstellungen ihres Geräts. Ersetzt keine barrierefreie Gestaltung, ergänzt sie.'],
+                    ['name' => 'visitor_prefs_fonts', 'label' => 'Dabei Lese-Schriften anbieten (Atkinson Hyperlegible, Lexend, OpenDyslexic)', 'type' => 'bool', 'default' => true,
+                        'help' => 'Die Schriften liegen auf dem eigenen Server und laden erst, wenn jemand sie wählt.'],
+                ] : []),
             ]],
             ...$kitTab,
             'legal' => ['label' => 'Recht & Suchmaschinen', 'fields' => [

@@ -36,7 +36,14 @@ return static function (ArticleContent $content): void {
         $kit->markUsed('@post');
     }
     // CSS eines abgeleiteten Kits (kit.php → 'css') zuletzt, damit es Grund- und Block-CSS des Eltern-Kits überschreiben kann
-    $css = [$kit->assetUrl('css/site.css'), ...$kit->designCss(), ...$kit->blockCss(Editing::active()), ...$kit->kitCss()];
+    // Website → „Darstellungs-Knopf für Besucher anzeigen“: <ncss-preferences> von NativeCSS (Skripte und Bedienfeld-CSS aus dem
+    // Kit „NativeCSS“), Tokens und Wirkung auf fluid in css/prefs.css, Klassen-Brücke js/prefs-theme.js
+    $prefs = (bool) setting('visitor_prefs', false) && null !== ($ncss = Kit::get('native'));
+    $prefsFonts = $prefs && (bool) setting('visitor_prefs_fonts', true);
+    $prefsCss = $prefs ? [$ncss->assetUrl('ncss/components/preferences.css'), ...($prefsFonts ? [$ncss->assetUrl('ncss/components/preferences-fonts.css')] : []), $kit->assetUrl('css/prefs.css')] : [];
+    $prefsEl = static fn (string $class): string => '<ncss-preferences class="' . $class . '" settings="'
+        . e(implode(' ', array_filter([$design->get('dark') ? 'theme' : '', 'contrast', 'motion', 'text', $prefsFonts ? 'font' : '', 'spacing', 'links', 'focus']))) . '"></ncss-preferences>';
+    $css = [$kit->assetUrl('css/site.css'), ...$kit->designCss(), ...$kit->blockCss(Editing::active()), ...$kit->kitCss(), ...$prefsCss];
     $designClasses = $design->classes();
     // dunkler Grundton bzw. Serifen-Überschriften (wie fluid_html_class in Studio)
     $bg = (string) $design->get('background');
@@ -108,14 +115,22 @@ return static function (ArticleContent $content): void {
 <title><?= e($title) ?></title>
 <meta name="color-scheme" content="light dark">
 <?= PageSettings::head($article, $name) ?>
+<?php if ($prefs): ?><script src="<?= e($ncss->assetUrl('ncss/js/preferences-early.js')) ?>"></script>
+<script src="<?= e($kit->assetUrl('js/prefs-theme.js')) ?>"></script>
+<?php endif; ?>
 <?php foreach ($css as $href): ?><link rel="stylesheet" href="<?= e($href) ?>"<?= str_contains($href, '/opt-') ? ' data-fluid-opt' : '' ?>>
 <?php endforeach; ?>
-<?= $design->head() ?>
+<?= $design->head($prefs) ?>
+<?php if ($prefs): ?><script src="<?= e($ncss->assetUrl('ncss/js/preferences.js')) ?>" defer></script>
+<?php endif; ?>
 <?php if (!Editing::active() && 'morph' === ($kit->design()->values()['transition'] ?? '')): ?><script src="<?= e($kit->assetUrl('js/vt.js')) ?>"></script>
 <?php endif; ?>
 <?php if (!Editing::active()): ?><script src="<?= e($kit->assetUrl('js/site.js')) ?>" defer></script>
 <?php foreach ($kit->blockJs() as $js): ?><script src="<?= e($js) ?>" defer></script>
 <?php endforeach; ?>
+<?php // Skripte von NativeCSS (ohne Abhängigkeiten), die auch dieses Kit nutzt – nur auf Seiten mit diesen Funktionen
+foreach (['@tablesort' => 'ncss/js/table-sort.js', '@filter' => 'ncss/js/filter.js'] as $key => $file): if ($kit->used($key) && null !== ($nk = Kit::get('native'))): ?><script src="<?= e($nk->assetUrl($file)) ?>" defer></script>
+<?php endif; endforeach; ?>
 <?php endif; ?>
 </head>
 <body class="<?= $isHome ? 'is-home' : 'is-sub' ?>">
@@ -139,6 +154,7 @@ return static function (ArticleContent $content): void {
     <div class="hdr__nav"><nav class="hnav" aria-label="<?= e(lt('Hauptnavigation')) ?>"><ul class="hnav__list" role="list" data-fluid-nav="main"><?= implode('', array_map($navItem, $menu)) ?></ul></nav></div>
     <?php endif; ?>
     <div class="hdr__tools">
+      <?= $prefs ? $prefsEl($menu ? 'hdr__prefs' : 'hdr__prefs hdr__prefs--always') : '' ?>
       <?php if (\count($langs) > 2): $curLang = array_values(array_filter($langs, static fn ($l) => $l['current']))[0] ?? $langs[0]; // ab drei Sprachen: Menü (Popover) statt Leiste ?>
       <div class="langmenu">
         <button type="button" class="langmenu__btn" popovertarget="langmenu" aria-haspopup="true" aria-label="<?= e(lt('Sprache')) ?>: <?= e($curLang['name']) ?>"><span lang="<?= e($curLang['code']) ?>"><?= e(strtoupper($curLang['code'])) ?></span><?= icon('caret-down', ['class' => 'langmenu__chev']) ?></button>
@@ -222,6 +238,7 @@ return static function (ArticleContent $content): void {
     <button type="button" class="mnav__close" popovertarget="mnav" popovertargetaction="hide" autofocus><?= icon('x') ?><span class="sr-only"><?= e(lt('Menü schließen')) ?></span></button>
   </div>
   <nav class="mnav__nav" aria-label="<?= e(lt('Hauptnavigation')) ?>" data-fluid-nav="sheet"><?= fluid_nav_sheet($menu) ?></nav>
+  <?= $prefs ? $prefsEl('mnav__prefs') : '' ?>
   <?php if (\count($langs) > 1): ?><ul class="langswitch langswitch--wide" role="list" aria-label="<?= e(lt('Sprache')) ?>"><?php foreach ($langs as $l): ?><li><a href="<?= e($l['url']) ?>" hreflang="<?= e($l['code']) ?>" lang="<?= e($l['code']) ?>"<?= $l['current'] ? ' aria-current="true"' : '' ?>><?= e($l['name']) ?></a></li><?php endforeach; ?></ul><?php endif; ?>
 </div>
 <?php endif; ?>

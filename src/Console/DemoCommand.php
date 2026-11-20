@@ -338,6 +338,20 @@ final class DemoCommand extends AbstractCommand
         'redaxo6-backend-linkmap.jpg' => ['Backend: Linkmap', 'Linkmap als Overlay mit Kategorien links und Artikeln rechts'],
         'redaxo6-backend-mobil.jpg' => ['Backend auf dem Telefon', 'Strukturverwaltung von REDAXO 6 auf einem schmalen Bildschirm mit eingeklapptem Menü'],
         'redaxo6-kit-nature.jpg' => ['Kit „Nature“: Handlungsaufruf', 'Handlungsaufruf im Beispiel-Kit „Nature“ mit sandfarbenem Hintergrund und Blatt über der Dachzeile'],
+        // Aus der Demo von NativeCSS (MIT, Thomas Skerbis / KLXM) – Video, Untertitel, Kapitel, Audio
+        'ncss-film.mp4' => ['Kurzfilm: Vier Stimmungen', ''],
+        'ncss-film-poster.jpg' => ['Kurzfilm: Vorschaubild', 'Gezeichnete Hügellandschaft im Morgenlicht mit Wolken und Nadelbäumen'],
+        'ncss-film.de.vtt' => ['Kurzfilm: deutsche Untertitel', ''],
+        'ncss-film.en.vtt' => ['Kurzfilm: englische Untertitel', ''],
+        'ncss-film-kapitel.de.vtt' => ['Kurzfilm: Kapitel (deutsch)', ''],
+        'ncss-film-kapitel.en.vtt' => ['Kurzfilm: Kapitel (englisch)', ''],
+        'ncss-gezeiten.m4a' => ['Gezeiten', ''],
+        'ncss-morgenrot.m4a' => ['Morgenrot', ''],
+        'ncss-gezeiten-kapitel.de.vtt' => ['Gezeiten: Kapitel', ''],
+        'ncss-gezeiten-cover.svg' => ['Gezeiten: Cover', 'Stilisierte Wellen in Blau und Türkis'],
+        // Pexels-Lizenz: Curtis Adams, https://www.pexels.com/photo/empty-living-room-6835103/ (Vorher = dasselbe Foto, flau bearbeitet)
+        'pexels-wohnzimmer-vorher.jpg' => ['Wohnzimmer vorher (Foto: Curtis Adams, Pexels)', 'Leeres Wohnzimmer mit Deckenventilator und Holzboden, flau und gelbstichig'],
+        'pexels-wohnzimmer-nachher.jpg' => ['Wohnzimmer nachher (Foto: Curtis Adams, Pexels)', 'Dasselbe Wohnzimmer mit klaren, hellen Farben: weiße Wände, warmer Holzboden, Licht durch das Fenster'],
     ];
 
     /** Demo-Inhalte des gewählten Kits (oder seines Eltern-Kits): demo.php bzw. demo-redaxo6.php */

@@ -39,15 +39,20 @@ if ('fullbleed' === $v):
     $vid = $vid && str_starts_with((string) $vid['mime'], 'video/') ? $vid : null;
     $overlay = in_array($d['overlay'] ?? '', ['strong', 'medium', 'gradient'], true) ? $d['overlay'] : 'strong';
     $poster = !empty($d['image']) ? media((string) $d['image']) : null;
+    if ($vid) {
+        // Hintergrundvideo von NativeCSS (js/video-bg.js): lädt erst in der Nähe des Bildschirms, spielt nie bei „Bewegung
+        // reduzieren“, „Daten sparen“ oder Kontrastmodus, pausiert außerhalb des Bildes – und zeigt immer den Schalter
+        // „Pausieren/Abspielen“ (WCAG 2.2.2). Ohne JavaScript und beim Bearbeiten: nur das Standbild.
+        \Klxm\Fluid\Kit::active()->markUsed('hero', '@videobg');
+    }
 ?>
-<div class="ncss-hero nv-hero nv-hero--bleed nv-hero--<?= e($overlay) ?>">
+<div class="ncss-hero nv-hero nv-hero--bleed nv-hero--<?= e($overlay) ?>"<?= $vid ? ' data-ncss-video-bg' : '' ?>>
   <div class="ncss-hero-media" aria-hidden="true">
     <?= !empty($d['image']) ? img((string) $d['image'], '100vw', ['eager' => true, 'alt' => '']) : '' ?>
-    <?php if ($vid): ?><video class="nv-hero__video" data-bg-video muted loop playsinline preload="none"<?= $poster ? ' poster="' . e(media_url($poster, 1600)) . '"' : '' ?>><source src="<?= e(media_url($vid)) ?>" type="<?= e((string) $vid['mime']) ?>"></video><?php endif; ?>
+    <?php if ($vid): ?><video class="nv-hero__video" muted loop playsinline preload="none" aria-hidden="true"<?= $poster ? ' poster="' . e(media_url($poster, 1600)) . '"' : '' ?>><source data-src="<?= e(media_url($vid)) ?>" type="<?= e((string) $vid['mime']) ?>"></video><?php endif; ?>
   </div>
   <div class="ncss-hero-content ncss-hero-content--<?= 'gradient' === $overlay ? 'transparent' : 'filled' ?>">
     <?= $textHtml() ?>
-    <?php if ($vid): ?><button type="button" class="ncss-btn nv-hero__pause" data-bg-video-toggle hidden aria-pressed="false"><?= icon('play-circle') ?><span data-label-pause="<?= e(lt('Hintergrundvideo anhalten')) ?>" data-label-play="<?= e(lt('Hintergrundvideo abspielen')) ?>"><?= e(lt('Hintergrundvideo anhalten')) ?></span></button><?php endif; ?>
   </div>
 </div>
 <?php elseif ('type' === $v): ?>

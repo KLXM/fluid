@@ -1,0 +1,34 @@
+/*
+ * Kit fluid: Tabellen in Fließtext, Datenliste und Paketvergleich (fluid_tables(), @table) – waagerecht scrollbar mit
+ * weichem Schatten an der Kante, solange es dort weitergeht (scroll-getriebene Animation; ältere Browser: ohne Schatten),
+ * und die Schaltflächen von js/table-sort.js (NativeCSS, „Spalten sortierbar“). Im Kit NativeCSS übernehmen das
+ * helpers/scroll-shadow.css und components/table-sort.css.
+ */
+.tbl-scroll { overflow-x: auto; margin-block: 1.25em; }
+.tbl-scroll > table { margin: 0; }
+.tbl-scroll:focus-visible, .tbl-shadow:focus-visible { outline: 2px solid var(--f-a); outline-offset: 2px; }
+@property --tbl-a { syntax: "<number>"; inherits: false; initial-value: 0; }
+@property --tbl-b { syntax: "<number>"; inherits: false; initial-value: 0; }
+@keyframes tbl-a { from { --tbl-a: 0; } to { --tbl-a: 1; } }
+@keyframes tbl-b { from { --tbl-b: 1; } to { --tbl-b: 0; } }
+@supports (animation-timeline: scroll()) {
+  :is(.tbl-scroll, .tbl-shadow) {
+    --tbl-c: color-mix(in srgb, var(--f-text) 14%, transparent);
+    background:
+      linear-gradient(to right, color-mix(in srgb, var(--tbl-c) calc(var(--tbl-a) * 100%), transparent), transparent) left center / 1rem 100% no-repeat,
+      linear-gradient(to left, color-mix(in srgb, var(--tbl-c) calc(var(--tbl-b) * 100%), transparent), transparent) right center / 1rem 100% no-repeat;
+    animation: tbl-a linear both, tbl-b linear both;
+    animation-timeline: scroll(self inline), scroll(self inline);
+    animation-range: 0 3rem, calc(100% - 3rem) 100%;
+  }
+}
+/* Sortieren (js/table-sort.js erzeugt Schaltfläche, Pfeil und Ansage) */
+.ncss-table-sort-button { display: inline-flex; align-items: center; gap: .4em; inline-size: 100%; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: inherit; cursor: pointer; }
+.ncss-table-sort-button:focus-visible { outline: 2px solid var(--f-a); outline-offset: 2px; border-radius: 2px; }
+.ncss-table-sort-icon { flex: none; inline-size: .9em; block-size: .9em; background-color: currentColor; opacity: .45;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 9l5-5 5 5M7 15l5 5 5-5'/%3E%3C/svg%3E") center / contain no-repeat; }
+th[aria-sort] .ncss-table-sort-icon { opacity: 1; color: var(--f-link, var(--f-a));
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 19V5M6 11l6-6 6 6'/%3E%3C/svg%3E"); }
+th[aria-sort="descending"] .ncss-table-sort-icon { rotate: 180deg; }
+.ncss-table-sort-status { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+@media (forced-colors: active) { .ncss-table-sort-icon { background-color: CanvasText; } }

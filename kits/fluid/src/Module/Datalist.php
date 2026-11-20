@@ -59,6 +59,12 @@ final class Datalist extends FluidBlock
     )]
     public string $sortDir = 'asc';
 
+    #[Checkbox('Spalten zum Sortieren anklickbar (bei „Tabelle“)', width: 'half', variants: ['table'], note: 'Sortiert die Einträge dieser Seite.')]
+    public bool $tableSort = false;
+
+    #[YFormField('Filter für Besucher nach … (bei „Karten“ und „Liste“)', width: 'half', variants: ['cards', 'list'], note: 'z. B. Kategorie – Besucher filtern die Einträge dieser Seite mit Knöpfen über der Liste.')]
+    public string $visitorFilter = '';
+
     #[Number('Höchstens bzw. je Seite (0 = alle)', width: 'half')]
     public int $limit = 0;
 

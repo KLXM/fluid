@@ -356,6 +356,12 @@ abstract class Kit
         }
     }
 
+    /** Wurde in dieser Anfrage ein Blocktyp bzw. Schlüssel (`@tablesort` …) ausgegeben? */
+    final public function used(string $key): bool
+    {
+        return isset($this->used[$key]);
+    }
+
     final public function markUsed(string $type, string $variant = ''): void
     {
         $this->used[$type] = true;
@@ -413,6 +419,18 @@ abstract class Kit
         }
 
         return $urls;
+    }
+
+    /**
+     * Einblend-Effekte für Abschnitte (kit.php → 'reveal': Schlüssel => ['label' => …, 'class' => …, 'attr' => …]).
+     * Leer = das Kit bietet keine an, dann fehlt „Einblend-Effekt“ unter Abschnitt.
+     *
+     * @return array<string, array{label: string, class: string, attr?: string}>
+     */
+    final public function revealOptions(): array
+    {
+        /** @var array<string, array{label: string, class: string, attr?: string}> */
+        return (array) ($this->definition()['reveal'] ?? []);
     }
 
     /** Style-Editor des Kits (eigene Werte je Kit) */

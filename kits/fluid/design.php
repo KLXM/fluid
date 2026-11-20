@@ -386,7 +386,8 @@ $design = [
     ],
 
     // Dunkle Werte bei „Dunkles Farbschema“ (Klasse has-dark) und Geräte-Einstellung; Vorschau im Editor setzt is-dark
-    'dark' => ['media' => '(prefers-color-scheme: dark)', 'scope' => 'html.has-dark', 'force' => 'is-dark'],
+    // 'attr': Wahl der Besucher (<ncss-preferences>, data-theme am <html>) schlägt die Geräte-Einstellung
+    'dark' => ['media' => '(prefers-color-scheme: dark)', 'scope' => 'html.has-dark', 'force' => 'is-dark', 'attr' => 'data-theme'],
 
     // Musterseite für die Vorschau im Editor (Showcase, siehe tools/demo.php)
     'sample' => 'showcase',

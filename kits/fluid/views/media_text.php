@@ -5,6 +5,8 @@
  * @var \Klxm\Fluid\Block $b  @var array $d
  */
 $v = $b->variant() ?: 'auto';
+// Darstellungen anderer Kits (z. B. „Morphing“ im Kit NativeCSS) nach einem Kit-Wechsel: wie „Bild rechts“
+if (!in_array($v, ['auto', 'right', 'left', 'split', 'overlap'], true)) $v = 'right';
 $ratio = (string) ($d['ratio'] ?? '') ?: '4:3';
 $side = $v;
 // Abwechselnd („auto“, ebenso „split“): Position in einer Folge gleichartiger Blöcke zählen
