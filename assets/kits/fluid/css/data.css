@@ -2,4 +2,4 @@
 
 /* fluid + YForm: Bearbeiten im Backend (nur im Bearbeiten-Modus sichtbar) */
 .dl-item{position:relative}.fdl-edit{display:inline-flex;align-items:center;gap:.3em;padding:.25em .7em;border-radius:999px;background:var(--f-ink);color:var(--f-bg);font:600 .75rem/1.4 var(--f-font);text-decoration:none;z-index:2}.dl-item>.fdl-edit{position:absolute;right:.6rem;bottom:.6rem}.fdl-new{margin-top:var(--f-s-m)}.fdl-detail .df-head .fdl-edit{justify-self:start;width:max-content}
-section:has(>.dl),section:has(>.fdl-detail){scroll-margin-top:5.5rem}
+section:has(>.dl),section:has(>.fdl-detail){scroll-margin-top:5.5rem}.dl-table .dl-num{text-align:end;font-variant-numeric:tabular-nums}.dl-table th{--ncss-table-sort-pad-block:.75rem;--ncss-table-sort-pad-inline:1rem}

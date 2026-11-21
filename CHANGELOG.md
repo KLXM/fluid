@@ -1,5 +1,27 @@
 # Changelog
 
+## Unveröffentlicht
+
+### Kit „NativeCSS“: NativeCSS 1.4.0 – gemeinsamer Kern der Player, Tabellen sortieren
+
+- **NativeCSS 1.4.0** (`php tools/ncss-update.php --tag=v1.4.0`). Video- und Audio-Player teilen sich jetzt
+  `ncss/js/media-core.js` (Texte, Live-Region, Zeitleiste, Lautstärke, Menüs, Kapitel, Playlist, Tastatur). fluid bindet
+  den Kern in `kit.php` → `assets` **vor** den Playern ein (`video:@player`, `video:audio`) – er wird genau einmal geladen,
+  auch wenn Video und Audio auf derselben Seite stehen (sonst lädt ihn jeder Player selbst aus seinem Ordner nach).
+- Audio-Player: Tasten wie beim Video (Pfeile ±5 s und Lautstärke, N/P nächster/voriger Titel, < und > Geschwindigkeit)
+  mit Ansagen für Screenreader; „Voriger Titel“ ohne Playlist tut nichts. Video-Player: Position in der Media Session,
+  `data-src` in Playlists.
+- Tabellen sortieren (`table-sort`): neutrale Rückfallwerte ohne Tokens, Klasse `is-sortable` an aufbereiteten Tabellen,
+  `data-sort-align="end"`, Polsterung per `--ncss-table-sort-pad-block/-inline`, Datum auch mit Uhrzeit und Zeitzone.
+- **Datenliste als Tabelle:** Spalten aus Ganzzahl- und Dezimalfeldern sind rechtsbündig (`data-sort-align="end"`,
+  `dl-num`, Ziffern gleich breit) und sortieren als Zahl, Datumsfelder als Datum – jeweils nach dem gespeicherten Wert
+  (`data-sort-value`), nicht nach der Anzeige (`YFormBridge::sortType()`, `::sortValue()`). Die Sortier-Schaltfläche füllt
+  im Kit NativeCSS die ganze Kopfzelle (`--ncss-table-sort-pad-*` = Zellenabstand der Datenliste); im Kit fluid behält sie
+  Großschreibung und Laufweite des Spaltenkopfs.
+- Geprüft im Kit NativeCSS: Video per Tastatur (K, J/L, Pfeile, M, C), Audio-Playlist (N/P, <, >, Ansagen), beide auf einer
+  Seite mit einer Anfrage für `media-core.js`, Sortieren per Tastatur mit `aria-sort` und Ansage, Kopfleiste einzeilig mit
+  und ohne JavaScript, axe (WCAG 2.2 AA) hell/dunkel 1440/390 ohne Funde.
+
 ## 1.0.0-beta.5 – 2026-11-21
 
 ### Kit „NativeCSS“: NativeCSS 1.3.0 – Kopfleiste schon ohne JavaScript richtig

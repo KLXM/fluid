@@ -262,8 +262,8 @@ das Ausblenden Platz, das Menü passt wieder, und die Leiste springt hin und her
 ```bash
 # im Repo von fluid, ohne REDAXO
 php tools/ncss-update.php --from=../nativecss --dry-run     # zeigen, was sich ändert
-php tools/ncss-update.php --from=../nativecss --ref=v1.3.0  # genau diesen Git-Stand übernehmen
-php tools/ncss-update.php --tag=v1.3.0                      # Release/Tag/Branch von GitHub (Zip)
+php tools/ncss-update.php --from=../nativecss --ref=v1.4.0  # genau diesen Git-Stand übernehmen
+php tools/ncss-update.php --tag=v1.4.0                      # Release/Tag/Branch von GitHub (Zip)
 
 # in einer Installation (schreibt nach kits/native/assets – unter vendor/ nur zum Ausprobieren, --target für die Arbeitskopie)
 php bin/console fluid:kit:ncss-update --from=/pfad/zu/nativecss [--ref=HEAD] [--tag=…] [--target=…/kits/native/assets] [--dry-run]
@@ -278,6 +278,14 @@ unberührt. Fehlt upstream eine Datei aus `ON_DEMAND`, bricht der Befehl ab. In 
 `migrate` fehlen sie, z. B. eine neue Komponente). Danach die Seiten im Kit ansehen
 (Komponenten mit neuen Klassen brauchen ggf. Anpassungen in `native.css`) und `VERSION.txt` mit committen. Neue
 Komponenten, die fluid nutzen soll: in `ON_DEMAND` eintragen, Wrapper anlegen und in `kit.php` → `assets` abbilden.
+Neue Skripte unter `js/` kommen mit (`dist/js` wird ganz kopiert); braucht eine Komponente ein weiteres Skript – etwa
+`js/media-core.js`, den gemeinsamen Kern der Player ab NativeCSS 1.4 –, steht es in `kit.php` → `assets` **vor** den
+Skripten, die es nutzen (Reihenfolge der Abbildung = Reihenfolge der `<script defer>`), dann lädt es genau einmal.
+
+Datenliste als Tabelle mit „Spalten sortierbar“: Spalten aus Ganzzahl- und Dezimalfeldern bekommen
+`data-sort-type="number"` und `data-sort-align="end"` (rechtsbündig, Klasse `dl-num`), Datumsfelder `data-sort-type="date"`;
+die Zellen tragen den gespeicherten Wert als `data-sort-value` (Datum ISO 8601), sortiert wird also unabhängig von der
+Anzeige (`YFormBridge::sortType()`, `::sortValue()`).
 
 ### Als Composer-Paket
 

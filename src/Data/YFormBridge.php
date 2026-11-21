@@ -277,6 +277,31 @@ final class YFormBridge
         return $f instanceof Text || $f instanceof Textarea;
     }
 
+    /**
+     * Spaltentyp für „Spalten sortierbar“ (js/table-sort.js von NativeCSS): `number` (Ganzzahl, Dezimalzahl – rechtsbündig),
+     * `date` (Datum, Datum + Uhrzeit), sonst '' (Text bzw. automatisch erkannt).
+     */
+    public static function sortType(?Field $f): string
+    {
+        return match (true) {
+            $f instanceof \Yakamara\YForm\Field\Integer, $f instanceof \Yakamara\YForm\Field\Decimal => 'number',
+            $f instanceof \Yakamara\YForm\Field\Date => 'date',
+            default => '',
+        };
+    }
+
+    /** Gespeicherter Wert für data-sort-value (Datum als ISO 8601, Zahl unformatiert), '' = keiner */
+    public static function sortValue(Record $record, Field $f): string
+    {
+        $v = $record->get($f->name);
+        if ($v instanceof \DateTimeInterface) {
+            return $f instanceof \Yakamara\YForm\Field\DateTime ? $v->format('Y-m-d\\TH:i:sP') : $v->format('Y-m-d');
+        }
+        $v = is_scalar($v) ? trim((string) $v) : '';
+
+        return str_starts_with($v, '0000-00-00') ? '' : $v;
+    }
+
     /** Bearbeiten in der Datenseite von YForm (nur mit Bearbeitungsrecht); ohne ID: neuer Eintrag */
     public static function editUrl(Table $table, ?int $id = null): ?string
     {

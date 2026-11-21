@@ -104,13 +104,15 @@ $reload = $pg && $pg['pages'] > 1 ? \Klxm\Fluid\Live::region($b) : '';
   <div class="dl-tablewrap tbl-scroll ncss-table-scroll ncss-scroll-shadow" role="region" tabindex="0" aria-label="<?= e(lt('Tabelle') . ('' !== trim((string) $d['title']) ? ': ' . strip_emphasis(trim((string) $d['title'])) : '')) ?>"><table class="dl-table"<?= !empty($d['table_sort']) && !is_editing() ? ' data-ncss-sort' : '' ?>>
     <thead><tr>
       <th scope="col"><?= e($titleF ? $titleF->translatedLabel() : lt('Eintrag')) ?></th>
-      <?php foreach ([$metaF, $textF] as $f): if (!$f || $same($f, $titleF)) continue; ?><th scope="col"><?= e($f->translatedLabel()) ?></th><?php endforeach; ?>
+      <?php // Zahlen rechtsbündig, Typ fest statt erraten (Datum/Zahl, data-sort-value = gespeicherter Wert)
+      $sortT = static fn ($f) => !empty($d['table_sort']) ? YFormBridge::sortType($f) : '';
+      foreach ([$metaF, $textF] as $f): if (!$f || $same($f, $titleF)) continue; $st = $sortT($f); ?><th scope="col"<?= '' !== $st ? ' data-sort-type="' . $st . '"' . ('number' === $st ? ' data-sort-align="end" class="dl-num"' : '') : '' ?>><?= e($f->translatedLabel()) ?></th><?php endforeach; ?>
     </tr></thead>
     <tbody>
     <?php foreach ($rows as $r): ?>
       <tr>
         <td><?= $detailOn ? '<a href="' . e($href($r)) . '">' . e($title($r)) . '</a>' : e($title($r)) ?> <?= $editBtn($edit($r->id), 'Bearbeiten') ?></td>
-        <?php foreach ([$metaF, $textF] as $f): if (!$f || $same($f, $titleF)) continue; ?><td><?= YFormBridge::html($r, $f) ?></td><?php endforeach; ?>
+        <?php foreach ([$metaF, $textF] as $f): if (!$f || $same($f, $titleF)) continue; $st = $sortT($f); $raw = '' !== $st ? YFormBridge::sortValue($r, $f) : ''; ?><td<?= 'number' === $st ? ' class="dl-num"' : '' ?><?= '' !== $raw ? ' data-sort-value="' . e($raw) . '"' : '' ?>><?= YFormBridge::html($r, $f) ?></td><?php endforeach; ?>
       </tr>
     <?php endforeach; ?>
     </tbody>

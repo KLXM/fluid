@@ -107,6 +107,8 @@ return [
         'css/ncss-marquee.css' => ['logos:@marquee'], 'ncss/js/marquee.js' => ['logos:@marquee'],
         'css/ncss-scrolly.css' => ['scrolly'], 'ncss/js/scrolly.js' => ['scrolly'],
         'css/ncss-compare.css' => ['compare'], 'ncss/js/compare.js' => ['compare'],
+        // Gemeinsamer Kern beider Player (ab NativeCSS 1.4) – vor den Playern, damit er nur einmal geladen wird
+        'ncss/js/media-core.js' => ['video:@player', 'video:audio'],
         'css/ncss-video-player.css' => ['video:@player'], 'ncss/js/video-player.js' => ['video:@player'],
         'css/ncss-audio-player.css' => ['video:audio'], 'ncss/js/audio-player.js' => ['video:audio'],
         'css/ncss-video-bg.css' => ['hero:@videobg', 'video:@morph'], 'ncss/js/video-bg.js' => ['hero:@videobg', 'video:@morph'],

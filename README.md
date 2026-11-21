@@ -65,7 +65,7 @@ fluid läuft auch ohne.
   umschaltbar unter Website → Kit; die Inhalte bleiben. Eigene Kits erben von „Fluid“ (Entwickler-Referenz).
   Im Kit „NativeCSS“ zusätzlich: Video- und Audio-Player mit Kapiteln und Playlist, Kennzahlen, die hochzählen, und je
   Abschnitt ein **Einblend-Effekt** (Keiner · Sanft einblenden · Von unten · Kreis · Vorhang) – NativeCSS lädt nur, was
-  die Seite braucht; aktualisieren mit `fluid:kit:ncss-update` (danach `php bin/console migrate`). Stand: NativeCSS 1.3.0. Nur im Kit „NativeCSS“ außerdem:
+  die Seite braucht; aktualisieren mit `fluid:kit:ncss-update` (danach `php bin/console migrate`). Stand: NativeCSS 1.4.0. Nur im Kit „NativeCSS“ außerdem:
   „Text + Bild“ mit der Darstellung **Morphing beim Scrollen** (das Bild startet groß und rückt zur Seite, der Text
   erscheint daneben; bei „Bewegung reduzieren“ statisch) – ebenso „Video & Audio“ mit stummem Video in Schleife und
   Pause-Schalter. Karten lassen sich in beiden Kits **hervorheben** (Rahmen und Hinweis wie „Empfohlen“) und **nach
@@ -477,5 +477,5 @@ MIT – siehe [LICENSE](LICENSE).
   [Pexels](https://www.pexels.com/photo/empty-living-room-6835103/) (Pexels-Lizenz), „Vorher“ für die Demo flau bearbeitet
 - Karten: [MapLibre GL JS](https://maplibre.org) (BSD-3), [OpenFreeMap](https://openfreemap.org), Daten © OpenStreetMap-Mitwirkende (ODbL)
 - Suche: [Loupe](https://github.com/loupe-php/loupe) (MIT)
-- Kit „NativeCSS“: [NativeCSS](https://github.com/skerbis/nativecss) von Thomas Skerbis / KLXM Crossmedia (MIT, unverändert in `kits/native/assets/ncss/`, Stand in `VERSION.txt` – 1.3.0, aktualisieren mit `fluid:kit:ncss-update`; Schriften der Darstellungs-Einstellungen unter SIL Open Font License, `ncss/fonts/*/OFL.txt`)
+- Kit „NativeCSS“: [NativeCSS](https://github.com/skerbis/nativecss) von Thomas Skerbis / KLXM Crossmedia (MIT, unverändert in `kits/native/assets/ncss/`, Stand in `VERSION.txt` – 1.4.0, aktualisieren mit `fluid:kit:ncss-update`; Schriften der Darstellungs-Einstellungen unter SIL Open Font License, `ncss/fonts/*/OFL.txt`)
 - Das REDAXO-Logo in der Demo gehört dem REDAXO-Projekt; es kommt aus dem Core und wird nur in der Demo verwendet.
