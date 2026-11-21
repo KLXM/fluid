@@ -45,11 +45,10 @@
 
   /* ------------------------------------------------------------------ Topbar */
   .nv-topbar { background: color-mix(in oklab, var(--f-bg) 88%, transparent); backdrop-filter: saturate(1.4) blur(12px); }
-  .nv-topbar .ncss-topbar-inner { padding-inline: var(--f-gutter); gap: var(--f-s-m); }
+  .nv-topbar .ncss-topbar-inner { padding-inline: var(--f-gutter); gap: var(--f-s-m); flex-wrap: nowrap; }
   .nv-brand { display: inline-flex; align-items: center; gap: .6rem; color: var(--f-ink); font: 700 1.125rem/1.1 var(--f-font-head); text-decoration: none; letter-spacing: -.01em; }
   .nv-brand__mark { display: grid; place-items: center; inline-size: 2.1rem; block-size: 2.1rem; border-radius: var(--ncss-radius-md);
     background: linear-gradient(135deg, var(--f-a), var(--f-b)); color: var(--f-a-on); font-size: 1rem; }
-  .nv-brand { flex: 0 0 auto; }
   .nv-brand__logo { display: block; }
   /* SVG-Logos ohne eigene Breite: Höhe fest, Breite aus dem Seitenverhältnis */
   .nv-brand__img { display: block; block-size: 2.1rem; inline-size: auto; max-inline-size: 14rem; object-fit: contain; }
@@ -61,69 +60,35 @@
   }
   html.is-dark .nv-brand__logo--light { display: none; }
   html.is-dark .nv-brand__logo.nv-brand__logo--dark { display: block; }
-  .nv-nav { margin-inline-start: auto; min-inline-size: 0; }
   .nv-nav .ncss-nav-list a[aria-current="page"], .nv-nav [data-active] > summary, .nv-nav a[data-active] { color: var(--f-link, var(--f-a)); }
-  .nv-nav__langs, .nv-nav__prefs, .nv-nav__cta { display: none; }
-  .nv-topbar .ncss-topbar-actions { display: flex; align-items: center; gap: var(--f-s-s); }
+  .nv-topbar .ncss-topbar-actions { display: flex; flex: 0 0 auto; align-items: center; gap: var(--f-s-s); margin-inline-start: auto; }
   .nv-icon-link { display: inline-grid; place-items: center; inline-size: 2.5rem; block-size: 2.5rem; border-radius: var(--ncss-radius-full, 999px); color: var(--f-ink); }
   .nv-icon-link:hover { background: var(--f-surface); }
   .nv-icon-link .ico { inline-size: 1.25rem; block-size: 1.25rem; }
-  /* Kopfleiste immer EINE Zeile. Ob das Menü in die Zeile passt, entscheidet NativeCSS (ncss/js/nav.js misst Marke, Menü und
-     Werkzeuge per ResizeObserver und setzt data-ncss-nav-auto="inline|compact" – kein fester Breakpoint, das Menü bricht nie
-     um, Hysterese gegen Hin-und-her). Ohne Skript gilt die Schwelle 64rem. Deshalb jede Regel zweimal: Zustand von nav.js und
-     Media Query (nur solange nav.js keinen Zustand gesetzt hat) – identisch halten.
-     Werkzeuge schrumpfen (Sprachen, Darstellung, Handlungsaufruf ins Menü) NUR im Kompakt-Zustand: sonst schüfe das Schrumpfen
-     Platz, das Menü passte wieder, und volle Leiste und Menü-Schaltfläche wechselten je nach Breite hin und her. */
-  /* Zeile – Menü rechts neben der Marke, Werkzeuge daneben */
-  .nv-topbar:has(.nv-nav[data-ncss-nav-auto="inline"]) {
-    .ncss-topbar-inner { flex-wrap: nowrap; }
-    .nv-nav { flex: 1 1 auto; display: flex; justify-content: flex-end; }
-    .nv-nav .ncss-nav-list { justify-content: flex-end; column-gap: 0; }
-    .nv-nav .ncss-nav-item > a, .nv-nav .ncss-nav-item summary { padding-inline: .5rem; }
-    .ncss-topbar-actions { flex: 0 0 auto; }
-  }
-  @media (min-width: 64rem) {
-    .nv-topbar:not(:has(.nv-nav[data-ncss-nav-auto])) {
-      .ncss-topbar-inner { flex-wrap: nowrap; }
-      .nv-nav { flex: 1 1 auto; display: flex; justify-content: flex-end; }
-      .nv-nav .ncss-nav-list { justify-content: flex-end; column-gap: 0; }
-      .nv-nav .ncss-nav-item > a, .nv-nav .ncss-nav-item summary { padding-inline: .5rem; }
-      .ncss-topbar-actions { flex: 0 0 auto; }
-    }
-  }
-  /* Menü-Schaltfläche (Off-Canvas): Sprachen, Darstellung und Handlungsaufruf unten im Panel statt in der Leiste */
-  .nv-topbar:has(.nv-nav[data-ncss-nav-auto="compact"]) {
-    /* eine Zeile auch bei 360 px: Marke darf schrumpfen (Logo eingepasst, Name gekürzt), Werkzeuge und Menü bleiben */
-    .ncss-topbar-inner { flex-wrap: nowrap; }
-    .nv-brand { flex: 0 1 auto; min-inline-size: 0; }
-    .nv-brand__logo { min-inline-size: 0; }
-    .nv-brand__img { max-inline-size: 100%; }
-    .nv-brand__name { min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .ncss-topbar-actions { margin-inline-start: auto; }
-    .nv-nav { order: 3; flex: 0 0 auto; margin-inline-start: 0; }
-    .nv-langs, .nv-head-cta { display: none; }
-    .nv-nav__langs { display: flex; margin-block-start: var(--f-s-l); }
-    .nv-nav__cta { display: flex; justify-content: center; margin-block-start: var(--f-s-l); }
-    /* Darstellung: im Menü (die Kopfleiste bleibt einzeilig), in der Leiste nur in der Zeilen-Ansicht */
-    .nv-prefs:not(.nv-prefs--always) { display: none; }
-    .nv-nav__prefs:defined { display: inline-block; margin-block-start: var(--f-s-m); }
-  }
-  @media (max-width: 63.99rem) {
-    .nv-topbar:not(:has(.nv-nav[data-ncss-nav-auto])) {
-      .ncss-topbar-inner { flex-wrap: nowrap; }
-      .nv-brand { flex: 0 1 auto; min-inline-size: 0; }
-      .nv-brand__logo { min-inline-size: 0; }
-      .nv-brand__img { max-inline-size: 100%; }
-      .nv-brand__name { min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-      .ncss-topbar-actions { margin-inline-start: auto; }
-      .nv-nav { order: 3; flex: 0 0 auto; margin-inline-start: 0; }
-      .nv-langs, .nv-head-cta { display: none; }
-      .nv-nav__langs { display: flex; margin-block-start: var(--f-s-l); }
-      .nv-nav__cta { display: flex; justify-content: center; margin-block-start: var(--f-s-l); }
-      .nv-prefs:not(.nv-prefs--always) { display: none; }
-      .nv-nav__prefs:defined { display: inline-block; margin-block-start: var(--f-s-m); }
-    }
-  }
+  /* Kopfleiste immer EINE Zeile – Zeile oder Menü-Schaltfläche entscheidet NativeCSS (ab 1.3): ohne Skript per Container Query
+     an der Breite der Kopfzeile mit der Schwelle data-ncss-nav-fit (geschätzt in NativeKit::navFit(), template.view.php), danach
+     misst ncss/js/nav.js genau nach (data-ncss-nav-auto, hat Vorrang). Alle Wege setzen den Schalter --ncss-nav-compact an der
+     Nav und ihren Geschwistern in der Zeile (Leerzeichen = Menü-Schaltfläche). Muster:
+       --_x: var(--ncss-nav-compact) WERT-KOMPAKT; eigenschaft: var(--_x, WERT-ZEILE)
+     – jede Regel steht nur einmal da und stimmt mit und ohne JavaScript. Sprachen, Darstellung und Handlungsaufruf wandern nur
+     im Kompakt-Zustand ins Menü (sonst schüfe das Schrumpfen Platz und die Leiste wechselte hin und her). */
+  /* Menü: in der Zeile rechts neben der Marke; kompakt nur die Schaltfläche ganz rechts hinter den Werkzeugen */
+  .nv-nav { --_o: var(--ncss-nav-compact) 3; --_f: var(--ncss-nav-compact) 0 0 auto; --_m: var(--ncss-nav-compact) 0;
+    order: var(--_o, 0); flex: var(--_f, 1 1 auto); margin-inline-start: var(--_m, auto); min-inline-size: 0;
+    display: flex; justify-content: flex-end; }
+  .nv-nav .ncss-nav-list { --_j: var(--ncss-nav-compact) flex-start; justify-content: var(--_j, flex-end); column-gap: 0; }
+  .nv-nav .ncss-nav-item > a, .nv-nav .ncss-nav-item summary { --_p: var(--ncss-nav-compact) revert-layer; padding-inline: var(--_p, .5rem); }
+  /* kompakt: eine Zeile auch bei 360 px – Marke darf schrumpfen (Logo eingepasst, Name gekürzt), Werkzeuge und Menü bleiben */
+  .nv-brand { --_f: var(--ncss-nav-compact) 0 1 auto; flex: var(--_f, 0 0 auto); min-inline-size: 0; }
+  .nv-brand__logo { min-inline-size: 0; }
+  .nv-brand .nv-brand__img { --_mw: var(--ncss-nav-compact) 100%; max-inline-size: var(--_mw, 14rem); }
+  .nv-brand__name { --_ov: var(--ncss-nav-compact) hidden; min-inline-size: 0; overflow: var(--_ov, visible); text-overflow: ellipsis; white-space: nowrap; }
+  /* Sprachen, Handlungsaufruf, Darstellung: in der Leiste nur in der Zeilen-Ansicht, kompakt unten im Menü */
+  .nv-langs, .nv-head-cta, .nv-prefs:not(.nv-prefs--always) { --_d: var(--ncss-nav-compact) none; display: var(--_d, revert-layer); }
+  .nv-nav__langs { --_d: var(--ncss-nav-compact) flex; display: var(--_d, none); margin-block-start: var(--f-s-l); }
+  .nv-nav__cta { --_d: var(--ncss-nav-compact) flex; display: var(--_d, none); justify-content: center; margin-block-start: var(--f-s-l); }
+  .nv-nav__prefs { display: none; }
+  .nv-nav__prefs:defined { --_d: var(--ncss-nav-compact) inline-block; display: var(--_d, none); margin-block-start: var(--f-s-m); }
 
   /* ------------------------------------------------------------------ Footer */
   .nv-footer { margin-block-start: 0; padding-block: var(--f-s-2xl) var(--f-s-l); background: var(--f-surface); color: var(--f-muted); }
@@ -235,6 +200,9 @@
   .nv-cta--band .btn--secondary { border-color: currentColor; color: var(--f-a-on); background: transparent; }
   /* Band auf einem schon farbigen Abschnitt (Akzent, zweite Farbe, dunkel): keine zweite Farbfläche */
   :is(.bg-accent, .bg-secondary, .bg-dark) .nv-cta--band { background: transparent; color: inherit; --ncss-tile-padding-inline: 0; }
+  /* … Texte und Zweit-Knopf in der Schriftfarbe des Abschnitts. --f-a-on gehört zur Akzentfläche – auf einem dunkel getönten
+     Abschnitt wäre das dunkles Navy auf dunklem Grund */
+  :is(.bg-accent, .bg-secondary, .bg-dark) .nv-cta--band :is(.nv-cta__title, .nv-cta__lead, .btn--secondary) { color: inherit; }
   .nv-cta--box { background: var(--f-surface); }
   .nv-cta--box .nv-cta__title { color: var(--f-ink); }
   .nv-cta__lead { max-inline-size: 42em; }

@@ -1,5 +1,29 @@
 # Changelog
 
+## Unveröffentlicht
+
+### Kit „NativeCSS“: NativeCSS 1.3.0 – Kopfleiste schon ohne JavaScript richtig
+
+- **NativeCSS 1.3.0** (`php tools/ncss-update.php --tag=v1.3.0`). Die Kopfleiste entscheidet jetzt schon vor dem ersten
+  Zeichnen und ohne JavaScript per **Container Query** an der Breite der Kopfzeile, ob das Menü in die Zeile passt:
+  `NativeKit::navFit()` schätzt aus Menüpunkten, Marke (Name oder Logo), Sprachen, Darstellungs-Knopf, Suche und
+  Handlungsaufruf die nötige Breite und schreibt sie als `data-ncss-nav-fit` (rem, wächst mit Schriftgröße und Zoom) an die
+  Navigation; über 120rem steht immer die Menü-Schaltfläche (`.ncss-nav--compact`). `ncss/js/nav.js` misst danach genau
+  nach und hat Vorrang. Vorher galt ohne Skript fest 64rem Fensterbreite – ein langes Menü brach darüber in sich um.
+- `native.css`: **ein Schalter statt doppelter Regeln** – Marke, Menü, Sprachen, Darstellungs-Knopf und Handlungsaufruf lesen
+  `--ncss-nav-compact` (`--_d: var(--ncss-nav-compact) none; display: var(--_d, …)`); die Blöcke für den Zustand von
+  `nav.js` und die Media Query 64rem entfallen. Geprüft mit und ohne JavaScript: frische Aufrufe 1600–320 px und Ziehen der
+  Fensterbreite 1600 → 320 → 1600 – immer eine Zeile, je Richtung genau ein Wechsel, Menü per Tastatur.
+- `fluid:kit:ncss-update`/`tools/ncss-update.php`: übernimmt auch `@import`-Zeilen ohne `layer()` – ab NativeCSS 1.3 legen
+  die Dateien unter `components/` und `helpers/` ihren Layer selbst fest. Vorher fehlten damit Helfer und Komponenten in
+  `css/ncss-base.css` (Kopfleiste zerfiel).
+- Mit NativeCSS 1.3.0 außerdem: Vorher/Nachher-Regler ragt nicht mehr über den Rand, Scrollytelling ohne gedimmte Schritte
+  (Kontrast), neutrale deutsche Texte im Darstellungs-Knopf, Texte der Player per `data-label-…` überschreibbar. fluid
+  setzt keine der umbenannten Attribute (`value-text`, `data-label-motionhint` …) – nichts anzupassen. Das Bedienfeld
+  „Darstellung“ im Kit fluid sieht trotz eigenem Layer der Komponente unverändert aus (Pixelvergleich 0 px).
+- Handlungsaufruf „Band“ auf einem farbigen Abschnitt: Überschrift, Text und Zweit-Knopf in der Schriftfarbe des Abschnitts
+  statt `--f-a-on` (im dunklen Schema auf getöntem Abschnitt sonst dunkel auf dunkel).
+
 ## 1.0.0-beta.4 – 2026-11-21
 
 ### Editor: Kontraste der Leiste und der Spaltenmarken

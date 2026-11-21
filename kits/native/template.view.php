@@ -1,7 +1,8 @@
 <?php
 /*
  * Seitenrahmen des Kits „NativeCSS“: Topbar mit Navigation (dialog als Off-Canvas, Untermenüs mit details) in EINER Zeile –
- * passt das Menü nicht neben Marke und Werkzeuge, erscheint die Menü-Schaltfläche (ncss/js/nav.js misst, ohne Skript 64rem),
+ * passt das Menü nicht neben Marke und Werkzeuge, erscheint die Menü-Schaltfläche (NativeCSS: Container Query mit der Schwelle aus
+ * NativeKit::navFit() – schon ohne Skript –, ncss/js/nav.js misst nach),
  * Footer im Raster – Komponenten von NativeCSS. Gleiche Daten und Funktionen wie der Rahmen von fluid
  * (kits/fluid/src/FluidTemplate.view.php): Menü, Sprachen, Suche, Button im Kopf, Hinweisleiste, Blog, Editor.
  *
@@ -153,7 +154,8 @@ return static function (ArticleContent $content): void {
   <div class="ncss-topbar-inner">
     <?= $brand('ncss-topbar-brand') ?>
     <?php if ($menu): ?>
-    <nav class="ncss-nav nv-nav" aria-label="<?= e(lt('Hauptnavigation')) ?>">
+    <?php $fit = \Klxm\Fluid\Kit\Native\NativeKit::navFit($menu, fluid_name(true), '' !== $logo, \count($langs), $prefs, '' !== $searchPage, (string) ($cta['label'] ?? '')); ?>
+    <nav class="ncss-nav nv-nav<?= 0 === $fit ? ' ncss-nav--compact' : '' ?>" aria-label="<?= e(lt('Hauptnavigation')) ?>"<?= $fit ? ' data-ncss-nav-fit="' . $fit . '"' : '' ?>>
       <button type="button" class="ncss-nav-toggle" command="show-modal" commandfor="nv-menu" aria-haspopup="dialog" aria-label="<?= e(lt('Menü')) ?>"><span class="ncss-icon ncss-icon-menu" aria-hidden="true"></span></button>
       <dialog id="nv-menu" class="ncss-nav-panel ncss-offcanvas ncss-offcanvas--start" aria-label="<?= e(lt('Menü')) ?>">
         <button type="button" class="ncss-dialog-close" command="close" commandfor="nv-menu" aria-label="<?= e(lt('Menü schließen')) ?>"><span class="ncss-icon ncss-icon-close" aria-hidden="true"></span></button>

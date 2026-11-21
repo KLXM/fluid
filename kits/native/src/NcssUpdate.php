@@ -223,15 +223,19 @@ final class NcssUpdate
         file_put_contents($this->assets . '/css/ncss-base.css', $this->manifest());
     }
 
-    /** @return list<string> @import-Zeilen des erzeugten Manifests */
+    /**
+     * @return list<string> @import-Zeilen des erzeugten Manifests. Seit NativeCSS 1.3 legen Dateien unter components/ und
+     * helpers/ ihren Layer selbst fest und ncss.css importiert sie ohne layer() – dann ohne layer() übernehmen.
+     */
     private function manifestImports(): array
     {
         $skip = [...self::ON_DEMAND, ...self::UNUSED];
         $out = [];
-        preg_match_all('~@import\s+url\("([^"]+)"\)\s+layer\(([\w-]+)\);~', $this->upstreamManifest(), $m, PREG_SET_ORDER);
-        foreach ($m as [$all, $file, $layer]) {
+        preg_match_all('~@import\s+url\("([^"]+)"\)(?:\s+layer\(([\w-]+)\))?\s*;~', $this->upstreamManifest(), $m, PREG_SET_ORDER);
+        foreach ($m as $match) {
+            [$file, $layer] = [$match[1], $match[2] ?? ''];
             if (!in_array($file, $skip, true)) {
-                $out[] = '@import url("../ncss/' . $file . '") layer(' . $layer . ');';
+                $out[] = '@import url("../ncss/' . $file . '")' . ('' !== $layer ? ' layer(' . $layer . ')' : '') . ';';
             }
         }
 
