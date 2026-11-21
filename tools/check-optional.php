@@ -46,11 +46,25 @@ foreach (['src', 'kits/fluid/src', 'kits/native/src'] as $dir) {
             } elseif (in_array($t[0], [T_CLASS, T_INTERFACE, T_ENUM], true) && ($tokens[$i - 1][0] ?? null) !== T_DOUBLE_COLON) {
                 // Namen nach extends/implements bis zur geschweiften Klammer einsammeln
                 $parents = [];
+                $resolve = static function (string $p) use ($imports): string {
+                    $p = ltrim($p, '\\');
+                    $first = explode('\\', $p)[0];
+
+                    return isset($imports[$first]) ? $imports[$first] . substr($p, strlen($first)) : $p;
+                };
                 for ($j = $i + 1; $j < $n && '{' !== $tokens[$j]; ++$j) {
                     if (is_array($tokens[$j]) && in_array($tokens[$j][0], [T_STRING, T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED], true) && $j > $i + 2) {
-                        $p = ltrim($tokens[$j][1], '\\');
-                        $first = explode('\\', $p)[0];
-                        $parents[] = isset($imports[$first]) ? $imports[$first] . substr($p, strlen($first)) : $p;
+                        $parents[] = $resolve($tokens[$j][1]);
+                    }
+                }
+                // Traits im Klassenrumpf (`use Trait;` – fehlt der Trait, bricht das Laden genauso ab)
+                for (; $j < $n; ++$j) {
+                    if (is_array($tokens[$j]) && T_USE === $tokens[$j][0]) {
+                        for ($k = $j + 1; $k < $n && ';' !== $tokens[$k] && '{' !== $tokens[$k]; ++$k) {
+                            if (is_array($tokens[$k]) && in_array($tokens[$k][0], [T_STRING, T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED], true)) {
+                                $parents[] = $resolve($tokens[$k][1]);
+                            }
+                        }
                     }
                 }
                 foreach ($parents as $p) {
