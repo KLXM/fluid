@@ -1,6 +1,6 @@
 # Changelog
 
-## Unveröffentlicht
+## 1.0.0-beta.5 – 2026-11-21
 
 ### Kit „NativeCSS“: NativeCSS 1.3.0 – Kopfleiste schon ohne JavaScript richtig
 
