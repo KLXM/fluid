@@ -1,6 +1,6 @@
 # Changelog
 
-## Unveröffentlicht
+## 1.0.0-beta.6 – 2026-11-21
 
 ### Kit „NativeCSS“: NativeCSS 1.4.0 – gemeinsamer Kern der Player, Tabellen sortieren
 
