@@ -257,6 +257,20 @@ Sprachen (`.nv-langs` → `.nv-nav__langs`), Darstellungs-Knopf und Handlungsauf
 nur im Kompakt-Zustand ins Menü – wer eigene Werkzeuge ergänzt, blendet sie ebenfalls über den Schalter aus, sonst schafft
 das Ausblenden Platz, das Menü passt wieder, und die Leiste springt hin und her.
 
+#### Klassen auf Basis von YForm
+
+YForm ist optional. Die Klassensuche von REDAXO 6 lädt aber jede Klasse unter `src/` – eine Klasse, die von YForm erbt,
+bricht ohne YForm mit „Class … not found“ ab (z. B. bei `migrate`). Solche Dateien beginnen deshalb nach den `use`-Zeilen mit
+
+```php
+// Nur mit YForm (fluid läuft auch ohne)
+if (!class_exists(Field::class)) {
+    return;
+}
+```
+
+`php tools/check-optional.php` prüft das (auch in der CI).
+
 #### NativeCSS aktualisieren
 
 ```bash

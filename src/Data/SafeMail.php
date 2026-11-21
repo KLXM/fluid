@@ -9,6 +9,11 @@ use Yakamara\YForm\Form\Action\Action;
 use Yakamara\YForm\Form\Action\SendMail;
 use Yakamara\YForm\Form\Action\Submission;
 
+// Nur mit YForm (fluid läuft auch ohne)
+if (!class_exists(Action::class)) {
+    return;
+}
+
 /**
  * Mail einer Formular-Aktion (YForm `SendMail`), deren Fehlschlag die Eingabe nicht verwirft.
  *

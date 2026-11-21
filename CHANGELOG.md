@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.0.0-beta.7 – 2026-11-21
+
+### Fix: Installation ohne YForm
+
+- **`migrate` brach ohne YForm ab** („Class "Yakamara\YForm\Form\Action\Action" not found“). Die Klassensuche von
+  REDAXO 6 lädt jede Klasse unter den Addon-Pfaden; `Data\SafeMail` erbt von einer YForm-Klasse und hatte – anders als
+  `FormEntryTable`, `FluidBlocks`, `FluidLanguage` und `BuiltForm` – keinen `class_exists`-Guard. Jetzt fehlt sie ohne
+  YForm einfach, wie vorgesehen (YForm bleibt optional).
+- Neu: `php tools/check-optional.php` – meldet Klassen, die von YForm erben oder ein YForm-Interface implementieren,
+  aber keinen Guard haben. Läuft in der CI bei jedem Push.
+
 ## 1.0.0-beta.6 – 2026-11-21
 
 ### Kit „NativeCSS“: NativeCSS 1.4.0 – gemeinsamer Kern der Player, Tabellen sortieren
