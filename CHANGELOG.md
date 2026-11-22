@@ -1,5 +1,71 @@
 # Changelog
 
+## 1.0.0-beta.11 – 2026-11-22
+
+Nach dem Vorbild von KLXM Studio (MIT) – schlanke erste Fassungen, angepasst an REDAXO/fluid. **Nach dem Update
+`php bin/console migrate`** (legt die YForm-Tabelle „Glossar“ an). Alles Neue ist aus, bis man es einschaltet: Menüs, Seiten und
+Texte bestehender Websites bleiben unverändert (Pixelvergleich der Demo-Seiten).
+
+### Einträge im Menü
+
+- Block „Datenliste“ mit Detailansicht → **„Einträge im Menü zeigen“**: Keine (Standard) | Oberste Ebene | Zwei Ebenen (Kapitel und
+  Unterkapitel bei Tabellen der Art „Wissen“), dazu „Höchstens im Menü (je Ebene)“. Die Einträge erscheinen als virtuelle Unterpunkte
+  der Übersichtsseite im Kopf- und Mobilmenü beider Kits (`FluidTemplate::menu()`), auf der Detailseite ist der Eintrag „aktuell“ und
+  die Übersicht „aktiv“. Brotkrumen (schema.org) mit Oberkapiteln, Sitemap über die Detailseiten wie bisher.
+- `Klxm\Fluid\Data\MenuEntries`, Extension Point `FLUID_MENU_ENTRIES` (Punkte ändern).
+
+### Glossar
+
+- **Ein Glossar je Website** als YForm-Tabelle „Glossar“ (`rex_fluid_glossary`, `Glossary\GlossaryTable`): Begriff, Schreibweisen,
+  Kurztext (Hinweisfenster, höchstens 240 Zeichen) und Text (ausführliche Erklärung aus Blöcken, auf der Detailseite direkt bearbeitbar).
+- **Automatisch markieren** (Website → Glossar, Standard aus): erstes Vorkommen je Seite oder je Abschnitt, nicht in Links, Überschriften
+  (h1–h3), Knöpfen, Navigation, Kopf und Fuß, Code; Schreibweisen mit üblichen Endungen, Abkürzungen nur in genauer Schreibweise;
+  Hinweisfenster per Popover (Esc, Klick daneben, Fokus zurück, auf dem Telefon als Blatt unten), „Mehr im Glossar“ zur Detailseite.
+  Ausnehmen mit `data-glossary="off"`. Nie im Bearbeiten-Modus, nie auf der eigenen Detailseite. Stylesheet und Skript nur auf Seiten
+  mit Treffern. Markierung: `Glossary\Annotator` aus KLXM Studio (unverändert).
+- **Block „Glossar“** (Daten): Übersicht von A bis Z mit Suche und Buchstaben (DefinedTermSet); seine Seite ist die Übersicht, jeder
+  Begriff hat darunter eine Detailseite, z. B. `/glossar/barrierefreiheit` (Titel, Beschreibung, Canonical, Sitemap, DefinedTerm).
+- **Quick-Glossar** im Editor (Menü ⋯ → Glossar, Alt+G): Begriffe suchen, markierten Text als neuen Begriff anlegen (vorbelegt),
+  „Gibt es schon?“ mit „Als Schreibweise zu … hinzufügen“. Recht: Bearbeiten der YForm-Tabelle.
+- Interaktives Bild: Markierungen mit Glossar-Begriff (Feld „term“) bekommen Begriff und Kurztext aus dem Glossar (`FLUID_HOTSPOT_TERM`).
+- Datenquelle hinter einer kleinen Schnittstelle (`Glossary\GlossaryStore`, Standard `YFormGlossaryStore`) – ein anderes Backend setzt
+  `Glossary::$store` in `Project::configure()`.
+
+### Wissensbereich
+
+- **Tabellenart „Wissen“:** `Klxm\Fluid\Data\KnowledgeTable` im Projekt ableiten (Beispiel `examples/yform/HandbuchTable.php`) –
+  Titel, Oberkapitel (Kapitelbaum), Reihenfolge, Kapitelnummer (sonst automatisch 1, 1.1 …), Bereich (`areas()`), Anreißer, Bild,
+  Inhalt aus Blöcken (Feld „Fluid-Blöcke“), Schlagworte, verwandte Kapitel, Glossar-Begriffe, „Zuletzt geprüft“, Online, Sprache.
+- **Übersicht** mit dem Block „Datenliste“: neue Darstellung **„Inhaltsverzeichnis“** (Bereiche → Kapitel → Unterkapitel mit Nummern;
+  bei anderen Tabellen eine nummerierte Liste) oder Karten/Liste in der Reihenfolge des Kapitelbaums.
+- **Detailansicht mit Kapitelnavigation:** Seitenleiste mit Suche, Kapitelbaum (aktueller Zweig offen) und „In diesem Kapitel“ (h2 des
+  Inhalts, mit Ankern), Inhalt aus Blöcken (auf der Website bearbeitbar), Schlagworte, Begriffe, verwandte Kapitel, „Zuletzt geprüft“,
+  Vor/Zurück. Zwei Stile: **„Magazin“** (Einstieg mit Nummer, Titel, Anreißer und Bild über die volle Breite) und **„Sachlich“** (große
+  Nummer vor dem Titel, kompakt – für Handbücher und Satzungen). Beide Kits.
+- **Strukturierte Daten:** Article je Kapitel (isPartOf Sammlung und Oberkapitel, position, alternateName = Nummer, keywords,
+  articleSection, about = DefinedTerm des Glossars), WebPage mit lastReviewed und relatedLink, auf der Übersicht CollectionPage mit
+  hasPart in Lesereihenfolge.
+- Bewusst (noch) nicht übernommen aus Studio: Layout-Modi (Kompakt, Fokus, Handbuch), Kapitelnavigation als eigener Block, Verweis-Kapitel
+  auf Seiten, Umstieg Seitenzweig → Wissensbereich, Trefferauszug und Glossar-Treffer in der Suche der Datenliste, geteiltes Glossar über
+  mehrere Websites, dynamische Bereiche (Markieren im Browser), Mehrfach-Filter.
+
+### Behoben
+
+- Datenliste: Einträge mit „Alle Sprachen“, die über die Maske von YForm gespeichert wurden (Spalte `NULL` statt `''`), fehlten in
+  Liste, Detailansicht und Sitemap (`YFormBridge::inLanguage()`).
+- Editor, dunkles Farbschema: gewählter Reiter der Seitenleisten (Website, Anfragen, Glossar) weiß auf hell (1,2:1) – jetzt in der
+  Grundfarbe der Leiste.
+
+### Selbsttest
+
+- `console fluid:selftest`: neue Gruppen „Menü“, „Glossar“ und „Wissen“.
+
+*EN:* Data list entries can appear in the menu below their overview page (none / top level / two levels, limit). New site glossary
+(YForm table): automatic marking of the first occurrence with popovers (off by default), glossary block with A–Z overview and detail
+pages, Quick glossary in the editor (Alt+G), store interface for other backends. Knowledge area: table kind “Wissen” (chapter tree,
+numbers, areas, tags, related chapters, glossary terms, last reviewed, block content), table-of-contents display, detail view with
+chapter navigation in two styles (magazine, factual), JSON-LD Article/CollectionPage/DefinedTerm.
+
 ## 1.0.0-beta.10 – 2026-11-22
 
 Nach dem Vorbild von KLXM Studio (MIT), angepasst an REDAXO/fluid. **Nach dem Update `php bin/console migrate`** – bestehende

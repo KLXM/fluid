@@ -6,7 +6,7 @@ Technische Doku zu fluid für REDAXO 6. Einstieg und Installation: [README](../R
 
 - [Ein eigener Block](#ein-eigener-block) · [Eigene Kits](#eigene-kits)
 - [Extension Points](#extension-points)
-- [YForm: Formulare und Datenlisten](#yform-formulare-und-datenlisten) · [Listen-Vorlagen](#listen-vorlagen)
+- [YForm: Formulare und Datenlisten](#yform-formulare-und-datenlisten) · [Listen-Vorlagen](#listen-vorlagen) · [Einträge im Menü](#einträge-im-menü) · [Glossar](#glossar) · [Wissensbereich](#wissensbereich)
 - [Blöcke in YForm-Tabellen](#blöcke-in-yform-tabellen-feld-fluid-blöcke)
 - [Adressen, Domains, SEO](#adressen-domains-seo)
 - [Geänderte Standardwerte](#geänderte-standardwerte) · [Interaktives Bild](#interaktives-bild) · [Video-Links in der Lightbox](#video-links-in-der-lightbox) · [Termine (.ics)](#termine-ics) · [Fußbereich](#fußbereich)
@@ -364,7 +364,8 @@ Extension::register('FLUID_KIT', static fn (ExtensionPoint $ep) => 'shop.example
 | `FLUID_KIT` | Schlüssel des Kits | – | Kit je Anfrage wählen, z. B. je Domain |
 | `FLUID_DEFAULT_CHANGES` | Änderungen (Kennung => [Typ => [Feld => bisher]]) | – | bestehende Blöcke behalten ihr Aussehen (siehe [Geänderte Standardwerte](#geänderte-standardwerte)) |
 | `FLUID_HOTSPOT_EDITORS` | Liste (`url`, `label`, `title`) | – | weiterer Editor für das Feld „Markierungen“ (siehe [Interaktives Bild](#interaktives-bild)) |
-| `FLUID_HOTSPOT_TERM` | `null` | `key` | Glossar-Begriff einer Markierung: `['term', 'short', 'url']` |
+| `FLUID_HOTSPOT_TERM` | `null` | `key` | Glossar-Begriff einer Markierung: `['term', 'short', 'url']` – das Glossar von fluid antwortet selbst (Slug oder Begriff) |
+| `FLUID_MENU_ENTRIES` | Menüpunkte (`label`, `href`, `current`, `active`, `children`, `entry`) | `article`, `language`, `config` | Einträge im Menü ändern (siehe [Einträge im Menü](#einträge-im-menü)) |
 | `FLUID_LIST_TEMPLATES` | Vorlagen (Schlüssel => `name`, `options`, `tables`, `default`, `block`) | `table`, `block` | Listen-Vorlagen vordefinieren (siehe [Listen-Vorlagen](#listen-vorlagen)) |
 
 Das Routing hat eigene Extension Points als Klassen (wie der Core), Namespace `Klxm\Fluid\Routing\ExtensionPoint`:
@@ -444,6 +445,52 @@ Eigene Listenblöcke nehmen teil mit `#[AsBlock(listTemplate: true)]` (oder eine
 einem Feld `#[ListTemplate('Vorlage')] public string $template = '';`. Verwalten (Speichern, Standard, Überschreiben, Umbenennen,
 Löschen) in der Seitenleiste mit `fluid[design_full]`; Vorschläge je Tabelle legt `ListTemplates::seed()` beim ersten Öffnen an.
 
+## Einträge im Menü
+
+Block „Datenliste“ mit Detailansicht → „Einträge im Menü zeigen“ (`menu_entries`: `''` keine, `top`, `two`) und „Höchstens im Menü“
+(`menu_limit`, 1–50, Standard 12). `Klxm\Fluid\Data\MenuEntries::extend()` hängt in `FluidTemplate::menu()` an jede Seite mit
+eingeschalteter Datenliste ihre Einträge als Kinder an (`entry` = ID des Datensatzes) – damit gelten sie in beiden Kits für Kopf- und
+Mobilmenü (der Kopf zeigt eine Ebene darunter, das Mobilmenü alle). Zwei Ebenen nur bei Tabellen der Art „Wissen“ (Kapitelbaum), sonst
+die Sortierung der Datenliste. Auf der Detailseite: Eintrag `current`, Übersicht (und Oberkapitel) `active`. Ohne Einstellung bleibt das
+Menü unverändert. Eigene Kits mit eigenem Menü rufen `MenuEntries::items($articleId, $languageId)`.
+
+## Glossar
+
+Ein Glossar je Website (`Klxm\Fluid\Glossary\Glossary`): Begriffe mit Schreibweisen, Kurztext und ausführlicher Erklärung.
+
+- **Daten:** YForm-Tabelle `rex_fluid_glossary` (`Glossary\GlossaryTable`, legt `migrate` an) über die Schnittstelle
+  `Glossary\GlossaryStore` (`terms()`, `longHtml()`, `create()`, `addVariant()`, `canEdit()`, `editUrl()`). Andere Quelle:
+  `Glossary::$store = new MeinStore();` in `Project::configure()`.
+- **Markieren:** `Glossary::annotate()` im `OUTPUT_FILTER` (Website → Glossar → „Begriffe automatisch markieren“, Standard aus;
+  „Wie oft“: je Seite oder je Abschnitt). `Glossary\Annotator` (aus KLXM Studio) arbeitet auf dem fertigen HTML: nur in `<main>`,
+  nicht in Links, Knöpfen, Beschriftungen, Code, Navigation, Kopf/Fuß außerhalb von Inhalten, h1–h3, versteckten Bereichen und
+  Elementen mit `data-glossary="off"`. Markup: `<span class="gl"><button class="gl-term" popovertarget>…</button><span class="gl-pop" popover>…</span></span>`;
+  Kits passen es mit `--gl-*` an oder ersetzen `css/glossary.css`.
+- **Übersicht und Detailseiten:** Block „Glossar“ (`fluid.glossary`). Die Seite mit dem Block ist die Übersicht; Begriffe haben die
+  Adresse `{seite}/{slug}` (Resolver des Routings, Sitemap, DefinedTermSet/DefinedTerm). `Glossary::current()` liefert den Begriff der
+  Detailseite.
+- **Quick-Glossar:** Menü ⋯ → Glossar bzw. Alt+G im Editor (API-Aktion `glossary`: `list`, `create`, `variant`); Recht über `canEdit()`
+  der Datenquelle (YForm: Tabelle bearbeiten).
+
+## Wissensbereich
+
+Tabellenart „Wissen“: im Projekt von `Klxm\Fluid\Data\KnowledgeTable` ableiten (`areas()` für Bereiche, `contentBlocks()` für die
+erlaubten Blöcke, `fields()` erweitern mit `yield from parent::fields();`) – Beispiel `examples/yform/HandbuchTable.php`.
+
+```php
+#[AsTable('rex_yf_handbuch', label: 'Handbuch', icon: 'fa-book-open')]
+final class HandbuchTable extends KnowledgeTable
+{
+    public function areas(): array { return ['start' => 'Erste Schritte', 'alltag' => 'Im Alltag']; }
+}
+```
+
+Ausgabe mit dem Block „Datenliste“: Darstellung „Inhaltsverzeichnis“ (`Data\Knowledge::toc()`) oder Karten/Liste in Baumreihenfolge;
+Detailansicht `Data\Knowledge::detail()` mit Kapitelnavigation, Stil „Magazin“ oder „Sachlich“ (Feld `knowledge_style`), CSS
+`css/knowledge.css` und `js/knowledge.js` (Suche) nur auf solchen Seiten (`@knowledge`). `Knowledge::tree()` liefert den Kapitelbaum
+(`nodes`, `roots`, `order`, Nummern), `ancestors()`, `neighbours()`, `sections()`; die einzige Stelle mit YForm ist `Knowledge::chapters()`.
+Strukturierte Daten über `FLUID_STRUCTURED_DATA` (Article, CollectionPage, Collection, lastReviewed, about = DefinedTerm).
+
 ## Blöcke in YForm-Tabellen: Feld „Fluid-Blöcke“
 
 Jede YForm-Tabelle kann Inhalt aus den Blöcken von fluid haben – ein Feld wie jedes andere in der Tabellenklasse:
@@ -471,7 +518,7 @@ yield FluidBlocks::new('inhalt')->label('Inhalt')->blocks('richtext', 'media_tex
 Für eigene Ausgaben: `PageSettings::override(['title' => …, 'description' => …, 'image' => …, 'canonical' => …])`
 setzt den Seitenkopf aus einem Block heraus (z. B. eigene Detailansichten).
 
-Vorlagen: `examples/yform/` (`TerminTable`, `NewsTable`, `ProjectTable`, `AnfrageTable`, `AnfrageForm`) – nach `src/` kopieren, `console migrate`.
+Vorlagen: `examples/yform/` (`TerminTable`, `NewsTable`, `ProjectTable`, `AnfrageTable`, `AnfrageForm`, `HandbuchTable`) – nach `src/` kopieren, `console migrate`.
 
 ## Adressen, Domains, SEO
 
@@ -1029,7 +1076,7 @@ Ohne Live-Kanal funktioniert es auch, dann mit 15 Sekunden Verzögerung.
 | `fluid:kit:create name` | eigenes Kit im Projekt anlegen (`--label`, `--parent`, `--view=hero,cards`, `--template`) |
 | `fluid:kit:ncss-update --from=…` | NativeCSS im Kit „NativeCSS“ aktualisieren – siehe [NativeCSS aktualisieren](#nativecss-aktualisieren) |
 | `fluid:search-index` | Suchindex neu aufbauen (sonst automatisch nach dem Veröffentlichen) |
-| `fluid:selftest` | Live-Aktualisierung, Präsenz, Bearbeitungssperre, Blöcke (Views ohne Code hinter `//`, Inhaltsverzeichnis, Video-Schalter …), Rechte und Listen-Vorlagen prüfen |
+| `fluid:selftest` | Live-Aktualisierung, Präsenz, Bearbeitungssperre, Blöcke (Views ohne Code hinter `//`, Inhaltsverzeichnis, Video-Schalter …), Rechte, Listen-Vorlagen, Menü, Glossar und Wissen prüfen |
 | `fluid:upgrade:defaults` | geänderte Standardwerte in bestehende Blöcke schreiben (läuft auch bei `migrate`; `--dry-run` zählt nur) |
 | `fluid:upgrade:slices` | Blöcke älterer REDAXO-6-Datenbanken in die Spalte `data` übernehmen (`--drop-old` entfernt die alten Spalten) |
 

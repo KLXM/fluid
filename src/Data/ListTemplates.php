@@ -362,6 +362,9 @@ final class ListTemplates
             $out[] = ['name' => 'Liste', 'options' => ['variant' => 'list']];
         }
         $out[] = ['name' => 'Tabelle sortierbar', 'options' => ['variant' => 'table', 'table_sort' => true]];
+        if (Knowledge::is($t)) {   // Wissensbereich: Inhaltsverzeichnis mit Kapitelbaum
+            array_unshift($out, ['name' => 'Inhaltsverzeichnis', 'options' => ['variant' => 'toc']]);
+        }
 
         return $out;
     }

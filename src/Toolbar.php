@@ -98,6 +98,8 @@ final class Toolbar
             ], Routing\Router::alternates($article, !$guest)) : null,   // Gäste: nur Sprachen, in denen die Seite online ist
             // Anfragen-Postfach: nur, wenn es Formulare mit YForm-Tabellen gibt
             'inbox' => !$guest && [] !== Data\Inbox::tables($user) ? ['new' => Data\Inbox::countNew($user)] : null,
+            // Quick-Glossar (Menü ⋯ → Glossar, Alt+G): nur mit Recht auf die Datenquelle des Glossars
+            'glossary' => $guest ? null : Glossary\Glossary::toolbar($user),
             // Addon image_editor (optional): Bilder auf der Website bearbeiten
             'imageEditor' => !$guest && class_exists(\Klxm\ImageEditor\ImageEditorAddon::class) ? \Klxm\ImageEditor\ImageEditorAddon::config() : null,
             'css' => $addon->getAssetsUrl('editor/editor.shadow.css') . '?v=' . self::version('editor/editor.shadow.css'),

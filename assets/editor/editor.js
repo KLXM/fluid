@@ -128,6 +128,7 @@
             ${cfg.guest ? '' : '<button type="button" role="menuitem" data-tree-open>Seiten …</button>'}
             ${cfg.inbox ? `<button type="button" role="menuitem" data-inbox-open>Anfragen …${cfg.inbox.new ? ` <span class="badge">${cfg.inbox.new}</span>` : ''}</button>` : ''}
             ${cfg.guest ? '' : '<button type="button" role="menuitem" data-history-open>Verlauf & Entwürfe …</button>'}
+            ${cfg.glossary ? '<button type="button" role="menuitem" data-gloss-open>Glossar … <span class="menu-hint">Alt+G</span></button>' : ''}
             <button type="button" role="menuitem" data-compact>Kompaktansicht</button>
             ${may(cfg.article.menu ? 'editCategory' : 'editArticle') ? '<button type="button" role="menuitem" data-page-settings>Seiteneinstellungen …</button>' : ''}
             ${cfg.site ? '<button type="button" role="menuitem" data-site-open>Website …</button>' : ''}
@@ -256,6 +257,33 @@
       </nav>
       <div class="panel__body" data-inbox-body></div>
     </aside>`);
+  // Quick-Glossar (Klxm\Fluid\Glossary\Glossary): Begriffe suchen, markierten Text als Begriff anlegen, „Gibt es schon?“
+  const gpanel = h(`
+    <aside class="panel gpanel" hidden aria-labelledby="fluid-gloss-title">
+      <header class="panel__head"><h2 id="fluid-gloss-title">Glossar</h2><button type="button" class="btn btn--icon" data-gloss-close aria-label="Schließen">✕</button></header>
+      <nav class="spanel__tabs" role="tablist" aria-label="Glossar">
+        <button type="button" role="tab" id="fluid-gloss-tab-search" aria-controls="fluid-gloss-search" aria-selected="true" data-gloss-tab="search">Suchen</button>
+        <button type="button" role="tab" id="fluid-gloss-tab-new" aria-controls="fluid-gloss-new" aria-selected="false" tabindex="-1" data-gloss-tab="new">Neuer Begriff</button>
+      </nav>
+      <div class="panel__body">
+        <div role="tabpanel" id="fluid-gloss-search" aria-labelledby="fluid-gloss-tab-search" data-gloss-pane="search">
+          <label class="newpage__field"><span>Begriff suchen</span><input type="search" data-gloss-q autocomplete="off" spellcheck="false"></label>
+          <p class="site-intro" role="status" data-gloss-status></p>
+          <ul class="site-list" role="list" data-gloss-list></ul>
+          <p class="site-intro" data-gloss-manage hidden></p>
+        </div>
+        <form role="tabpanel" id="fluid-gloss-new" aria-labelledby="fluid-gloss-tab-new" data-gloss-pane="new" data-gloss-form hidden novalidate>
+          <label class="newpage__field"><span>Begriff</span><input type="text" name="term" required maxlength="120" autocomplete="off" data-gloss-term></label>
+          <div class="gloss-dupe" data-gloss-dupe aria-live="polite"></div>
+          <label class="newpage__field"><span>Kurztext (Hinweisfenster)</span><textarea name="short" rows="3" required data-gloss-short></textarea><small data-gloss-count aria-live="polite"></small></label>
+          <label class="newpage__field"><span>Schreibweisen (optional)</span><input type="text" name="variants" maxlength="400" autocomplete="off"><small>Mit Komma getrennt, z. B. Mehrzahl oder Abkürzung.</small></label>
+          <label class="newpage__check"><input type="checkbox" name="all_languages" value="1"> In allen Sprachen</label>
+          <p class="site-intro">Die ausführliche Erklärung (Detailseite) pflegen Sie danach in der Glossar-Tabelle oder direkt auf der Detailseite.</p>
+          <div class="dlg__actions"><button type="submit" class="btn btn--primary">Begriff anlegen</button></div>
+        </form>
+      </div>
+    </aside>`);
+
   const newdlg = h(`
     <div class="dlg" hidden role="dialog" aria-modal="true" aria-labelledby="fluid-new-t">
       <form class="dlg__box newpage" data-new-form novalidate>
@@ -276,7 +304,7 @@
     </div>`);
   // Ebene für Menüs und Dialoge der Formatierungsleiste (Studio-Editor, assets/rte.js)
   const layer = h('<div class="layer"></div>');
-  root.append(bar, blockbar, addbtn, panel, dpanel, ppanel, spanel, tpanel, hpanel, ipanel, picker, dialog, newdlg, tdlg, mdlg, toast, layer);
+  root.append(bar, blockbar, addbtn, panel, dpanel, ppanel, spanel, tpanel, hpanel, ipanel, gpanel, picker, dialog, newdlg, tdlg, mdlg, toast, layer);
   document.body.append(host);
   document.documentElement.classList.add('blocks-has-bar');
   // ohne Recht: Knöpfe ausblenden (die API prüft ohnehin)
@@ -465,6 +493,7 @@
   initTree();
   initHistory();
   if (cfg.inbox) initInbox();
+  if (cfg.glossary) initGlossary();
   if (cfg.site) initSite();
   if (!cfg.editing) return;
 
@@ -1136,7 +1165,7 @@
     };
     $('[data-inbox-open]').addEventListener('click', () => {
       menu.hidden = true;
-      if ([panel, dpanel, ppanel, spanel, tpanel, hpanel].some((x) => !x.hidden)) return say('Bitte zuerst die andere Seitenleiste schließen.', true);
+      if ([panel, dpanel, ppanel, spanel, tpanel, hpanel, gpanel].some((x) => !x.hidden)) return say('Bitte zuerst die andere Seitenleiste schließen.', true);
       ipanel.hidden = false;
       document.documentElement.classList.add('blocks-panel-open');
       load();
@@ -1162,6 +1191,105 @@
       }
     });
     if (cfg.inbox.new) $('[data-more]').classList.add('has-badge');
+  }
+
+  function initGlossary() {
+    const G = cfg.glossary;
+    let terms = [];
+    const norm = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+    const tabs = gpanel.querySelectorAll('[data-gloss-tab]');
+    const show = (name) => {
+      tabs.forEach((t) => { const on = t.dataset.glossTab === name; t.setAttribute('aria-selected', String(on)); t.tabIndex = on ? 0 : -1; });
+      gpanel.querySelectorAll('[data-gloss-pane]').forEach((p) => { p.hidden = p.dataset.glossPane !== name; });
+    };
+    gpanel.querySelector('[role=tablist]').addEventListener('keydown', (e) => {
+      if (!['ArrowLeft', 'ArrowRight'].includes(e.key)) return;
+      const next = [...tabs].find((t) => t.getAttribute('aria-selected') !== 'true');
+      show(next.dataset.glossTab);
+      next.focus();
+    });
+    tabs.forEach((t) => t.addEventListener('click', () => show(t.dataset.glossTab)));
+    const q = gpanel.querySelector('[data-gloss-q]');
+    const list = gpanel.querySelector('[data-gloss-list]');
+    const status = gpanel.querySelector('[data-gloss-status]');
+    const draw = () => {
+      const v = norm(q.value);
+      const hits = terms.filter((t) => !v || norm(t.term).includes(v) || t.variants.some((x) => norm(x).includes(v)) || norm(t.short).includes(v));
+      status.textContent = !terms.length ? 'Im Glossar stehen noch keine Begriffe.' : !hits.length ? 'Kein Begriff gefunden.' : hits.length === 1 ? '1 Begriff' : `${hits.length} Begriffe`;
+      list.innerHTML = hits.slice(0, 60).map((t) => `<li class="site-list__item"><span class="site-list__main"><b>${esc(t.term)}</b>${t.online ? '' : ' <small>Entwurf</small>'}<small>${esc(t.short)}</small>${t.variants.length ? `<small>Auch: ${esc(t.variants.join(', '))}</small>` : ''}</span>${t.edit ? `<a class="btn" href="${esc(unamp(t.edit))}" target="_blank" rel="noopener" aria-label="${esc(t.term)} bearbeiten">Bearbeiten</a>` : ''}</li>`).join('');
+    };
+    // „Gibt es schon?“: gleicher Begriff bzw. Schreibweise – sonst ähnliche Begriffe, denen der Text als Schreibweise zugeordnet werden kann
+    const dupe = () => {
+      const box = gpanel.querySelector('[data-gloss-dupe]');
+      const v = norm(gpanel.querySelector('[data-gloss-term]').value);
+      if (v.length < 2) { box.innerHTML = ''; return; }
+      const same = terms.find((t) => norm(t.term) === v || t.variants.some((x) => norm(x).replace(/^["„“]|["“”]$/g, '') === v));
+      if (same) { box.innerHTML = `<p class="site-intro gloss-warn">Gibt es schon: „${esc(same.term)}“.</p>`; return; }
+      const near = terms.filter((t) => norm(t.term).includes(v) || v.includes(norm(t.term))).slice(0, 3);
+      box.innerHTML = near.map((t) => `<p class="site-intro">Ähnlich: „${esc(t.term)}“ <button type="button" class="btn" data-gloss-variant="${t.id}">Als Schreibweise zu „${esc(t.term)}“ hinzufügen</button></p>`).join('');
+    };
+    const load = async (data = {}) => {
+      const res = await api('glossary', data);
+      terms = res.terms || [];
+      draw();
+      dupe();
+      if (res.message) say(res.message);
+      return res;
+    };
+    const count = () => {
+      const s = gpanel.querySelector('[data-gloss-short]');
+      const n = s.value.trim().length;
+      gpanel.querySelector('[data-gloss-count]').textContent = `${n} von ${G.max} Zeichen` + (n > G.max ? ' – zu lang' : '');
+    };
+    const open = (text = '') => {
+      menu.hidden = true;
+      if ([panel, dpanel, ppanel, spanel, tpanel, hpanel, ipanel].some((x) => x && !x.hidden)) return say('Bitte zuerst die andere Seitenleiste schließen.', true);
+      gpanel.hidden = false;
+      document.documentElement.classList.add('blocks-panel-open');
+      const manage = gpanel.querySelector('[data-gloss-manage]');
+      manage.hidden = !G.manage;
+      if (G.manage) manage.innerHTML = `<a href="${esc(unamp(G.manage))}" target="_blank" rel="noopener">Glossar in YForm verwalten</a>${G.auto ? '' : ' · Automatisches Markieren ist aus (Website → Glossar).'}`;
+      load().catch((err) => say(err.message, true));
+      if (text) {
+        show('new');
+        gpanel.querySelector('[data-gloss-term]').value = text.slice(0, 120);
+        gpanel.querySelector('[data-gloss-short]').focus();
+      } else {
+        show('search');
+        q.focus();
+      }
+      count();
+    };
+    const selected = () => String(window.getSelection?.() || '').replace(/\s+/g, ' ').trim();
+    $('[data-gloss-open]').addEventListener('click', () => open(selected()));
+    // Alt+G: Glossar mit dem markierten Text öffnen
+    document.addEventListener('keydown', (e) => {
+      if (e.altKey && !e.ctrlKey && !e.metaKey && (e.code === 'KeyG')) { e.preventDefault(); open(selected()); }
+    });
+    $('[data-gloss-close]').addEventListener('click', () => { gpanel.hidden = true; document.documentElement.classList.remove('blocks-panel-open'); });
+    q.addEventListener('input', draw);
+    gpanel.querySelector('[data-gloss-term]').addEventListener('input', dupe);
+    gpanel.querySelector('[data-gloss-short]').addEventListener('input', count);
+    gpanel.addEventListener('click', async (e) => {
+      const b = e.target.closest('[data-gloss-variant]');
+      if (!b) return;
+      try {
+        await load({ op: 'variant', id: b.dataset.glossVariant, variant: gpanel.querySelector('[data-gloss-term]').value.trim() });
+        gpanel.querySelector('[data-gloss-term]').value = '';
+        dupe();
+      } catch (err) { say(err.message, true); }
+    });
+    gpanel.querySelector('[data-gloss-form]').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const f = e.target;
+      if (!f.term.value.trim() || !f.short.value.trim()) { say('Bitte Begriff und Kurztext angeben.', true); (f.term.value.trim() ? f.short : f.term).focus(); return; }
+      try {
+        await load({ op: 'create', term: f.term.value, short: f.short.value, variants: f.variants.value, all_languages: f.all_languages.checked ? 1 : 0 });
+        f.reset();
+        count();
+        show('search');
+      } catch (err) { say(err.message, true); }
+    });
   }
 
   // ------------------------------------------------------------------ Website-Einstellungen (Admins)

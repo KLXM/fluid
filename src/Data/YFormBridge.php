@@ -234,7 +234,10 @@ final class YFormBridge
             if ($f instanceof FluidLanguage) {
                 $lang = null !== $languageId ? \Redaxo\Core\Language\Language::get($languageId) : null;
 
-                return $q->whereIn($f->name, ['', ($lang ?? \Redaxo\Core\Language\Language::getCurrent())->code]);
+                $code = ($lang ?? \Redaxo\Core\Language\Language::getCurrent())->code;
+
+                // „alle Sprachen“ steht als '' oder NULL (Maske von YForm) in der Spalte
+                return $q->whereAny(static fn (\Yakamara\YForm\Data\Query $g) => $g->whereIn($f->name, ['', $code])->whereNull($f->name));
             }
         }
 

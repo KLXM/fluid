@@ -12,6 +12,10 @@ use Redaxo\Core\ExtensionPoint\ExtensionPoint;
  *  - Rechte: Sperre und Modulrecht (Lock), Abschnitts-Optionen nur mit Gestaltungsrecht, Migration der Rollen (Perm).
  *  - Listen-Vorlagen: Felder der Vorlage, Anwenden, ohne Vorlage unverändert, fehlende Vorlage, Präfix der YForm-Felder,
  *    Vorlagen aus dem Extension Point.
+ *  - Menü: Einstellungen „Einträge im Menü“, ohne Einstellung bleibt das Menü unverändert.
+ *  - Glossar: Markieren (erstes Vorkommen, nicht in Links, Knöpfen, Überschriften, data-glossary="off", idempotent), Schreibweisen,
+ *    Kurztext.
+ *  - Wissen: Kapitelbaum (Nummern, eigene Nummern, Lesereihenfolge, Schleifen, fehlende Oberkapitel), Vor/Zurück, Abschnitte.
  */
 final class FeatureSelfTest
 {
@@ -25,6 +29,9 @@ final class FeatureSelfTest
         return [
             'Rechte' => static fn () => (new self())->run('rights'),
             'Listen-Vorlagen' => static fn () => (new self())->run('listTemplates'),
+            'Menü' => static fn () => (new self())->run('menu'),
+            'Glossar' => static fn () => (new self())->run('glossary'),
+            'Wissen' => static fn () => (new self())->run('knowledge'),
         ];
     }
 
@@ -106,5 +113,66 @@ final class FeatureSelfTest
         $this->eq('Vorlage aus dem Extension Point', isset($code['ext:selbsttest']) ? [$code['ext:selbsttest']['variant'], $code['ext:selbsttest']['locked']] : null, ['list', true]);
         $this->eq('Nur für ihre Tabelle', isset(ListTemplates::code($m, 'rex_andere')['ext:selbsttest']), false);
         $this->eq('Vorschau je Darstellung', str_contains(ListTemplates::preview('table'), '<svg') && str_contains(ListTemplates::preview('table'), 'aria-hidden="true"'), true);
+    }
+
+    // ------------------------------------------------------------------ Menü
+
+    private function menu(): void
+    {
+        $this->eq('Standard aus', Data\MenuEntries::config(null), ['mode' => '', 'limit' => 12]);
+        $this->eq('Bereinigung', Data\MenuEntries::config(['menu_entries' => 'quatsch', 'menu_limit' => 999]), ['mode' => '', 'limit' => 50]);
+        $this->eq('Zwei Ebenen', Data\MenuEntries::config(['menu_entries' => 'two', 'menu_limit' => '5']), ['mode' => 'two', 'limit' => 5]);
+        $this->eq('Ohne Einstellung unverändert', Data\MenuEntries::extend([['id' => 0, 'label' => 'A', 'href' => '/a', 'current' => false, 'active' => false, 'children' => []]], 1),
+            [['id' => 0, 'label' => 'A', 'href' => '/a', 'current' => false, 'active' => false, 'children' => []]]);
+    }
+
+    // ------------------------------------------------------------------ Glossar
+
+    private function glossary(): void
+    {
+        $terms = [['id' => 1, 'key' => 'spf', 'term' => 'SPF', 'short' => 'Absender-Prüfung.', 'variants' => [], 'url' => '/glossar/spf'],
+            ['id' => 2, 'key' => 'barrierefreiheit', 'term' => 'Barrierefreiheit', 'short' => 'Zugang für alle.', 'variants' => ['barrierefrei'], 'url' => null]];
+        $a = new Glossary\Annotator($terms, ['lang' => 'de']);
+        $html = '<body><main><h2>SPF erklärt</h2><p>Mit SPF und SPF.</p><p><a href="/x">SPF</a> und <button>Barrierefreiheit</button></p><p>Barrierefreiheit hilft.</p></main></body>';
+        $out = $a->annotate($html);
+        $this->eq('Zwei Begriffe markiert', $a->count, 2);
+        $this->eq('Nicht in Überschriften', str_contains($out, '<h2>SPF erklärt</h2>'), true);
+        $this->eq('Nicht in Links und Knöpfen', str_contains($out, '<a href="/x">SPF</a>') && str_contains($out, '<button>Barrierefreiheit</button>'), true);
+        $this->eq('Nur das erste Vorkommen', substr_count($out, 'class="gl-term"'), 2);
+        $this->eq('Popover mit Link zur Detailseite', str_contains($out, 'popovertarget="gl-1"') && str_contains($out, 'href="/glossar/spf"'), true);
+        $this->eq('Zweimal anwenden ändert nichts', (new Glossary\Annotator($terms, ['lang' => 'de']))->annotate($out), $out);
+        $this->eq('Ausnahme data-glossary="off"', (new Glossary\Annotator($terms))->annotate('<body><main><p data-glossary="off">SPF</p></main></body>'), '<body><main><p data-glossary="off">SPF</p></main></body>');
+        $this->eq('Schreibweisen', Glossary\Glossary::splitVariants("CDN, CDNs\nContent Delivery Network;CDN"), ['CDN', 'CDNs', 'Content Delivery Network']);
+        $this->eq('Kurztext gekürzt', mb_strlen(Glossary\Glossary::short(str_repeat('Wort ', 80))) <= Glossary\Glossary::SHORT_MAX, true);
+    }
+
+    // ------------------------------------------------------------------ Wissen
+
+    private function knowledge(): void
+    {
+        $rows = [
+            ['id' => 1, 'parent' => 0, 'title' => 'Einleitung', 'number' => '', 'sort' => 1, 'area' => ''],
+            ['id' => 2, 'parent' => 0, 'title' => 'Praxis', 'number' => '', 'sort' => 2, 'area' => ''],
+            ['id' => 3, 'parent' => 2, 'title' => 'B-Teil', 'number' => '', 'sort' => 0, 'area' => ''],
+            ['id' => 4, 'parent' => 2, 'title' => 'A-Teil', 'number' => '', 'sort' => 0, 'area' => ''],
+            ['id' => 5, 'parent' => 4, 'title' => 'Tief', 'number' => '', 'sort' => 0, 'area' => ''],
+            ['id' => 6, 'parent' => 0, 'title' => 'Anhang', 'number' => 'A', 'sort' => 3, 'area' => ''],
+            ['id' => 7, 'parent' => 6, 'title' => 'Liste', 'number' => '', 'sort' => 0, 'area' => ''],
+            ['id' => 8, 'parent' => 9, 'title' => 'Schleife 1', 'number' => '', 'sort' => 9, 'area' => ''],
+            ['id' => 9, 'parent' => 8, 'title' => 'Schleife 2', 'number' => '', 'sort' => 9, 'area' => ''],
+            ['id' => 10, 'parent' => 99, 'title' => 'Ohne Oberkapitel', 'number' => '', 'sort' => 8, 'area' => ''],
+        ];
+        $tree = Data\Knowledge::build($rows);
+        $num = static fn (int $id) => $tree['nodes'][$id]['number'];
+        $this->eq('Nummern automatisch', [$num(1), $num(2), $num(4), $num(3), $num(5)], ['1', '2', '2.1', '2.2', '2.1.1']);
+        $this->eq('Nummer überschreibbar, Kinder folgen', [$num(6), $num(7)], ['A', 'A.1']);
+        $this->eq('Lesereihenfolge', \array_slice($tree['order'], 0, 5), [1, 2, 4, 5, 3]);
+        $this->eq('Fehlendes Oberkapitel = oberste Ebene', \in_array(10, $tree['roots'], true), true);
+        $this->eq('Schleife bricht nicht', \count($tree['order']), 10);
+        $this->eq('Oberkapitel', array_column(Data\Knowledge::ancestors($tree, 5), 'id'), [2, 4]);
+        [$prev, $next] = Data\Knowledge::neighbours($tree, 4);
+        $this->eq('Vor/Zurück', [$prev['id'] ?? null, $next['id'] ?? null], [2, 5]);
+        [$html, $secs] = Data\Knowledge::sections('<h2>Erster Teil</h2><p>x</p><h2 id="da">Zweiter</h2>');
+        $this->eq('Abschnitte mit Anker', [$secs, str_contains($html, 'id="kn-s-1"')], [[['id' => 'kn-s-1', 'title' => 'Erster Teil'], ['id' => 'da', 'title' => 'Zweiter']], true]);
     }
 }

@@ -218,7 +218,8 @@ final class Api
             'design' => self::design($article, $user, false),
             'design_save' => self::design($article, $user, true),
             'record_field' => Data\RecordInline::save($user, $article),   // Textfeld eines Datensatzes in der Detailansicht
-            'list_template' => Data\ListTemplates::api($user),   // Listen-Vorlagen verwalten (Seitenleiste, Perm::DESIGN_FULL)
+            'list_template' => Data\ListTemplates::api($user),
+            'glossary' => Glossary\Glossary::api($user, $article),   // Quick-Glossar: suchen, anlegen, Schreibweise hinzufügen   // Listen-Vorlagen verwalten (Seitenleiste, Perm::DESIGN_FULL)
             // gewöhnliche REDAXO-Module (keine fluid-Blöcke) in der Seitenleiste; html null = Formular des Cores im Rahmen
             'module_form' => ['html' => ModuleForm::form(self::plainSlice($article, $user))],
             'module_save' => (static function () use ($article, $user): array { ModuleForm::save(self::plainSlice($article, $user), (array) Request::post('m', 'array', [])); return []; })(),

@@ -49,7 +49,7 @@ return [
         'css/dataform.css' => ['contact', 'form'],
         'css/b-form.css' => ['form', 'contact'],
         'js/formsteps.js' => ['form'],
-        'css/data.css' => ['datalist', 'posts'],
+        'css/data.css' => ['datalist', 'posts', 'glossary'],
         'css/b-posts.css' => ['posts', '@post', 'datalist'],
         'js/tabs.js' => ['tabs'],
         'css/b-code.css' => ['code'],
@@ -57,6 +57,8 @@ return [
         // (FluidTemplate.view.php, Kit::used('@tablesort' | '@filter'))
         'css/tables.css' => ['@table', '@tablesort'],
         'css/filter.css' => ['@filter'],
+        'css/glossary.css' => ['@glossary', 'glossary'], 'js/glossary.js' => ['@glossary', 'glossary'],   // Glossar (Block und Begriffe im Text)
+        'css/knowledge.css' => ['@knowledge', 'datalist:toc'], 'js/knowledge.js' => ['@knowledge'],        // Wissensbereich
         'js/code.js' => ['code'],
         'js/reel.js' => ['quote', 'cards'],
         'js/scrolly.js' => ['scrolly'],

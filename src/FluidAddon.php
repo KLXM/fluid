@@ -195,6 +195,8 @@ final class FluidAddon extends Addon
         // Endpunkte (Live, Präsenz, MCP, Karten-Proxy, Untertitel) melden sich per #[AsEndpoint] selbst an.
         Maps\Maps::boot();
         Data\Detail::boot();
+        Glossary\Glossary::boot();   // Glossar: Detailseiten, Sitemap, Einstellungen, schema.org
+        Data\Knowledge::boot();      // Wissensbereich: schema.org
         Blog\Blog::boot();
         Search\Search::boot();
         Welcome::boot();
@@ -315,6 +317,8 @@ final class FluidAddon extends Addon
             if (!Editing::active() && str_contains($html, '[#')) {
                 $html = (string) preg_replace_callback('~<main\b.*?</main>~s', static fn (array $m) => (string) preg_replace('~\s?\[#.*?#\]~s', '', $m[0]), $html);
             }
+            // Glossar: Begriffe markieren (Website → Glossar, Standard aus; nie beim Bearbeiten)
+            $html = Glossary\Glossary::annotate($html);
             if (null === Editing::user() || null !== Versions::$preview) {
                 return $html;
             }

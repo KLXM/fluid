@@ -303,7 +303,7 @@ textarea[data-blocks-rte] { display: none !important; }
 .spanel { width: min(560px, 100vw); }
 .spanel__tabs { display: flex; flex-wrap: wrap; gap: 4px; padding: 8px 12px; border-bottom: 1px solid var(--line); background: var(--surface); }
 .spanel__tabs button { all: unset; cursor: pointer; padding: 6px 10px; border-radius: 999px; font-size: 13px; font-weight: 600; color: var(--muted); }
-.spanel__tabs button[aria-selected="true"] { background: var(--ink, #111); color: #fff; }
+.spanel__tabs button[aria-selected="true"] { background: var(--ink, #111); color: var(--bg, #fff); }
 .spanel__tabs button:focus-visible { outline: 2px solid var(--accent, #4f46e5); outline-offset: 2px; }
 .site-intro { margin: 0 0 12px; color: var(--muted); font-size: 13px; line-height: 1.5; }
 .site-h { margin: 18px 0 8px; font-size: 14px; }
@@ -506,3 +506,15 @@ textarea[data-blocks-rte] { display: none !important; }
 .ltpl-manage { display: flex; flex-wrap: wrap; gap: 6px; flex: 1 1 100%; }
 .ltpl-warn { color: var(--danger-ink, var(--danger)); }
 [data-ltpl-off] { display: none !important; }
+
+/* ------------------------------------------------------------ Quick-Glossar (Glossary\Glossary) */
+.gpanel [data-gloss-pane] { display: grid; gap: 12px; align-content: start; }
+.gpanel [data-gloss-pane][hidden] { display: none; }
+.gpanel .newpage__field textarea, .gpanel .newpage__field input[type="search"] { font: inherit; padding: .55rem .7rem; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); }
+.gpanel .newpage__field small { padding-left: 0; }
+.gpanel .newpage__check { display: flex; gap: .5rem; align-items: center; font-size: 13px; }
+.gpanel .site-list__item { align-items: flex-start; }
+.gpanel .site-intro { margin: 0; }
+.gloss-warn { color: var(--danger-ink, var(--danger)); font-weight: 600; }
+.gloss-dupe:empty { display: none; }
+.gloss-dupe .btn { margin-top: 4px; }

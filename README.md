@@ -84,6 +84,11 @@ fluid läuft auch ohne.
   ein Mailfehler verwirft keine Eingabe
 - **Daten aus YForm** als Karten oder Liste mit eigener Adresse je Eintrag – und Blöcke auch in Datensätzen; Termine mit
   „In den Kalender“ (.ics) in der Detailansicht; **Listen-Vorlagen**: Darstellungen je Tabelle speichern und per Kachel wählen
+- **Einträge im Menü:** Datensätze mit Detailseite als Unterpunkte ihrer Übersicht (eine oder zwei Ebenen)
+- **Glossar:** Fachbegriffe automatisch erklären (Hinweisfenster beim ersten Vorkommen, Standard aus), Übersicht A–Z mit
+  Detailseiten, Quick-Glossar im Editor (Alt+G)
+- **Wissensbereich:** Handbuch oder Satzung als YForm-Tabelle der Art „Wissen“ – Inhaltsverzeichnis, Kapitelnavigation mit Suche,
+  Nummern, Schlagworten, verwandten Kapiteln und Begriffen; Stil „Magazin“ oder „Sachlich“
 - **Rollen:** erlaubte Blöcke über die Modulrechte von REDAXO, **gesperrte Blöcke** (sichtbar und verschiebbar, nicht änderbar) und
   Gestaltung in zwei Stufen als Optionen der Rolle
 - **Fußbereich:** eigener Handlungsaufruf (Website → Kopf, Fuß & Hinweis), Dichte „Kompakt“ (Design) – auf dem Telefon etwa

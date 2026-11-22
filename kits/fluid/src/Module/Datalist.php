@@ -13,7 +13,7 @@ use Redaxo\Core\Content\AsModule;
     group: 'Daten',
     help: 'Einträge einer YForm-Tabelle als Karten, Liste oder Tabelle – mit Detailansicht auf derselben Seite. Die Tabelle ist eine Klasse im Projekt (#[AsTable]); im Bearbeiten-Modus öffnet „Bearbeiten“ am Eintrag die Maske von YForm im Popup.',
     requires: 'yform',
-    variants: ['cards' => 'Karten', 'list' => 'Liste', 'table' => 'Tabelle'],
+    variants: ['cards' => 'Karten', 'list' => 'Liste', 'table' => 'Tabelle', 'toc' => 'Inhaltsverzeichnis'],
     reload: true,
     listTemplate: true,
 )]
@@ -89,6 +89,25 @@ final class Datalist extends FluidBlock
         note: 'Eigene Adresse je Eintrag, z. B. /presse/titel-12 – mit Titel und Beschreibung für Suchmaschinen und in der Sitemap.',
     )]
     public bool $detail = true;
+
+    #[Choice(
+        'Einträge im Menü zeigen',
+        choices: ['' => 'Keine', 'top' => 'Oberste Ebene', 'two' => 'Zwei Ebenen (Kapitel und Unterkapitel)'],
+        width: 'half',
+        note: 'Mit Detailansicht: Die Einträge erscheinen im Menü unter dieser Seite. Zwei Ebenen gibt es bei Tabellen der Art „Wissen“.',
+    )]
+    public string $menuEntries = '';
+
+    #[Number('Höchstens im Menü (je Ebene)', min: 1, max: 50, width: 'half')]
+    public int $menuLimit = 12;
+
+    #[Choice(
+        'Stil der Detailansicht (Wissen)',
+        required: true,
+        choices: ['magazin' => 'Magazin (mit Einstieg)', 'sachlich' => 'Sachlich (Handbuch, Satzung)'],
+        note: 'Nur bei Tabellen der Art „Wissen“: Kapitelnavigation mit Suche, Abschnitten und Vor/Zurück.',
+    )]
+    public string $knowledgeStyle = 'magazin';
 
     #[Checkbox(
         '„In den Kalender“ in der Detailansicht anbieten (.ics)',

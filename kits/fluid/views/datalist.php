@@ -19,7 +19,7 @@ if (!$t) {
 
     return;
 }
-$layout = in_array($b->variant(), ['cards', 'list', 'table'], true) ? $b->variant() : 'cards';
+$layout = in_array($b->variant(), ['cards', 'list', 'table', 'toc'], true) ? $b->variant() : 'cards';
 $titleF = YFormBridge::field($t, (string) ($d['title_field'] ?? ''), [\Yakamara\YForm\Field\Text::class]);
 $imageF = YFormBridge::field($t, (string) ($d['image_field'] ?? ''), [\Yakamara\YForm\Field\Media::class]);
 $textF = YFormBridge::field($t, (string) ($d['text_field'] ?? ''), [\Yakamara\YForm\Field\Textarea::class]);
@@ -43,6 +43,12 @@ if ($entry > 0 && !$row && !is_editing()) {
     // Eintrag gibt es nicht (mehr) bzw. erfüllt die Bedingung nicht: 404 wie eine fehlende Seite
     \Redaxo\Core\Http\Response::setStatus(\Redaxo\Core\Http\Response::HTTP_NOT_FOUND);
     echo '<div class="wrap"><p class="dl-empty">' . e(lt('Diesen Eintrag gibt es nicht mehr.')) . ' <a href="' . e($here) . '">' . e(lt('Zur Übersicht')) . '</a></p></div>';
+
+    return;
+}
+// Wissensbereich (Tabellenart „Wissen“): Kapitel mit Kapitelnavigation
+if ($row && \Klxm\Fluid\Data\Knowledge::is($t)) {
+    echo \Klxm\Fluid\Data\Knowledge::detail($b, $d, $t, $row, $here);
 
     return;
 }
@@ -94,6 +100,12 @@ $opt = [
 // Blättern: „Höchstens“ = Einträge je Seite, ?seite=2 …
 $pg = !empty($d['pager']) && $opt['limit'] > 0 ? YFormBridge::page($t, $opt, Request::get('seite', 'int', 1), $opt['limit']) : null;
 $rows = $pg ? $pg['rows'] : YFormBridge::rows($t, $opt);
+// Wissensbereich als Karten oder Liste: Kapitel der obersten Ebene in der Reihenfolge des Kapitelbaums
+if (!$pg && in_array($layout, ['cards', 'list'], true) && \Klxm\Fluid\Data\Knowledge::is($t)) {
+    $order = array_flip(\Klxm\Fluid\Data\Knowledge::tree($t, $d + ['_language' => Language::getCurrentId()])['roots']);
+    $rows = array_values(array_filter($rows, static fn ($r) => isset($order[(int) $r->id])));
+    usort($rows, static fn ($a, $c) => $order[(int) $a->id] <=> $order[(int) $c->id]);
+}
 $cols = ['s' => 4, 'm' => 3, 'l' => 2][$d['size'] ?? 'm'] ?? 3;
 $hTag = trim((string) ($d['title'] ?? '')) !== '' ? 'h3' : 'h2';
 // Blättern ohne Seitenwechsel (Live::region – Links mit data-live-nav, ohne JavaScript normale Links)
@@ -101,7 +113,11 @@ $reload = $pg && $pg['pages'] > 1 ? \Klxm\Fluid\Live::region($b) : '';
 ?>
 <div class="wrap dl dl--<?= e($layout) ?>"<?= $reload ?>>
   <?= fluid_head($b, 'dl-head') ?>
-  <?php if (!$rows): ?>
+  <?php if ('toc' === $layout && $rows): // Inhaltsverzeichnis: Kapitelbaum (Wissen) bzw. nummerierte Liste ?>
+  <?php \Klxm\Fluid\Kit::active()->markUsed('@knowledge'); ?>
+  <?= \Klxm\Fluid\Data\Knowledge::is($t) ? \Klxm\Fluid\Data\Knowledge::toc($b, $d, $t, $here)
+      : '<div class="kn-toc"><ol class="kn-toc__list" role="list">' . implode('', array_map(static fn ($r, $i) => '<li class="kn-toc__item kn-toc__item--0">' . ($detailOn ? '<a href="' . e($href($r)) . '">' : '<span class="kn-toc__a">') . '<span class="kn-toc__n">' . ($i + 1) . '</span><span class="kn-toc__t">' . e($title($r)) . '</span>' . ($detailOn ? '</a>' : '</span>') . '</li>', $rows, array_keys($rows))) . '</ol></div>' ?>
+  <?php elseif (!$rows): ?>
   <p class="dl-empty"><?= e(trim((string) ($d['empty_text'] ?? '')) ?: lt('Zurzeit gibt es hier keine Einträge.')) ?></p>
   <?php elseif ($layout === 'table'): ?>
   <?php \Klxm\Fluid\Kit::active()->markUsed('@table'); if (!empty($d['table_sort']) && !is_editing()) \Klxm\Fluid\Kit::active()->markUsed('@tablesort'); ?>

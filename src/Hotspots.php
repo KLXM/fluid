@@ -50,8 +50,8 @@ use function Redaxo\Core\View\escape;
  *     {"id": "h4", "shape": "poly",   "points": [[10, 10], [30, 12], [20, 30]], …}   3–64 Punkte
  *   ]}
  *   Inhalt je Markierung: "title" (Klartext), "text" (Rich-Text ohne Bilder), "link" (Link wie im Feld „Link“: redaxo://12,
- *   https://…, #anker), "link_label", "term" (Kurzname eines Glossar-Begriffs – fluid hat kein eigenes Glossar, ein AddOn liefert
- *   den Begriff über FLUID_HOTSPOT_TERM), "icon" (Symbol statt der Nummer, leer = Nummer).
+ *   https://…, #anker), "link_label", "term" (Slug oder Begriff des Glossars – Glossary\Glossary antwortet über FLUID_HOTSPOT_TERM, ein
+ *   AddOn kann eine andere Quelle liefern), "icon" (Symbol statt der Nummer, leer = Nummer).
  *
  * Die Reihenfolge der Liste ist die Nummer (1, 2, 3 …), die Tab-Reihenfolge und die Reihenfolge der Liste unter dem Bild.
  * Flächen (circle/rect/poly) erscheinen als SVG über dem Bild; ihr Knopf mit der Nummer sitzt im Mittelpunkt (anchor()).
