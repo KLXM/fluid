@@ -18,6 +18,19 @@
   const unamp = (u) => String(u).replace(/&amp;/g, '&');
   const main = document.querySelector('main') || document.body;
 
+  // ------------------------------------------------------------------ Seitenwechsel mit View Transitions (Design „Seitenwechsel“)
+  // In den Modus „Bearbeiten“ (?fluid_edit=1) bzw. aus ihm heraus gibt es keinen Übergang: Die Seite im Bearbeiten-Modus meldet sich
+  // nicht an („ViewTransition opt-in disabled“) – der Browser bräche den Übergang ab und meldete das je Versprechen (ready,
+  // finished, updateCallbackDone) als Fehler. Daher: überspringen und die Versprechen abfangen.
+  addEventListener('pageswap', (e) => {
+    const tr = e.viewTransition;
+    if (!tr) return;
+    [tr.ready, tr.finished, tr.updateCallbackDone].forEach((p) => p?.catch(() => {}));
+    let to = null;
+    try { to = new URL(e.activation?.entry?.url || '', location.href); } catch { /* ohne Ziel */ }
+    if (!to || to.searchParams.has('fluid_edit') || new URLSearchParams(location.search).has('fluid_edit')) tr.skipTransition();
+  });
+
   // ------------------------------------------------------------------ Server
 
   // Schreibende Aktionen: vorher „cms:before-save“ (z. B. Präsenz: jemand anderes hat inzwischen gespeichert → Rückfrage)

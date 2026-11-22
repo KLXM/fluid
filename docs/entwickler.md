@@ -607,6 +607,18 @@ Extension::register('FLUID_SITE_TRANSLATIONS', static function (ExtensionPoint $
   wählt die Spur in der Sprache der Seite; „Transkript“ zeigt den Text darunter (`<details>`).
 - Eigene Ausgabe: `fluid_video_embed($url, $datei, $poster, $format, $titel, $spuren, $einschalten, $transkript)`
   bzw. `Klxm\Fluid\Media\Tracks` (`parse()`, `toVtt()`, `transcript()`).
+- **Hintergrundvideo mit Play/Pause-Schalter** (Einstieg „Vollflächig“ beider Kits, Video „Morphing“ im Kit NativeCSS):
+  `fluid_video_toggle($klasse, 'icon'|'text')` gibt einen runden Symbol-Knopf aus (mind. 44 px, Fläche mit Rand, doppelter
+  Fokusring). Läuft das Video, zeigt er „Pause“, angehalten „Play“; der zugängliche Name steht als Text im Knopf und wechselt
+  („Hintergrundvideo anhalten“ / „… abspielen“) – kein `aria-pressed`. Bei „Bewegung reduzieren“, „Daten sparen“ und im
+  Kontrastmodus startet das Video nicht, der Knopf bietet „abspielen“ an. Option im Block: „Video-Schalter: Symbol | Symbol mit
+  Text“ (Feld `video_toggle`, Standard Symbol). Markup für eigene Views: Rahmen mit `data-hero-video-box` (und
+  `position: relative`), darin `<video data-hero-video muted loop playsinline preload="none">` (Quellen auch als `data-src` –
+  geladen wird erst beim Abspielen) und der Knopf. CSS und Skript (`css/video-toggle.css`, `js/hero-video.js`) lädt das Kit nur
+  auf Seiten mit Schalter (`kit.php` → `assets`, Schlüssel `@videotoggle`); ein eigenes Kit ersetzt sie mit gleichnamigen
+  Dateien. Tokens: `--hx-vt-size`, `--hx-vt-icon`, `--hx-vt-bg`, `--hx-vt-bg-hover`, `--hx-vt-fg`, `--hx-vt-border`,
+  `--hx-vt-border-width`, `--hx-vt-radius`, `--hx-vt-x`, `--hx-vt-y`, `--hx-vt-focus`, `--hx-vt-focus-halo`,
+  `--hx-vt-focus-width`, `--hx-vt-font-size`.
 
 ## Blog
 
@@ -902,7 +914,7 @@ Ohne Live-Kanal funktioniert es auch, dann mit 15 Sekunden Verzögerung.
 | `fluid:kit:create name` | eigenes Kit im Projekt anlegen (`--label`, `--parent`, `--view=hero,cards`, `--template`) |
 | `fluid:kit:ncss-update --from=…` | NativeCSS im Kit „NativeCSS“ aktualisieren – siehe [NativeCSS aktualisieren](#nativecss-aktualisieren) |
 | `fluid:search-index` | Suchindex neu aufbauen (sonst automatisch nach dem Veröffentlichen) |
-| `fluid:selftest` | Live-Aktualisierung und Präsenz prüfen |
+| `fluid:selftest` | Live-Aktualisierung, Präsenz, Bearbeitungssperre und Blöcke prüfen (Views ohne Code hinter `//`, Inhaltsverzeichnis, Video-Schalter …) |
 | `fluid:upgrade:slices` | Blöcke älterer REDAXO-6-Datenbanken in die Spalte `data` übernehmen (`--drop-old` entfernt die alten Spalten) |
 
 ## Rechte
@@ -1030,6 +1042,8 @@ Repo-Variable `UPSTREAM_NOTIFY` ein (GitHub-Namen, mit Leerzeichen getrennt). Ei
 lässt sich der Wächter auch von Hand (Actions → Upstream-Wächter → Run workflow).
 
 - PHPStan (Stufe 5): mit der PHPStan-Installation des Cores, Pfade `src`, `kits/fluid/src`, `kits/fluid/functions.php`.
+- Ohne REDAXO (auch in der CI): `php tools/check-optional.php` (Klassen auf Basis von YForm mit Guard) und
+  `php tools/check-views.php` (kein Code hinter einem Zeilenkommentar in Views – `<?php $a = 1; // … $b = 2;` verschluckt `$b`).
 - NativeCSS aktualisieren: `php tools/ncss-update.php --from=../nativecss` (siehe [Eigene Kits](#nativecss-aktualisieren)).
 - Video: `node tools/video/trailer.mjs` bzw. `redaxo6-demo.mjs` – braucht Playwright, ffmpeg und eine lokale Anmelde-Hilfe
   (`LOGIN=…`), siehe Kopf der Skripte. Nur gegen Testinstallationen.

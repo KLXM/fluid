@@ -19,3 +19,4 @@ jobs:
           php-version: '8.5'
           coverage: none
       - run: php tools/check-optional.php
+      - run: php tools/check-views.php

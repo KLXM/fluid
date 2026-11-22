@@ -41,8 +41,9 @@ if ('audio' === $b->variant()):
 </div>
 <?php return; endif;
 
-// „Video mit Morphing beim Scrollen“ (nur dieses Kit): eigene Datei stumm in Schleife in .ncss-morph, Pause-Schalter und
-// Laden/Pausieren wie beim Hintergrundvideo (data-ncss-video-bg, js/video-bg.js: nie bei „Bewegung reduzieren“/„Daten sparen“).
+// „Video mit Morphing beim Scrollen“ (nur dieses Kit): eigene Datei stumm in Schleife in .ncss-morph, Play/Pause-Schalter und
+// Laden/Pausieren wie beim Hintergrundvideo (fluid_video_toggle(), js/hero-video.js: nie bei „Bewegung reduzieren“/„Daten sparen“).
+// Die Klasse ncss-video-bg-toggle lässt morph.css von NativeCSS den Schalter mit der Ecke des Mediums mitführen.
 // Beim Bearbeiten und ohne eigene Datei: wie „Video mit Text daneben“.
 if ('morph' === $b->variant()) {
     $mv = !empty($d['video_file']) ? media((string) $d['video_file']) : null;
@@ -53,8 +54,8 @@ if ('morph' === $b->variant()) {
         $posterFile = (string) ($d['poster'] ?? '');
         $posterUrl = '' !== $posterFile && \Redaxo\Core\MediaPool\Media::get($posterFile) ? $mm::getUrl('fluid_poster', $posterFile) : (\Klxm\Fluid\Media\Ffmpeg::available() ? $mm::getUrl('fluid_poster', (string) $mv['file']) : '');
         echo '<div class="wrap nv-morph"><div class="ncss-morph ncss-morph--card"><div class="ncss-morph-stage">'
-            . '<div class="ncss-morph-media" data-ncss-video-bg><video muted loop playsinline preload="none" aria-hidden="true"' . ('' !== $posterUrl ? ' poster="' . e($posterUrl) . '"' : '') . '>'
-            . '<source data-src="' . e(media_url($mv)) . '" type="' . e((string) $mv['mime']) . '"></video></div>'
+            . '<div class="ncss-morph-media nv-morph__media" data-hero-video-box><video data-hero-video muted loop playsinline preload="none" disablepictureinpicture tabindex="-1" aria-hidden="true"' . ('' !== $posterUrl ? ' poster="' . e($posterUrl) . '"' : '') . '>'
+            . '<source data-src="' . e(media_url($mv)) . '" type="' . e((string) $mv['mime']) . '"></video>' . fluid_video_toggle('ncss-video-bg-toggle nv-morph__toggle') . '</div>'
             . '<div class="ncss-morph-content">' . fluid_head($b)
             . ('' !== trim(strip_tags((string) $d['text'])) ? '<div class="prose">' . rich((string) $d['text']) . '</div>' : '')
             . (trim((string) $d['caption']) !== '' ? '<p class="video__cap">' . fluid_title((string) $d['caption']) . '</p>' : '')

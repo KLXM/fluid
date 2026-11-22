@@ -1,5 +1,66 @@
 # Changelog
 
+## 1.0.0-beta.8 – 2026-11-22
+
+Fehler, die KLXM Studio ebenso hatte – die Lösungen von dort (MIT) übernommen und an REDAXO/fluid angepasst.
+
+### Hintergrundvideo: runder Play/Pause-Schalter
+
+- Einstieg „Vollflächig“ (Kits fluid und NativeCSS) und Video „Morphing“ (Kit NativeCSS): runder Symbol-Knopf statt der
+  ausgeschriebenen Schaltfläche – mindestens 44 px, halbtransparente Fläche mit Rand, doppelter Fokusring. Läuft das Video,
+  zeigt er „Pause“, angehalten „Play“; der zugängliche Name steht als Text im Knopf und wechselt („Hintergrundvideo
+  anhalten“ / „… abspielen“), kein `aria-pressed` mehr. Bei „Bewegung reduzieren“, „Daten sparen“ und im Kontrastmodus
+  startet das Video nicht, der Knopf bietet „abspielen“ an (vorher fehlte er dann im Kit fluid ganz).
+- Neue Option im Block „Einstieg“: **Video-Schalter** „Symbol“ (Standard) oder „Symbol mit Text“.
+- Ein gemeinsamer Schalter für beide Kits: `fluid_video_toggle()`, `css/video-toggle.css` (Tokens `--hx-vt-*`) und
+  `js/hero-video.js`, nur auf Seiten mit Hintergrundvideo (`@videotoggle`). Das Videoskript in `js/site.js` und `js/video-bg.js`
+  von NativeCSS (Textknopf) entfallen dafür; Quellen mit `data-src` laden weiter erst beim Abspielen.
+- Symbole `pause` und `play` im Symbolsatz (`icons/core.svg`).
+
+### Datenliste „Karten“: wenige Treffer behalten die Spaltenbreite
+
+- `auto-fill` statt `auto-fit` im Kartenraster (`css/data.css`, auch Blog-Übersicht): Ein einzelner Treffer wird nicht mehr
+  über die volle Breite gezogen.
+
+### Seitenwechsel ohne Konsolenfehler
+
+- Design „Seitenwechsel: Morphen“ (`js/vt.js`): `pageswap` und `pagereveal` fangen abgebrochene Übergänge ab (`ready`,
+  `finished`, `updateCallbackDone`) – keine „Transition was aborted“-Meldungen mehr, z. B. beim schnellen Klicken.
+- Editor: Der Wechsel „Ansehen ↔ Bearbeiten“ überspringt den Übergang (die Seite im Bearbeiten-Modus meldet sich nicht an) –
+  vorher drei Fehler je Klick („ViewTransition opt-in disabled“).
+
+### Inhaltsverzeichnis erkennt h2
+
+- `fluid_toc()` (Text-Block „Artikel“): Enthält der Text `<h2>` (importiert oder eingefügt), ist h2 die oberste Ebene. Texte
+  nur mit h3/h4 bleiben unverändert.
+
+### Lange Adressen im Fließtext
+
+- Grund-CSS (`css/site.css`, gilt auch im Kit NativeCSS): Links, Fettes, Kursives und Code in Absätzen, Listen, Tabellen,
+  Zitaten und Überschriften brechen notfalls an jeder Stelle um – lange Adressen verbreitern die Seite auf dem Telefon nicht
+  mehr. Texte ohne Überlauf bleiben unverändert.
+- Die Nummern im Inhaltsverzeichnis („01“, „02“) brechen dabei nicht um (`css/b-article.css`).
+
+### Prüfung: kein Code hinter Zeilenkommentaren
+
+- `console fluid:selftest` hat die neue Gruppe „Blöcke“ (`Klxm\Fluid\BlockSelfTest`): Views ohne Code hinter `//`
+  (`<?php $a = 1; // … $b = 2;` verschluckt `$b`), Inhaltsverzeichnis, Video-Schalter. Ohne REDAXO und in der CI:
+  `php tools/check-views.php`.
+
+### Kit „NativeCSS“: Text + Bild und farbige Abschnitte
+
+- **Text + Bild:** Auf dem Telefon war das Bild 0 px breit (die Bildspalte schrumpfte durch `align-items: center` auf die
+  Breite ihres Inhalts, der Rahmen hat ein absolutes Bild). Mittig jetzt nur nebeneinander; das Bild füllt den Rahmen im
+  gewählten Format (kein leerer Streifen mehr).
+- **Farbige Abschnitte** (Akzent, Zweitfarbe, Dunkel): Fragen, Karten, Pakete, Scrollytelling und der Einstieg „Vollflächig“
+  mit Textkarte nehmen in ihren hellen Karten die Schrift der Seite (`--f0-*`, wie die Karten von fluid) – vorher hell auf
+  hell (1,5:1). Das Datum der Zeitleiste nimmt den Nebentext des Abschnitts. axe auf einer Testseite mit allen Fällen: 8 → 0.
+
+*EN:* Round play/pause button for background videos (icon or icon + text, no `aria-pressed`, does not autoplay with reduced
+motion), data list cards keep their column width, no view-transition console errors, `fluid_toc()` uses h2 as top level when
+present, long URLs wrap in body text, new self-test group “Blöcke” and `tools/check-views.php`, NativeCSS kit: text + image on
+phones and readable cards in coloured sections.
+
 ## 1.0.0-beta.7 – 2026-11-21
 
 ### Fix: Installation ohne YForm

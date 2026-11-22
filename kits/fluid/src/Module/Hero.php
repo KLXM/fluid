@@ -106,6 +106,16 @@ final class Hero extends FluidBlock
     )]
     public string $overlay = 'strong';
 
+    #[Choice(
+        'Video-Schalter',
+        required: true,
+        choices: ['icon' => 'Symbol', 'text' => 'Symbol mit Text'],
+        width: 'half',
+        variants: ['fullbleed'],
+        note: 'Runder Knopf unten rechts zum Anhalten und Abspielen. „Symbol mit Text“ zeigt zusätzlich „Hintergrundvideo anhalten“ bzw. „abspielen“.',
+    )]
+    public string $videoToggle = 'icon';
+
     #[Collection(
         'Karten (nur „Mit gestapelten Karten“)',
         item: HeroCard::class,

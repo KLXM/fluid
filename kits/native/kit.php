@@ -111,7 +111,9 @@ return [
         'ncss/js/media-core.js' => ['video:@player', 'video:audio'],
         'css/ncss-video-player.css' => ['video:@player'], 'ncss/js/video-player.js' => ['video:@player'],
         'css/ncss-audio-player.css' => ['video:audio'], 'ncss/js/audio-player.js' => ['video:audio'],
-        'css/ncss-video-bg.css' => ['hero:@videobg', 'video:@morph'], 'ncss/js/video-bg.js' => ['hero:@videobg', 'video:@morph'],
+        // Hintergrundvideo: Schalter und Skript von fluid (css/video-toggle.css, js/hero-video.js über @videotoggle) statt
+        // js/video-bg.js von NativeCSS (dessen Schalter ist ein Textknopf ohne Symbol)
+        'css/ncss-video-bg.css' => [], 'ncss/js/video-bg.js' => [],
         'css/hero-x.css' => ['hero:cards'],
         'css/b-cards.css' => ['cards:reel'],
         'css/b-media-text.css' => ['media_text:split', 'media_text:overlap'],

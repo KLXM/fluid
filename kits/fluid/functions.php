@@ -441,7 +441,10 @@ function fluid_toc(string $html, string $prefix): array
 {
     $toc = [];
     $used = [];
-    $html = preg_replace_callback('~<(h[34])([^>]*)>(.*?)</\1>~is', static function ($m) use (&$toc, &$used, $prefix) {
+    // Texte mit <h2> (importiert/eingefügt, unter dem Blocktitel): <h2> ist die oberste Ebene – Texte nur mit <h3>/<h4> bleiben wie bisher
+    $top = preg_match('~<h2[\s>]~i', $html) ? 'h2' : 'h3';
+    $levels = 'h2' === $top ? 'h[234]' : 'h[34]';
+    $html = preg_replace_callback('~<(' . $levels . ')([^>]*)>(.*?)</\1>~is', static function ($m) use (&$toc, &$used, $prefix, $top) {
         $label = trim(html_entity_decode(strip_tags($m[3]), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
         if ('' === $label) {
             return $m[0];
@@ -458,7 +461,7 @@ function fluid_toc(string $html, string $prefix): array
             $attrs = $m[2] . ' id="' . e($id) . '"';
         }
         $used[$id] = true;
-        $toc[] = ['id' => $id, 'label' => $label, 'level' => 'h3' === strtolower($m[1]) ? 2 : 3];
+        $toc[] = ['id' => $id, 'label' => $label, 'level' => $top === strtolower($m[1]) ? 2 : 3];
 
         return '<' . $m[1] . $attrs . '>' . $m[3] . '</' . $m[1] . '>';
     }, $html) ?? $html;
@@ -479,6 +482,28 @@ function fluid_pairs(mixed $s): array
 
         return ['label' => $a, 'value' => $b];
     }, fluid_lines((string) $s));
+}
+
+/**
+ * Play/Pause-Schalter für ein Hintergrundvideo (Einstieg „Vollflächig“, Video „Morphing“ im Kit NativeCSS). Runder Symbol-Knopf
+ * mit den Symbolen „pause“/„play“; der zugängliche Name steht im Text daneben – visuell versteckt ($mode 'icon') oder sichtbar
+ * ('text'). js/hero-video.js wechselt Text, title und .is-paused mit dem Zustand (läuft → Pause-Symbol + „anhalten“,
+ * angehalten → Play-Symbol + „abspielen“); kein aria-pressed, der Name sagt die Aktion. Ohne Skript bleibt der Knopf verborgen.
+ * Lädt css/video-toggle.css und js/hero-video.js über kit.php → assets (@videotoggle). Der Rahmen um Video und Knopf trägt
+ * data-hero-video-box und position: relative; das <video> data-hero-video. $class: Klasse(n) des Kits für Lage und Feinschliff.
+ * Aus KLXM Studio (Core\Blocks\Hero::videoToggle, MIT).
+ */
+function fluid_video_toggle(string $class = '', string $mode = 'icon'): string
+{
+    $mode = 'text' === $mode ? 'text' : 'icon';
+    \Klxm\Fluid\Kit::active()->markUsed('@videotoggle');
+    $pause = lt('Hintergrundvideo anhalten');
+    $play = lt('Hintergrundvideo abspielen');
+
+    // Ausgangszustand „angehalten“: das Video läuft erst, wenn das Skript es startet
+    return '<button type="button" class="' . e(trim($class . ' hx-vt hx-vt--' . $mode)) . ' is-paused" data-hero-video-toggle hidden title="' . e($play) . '">'
+        . icon('pause', ['class' => 'hx-ico hx-ico--pause']) . icon('play', ['class' => 'hx-ico hx-ico--play'])
+        . '<span class="hx-vt__label" data-l-pause="' . e($pause) . '" data-l-play="' . e($play) . '">' . e($play) . '</span></button>';
 }
 
 /**

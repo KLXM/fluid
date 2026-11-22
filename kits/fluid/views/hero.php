@@ -38,14 +38,14 @@ if ($v === 'fullbleed'):
         $poster = $vePoster ? media($vePoster->fileName) : $poster;
     }
 ?>
-<div class="hero-bleed hero-bleed--<?= e($overlay) ?>">
+<div class="hero-bleed hero-bleed--<?= e($overlay) ?>"<?= $vid ? ' data-hero-video-box' : '' ?>>
   <div class="hero-bleed__media" aria-hidden="true">
     <?= !empty($d['image']) ? img((string) $d['image'], '100vw', ['eager' => true, 'alt' => '']) : '' ?>
-    <?php if ($vid): ?><video class="hero-bleed__video" data-bg-video muted loop playsinline preload="none"<?= $poster ? ' poster="' . e(media_url($poster, 1600)) . '"' : '' ?>><?php foreach ($sources as $src): ?><source src="<?= e($src['url']) ?>" type="<?= e($src['type']) ?>"<?= ($src['media'] ?? '') !== '' ? ' media="' . e($src['media']) . '"' : '' ?>><?php endforeach; ?></video><?php endif; ?>
+    <?php if ($vid): ?><video class="hero-bleed__video" data-hero-video muted loop playsinline preload="none" disablepictureinpicture tabindex="-1"<?= $poster ? ' poster="' . e(media_url($poster, 1600)) . '"' : '' ?>><?php foreach ($sources as $src): ?><source src="<?= e($src['url']) ?>" type="<?= e($src['type']) ?>"<?= ($src['media'] ?? '') !== '' ? ' media="' . e($src['media']) . '"' : '' ?>><?php endforeach; ?></video><?php endif; ?>
   </div>
   <div class="wrap hero-bleed__inner">
     <?= $textHtml() ?>
-    <?php if ($vid): ?><button type="button" class="hero-bleed__pause" data-bg-video-toggle hidden aria-pressed="false"><?= icon('play-circle') ?><span data-label-pause="<?= e(lt('Hintergrundvideo anhalten')) ?>" data-label-play="<?= e(lt('Hintergrundvideo abspielen')) ?>"><?= e(lt('Hintergrundvideo anhalten')) ?></span></button><?php endif; ?>
+    <?= $vid ? fluid_video_toggle('hero-bleed__pause', (string) ($d['video_toggle'] ?? 'icon')) : '' ?>
   </div>
 </div>
 <?php elseif ($v === 'type'): ?>

@@ -28,7 +28,10 @@
     clicked = true;
   });
   addEventListener('pageswap', (e) => {
-    if (!e.viewTransition || !on()) return;
+    const t = e.viewTransition;
+    // Ziel ohne Opt-in (z. B. Bearbeiten-Modus) oder abgebrochener Übergang: Versprechen abfangen, kein Konsolenfehler
+    if (t) [t.ready, t.finished, t.updateCallbackDone].forEach((p) => p?.catch(() => {}));
+    if (!t || !on()) return;
     if (!clicked) { clear(); set(bigImg(), 'f-morph'); set(title(), 'f-title'); }
     clicked = false;
   });
@@ -39,7 +42,7 @@
   addEventListener('pagereveal', (e) => {
     const t = e.viewTransition;
     if (!t) return;
-    t.ready.catch(() => {});   // abgebrochener Übergang (schneller Klick) ist kein Fehler
+    [t.ready, t.finished, t.updateCallbackDone].forEach((p) => p?.catch(() => {}));   // abgebrochener Übergang (schneller Klick) ist kein Fehler
     if (!on()) { t.skipTransition(); return; }
     let from = window.navigation?.activation?.from?.url;
     try { from ||= sessionStorage.getItem(key); } catch { /* privat */ }
@@ -48,6 +51,7 @@
     const h = title();
     set(img, 'f-morph');
     set(h, 'f-title');
-    t.finished.finally(() => { set(img, ''); set(h, ''); });
+    const done = () => { set(img, ''); set(h, ''); };
+    t.finished.then(done, done);
   });
 })();

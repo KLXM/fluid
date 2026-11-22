@@ -1,0 +1,41 @@
+/*
+ * Play/Pause-Schalter für Hintergrundvideos (fluid_video_toggle() in kits/fluid/functions.php – Einstieg „Vollflächig“ der Kits
+ * fluid und NativeCSS, Video „Morphing“ im Kit NativeCSS). Lädt nur auf Seiten mit Hintergrundvideo (kit.php → assets, @videotoggle);
+ * ein Kit ersetzt die Datei mit eigener css/video-toggle.css. Übernommen aus KLXM Studio (resources/css/video-toggle.css, MIT).
+ *
+ * Runder Symbol-Knopf unten rechts im Rahmen (der Rahmen braucht position: relative), mindestens 44 × 44 px, halbtransparente
+ * dunkle Fläche mit hellem Rand – das Symbol erreicht auf jedem Videobild mindestens 3:1 (weiß auf ≥ 60 % Schwarz: ≥ 5,9:1),
+ * doppelter Fokusring (hell + dunkel). Gestaltung mit button:where() (Spezifität eines Elements – jede Klassen-Regel eines Kits
+ * gewinnt); nur Symbolgröße, Symbolwechsel und versteckter Text haben Spezifität. Datei ohne @layer.
+ *
+ * Tokens (überall setzbar, z. B. :root oder der Rahmen des Einstiegs; Standard in Klammern):
+ *   --hx-vt-size (2.75rem)          Größe des Knopfs (Mindestmaß; mit Text wächst er in der Breite)
+ *   --hx-vt-icon (1.25rem)          Größe des Symbols
+ *   --hx-vt-bg (rgb(0 0 0/.6))      Fläche          --hx-vt-bg-hover (rgb(0 0 0/.78))   Fläche bei Maus
+ *   --hx-vt-fg (#fff)               Symbol + Text
+ *   --hx-vt-border (rgb(255 255 255/.8))  Randfarbe  --hx-vt-border-width (2px)
+ *   --hx-vt-radius (999px)          Rundung
+ *   --hx-vt-x (1rem), --hx-vt-y (1rem)    Abstand zum rechten bzw. unteren Rand
+ *   --hx-vt-focus (#fff), --hx-vt-focus-halo (#000), --hx-vt-focus-width (3px)   Fokusring
+ *   --hx-vt-font-size (.875rem)     Text bei „Symbol mit Text“
+ */
+button:where(.hx-vt){position:absolute;z-index:2;inset-block-end:var(--hx-vt-y,1rem);inset-inline-end:var(--hx-vt-x,1rem);
+  display:inline-flex;align-items:center;justify-content:center;gap:.5rem;box-sizing:border-box;
+  min-width:var(--hx-vt-size,2.75rem);min-height:var(--hx-vt-size,2.75rem);margin:0;padding:0;
+  border:var(--hx-vt-border-width,2px) solid var(--hx-vt-border,rgb(255 255 255/.8));border-radius:var(--hx-vt-radius,999px);
+  background:var(--hx-vt-bg,rgb(0 0 0/.6));color:var(--hx-vt-fg,#fff);
+  font:inherit;font-size:var(--hx-vt-font-size,.875rem);font-weight:600;line-height:1.2;text-shadow:none;cursor:pointer;
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:background-color .15s;pointer-events:auto}
+button:where(.hx-vt)[hidden]{display:none}
+button:where(.hx-vt):hover{background:var(--hx-vt-bg-hover,rgb(0 0 0/.78))}
+button:where(.hx-vt):focus-visible{outline:var(--hx-vt-focus-width,3px) solid var(--hx-vt-focus,#fff);outline-offset:2px;
+  box-shadow:0 0 0 calc(var(--hx-vt-focus-width,3px) + 4px) var(--hx-vt-focus-halo,#000)}
+.hx-vt .hx-ico{flex:none;width:var(--hx-vt-icon,1.25rem);height:var(--hx-vt-icon,1.25rem);--ico-2-opacity:.35}
+/* Läuft → Pause-Symbol; angehalten (.is-paused) → Play-Symbol (mit Spezifität, damit allgemeine .ico-Regeln nie beide zeigen) */
+.hx-vt .hx-ico--play,.hx-vt.is-paused .hx-ico--pause{display:none}
+.hx-vt.is-paused .hx-ico--play{display:block}
+/* „Symbol“: Text nur für Screenreader (zugänglicher Name, wechselt mit dem Zustand); „Symbol mit Text“: sichtbar daneben */
+:where(.hx-vt--icon) .hx-vt__label{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+button:where(.hx-vt--text){padding-inline:.8rem 1.1rem}
+@media (forced-colors:active){button:where(.hx-vt){border-color:ButtonText;background:ButtonFace;color:ButtonText;-webkit-backdrop-filter:none;backdrop-filter:none}}
+@media print{button:where(.hx-vt){display:none}}

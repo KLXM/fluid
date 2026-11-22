@@ -60,5 +60,8 @@ return [
         'js/code.js' => ['code'],
         'js/reel.js' => ['quote', 'cards'],
         'js/scrolly.js' => ['scrolly'],
+        // Play/Pause-Schalter der Hintergrundvideos (fluid_video_toggle(), auch im Kit NativeCSS)
+        'css/video-toggle.css' => ['@videotoggle'],
+        'js/hero-video.js' => ['@videotoggle'],
     ],
 ];
