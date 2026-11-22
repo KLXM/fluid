@@ -1,0 +1,32 @@
+/* Design-Option „Dichte des Fußbereichs“ – lädt nur, wenn gewählt: footer_density = compact (kit.php → design_css, css/opt-footer_density-compact.css;
+   nach den Fuß-Varianten). Ziel: auf dem Telefon etwa halbe Höhe. „Normal“ = wie bisher (diese Datei lädt dann nicht).
+   Markup (kits/fluid/src/FluidTemplate.view.php): Adresse als <span>-Teile mit Leerzeichen (.ftr__address--line). */
+.fd-compact .ftr{padding-block:var(--f-s-xl) var(--f-s-m)}
+.fd-compact .ftr--simple{padding-top:var(--f-s-xl)}
+.fd-compact .ftr__grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,10rem),1fr));gap:var(--f-s-l)}
+.fd-compact .ftr__about{gap:var(--f-s-xs)}
+.fd-compact .ftr__h{margin-bottom:var(--f-s-2xs)}
+.fd-compact .ftr__address{margin-bottom:0}
+/* Adresse in einer Zeile, Trenner „·“ (für Screenreader leer) – bricht zwischen den Teilen um, wenn der Platz fehlt */
+.ftr__address--line span{white-space:nowrap}
+.ftr__address--line span:not(:last-child)::after{content:"·" / "";margin-inline-start:.3em;color:var(--f-muted)}
+/* Listen enger; Zielfläche auf Touch-Geräten weiter mindestens 2,75rem (unten) */
+.fd-compact .ftr__list{gap:0}
+.fd-compact :is(.ftr__list,.ftr__legal,.ftr__inline .cluster) a{min-height:1.75rem}
+.fd-compact .ftr__row{gap:var(--f-s-s) var(--f-s-l)}
+.fd-compact :is(.ftr--simple,.ftr--centered) .ftr__text{margin-top:var(--f-s-s)}
+.fd-compact .ftr__statement{margin-bottom:var(--f-s-xl);padding-bottom:var(--f-s-l)}
+/* Unterzeile: Copyright und Rechtliches in einer Zeile (umbrechen nur, wenn es gar nicht passt) */
+.fd-compact .ftr__bottom{gap:0 var(--f-s-l);margin-top:var(--f-s-l);padding-top:var(--f-s-s);font-size:var(--f-t-2)}
+.fd-compact .ftr__legal{--gap:0 1rem}
+/* Schmale Spalte (Telefon): Kontakt, Seiten und Social Media als umbrechende Zeilen statt Listen */
+@container (max-width:36rem){
+  .fd-compact .ftr__grid{grid-template-columns:1fr;gap:var(--f-s-m)}
+  .fd-compact .ftr__about{grid-column:auto;max-width:none}
+  .fd-compact .ftr__list{display:flex;flex-wrap:wrap;gap:0 var(--f-s-m)}
+  .fd-compact .ftr__copy{margin-inline-end:0}
+}
+/* Touch: Links mindestens 2,75rem hoch (Zielfläche über das Padding) – in Zeilen nebeneinander bleibt der Fuß trotzdem niedrig */
+@media (pointer:coarse){
+  .fd-compact :is(.ftr__list,.ftr__legal,.ftr__inline .cluster) a{min-height:2.75rem;padding-block:.25rem}
+}

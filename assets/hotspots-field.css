@@ -1,0 +1,28 @@
+/* Marker-Editor „Interaktives Bild“ (Feld „Markierungen“, FieldForm::hotspots, Editor in assets/form.js) – im Backend und in der
+   Seitenleiste auf der Website (Shadow DOM; form.js hängt diese Datei an die jeweilige Ebene). Markierungen über dem Bild,
+   darunter die Zeilen der Wiederholgruppe. Aus KLXM Studio (resources/css/_hotspots.css, MIT). */
+.hs-field{--hs-ed-a:#1f5fbf;display:grid;gap:8px;min-width:0}
+.hs-ed{display:grid;gap:8px}
+.hs-ed__hint{margin:0;font-size:12px;line-height:1.45;opacity:.85}
+.hs-ed__bar{display:flex;flex-wrap:wrap;gap:6px}
+.hs-ed__bar[hidden],.hs-ed[hidden]{display:none}
+.hs-ed__stage{position:relative;border-radius:8px;background:rgb(128 128 128/.12)}
+.hs-ed__empty{margin:0;padding:22px 12px;font-size:13px;text-align:center;opacity:.85}
+.hs-ed__frame{position:relative;user-select:none;touch-action:none;cursor:crosshair;line-height:0}
+.hs-ed__img{display:block;width:100%;height:auto;border-radius:8px;pointer-events:none}
+.hs-ed__svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+.hs-ed__area{fill:color-mix(in srgb,var(--hs-ed-a) 18%,transparent);stroke:var(--hs-ed-a);stroke-width:2;vector-effect:non-scaling-stroke}
+.hs-ed__area.is-on{fill:color-mix(in srgb,var(--hs-ed-a) 32%,transparent);stroke-dasharray:6 3}
+.hs-ed__pin{position:absolute;translate:-50% -50%;display:grid;place-items:center;min-width:28px;height:28px;margin:0;padding:0 6px;border:0;border-radius:999px;
+  background:var(--hs-ed-a);color:#fff;font:700 13px/1 system-ui,sans-serif;box-shadow:0 0 0 2px #fff,0 3px 10px rgb(0 0 0/.4);cursor:grab;touch-action:none}
+.hs-ed__pin--area{min-width:24px;height:24px;font-size:12px}
+.hs-ed__pin.is-on{background:#111;color:#fff;box-shadow:0 0 0 2px #fff,0 0 0 5px var(--hs-ed-a),0 3px 10px rgb(0 0 0/.4)}
+.hs-ed__pin:active{cursor:grabbing}
+.hs-ed__pin:focus-visible,.hs-ed__h:focus-visible{outline:3px solid #ffbf47;outline-offset:2px}
+.hs-ed__h{position:absolute;translate:-50% -50%;width:16px;height:16px;margin:0;padding:0;border:2px solid var(--hs-ed-a);border-radius:4px;background:#fff;box-shadow:0 1px 4px rgb(0 0 0/.45);cursor:move;touch-action:none}
+.hs-ed__live{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+.hs-field [data-blocks-item].is-hs-active{box-shadow:inset 3px 0 0 var(--hs-ed-a)}
+.hs-dlg{width:min(1200px,96vw);height:min(860px,92vh);padding:0;border:0;border-radius:12px;background:#fff;box-shadow:0 24px 80px rgb(0 0 0/.45)}
+.hs-dlg::backdrop{background:rgb(0 0 0/.45)}
+.hs-dlg iframe{display:block;width:100%;height:100%;border:0;border-radius:12px}
+@media (forced-colors:active){.hs-ed__pin,.hs-ed__h{border:2px solid ButtonText;background:ButtonFace;color:ButtonText}}

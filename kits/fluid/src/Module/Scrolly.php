@@ -12,7 +12,7 @@ use Klxm\Fluid\Kit\Fluid\Module\Item\ScrollyItem;
 #[AsBlock(
     icon: 'article',
     group: 'Inhalt',
-    help: 'Ein Bild bleibt stehen, während die Texte daneben vorbeiziehen; das Bild wechselt passend zum Abschnitt. Bei wenig Platz stehen Bild und Text jeweils untereinander.',
+    help: 'Ein Bild bleibt stehen, während die Texte daneben vorbeiziehen; das Bild wechselt passend zum Abschnitt. Abschnitte ohne eigenes Bild behalten das vorige, Texte dürfen lang sein (Zwischenüberschriften, Links). Bei wenig Platz stehen Bild und Text jeweils untereinander.',
     variants: ['left' => 'Bild links', 'right' => 'Bild rechts'],
 )]
 final class Scrolly extends FluidBlock
@@ -26,8 +26,14 @@ final class Scrolly extends FluidBlock
     #[Textarea('Einleitung (optional)', maxLength: 400, rows: 2)]
     public string $intro = '';
 
-    #[Choice('Bildformat', required: true, choices: self::RATIOS, width: 'half')]
-    public string $ratio = '4:5';
+    #[Choice(
+        'Bildformat',
+        required: true,
+        choices: ['auto' => 'Automatisch (je Bild, ohne Zuschnitt)'] + self::RATIOS,
+        width: 'half',
+        note: '„Automatisch“ zeigt jedes Bild ganz in seinem eigenen Format – Hochformate bleiben ganz.',
+    )]
+    public string $ratio = 'auto';
 
     #[Collection('Abschnitte', item: ScrollyItem::class, itemLabel: 'Abschnitt', titleField: 'title', max: 8)]
     public array $items = [];

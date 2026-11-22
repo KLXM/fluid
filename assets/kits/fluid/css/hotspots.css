@@ -1,0 +1,64 @@
+/* Block „Interaktives Bild“ (fluid.hotspots, Klxm\Fluid\Hotspots; aus KLXM Studio, MIT) – nur über den
+   Farb-Vertrag der Kits (--kit-*); ein eigenes Kit ersetzt die Datei mit gleichnamiger css/hotspots.css. Variablen --hs-* zum Feinjustieren.
+   Lage der Knöpfe ohne style-Attribute (CSP): Klassen x0–x100 / y0–y100, genau per CSSOM in js/hotspots.js. Container-Queries. */
+.cms-hs{--hs-accent:var(--kit-accent,#0b6b3a);--hs-on:var(--kit-on-accent,#fff);--hs-ink:var(--kit-ink,#14201a);--hs-text:var(--kit-text,var(--hs-ink));
+  --hs-muted:var(--kit-muted,#5c6b63);--hs-bg:var(--kit-bg,#fff);--hs-surface:var(--kit-surface,#f1f5f3);--hs-line:var(--kit-line,rgb(0 0 0/.12));
+  --hs-r:var(--kit-radius,12px);--hs-pin:2.25rem;--hs-ring:var(--hs-bg);
+  position:relative;container:hs/inline-size;margin:0;color:var(--hs-text)}
+.cms-hs-wrap--text{max-width:46rem}
+.cms-hs .sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+.cms-hs__stage{position:relative}
+.cms-hs__stage>picture,.cms-hs__stage>img,.cms-hs__stage>svg:not(.cms-hs__areas),.cms-hs__img{display:block;width:100%;height:auto;border-radius:var(--hs-r)}
+.cms-hs__stage>picture img{display:block;width:100%;height:auto;border-radius:var(--hs-r)}
+/* Flächen: SVG über dem Bild (viewBox = Bildgröße), Klick öffnet die Markierung (js/hotspots.js) */
+.cms-hs__areas{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+.cms-hs__area{fill:color-mix(in srgb,var(--hs-accent) 16%,transparent);stroke:var(--hs-accent);stroke-width:2.5;vector-effect:non-scaling-stroke;pointer-events:visiblePainted;cursor:pointer;transition:fill .2s}
+.cms-hs__area:hover,.cms-hs__area.is-active{fill:color-mix(in srgb,var(--hs-accent) 34%,transparent)}
+/* Knöpfe mit Nummer (oder Symbol) – heller Ring trennt sie von jedem Bild */
+.cms-hs__pin{position:absolute;z-index:1;translate:-50% -50%;display:grid;place-items:center;min-width:var(--hs-pin);height:var(--hs-pin);margin:0;padding:0 .5em;
+  border:0;border-radius:999px;background:var(--hs-accent);color:var(--hs-on);font:700 .95rem/1 var(--kit-font,inherit);
+  box-shadow:0 0 0 3px var(--hs-ring),0 6px 16px rgb(0 0 0/.35);cursor:pointer;transition:scale .15s,background-color .15s}
+.cms-hs__pin:hover{scale:1.08}
+.cms-hs__pin:focus-visible{outline:3px solid var(--hs-ink);outline-offset:3px}
+.cms-hs__pin[aria-expanded="true"]{background:var(--hs-ink);color:var(--hs-bg)}
+.cms-hs__pin svg{width:1.2em;height:1.2em}
+.cms-hs__pin--area{--hs-pin:2rem}
+@media (prefers-reduced-motion:no-preference){
+  .cms-hs__pin:not([aria-expanded="true"])::after{content:"";position:absolute;inset:0;border-radius:inherit;animation:hs-pulse 2.4s ease-out 1s 3;pointer-events:none}
+  @keyframes hs-pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--hs-accent) 55%,transparent)}100%{box-shadow:0 0 0 14px transparent}}
+}
+@media (prefers-reduced-motion:reduce){.cms-hs__pin,.cms-hs__area{transition:none}.cms-hs__pin:hover{scale:none}}
+/* Hinweisfenster (Popover-API): am Knopf (js/hotspots.js), ohne Skript mittig; auf schmalen Bildschirmen als Blatt unten */
+.cms-hs__pop{box-sizing:border-box;width:min(22rem,calc(100vw - 24px));max-height:min(70vh,32rem);overflow:auto;padding:.9rem 1.1rem 1.1rem;
+  border:1px solid var(--hs-line);border-radius:var(--hs-r);background:var(--hs-bg);color:var(--hs-text);box-shadow:0 18px 48px -12px rgb(0 0 0/.45);
+  font:400 1rem/1.5 var(--kit-font,inherit)}
+.cms-hs__pop::backdrop{background:transparent}
+@media (max-width:36em){.cms-hs__pop{inset:auto 0 0;width:100%;max-width:none;margin:0;max-height:70vh;border-radius:var(--hs-r) var(--hs-r) 0 0;border-width:1px 0 0}}
+.cms-hs__pophead{display:flex;align-items:center;gap:.6rem;margin:0 0 .5rem}
+.cms-hs__num{flex:none;display:grid;place-items:center;min-width:1.75rem;height:1.75rem;padding:0 .35em;box-sizing:border-box;border-radius:999px;background:var(--hs-accent);color:var(--hs-on);font:700 .85rem/1 var(--kit-font,inherit)}
+.cms-hs__ptitle{flex:1;min-width:0;margin:0;color:var(--hs-ink);font:700 1.05rem/1.3 var(--kit-font-head,inherit)}
+.cms-hs__x{flex:none;display:grid;place-items:center;width:2.25rem;height:2.25rem;margin:-.25rem -.4rem -.25rem 0;padding:0;border:0;border-radius:999px;background:var(--hs-surface);color:var(--hs-ink);font:400 1.35rem/1 inherit;cursor:pointer}
+.cms-hs__x:hover{background:color-mix(in srgb,var(--hs-ink) 12%,var(--hs-surface))}
+.cms-hs__x:focus-visible{outline:2px solid var(--hs-accent);outline-offset:2px}
+.cms-hs__text{font-size:.95rem;line-height:1.55}
+.cms-hs__text>:first-child{margin-top:0}.cms-hs__text>:last-child{margin-bottom:0}
+.cms-hs__text a,.cms-hs__more a{color:var(--kit-link,var(--hs-accent))}
+.cms-hs__gl{margin:.55rem 0 0;font-size:.95rem;line-height:1.55}
+.cms-hs__gl:first-child{margin-top:0}
+.cms-hs__dfn{font-style:normal;font-weight:700;color:var(--hs-ink)}
+.cms-hs__more{margin:.7rem 0 0;font-size:.95rem}
+.cms-hs__more a{font-weight:600;text-underline-offset:.2em}
+/* Unter dem Bild: Hinweis und Liste aller Markierungen (Telefon sichtbar, sonst für Screenreader – mit Fokus sichtbar) */
+.cms-hs__cap{margin:.65rem 0 0;color:var(--hs-muted);font-size:.85rem;line-height:1.4}
+.cms-hs__list{display:grid;gap:.6rem;margin:1rem 0 0;padding:0;list-style:none}
+.cms-hs__li{display:flex;align-items:flex-start;gap:.75rem;padding:.8rem 1rem;border-radius:var(--hs-r);background:var(--hs-surface);color:var(--hs-text)}
+.cms-hs__lb{min-width:0;flex:1}
+.cms-hs__lt{margin:.2rem 0 .25rem;color:var(--hs-ink);font-weight:700;line-height:1.3}
+.cms-hs__li .cms-hs__more{margin-top:.4rem}
+@container hs (min-width:40rem){
+  .cms-hs--list-auto .cms-hs__list:not(:focus-within){position:absolute;width:1px;height:1px;margin:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+  .cms-hs--list-always .cms-hs__list{grid-template-columns:repeat(auto-fill,minmax(min(100%,18rem),1fr))}
+}
+@container hs (max-width:39.99rem){.cms-hs{--hs-pin:1.75rem}.cms-hs__pin--area{--hs-pin:1.6rem}.cms-hs__pin{font-size:.85rem}.cms-hs__hint{display:none}}
+.cms-hs__pin.x0{left:0%}.cms-hs__pin.x1{left:1%}.cms-hs__pin.x2{left:2%}.cms-hs__pin.x3{left:3%}.cms-hs__pin.x4{left:4%}.cms-hs__pin.x5{left:5%}.cms-hs__pin.x6{left:6%}.cms-hs__pin.x7{left:7%}.cms-hs__pin.x8{left:8%}.cms-hs__pin.x9{left:9%}.cms-hs__pin.x10{left:10%}.cms-hs__pin.x11{left:11%}.cms-hs__pin.x12{left:12%}.cms-hs__pin.x13{left:13%}.cms-hs__pin.x14{left:14%}.cms-hs__pin.x15{left:15%}.cms-hs__pin.x16{left:16%}.cms-hs__pin.x17{left:17%}.cms-hs__pin.x18{left:18%}.cms-hs__pin.x19{left:19%}.cms-hs__pin.x20{left:20%}.cms-hs__pin.x21{left:21%}.cms-hs__pin.x22{left:22%}.cms-hs__pin.x23{left:23%}.cms-hs__pin.x24{left:24%}.cms-hs__pin.x25{left:25%}.cms-hs__pin.x26{left:26%}.cms-hs__pin.x27{left:27%}.cms-hs__pin.x28{left:28%}.cms-hs__pin.x29{left:29%}.cms-hs__pin.x30{left:30%}.cms-hs__pin.x31{left:31%}.cms-hs__pin.x32{left:32%}.cms-hs__pin.x33{left:33%}.cms-hs__pin.x34{left:34%}.cms-hs__pin.x35{left:35%}.cms-hs__pin.x36{left:36%}.cms-hs__pin.x37{left:37%}.cms-hs__pin.x38{left:38%}.cms-hs__pin.x39{left:39%}.cms-hs__pin.x40{left:40%}.cms-hs__pin.x41{left:41%}.cms-hs__pin.x42{left:42%}.cms-hs__pin.x43{left:43%}.cms-hs__pin.x44{left:44%}.cms-hs__pin.x45{left:45%}.cms-hs__pin.x46{left:46%}.cms-hs__pin.x47{left:47%}.cms-hs__pin.x48{left:48%}.cms-hs__pin.x49{left:49%}.cms-hs__pin.x50{left:50%}.cms-hs__pin.x51{left:51%}.cms-hs__pin.x52{left:52%}.cms-hs__pin.x53{left:53%}.cms-hs__pin.x54{left:54%}.cms-hs__pin.x55{left:55%}.cms-hs__pin.x56{left:56%}.cms-hs__pin.x57{left:57%}.cms-hs__pin.x58{left:58%}.cms-hs__pin.x59{left:59%}.cms-hs__pin.x60{left:60%}.cms-hs__pin.x61{left:61%}.cms-hs__pin.x62{left:62%}.cms-hs__pin.x63{left:63%}.cms-hs__pin.x64{left:64%}.cms-hs__pin.x65{left:65%}.cms-hs__pin.x66{left:66%}.cms-hs__pin.x67{left:67%}.cms-hs__pin.x68{left:68%}.cms-hs__pin.x69{left:69%}.cms-hs__pin.x70{left:70%}.cms-hs__pin.x71{left:71%}.cms-hs__pin.x72{left:72%}.cms-hs__pin.x73{left:73%}.cms-hs__pin.x74{left:74%}.cms-hs__pin.x75{left:75%}.cms-hs__pin.x76{left:76%}.cms-hs__pin.x77{left:77%}.cms-hs__pin.x78{left:78%}.cms-hs__pin.x79{left:79%}.cms-hs__pin.x80{left:80%}.cms-hs__pin.x81{left:81%}.cms-hs__pin.x82{left:82%}.cms-hs__pin.x83{left:83%}.cms-hs__pin.x84{left:84%}.cms-hs__pin.x85{left:85%}.cms-hs__pin.x86{left:86%}.cms-hs__pin.x87{left:87%}.cms-hs__pin.x88{left:88%}.cms-hs__pin.x89{left:89%}.cms-hs__pin.x90{left:90%}.cms-hs__pin.x91{left:91%}.cms-hs__pin.x92{left:92%}.cms-hs__pin.x93{left:93%}.cms-hs__pin.x94{left:94%}.cms-hs__pin.x95{left:95%}.cms-hs__pin.x96{left:96%}.cms-hs__pin.x97{left:97%}.cms-hs__pin.x98{left:98%}.cms-hs__pin.x99{left:99%}.cms-hs__pin.x100{left:100%}
+.cms-hs__pin.y0{top:0%}.cms-hs__pin.y1{top:1%}.cms-hs__pin.y2{top:2%}.cms-hs__pin.y3{top:3%}.cms-hs__pin.y4{top:4%}.cms-hs__pin.y5{top:5%}.cms-hs__pin.y6{top:6%}.cms-hs__pin.y7{top:7%}.cms-hs__pin.y8{top:8%}.cms-hs__pin.y9{top:9%}.cms-hs__pin.y10{top:10%}.cms-hs__pin.y11{top:11%}.cms-hs__pin.y12{top:12%}.cms-hs__pin.y13{top:13%}.cms-hs__pin.y14{top:14%}.cms-hs__pin.y15{top:15%}.cms-hs__pin.y16{top:16%}.cms-hs__pin.y17{top:17%}.cms-hs__pin.y18{top:18%}.cms-hs__pin.y19{top:19%}.cms-hs__pin.y20{top:20%}.cms-hs__pin.y21{top:21%}.cms-hs__pin.y22{top:22%}.cms-hs__pin.y23{top:23%}.cms-hs__pin.y24{top:24%}.cms-hs__pin.y25{top:25%}.cms-hs__pin.y26{top:26%}.cms-hs__pin.y27{top:27%}.cms-hs__pin.y28{top:28%}.cms-hs__pin.y29{top:29%}.cms-hs__pin.y30{top:30%}.cms-hs__pin.y31{top:31%}.cms-hs__pin.y32{top:32%}.cms-hs__pin.y33{top:33%}.cms-hs__pin.y34{top:34%}.cms-hs__pin.y35{top:35%}.cms-hs__pin.y36{top:36%}.cms-hs__pin.y37{top:37%}.cms-hs__pin.y38{top:38%}.cms-hs__pin.y39{top:39%}.cms-hs__pin.y40{top:40%}.cms-hs__pin.y41{top:41%}.cms-hs__pin.y42{top:42%}.cms-hs__pin.y43{top:43%}.cms-hs__pin.y44{top:44%}.cms-hs__pin.y45{top:45%}.cms-hs__pin.y46{top:46%}.cms-hs__pin.y47{top:47%}.cms-hs__pin.y48{top:48%}.cms-hs__pin.y49{top:49%}.cms-hs__pin.y50{top:50%}.cms-hs__pin.y51{top:51%}.cms-hs__pin.y52{top:52%}.cms-hs__pin.y53{top:53%}.cms-hs__pin.y54{top:54%}.cms-hs__pin.y55{top:55%}.cms-hs__pin.y56{top:56%}.cms-hs__pin.y57{top:57%}.cms-hs__pin.y58{top:58%}.cms-hs__pin.y59{top:59%}.cms-hs__pin.y60{top:60%}.cms-hs__pin.y61{top:61%}.cms-hs__pin.y62{top:62%}.cms-hs__pin.y63{top:63%}.cms-hs__pin.y64{top:64%}.cms-hs__pin.y65{top:65%}.cms-hs__pin.y66{top:66%}.cms-hs__pin.y67{top:67%}.cms-hs__pin.y68{top:68%}.cms-hs__pin.y69{top:69%}.cms-hs__pin.y70{top:70%}.cms-hs__pin.y71{top:71%}.cms-hs__pin.y72{top:72%}.cms-hs__pin.y73{top:73%}.cms-hs__pin.y74{top:74%}.cms-hs__pin.y75{top:75%}.cms-hs__pin.y76{top:76%}.cms-hs__pin.y77{top:77%}.cms-hs__pin.y78{top:78%}.cms-hs__pin.y79{top:79%}.cms-hs__pin.y80{top:80%}.cms-hs__pin.y81{top:81%}.cms-hs__pin.y82{top:82%}.cms-hs__pin.y83{top:83%}.cms-hs__pin.y84{top:84%}.cms-hs__pin.y85{top:85%}.cms-hs__pin.y86{top:86%}.cms-hs__pin.y87{top:87%}.cms-hs__pin.y88{top:88%}.cms-hs__pin.y89{top:89%}.cms-hs__pin.y90{top:90%}.cms-hs__pin.y91{top:91%}.cms-hs__pin.y92{top:92%}.cms-hs__pin.y93{top:93%}.cms-hs__pin.y94{top:94%}.cms-hs__pin.y95{top:95%}.cms-hs__pin.y96{top:96%}.cms-hs__pin.y97{top:97%}.cms-hs__pin.y98{top:98%}.cms-hs__pin.y99{top:99%}.cms-hs__pin.y100{top:100%}

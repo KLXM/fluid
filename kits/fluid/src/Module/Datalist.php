@@ -86,6 +86,12 @@ final class Datalist extends FluidBlock
     )]
     public bool $detail = true;
 
+    #[Checkbox(
+        '„In den Kalender“ in der Detailansicht anbieten (.ics)',
+        note: 'Für Termine: Tabelle mit Datumsfeld (Datum oder Datum mit Uhrzeit, optional Ende und Ort). Besucher laden den Termin als Kalenderdatei.',
+    )]
+    public bool $ics = false;
+
     #[Text(
         'Text, wenn keine Einträge da sind',
         maxLength: 160,

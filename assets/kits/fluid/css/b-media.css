@@ -134,3 +134,7 @@ html:has(.cms-lb[open]){overflow:hidden}
 }
 /* Hervorhebung (*Wort*) auf abgedunkeltem bzw. unverändertem Bild: Schriftfarbe statt Akzent (Kontrast), betont durch Unterstreichung */
 :is(.cms-slide--ov-dark,.cms-slide--ov-none) .cms-slide__title .hl{color:inherit;text-decoration:underline;text-decoration-color:var(--f-a,currentColor);text-decoration-thickness:.08em;text-underline-offset:.12em}
+/* Galerie mit genau einem Bild (cms-gallery--single, Feld single_size): „groß“ volle Inhaltsbreite im Originalformat, hohe Bilder
+   höchstens 85 % der Fensterhöhe, dann mittig; „mittel“ höchstens 44 rem breit */
+.cms-gallery--single{max-width:min(100%,calc(85vh * var(--ar,13) / 10));margin-inline:auto}
+.cms-gallery--single-medium{max-width:min(100%,44rem,calc(85vh * var(--ar,13) / 10))}

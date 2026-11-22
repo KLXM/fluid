@@ -21,7 +21,15 @@ $darkDefaults = array_combine($colorKeys, $dark) + ['secondary' => '#9DB0D8', 'o
 
 $design = $parent['design'];
 // „Kopf & Fuß“ gehört zum Seitenrahmen von fluid – der Rahmen dieses Kits kommt aus NativeCSS
+// „Dichte des Fußbereichs“ bleibt (Gruppe „Form & Raum“; CSS in native.css)
+$footerDensity = array_values(array_filter(array_merge(...array_map(static fn (array $g) => (array) ($g['tokens'] ?? []), $design['groups'])), static fn (array $t) => 'footer_density' === ($t['name'] ?? '')));
 $design['groups'] = array_values(array_filter($design['groups'], static fn (array $g) => 'navigation' !== ($g['id'] ?? '')));
+foreach ($design['groups'] as &$g) {
+    if ('form' === ($g['id'] ?? '')) {
+        $g['tokens'] = [...$g['tokens'], ...$footerDensity];
+    }
+}
+unset($g);
 foreach ($design['groups'] as &$group) {
     foreach ($group['tokens'] as &$token) {
         $name = (string) ($token['name'] ?? '');
@@ -62,7 +70,7 @@ return [
     'css' => ['css/native.css'],
     'design' => $design,
     // Optionen mit eigenem Stylesheet von fluid, die auch hier wirken (Kopf/Fuß nicht – eigener Rahmen)
-    'design_css' => array_values(array_diff((array) $parent['design_css'], ['header', 'footer'])),
+    'design_css' => array_values(array_diff((array) $parent['design_css'], ['header', 'footer', 'footer_density'])),
     // Einstieg, Karten, Text + Bild, Handlungsaufruf, FAQ, Kennzahlen, Logos (Laufband), Scrollytelling, Video & Audio,
     // Vorher/Nachher: eigene Views mit NativeCSS – deren CSS steht in native.css.
     // Varianten ohne eigene View (Einstieg „Karten“, „Skala“, „Collage“, „Vergleich“, Karten „Band“) nutzen die von fluid.

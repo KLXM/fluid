@@ -211,6 +211,18 @@ function fluid_header_cta(): ?array
     return '' !== $label && '' !== $link ? ['label' => $label, 'link' => $link] : null;
 }
 
+/**
+ * Handlungsaufruf des Fußbereichs ['label', 'link'] (Website → Kopf, Fuß & Hinweis → „Handlungsaufruf im Fuß“) oder null.
+ * Getrennt vom Button im Kopf; erscheint nur mit Beschriftung und Ziel.
+ */
+function fluid_footer_cta(): ?array
+{
+    $label = trim((string) setting('footer_cta_label', ''));
+    $link = trim((string) setting('footer_cta_link', ''));
+
+    return '' !== $label && '' !== $link ? ['label' => $label, 'link' => $link] : null;
+}
+
 /** Symbol aus den Phosphor-Sprites (MIT) des Kits */
 function icon(?string $name, array $opt = []): string
 {
@@ -405,6 +417,29 @@ function fluid_head(Block $b, string $class = '', string $tag = 'h2'): string
 function fluid_htag(array $d): string
 {
     return '' !== trim((string) ($d['title'] ?? '')) ? 'h3' : 'h2';
+}
+
+/**
+ * Klartext statt Rich-Text? Für Felder, die früher Textfelder waren (z. B. Text der Scrollytelling-Abschnitte): alter
+ * Klartext wird wie bisher ausgegeben. Nur Tags, die Rich-Text enthalten kann – „x<y“ oder „<3“ bleiben Klartext.
+ */
+function fluid_is_plain_text(?string $value): bool
+{
+    return 1 !== preg_match('~</?(?:p|br|ul|ol|li|h[1-6]|blockquote|b|strong|i|em|a|mark|sup|sub|span|div)(?:\s[^>]*)?/?>~i', (string) $value);
+}
+
+/**
+ * Zwischenüberschriften eines Rich-Texts unter die Ebene $level (Überschrift des Abschnitts: h3 → h4) – nie höher als h4,
+ * h4 bleibt h4. Beim Bearbeiten unverändert (der Editor speichert, was er sieht).
+ */
+function fluid_rich_below(string $html, int $level): string
+{
+    if (is_editing()) {
+        return $html;
+    }
+    $min = min(max($level + 1, 2), 4);
+
+    return (string) preg_replace_callback('~<(/?)h([2-4])(?=[\s>])~', static fn (array $m): string => '<' . $m[1] . 'h' . max((int) $m[2], $min), $html);
 }
 
 function fluid_min(array $d, string $key = 'size'): string

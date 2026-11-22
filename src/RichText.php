@@ -97,7 +97,7 @@ final class RichText
             ->allowElement('mark')->allowElement('code')->allowElement('sup')->allowElement('sub')->allowElement('span', ['class'])
             ->allowElement('h2', ['id'])->allowElement('h3', ['id'])->allowElement('h4', ['id'])
             ->allowElement('ul', ['class'])->allowElement('ol')->allowElement('li')->allowElement('blockquote')
-            ->allowElement('a', ['href', 'title', 'target', 'rel', 'data-link'])
+            ->allowElement('a', ['href', 'title', 'target', 'rel', 'data-link', 'data-video-lb'])
             ->allowRelativeLinks()->allowLinkSchemes(['http', 'https', 'mailto', 'tel'])->withMaxInputLength(-1);
     }
 }

@@ -1,0 +1,21 @@
+/* Video-Links in der Lightbox (Klxm\Fluid\VideoLinks, js/video-lightbox.js lädt diese Datei; aus KLXM Studio, MIT) – unabhängig
+   von b-media.css, damit sie auch ohne Bildergalerie gilt. Ein Kit ersetzt sie mit eigener css/video-lightbox.css oder setzt
+   --cms-lb-bg. Klassen: .cms-lb--video · .cms-lb__close · .cms-lb__stage · .cms-lb__player (16:9, iframe) */
+.cms-lb--video{position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:0;border:0;background:var(--cms-lb-bg,rgba(10,11,13,.96));color:#fff;overflow:auto;overscroll-behavior:contain}
+.cms-lb--video[open]{display:grid;place-items:center}
+.cms-lb--video::backdrop{background:rgba(0,0,0,.5)}
+html:has(.cms-lb--video[open]){overflow:hidden}
+.cms-lb--video .cms-lb__stage{box-sizing:border-box;width:min(100%,1280px,calc((100dvh - 144px) * 16 / 9));padding:72px 24px}
+.cms-lb--video .cms-lb__btn{position:absolute;z-index:1;display:grid;place-items:center;width:48px;height:48px;padding:0;border:0;border-radius:50%;background:rgba(255,255,255,.12);color:#fff;cursor:pointer;transition:background .2s}
+.cms-lb--video .cms-lb__btn:hover{background:rgba(255,255,255,.26)}
+.cms-lb--video .cms-lb__btn:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.cms-lb--video .cms-lb__close{top:14px;right:14px}
+.cms-lb__player{position:relative;aspect-ratio:16/9;width:100%;overflow:hidden;border-radius:8px;background:#000;animation:cms-lbv-in .28s cubic-bezier(.2,.7,.2,1)}
+.cms-lb__player iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.cms-lb--video .sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+@keyframes cms-lbv-in{from{opacity:0;scale:.985}}
+@media (max-width:639.98px){
+  .cms-lb--video .cms-lb__stage{width:100%;padding:72px 0}
+  .cms-lb__player{border-radius:0}
+}
+@media (prefers-reduced-motion:reduce){.cms-lb__player{animation:none}}

@@ -9,6 +9,7 @@ Technische Doku zu fluid für REDAXO 6. Einstieg und Installation: [README](../R
 - [YForm: Formulare und Datenlisten](#yform-formulare-und-datenlisten)
 - [Blöcke in YForm-Tabellen](#blöcke-in-yform-tabellen-feld-fluid-blöcke)
 - [Adressen, Domains, SEO](#adressen-domains-seo)
+- [Geänderte Standardwerte](#geänderte-standardwerte) · [Interaktives Bild](#interaktives-bild) · [Video-Links in der Lightbox](#video-links-in-der-lightbox) · [Termine (.ics)](#termine-ics) · [Fußbereich](#fußbereich)
 - [Sprachen](#sprachen) · [Videos](#videos) · [Blog](#blog) · [Karten](#karten) · [Diagramme](#diagramme) · [Rechtstexte](#rechtstexte)
 - [Versionen](#versionen) · [MCP-Server](#mcp-server) · [E-Mail](#e-mail)
 - [Suche](#suche) · [Neu laden auf Aktion](#neu-laden-auf-aktion) · [Live-Aktualisierung](#live-aktualisierung) · [Präsenz der Redaktion](#präsenz-der-redaktion)
@@ -129,6 +130,26 @@ erste = Standard), `variantHelp`, `nestable` (`true` oder Liste der Varianten), 
 Beschriftungen und Darstellungen ändern, ohne die Klasse anzufassen: Kit (`kit.php` → `'blocks'`) oder Extension Point
 `FLUID_BLOCK_DEFINITION`. Neue Felder gehören als Eigenschaften in die Klasse (bzw. eine abgeleitete) – nur sie speichert
 der Core.
+
+### Geänderte Standardwerte
+
+Ändert sich der Standardwert eines Blockfelds (oder kommt ein Feld dazu, dessen Standard anders aussieht als bisher), sähen
+gespeicherte Blöcke ohne Wert nach einem Update anders aus. `Klxm\Fluid\DefaultChanges` schreibt deshalb einmal je Änderung
+den bisherigen Zustand in alle gespeicherten Blöcke ohne Wert – Slices (Live- und Arbeitsversion), Versionen
+(`rex_article_slice_history`) und Felder „Fluid-Blöcke“ in YForm-Tabellen. Danach gilt der neue Standard nur für neue
+Blöcke. Läuft bei `console migrate` (und mit `console fluid:upgrade:defaults`, auch `--dry-run`); erledigte Änderungen merkt
+sich die Konfiguration `block_defaults`; vorhandene Werte (auch `null`) bleiben.
+
+```php
+// Eigener Block, neuer Standard „gross“ statt bisher „klein“ für das Feld size:
+#[AsExtension]   // bzw. Extension::register('FLUID_DEFAULT_CHANGES', …) in boot()
+public static function defaults(ExtensionPoint $ep): array
+{
+    return $ep->subject + ['2026-12-teaser-size' => ['teaser' => ['size' => 'klein']]];   // Kennung => [Blocktyp => [Feld => bisher]]
+}
+```
+
+Eingebaut (1.0.0-beta.9): Text + Bild `valign` = `center`, Bildergalerie `single_size` = `grid`, Scrollytelling `ratio` = `4:5`.
 
 **Gewöhnliche Module in der Seitenleiste:** fluid zeigt die Felder jedes Moduls mit Feld-Attributen (auch `Collection`
 und die Felder von fluid) in seinem Formular und speichert über das Formular des Cores – mit dessen Prüfungen und
@@ -341,6 +362,9 @@ Extension::register('FLUID_KIT', static fn (ExtensionPoint $ep) => 'shop.example
 | `FLUID_SITE_TRANSLATIONS` | Übersetzungen (array) | `code` | feste Texte des Kits für eine Sprache ergänzen/ändern |
 | `FLUID_EDITOR_CONFIG` | Einstellungen des Editors | `article`, `user` | Blöcke/Menüpunkte für Rollen ausblenden |
 | `FLUID_KIT` | Schlüssel des Kits | – | Kit je Anfrage wählen, z. B. je Domain |
+| `FLUID_DEFAULT_CHANGES` | Änderungen (Kennung => [Typ => [Feld => bisher]]) | – | bestehende Blöcke behalten ihr Aussehen (siehe [Geänderte Standardwerte](#geänderte-standardwerte)) |
+| `FLUID_HOTSPOT_EDITORS` | Liste (`url`, `label`, `title`) | – | weiterer Editor für das Feld „Markierungen“ (siehe [Interaktives Bild](#interaktives-bild)) |
+| `FLUID_HOTSPOT_TERM` | `null` | `key` | Glossar-Begriff einer Markierung: `['term', 'short', 'url']` |
 
 Das Routing hat eigene Extension Points als Klassen (wie der Core), Namespace `Klxm\Fluid\Routing\ExtensionPoint`:
 
@@ -619,6 +643,73 @@ Extension::register('FLUID_SITE_TRANSLATIONS', static function (ExtensionPoint $
   Dateien. Tokens: `--hx-vt-size`, `--hx-vt-icon`, `--hx-vt-bg`, `--hx-vt-bg-hover`, `--hx-vt-fg`, `--hx-vt-border`,
   `--hx-vt-border-width`, `--hx-vt-radius`, `--hx-vt-x`, `--hx-vt-y`, `--hx-vt-focus`, `--hx-vt-focus-halo`,
   `--hx-vt-focus-width`, `--hx-vt-font-size`.
+
+## Interaktives Bild
+
+Block `fluid.hotspots` (Gruppe Medien): ein Bild aus dem Medienpool mit Markierungen – Punkt (Nummer), Kreis, Rechteck oder Fläche
+(Vieleck). Jede Markierung hat Titel, Rich-Text (ohne Bilder), Link (Linkmap), Linktext, optional einen Glossar-Begriff und ein
+Symbol statt der Nummer. Ausgabe `Klxm\Fluid\Hotspots::render($datei, $daten, $optionen)`: `<button popovertarget>` öffnet ein
+`<div popover role="dialog">` (Esc, Klick daneben, Fokus zurück übernimmt der Browser), Flächen als SVG, darunter die Liste aller
+Markierungen – auf schmalen Flächen sichtbar, sonst für Screenreader (Option „Immer“). Keine `style`-Attribute: Lage über Klassen
+`x0`–`x100`/`y0`–`y100`, genau per CSSOM (`js/hotspots.js`). Stile `css/hotspots.css` mit Variablen `--hs-*` (aus `--kit-*`).
+
+**Datenformat Version 1** – dasselbe wie in KLXM Studio (`Core\Hotspots`), Markierungen lassen sich austauschen:
+
+```json
+{"v": 1, "items": [
+  {"id": "h1", "shape": "point",  "x": 12.5, "y": 40, "title": "…", "text": "<p>…</p>", "link": "redaxo://12", "link_label": "", "term": "", "icon": ""},
+  {"id": "h2", "shape": "circle", "x": 50, "y": 50, "r": 8},
+  {"id": "h3", "shape": "rect",   "x": 10, "y": 60, "w": 20, "h": 15},
+  {"id": "h4", "shape": "poly",   "points": [[10, 10], [30, 12], [20, 30]]}
+]}
+```
+
+Koordinaten in Prozent der Bildbreite bzw. -höhe (0–100, zwei Nachkommastellen); `r` in Prozent der Breite; Reihenfolge = Nummer.
+`Hotspots::normalize()` bereinigt jede Eingabe (JSON, Liste, Formularzeilen), `Hotspots::json()` gibt das Format aus.
+
+**Feld „Markierungen“** für eigene Blöcke: `#[Hotspots('Markierungen', image: 'image')] public array $hotspots = [];`
+(Klxm\Fluid\Field\Hotspots, `image` = Bildfeld im selben Formular). In der Seitenleiste und im Backend: Marker-Editor über einer
+Zeile je Markierung – ins Bild klicken setzt eine Markierung, ziehen verschiebt sie (Ecke/Radius/Eckpunkte an der gewählten),
+Pfeiltasten 1 % (Umschalt 5 %, Alt 0,1 %), Entf entfernt, Eingabe öffnet die Zeile, Bild auf/ab wechselt; Umschalt + Klick fügt
+einer Fläche einen Eckpunkt an. JavaScript: `window.BlocksHotspots.get(feld)`, `.set(feld, daten)`, `.normalize(daten)`.
+
+**Andockstelle für externe Editoren** (z. B. ein Grafik-Editor): Extension Point `FLUID_HOTSPOT_EDITORS` liefert Knöpfe
+`['url' => '/…', 'label' => 'Im Grafik-Editor öffnen', 'title' => '']`. Die Seite öffnet in einem Dialog mit
+`?format=hotspots&embed=1&media={datei}` und spricht per `postMessage` (gleiche Herkunft) – Protokoll wie KLXM Studio:
+Editor → `{source: 'klxm-hotspot-editor', type: 'ready'}`, Feld → `{source: 'klxm-hotspots', type: 'init', v: 1, data, media: {file, url, width, height}}`,
+Editor → `{…, type: 'apply', data, close?: true}` bzw. `{…, type: 'close'}`. Gespeichert wird mit dem Formular.
+
+## Video-Links in der Lightbox
+
+Website → Kopf, Fuß & Hinweis → „Video-Links in Lightbox öffnen“ (`video_lightbox`, Standard aus). Aus: Ausgabe unverändert.
+An: `Klxm\Fluid\VideoLinks::inject()` (im Seitenrahmen) kennzeichnet Links auf YouTube- und Vimeo-Videos (`youtube.com/watch?v=`,
+`/shorts/`, `youtu.be/`, `vimeo.com/ID`) mit `data-video-lb="youtube|vimeo"` und `data-video-id` und lädt `js/video-lightbox.js`
+(nur auf Seiten mit solchen Links). Beim Klick prüft das Skript die Einwilligung: AddOn **consent_kit** (`window.ConsentKit.has('youtube')`
+bzw. `'vimeo'`), die Einwilligungs-API von KLXM Studio (`window.cmsConsent.embed`) oder die Freigabe „Videos künftig direkt laden“
+des Blocks Video. Ohne Einwilligung bleibt es ein normaler Link – es geht keine Anfrage an den Anbieter. Der Player
+(youtube-nocookie.com bzw. player.vimeo.com) öffnet in einem modalen `<dialog>`; Esc schließt, der Fokus kehrt zum Link zurück.
+Ausnahmen: je Link-Feld eines Blocks „Video ohne Lightbox öffnen“ (`{feld}_nolb`, nur im Editor auf der Website), im HTML
+`data-video-lb="off"` am `<a>` (bleibt im Rich-Text erhalten). Stile `css/video-lightbox.css`, ein Kit ersetzt sie.
+
+## Termine (.ics)
+
+Datenliste mit Detailansicht und Option „In den Kalender anbieten“ (`ics`): Die Detailansicht zeigt „In den Kalender“ –
+`/fluid-ics/{seite}-{eintrag}.ics` (`Klxm\Fluid\Data\Ics`). Beginn = erstes Datumsfeld der Tabelle (YForm `Date` ganztägig,
+`DateTime` mit Uhrzeit), Ende = Datumsfeld mit `end`/`bis`/`until` im Namen, Ort = Textfeld mit `place`/`ort`/`location`/`venue`,
+Titel und Beschreibung aus der Datenliste, dazu die Adresse der Detailseite. Es gelten dieselben Bedingungen wie für die
+Detailansicht (Filter, Sprache). Eigene Kalenderdateien: `Ics::event(['uid' => …, 'start' => …, 'title' => …])`.
+Serien (wiederkehrende Termine mit einzelnen Vorkommen) kennt fluid nicht – jeder Eintrag ist ein Termin.
+
+## Fußbereich
+
+- **Handlungsaufruf im Fuß** (Website → Kopf, Fuß & Hinweis: `footer_cta_label`, `footer_cta_link`), getrennt vom Button im Kopf –
+  `fluid_footer_cta()`. Kit fluid: „Spalten“ → unter Claim/Text (`.ftr__action`), „Schlicht“/„Zentriert“ → in der Zeile,
+  „Großer Schriftzug“ → statt des Kopf-Buttons. Kit NativeCSS: unter dem Text (`.nv-footer__action`).
+- **Dichte des Fußbereichs** (Design-Token `footer_density`, Klasse `fd-normal|fd-compact`): „Kompakt“ mit weniger Abstand, Links
+  als Zeilen, Adresse einzeilig (`.ftr__address--line`), Touch-Ziele ≥ 2,75 rem. Kit fluid: `css/opt-footer_density-compact.css`
+  (lädt nur bei „Kompakt“), Kit NativeCSS: in `native.css`, Token unter „Form & Raum“.
+- **Kopf weicht dem Fuß:** Ist der Fuß höher als der Bildschirm, gleitet der haftende Kopf mit dem Anfang des Fußes weg
+  (View-Timeline `--f-ftr` bzw. `--nv-ftr`, ohne JavaScript); Browser ohne View-Timelines wie bisher.
 
 ## Blog
 
@@ -915,6 +1006,7 @@ Ohne Live-Kanal funktioniert es auch, dann mit 15 Sekunden Verzögerung.
 | `fluid:kit:ncss-update --from=…` | NativeCSS im Kit „NativeCSS“ aktualisieren – siehe [NativeCSS aktualisieren](#nativecss-aktualisieren) |
 | `fluid:search-index` | Suchindex neu aufbauen (sonst automatisch nach dem Veröffentlichen) |
 | `fluid:selftest` | Live-Aktualisierung, Präsenz, Bearbeitungssperre und Blöcke prüfen (Views ohne Code hinter `//`, Inhaltsverzeichnis, Video-Schalter …) |
+| `fluid:upgrade:defaults` | geänderte Standardwerte in bestehende Blöcke schreiben (läuft auch bei `migrate`; `--dry-run` zählt nur) |
 | `fluid:upgrade:slices` | Blöcke älterer REDAXO-6-Datenbanken in die Spalte `data` übernehmen (`--drop-old` entfernt die alten Spalten) |
 
 ## Rechte

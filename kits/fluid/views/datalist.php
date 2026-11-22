@@ -57,6 +57,10 @@ if ($row):
     <?php if ($metaF && (($m = YFormBridge::html($row, $metaF)) !== '' || '' !== $metaInline)): ?><p class="df-meta"<?= $metaInline ?>><?= $m ?></p><?php endif; ?>
     <h2 class="h2 df-title"<?= $titleF ? RecordInline::attrs($t, $row, $titleF) : '' ?>><?= e($title($row)) ?></h2>
     <?= $editBtn($edit($row->id), 'Eintrag bearbeiten') ?>
+    <?php // Termine: „In den Kalender“ als .ics (Data\Ics) – nur mit Datumsfeld und eingeschalteter Option
+    if (!empty($d['ics']) && null !== \Klxm\Fluid\Data\Ics::dateField($t) && '' !== YFormBridge::sortValue($row, \Klxm\Fluid\Data\Ics::dateField($t))): ?>
+    <p class="df-actions"><a class="btn btn--secondary btn--small" href="<?= e(\Klxm\Fluid\Data\Ics::url($b->articleId, $row->id)) ?>" download><?= icon('calendar-plus') ?><?= e(lt('In den Kalender')) ?></a></p>
+    <?php endif; ?>
     <?php
     // Bild wechseln (Medienpool) – als Knopf am Bild, damit die Bildwerkzeuge (Bearbeiten, Anpassen …) frei bleiben
     $imgInline = $imageF ? RecordInline::attrs($t, $row, $imageF) : '';

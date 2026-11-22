@@ -10,7 +10,7 @@ return [
     // Style-Editor: Farben, Schriften, Form, Kopf & Fuß, Vorlagen (Klxm\Fluid\Design)
     'design' => require __DIR__ . '/design.php',
     // Design-Optionen mit eigenem Stylesheet (nur das Gewählte wird geladen): css/opt-{option}-{wert}.css
-    'design_css' => ['header', 'footer', 'pagebg', 'buttons', 'eyebrow', 'cards', 'dividers', 'palette', 'sections', 'transition'],
+    'design_css' => ['header', 'footer', 'footer_density', 'pagebg', 'buttons', 'eyebrow', 'cards', 'dividers', 'palette', 'sections', 'transition'],
     'backgrounds' => ['white' => 'Standard', 'muted' => 'Getönt', 'tint' => 'Akzent hell', 'accent' => 'Akzentfarbe', 'secondary' => 'Zweite Markenfarbe', 'dark' => 'Dunkel'],
     'dark_backgrounds' => ['accent', 'secondary', 'dark'],
 
@@ -60,6 +60,9 @@ return [
         'js/code.js' => ['code'],
         'js/reel.js' => ['quote', 'cards'],
         'js/scrolly.js' => ['scrolly'],
+        // Interaktives Bild (Klxm\Fluid\Hotspots): Knöpfe, Hinweisfenster, Liste
+        'css/hotspots.css' => ['hotspots'],
+        'js/hotspots.js' => ['hotspots'],
         // Play/Pause-Schalter der Hintergrundvideos (fluid_video_toggle(), auch im Kit NativeCSS)
         'css/video-toggle.css' => ['@videotoggle'],
         'js/hero-video.js' => ['@videotoggle'],

@@ -2,6 +2,7 @@
 
 namespace Klxm\Fluid\Kit\Fluid;
 
+use Klxm\Fluid\VideoLinks;
 use Klxm\Fluid\BlockModule;
 use Klxm\Fluid\Kit;
 use Klxm\NavigationArray\Navigation;
@@ -32,10 +33,11 @@ final class FluidTemplate extends Template
         $kit = Kit::active();
         $kit->definition();   // lädt functions.php des Kits (und seiner Vorfahren)
         if (null !== $own = $kit->file('template.view.php')) {
-            return Renderer::render($own, [$content]);
+            return VideoLinks::inject(Renderer::render($own, [$content]));
         }
 
-        return $this->renderView($content);
+        // Video-Links in der Lightbox (Website-Einstellung, Standard aus): Links kennzeichnen, Skript nur bei Bedarf
+        return VideoLinks::inject($this->renderView($content));
     }
 
     #[Override]

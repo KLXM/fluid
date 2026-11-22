@@ -86,6 +86,8 @@ final class FluidAddon extends Addon
         \Redaxo\Core\Content\ArticleSliceHistory::checkTables();
         // Assets der Kits aus Projekt und Composer-Paketen nach assets/fluid-kits/ (das Kit fluid bringt der Core mit)
         Kit::publishAll();
+        // Geänderte Standardwerte von Blockfeldern: bestehende Blöcke behalten ihr Aussehen (einmal je Änderung)
+        DefaultChanges::run();
     }
 
     /**
@@ -226,6 +228,17 @@ final class FluidAddon extends Addon
 
         if (!Core::isFrontend()) {
             return;
+        }
+
+        // Video-Links in der Lightbox: Zusatzfeld „Video ohne Lightbox öffnen“ hinter jedem Link-Feld (nur Editor auf der Website –
+        // gespeichert wird es mit dem Formular der Seitenleiste; das Formular des Cores im Backend kennt nur die Eigenschaften)
+        if (VideoLinks::on()) {
+            Extension::register('FLUID_BLOCK_DEFINITION', static function (ExtensionPoint $ep): array {
+                $def = (array) $ep->subject;
+                $def['fields'] = VideoLinks::blockFields((array) ($def['fields'] ?? []));
+
+                return $def;
+            });
         }
 
         // Endpunkte des Editors (?fluid_api=…): vor der Ausgabe der Seite beantworten

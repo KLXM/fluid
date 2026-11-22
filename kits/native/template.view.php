@@ -186,11 +186,13 @@ return static function (ArticleContent $content): void {
       <?= $brand('nv-brand--footer') ?>
       <?php if ('' !== $tagline): ?><p class="nv-footer__tagline"><?= fluid_title($tagline) ?></p><?php endif; ?>
       <?php if ('' !== $ftrText): ?><p class="ncss-text-sm"><?= nl2br(fluid_title($ftrText), false) ?></p><?php endif; ?>
+      <?php if ($ftrCta = fluid_footer_cta()): ?><p class="nv-footer__action"><a class="btn btn--primary" <?= fluid_link_attrs($ftrCta['link']) ?>><?= e($ftrCta['label']) ?><?= icon('arrow-right') ?></a></p><?php endif; ?>
     </div>
     <?php if ($address || '' !== fluid_phone() || '' !== fluid_email()): ?>
     <div class="ncss-stack">
       <h2 class="nv-footer__h"><?= e(lt('Kontakt')) ?></h2>
-      <?php if ($address): ?><address class="nv-footer__address"><?= implode('<br>', array_map('e', $address)) ?></address><?php endif; ?>
+      <?php if ($address && 'compact' === $kit->design()->get('footer_density')): ?><address class="nv-footer__address nv-footer__address--line"><?= implode(' ', array_map(static fn ($l) => '<span>' . e($l) . '</span>', $address)) ?></address>
+      <?php elseif ($address): ?><address class="nv-footer__address"><?= implode('<br>', array_map('e', $address)) ?></address><?php endif; ?>
       <?= fluid_quick_contact('nv-footer__list') ?>
     </div>
     <?php endif; ?>

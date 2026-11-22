@@ -90,8 +90,14 @@ final class Settings
                 ['name' => 'topbar_text', 'translate' => true, 'label' => 'Infoleiste über dem Kopf (optional)', 'type' => 'text', 'max' => 120, 'help' => 'Kurzer Text neben Telefon und E-Mail – erscheint, wenn im Design eine Infoleiste gewählt ist.'],
                 ['name' => 'footer_text', 'translate' => true, 'label' => 'Text im Fuß (optional)', 'type' => 'textarea', 'rows' => 2, 'max' => 300],
                 ['name' => 'footer_statement', 'translate' => true, 'label' => 'Großer Satz im Fuß (Design „Statement“)', 'type' => 'text', 'max' => 120, 'help' => '*Wort* hebt hervor.'],
+                // Handlungsaufruf im Fußbereich (fluid_footer_cta): eigener Button, getrennt vom Kopf; leer = kein Button
+                ['name' => 'footer_cta_label', 'translate' => true, 'label' => 'Handlungsaufruf im Fuß – Beschriftung (optional)', 'type' => 'text', 'max' => 32, 'width' => 'half', 'placeholder' => 'z. B. Mitglied werden',
+                    'help' => 'Erscheint als Button im Fußbereich – bei „Großer Schriftzug“ statt des Buttons aus dem Kopf. Leer = kein Button.'],
+                ['name' => 'footer_cta_link', 'label' => 'Handlungsaufruf im Fuß – Ziel', 'type' => 'link', 'width' => 'half', 'help' => 'Seite, #anker, https://… – Sonderwerte „phone“ und „email“.'],
                 ['name' => 'notice_active', 'label' => 'Hinweisleiste zeigen', 'type' => 'bool', 'default' => false],
                 ['name' => 'notice_text', 'translate' => true, 'label' => 'Hinweis', 'type' => 'text', 'max' => 200, 'placeholder' => 'z. B. Vom 22.12. bis 6.1. geschlossen.'],
+                ['name' => 'video_lightbox', 'label' => 'Video-Links in Lightbox öffnen', 'type' => 'bool', 'default' => false,
+                    'help' => 'Links und Buttons auf YouTube- oder Vimeo-Videos öffnen den Player in einer Lightbox auf der Website – nur, wenn Besucher in den Dienst eingewilligt haben (AddOn consent_kit bzw. „Videos künftig direkt laden“ im Block Video). Ohne Einwilligung bleibt es ein normaler Link. Einzelne Buttons lassen sich ausnehmen.'],
                 // <ncss-preferences> von NativeCSS im Kopf – Kit „NativeCSS“ und Kit fluid (Seitenrahmen beider Kits); Skripte und
                 // Bedienfeld kommen aus kits/native, deshalb nur, wenn es das Kit gibt
                 ...(null !== Kit::get('native') ? [

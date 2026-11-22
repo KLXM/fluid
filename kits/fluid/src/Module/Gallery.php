@@ -46,4 +46,13 @@ final class Gallery extends FluidBlock
 
     #[Checkbox('Bilder per Klick groß anzeigen (Lightbox)', width: 'half')]
     public bool $lightbox = true;
+
+    #[Choice(
+        'Größe bei nur einem Bild',
+        required: true,
+        width: 'half',
+        choices: ['grid' => 'Wie die Galerie (eine Spalte)', 'medium' => 'Mittel (zentriert)', 'large' => 'Groß (volle Inhaltsbreite)'],
+        note: 'Gilt nur, wenn die Galerie genau ein Bild enthält: „Mittel“ und „Groß“ zeigen es im Originalformat mit Bildunterschrift.',
+    )]
+    public string $singleSize = 'large';
 }

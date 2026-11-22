@@ -24,10 +24,28 @@ if ('justified' === $layout) {
     $sizes = '(min-width: 860px) 40vw, 100vw';
 }
 $r = 'r-' . str_replace(':', '-', $ratio);
+// Genau ein Bild: Größe wählt die Redaktion – wie die Galerie (eine Spalte), mittel oder groß im Originalformat
+// (Standard „groß“ für neue Blöcke; bestehende behalten „wie die Galerie“ über DefaultChanges)
+$singleSize = in_array($d['single_size'] ?? '', ['grid', 'medium', 'large'], true) ? $d['single_size'] : 'grid';
+$single = 1 === count($items) && 'grid' !== $singleSize;
 ?>
 <div class="wrap">
   <?= fluid_head($b) ?>
-  <?php if ($items): ?>
+  <?php if ($single):
+      $it = $items[0];
+      $pic = img($it['file'], 'medium' === $singleSize ? '(min-width: 760px) 704px, 100vw' : '(min-width: 1280px) 1280px, 100vw');
+      $cap = !empty($d['captions']) ? $it['caption'] : '';
+  ?>
+  <figure class="cms-gallery cms-gallery--single cms-gallery--single-<?= e($singleSize) ?> cms-gallery__fig <?= e(fluid_aspect_class($it['file'])) ?>"<?= $lightbox ? ' data-cms-lightbox' : '' ?>>
+    <?php if ($lightbox): ?>
+    <a class="cms-gallery__link"<?= fluid_lightbox_link($it['file'], $it['caption']) ?>><?= $pic ?><span class="sr-only"><?= e(lt('Bild {n} vergrößern', ['n' => 1])) ?></span></a>
+    <?php else: ?>
+    <div class="cms-gallery__link"><?= $pic ?></div>
+    <?php endif; ?>
+    <?php if ('' !== $cap || (is_editing() && !empty($d['captions']))): ?><figcaption class="cms-gallery__cap"<?= $b->edit('images.' . $it['i'] . '.caption') ?>><?= e($cap) ?></figcaption><?php endif; ?>
+  </figure>
+  <?= $lightbox ? fluid_lightbox() : '' ?>
+  <?php elseif ($items): ?>
   <ul class="cms-gallery cms-gallery--<?= e($layout) ?> cols-<?= e($cols) ?>" role="list"<?= $lightbox ? ' data-cms-lightbox' : '' ?>>
     <?php foreach ($items as $n => $it):
         $pic = img($it['file'], $sizes, 'grid' === $layout ? ['ratio' => $ratio] : []);

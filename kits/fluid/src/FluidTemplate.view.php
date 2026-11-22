@@ -83,6 +83,11 @@ return static function (ArticleContent $content): void {
         return $h . '<span class="sr-only"> – ' . e(lt('Startseite')) . '</span></a>';
     };
     $cta = fluid_header_cta();
+    // Fußbereich: eigener Handlungsaufruf (Spalten → unter Claim/Text, Schlicht/Zentriert → in der Zeile, Großer Schriftzug → statt
+    // des Kopf-Buttons); Dichte „Kompakt“ gibt die Adresse einzeilig aus (css/opt-footer_density-compact.css)
+    $ftrCta = fluid_footer_cta();
+    $ftrBtn = static fn (array $c, string $class): string => '<a class="btn btn--primary ' . $class . '" ' . fluid_link_attrs($c['link']) . '>' . e($c['label']) . icon('arrow-right') . '</a>';
+    $compact = 'compact' === $design->get('footer_density');
     $notice = !empty(setting('notice_active')) && '' !== trim((string) setting('notice_text', '')) ? trim((string) setting('notice_text')) : '';
     $topbar = (string) $design->get('topbar');
     $address = fluid_address_lines();
@@ -184,7 +189,8 @@ foreach (['@tablesort' => 'ncss/js/table-sort.js', '@filter' => 'ncss/js/filter.
   <?php if ('statement' === $footer): ?>
     <div class="ftr__statement">
       <p class="ftr__big"><?= fluid_title($statement) ?></p>
-      <?php if ($cta): ?><a class="btn btn--primary ftr__cta" <?= fluid_link_attrs($cta['link']) ?>><?= e($cta['label']) ?><?= icon('arrow-right') ?></a><?php endif; ?>
+      <?php if ($ftrCta): ?><?= $ftrBtn($ftrCta, 'ftr__cta') ?>
+      <?php elseif ($cta): ?><a class="btn btn--primary ftr__cta" <?= fluid_link_attrs($cta['link']) ?>><?= e($cta['label']) ?><?= icon('arrow-right') ?></a><?php endif; ?>
     </div>
   <?php endif; ?>
   <?php if ('simple' === $footer || 'centered' === $footer): ?>
@@ -192,6 +198,7 @@ foreach (['@tablesort' => 'ncss/js/table-sort.js', '@filter' => 'ncss/js/filter.
       <?= $brand('brand--footer') ?>
       <?php if ('' !== $tagline): ?><p class="ftr__tagline"><?= fluid_title($tagline) ?></p><?php endif; ?>
       <?php if ($menu): ?><nav aria-label="<?= e(lt('Seiten')) ?>" class="ftr__inline"><ul class="cluster" role="list" data-fluid-nav="footer"><?= $pageList() ?></ul></nav><?php endif; ?>
+      <?php if ($ftrCta): ?><?= $ftrBtn($ftrCta, 'ftr__btn') ?><?php endif; ?>
     </div>
     <?php if ('' !== $ftrText): ?><p class="ftr__text"><?= nl2br(fluid_title($ftrText), false) ?></p><?php endif; ?>
   <?php else: ?>
@@ -200,11 +207,13 @@ foreach (['@tablesort' => 'ncss/js/table-sort.js', '@filter' => 'ncss/js/filter.
         <?= $brand('brand--footer') ?>
         <?php if ('' !== $tagline): ?><p class="ftr__tagline"><?= fluid_title($tagline) ?></p><?php endif; ?>
         <?php if ('' !== $ftrText): ?><p class="ftr__text"><?= nl2br(fluid_title($ftrText), false) ?></p><?php endif; ?>
+        <?php if ($ftrCta && 'statement' !== $footer): ?><p class="ftr__action"><?= $ftrBtn($ftrCta, 'ftr__btn') ?></p><?php endif; ?>
       </div>
       <?php if ($address || '' !== fluid_phone() || '' !== fluid_email()): ?>
       <div class="ftr__col">
         <h2 class="ftr__h"><?= e(lt('Kontakt')) ?></h2>
-        <?php if ($address): ?><address class="ftr__address"><?= implode('<br>', array_map('e', $address)) ?></address><?php endif; ?>
+        <?php if ($address && $compact): ?><address class="ftr__address ftr__address--line"><?= implode(' ', array_map(static fn ($l) => '<span>' . e($l) . '</span>', $address)) ?></address>
+        <?php elseif ($address): ?><address class="ftr__address"><?= implode('<br>', array_map('e', $address)) ?></address><?php endif; ?>
         <?= fluid_quick_contact('ftr__list') ?>
       </div>
       <?php endif; ?>

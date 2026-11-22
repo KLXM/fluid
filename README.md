@@ -52,8 +52,9 @@ fluid läuft auch ohne.
 **Für Redakteure** – alles auf der Website, über eine Leiste oben:
 
 - **Texte direkt auf der Seite** ändern, mit Formatierungsleiste; alle Felder eines Blocks in der Seitenleiste
-- **Blöcke** einfügen, verschieben (ziehen oder ↑ ↓), verdoppeln, kopieren, online/offline – 29 Blöcke im Kit,
-  vom Einstieg über Text + Bild, Zahlen, Fragen & Antworten, Preise und Karten bis zu Video & Audio und Vorher/Nachher
+- **Blöcke** einfügen, verschieben (ziehen oder ↑ ↓), verdoppeln, kopieren, online/offline – 30 Blöcke im Kit,
+  vom Einstieg über Text + Bild, Zahlen, Fragen & Antworten, Preise und Karten bis zu Video & Audio, Vorher/Nachher und
+  **Interaktives Bild** (Markierungen als Punkt, Kreis, Rechteck oder Fläche – im Bild setzen, ziehen, mit Pfeiltasten schieben)
 - **Layout und Greifer:** Spalten, Abstände, Textbreite und Aufteilung Bild/Text mit der Maus ziehen
 - **Entwurf und Veröffentlichen:** Änderungen erst im Entwurf, dann „Veröffentlichen“; ältere Stände wiederherstellen
 - **Wer arbeitet gerade wo:** In der Leiste und im Seitenbaum steht, wer eine Seite gerade bearbeitet. Hat jemand
@@ -81,7 +82,13 @@ fluid läuft auch ohne.
 - **Blog / News** mit Schlagworten, RSS und „Neuer Beitrag“ direkt in der Übersicht
 - **Formulare** zum Zusammenklicken – auch mehrstufig, speichern und/oder per E-Mail (im Stil der Website), mit Bestätigung (YForm);
   ein Mailfehler verwirft keine Eingabe
-- **Daten aus YForm** als Karten oder Liste mit eigener Adresse je Eintrag – und Blöcke auch in Datensätzen
+- **Daten aus YForm** als Karten oder Liste mit eigener Adresse je Eintrag – und Blöcke auch in Datensätzen; Termine mit
+  „In den Kalender“ (.ics) in der Detailansicht
+- **Fußbereich:** eigener Handlungsaufruf (Website → Kopf, Fuß & Hinweis), Dichte „Kompakt“ (Design) – auf dem Telefon etwa
+  halbe Höhe; der haftende Kopf gleitet am Seitenende mit dem Fuß weg
+- **Video-Links in der Lightbox** (Website → Kopf, Fuß & Hinweis, Standard aus): Links und Buttons auf YouTube oder Vimeo
+  öffnen nach Einwilligung (AddOn consent_kit oder „Videos künftig direkt laden“) den Player auf der Seite – ohne Einwilligung
+  bleibt es ein normaler Link
 - **Demo zum Ausprobieren** (eigenes AddOn [`fluid_demo`](https://github.com/KLXM/fluid_demo), getrennt zu installieren): Besucher starten per Knopf eine
   Demo und bearbeiten die Website – gespeichert wird nichts
 - **Videos und Audio** mit automatischem Vorschaubild, Untertiteln, Kapiteln und Transkript, **Vorher/Nachher** mit

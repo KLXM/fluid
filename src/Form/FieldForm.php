@@ -161,13 +161,19 @@ final class FieldForm
             'url' => '<input class="rex-input" type="url" id="' . $id . '" name="' . $n . '" value="' . escape((string) $value) . '"' . $req . $ph . ' placeholder="https://…">',
             'link' => Picker::link(self::nameId($name), $name, (string) $value, $backend),
             'repeater' => self::repeater($f, is_array($value) ? $value : [], $name, $backend, $byProp),
+            'hidden' => '<input type="hidden" name="' . $n . '" value="' . escape((string) $value) . '">',
+            // Markierungen auf einem Bild (Field\Hotspots): Marker-Editor über einer Zeile je Markierung (assets/hotspots-field.js)
+            'hotspots' => self::hotspots($f, $value, $name, $backend, $byProp),
             default => '<input class="rex-input" type="text" id="' . $id . '" name="' . $n . '" value="' . escape((string) $value) . '"' . $req . $max . $ph . '>',
         };
 
+        if ('hidden' === $type) {
+            return $input;
+        }
         if ('bool' === $type) {
             return $input . ('' !== $help ? '<p class="rex-field-note">' . escape($help) . '</p>' : '');
         }
-        if ('repeater' === $type) {
+        if ('repeater' === $type || 'hotspots' === $type) {
             return '<fieldset class="' . ($backend ? 'rex-field" data-layout="vertical' : 'blocks-form__repeater') . '"><legend class="rex-field-label">' . escape($label) . '</legend>' . $input
                 . ('' !== $help ? '<p class="rex-field-note">' . escape($help) . '</p>' : '') . '</fieldset>';
         }
@@ -250,6 +256,33 @@ final class FieldForm
             . ($backend ? '<i class="rex-icon rex-icon-add" aria-hidden="true"></i> ' : '+ ') . escape($itemLabel) . '</button>';
 
         return $h . '</div>';
+    }
+
+    /**
+     * Feld „Markierungen“: Marker-Editor (Bild aus dem Bildfeld desselben Formulars, assets/hotspots-field.js) über einer
+     * Wiederholgruppe mit einer Zeile je Markierung. Die Zeilen sind die Werte; der Server macht daraus das Format v1.
+     *
+     * @param array<string, mixed> $f
+     */
+    private static function hotspots(array $f, mixed $value, string $name, bool $backend, bool $byProp): string
+    {
+        $addon = \Klxm\Fluid\FluidAddon::instance();
+        $img = (string) ($f['image_field'] ?? 'image');
+        $base = (string) preg_replace('~\[[^\[\]]*\]$~', '', $name);
+        $cfg = ['image' => '' !== $img ? $base . '[' . $img . ']' : '', 'max' => \Klxm\Fluid\Hotspots::MAX, 'editors' => \Klxm\Fluid\Hotspots::editors(),
+            'css' => $addon->getAssetsUrl('hotspots-field.css'), 'src' => \Redaxo\Core\Filesystem\Url::media('__FILE__')];
+        $rep = ['name' => $f['name'], 'type' => 'repeater', 'item_label' => 'Markierung', 'title_field' => 'title', 'max_items' => \Klxm\Fluid\Hotspots::MAX,
+            'fields' => \Klxm\Fluid\Hotspots::subFields()];
+        $hint = 'hs-' . self::nameId($name) . '-h';
+
+        return '<div class="hs-field" data-hotspots="' . escape((string) json_encode($cfg, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)) . '">'
+            . '<div class="hs-ed" data-hs-ed hidden>'
+            . '<p class="hs-ed__hint" id="' . escape($hint) . '">Ins Bild klicken setzt eine Markierung. Ziehen verschiebt sie; mit der Tastatur: Markierung wählen, Pfeiltasten (mit Umschalt in 5er-Schritten, mit Alt in 0,1er-Schritten), Entf löscht, Eingabe öffnet die Angaben.</p>'
+            . '<div class="hs-ed__bar" data-hs-bar hidden></div>'
+            . '<div class="hs-ed__stage" data-hs-stage aria-describedby="' . escape($hint) . '"><p class="hs-ed__empty">Zuerst ein Bild wählen.</p></div>'
+            . '<p class="hs-ed__live" aria-live="polite" data-hs-live></p></div>'
+            . self::repeater($rep, \Klxm\Fluid\Hotspots::toForm($value), $name, $backend, $byProp)
+            . '</div>';
     }
 
     /**
@@ -343,6 +376,7 @@ final class FieldForm
             $v = $data[$name];
             $data[$name] = match ((string) ($f['type'] ?? 'text')) {
                 'repeater' => is_array($v) ? array_values(array_map(static fn ($it) => self::normalize((array) ($f['fields'] ?? []), is_array($it) ? $it : []), $v)) : [],
+                'hotspots' => \Klxm\Fluid\Hotspots::fromForm($v),
                 'article' => is_string($v) && preg_match('~^(?:redaxo://)?(\d+)$~', $v, $m) ? (int) $m[1] : ('' === $v ? null : $v),
                 'number' => is_numeric($v) ? $v + 0 : null,
                 'bool' => in_array($v, [true, 1, '1', 'on'], true),
@@ -366,6 +400,10 @@ final class FieldForm
         foreach ($fields as $f) {
             $name = (string) $f['name'];
             $type = (string) ($f['type'] ?? 'text');
+            if ('hotspots' === $type) {
+                $data[$name] = \Klxm\Fluid\Hotspots::normalize($data[$name] ?? null);
+                continue;
+            }
             if ('repeater' === $type) {
                 // Vorgabe nur, wenn die Wiederholgruppe noch nie gespeichert wurde (neuer Block)
                 $items = is_array($data[$name] ?? null) ? array_values($data[$name]) : (!array_key_exists($name, $data) && is_array($f['default'] ?? null) ? $f['default'] : []);

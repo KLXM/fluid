@@ -1,5 +1,85 @@
 # Changelog
 
+## 1.0.0-beta.9 – 2026-11-22
+
+Neue Funktionen nach dem Vorbild von KLXM Studio (MIT), angepasst an REDAXO/fluid. **Nach dem Update `php bin/console migrate`**
+ausführen – bestehende Blöcke behalten dabei ihr Aussehen (siehe unten).
+
+### Bestand schützen bei geänderten Standardwerten
+
+- `Klxm\Fluid\DefaultChanges`: Ändert sich der Standardwert eines Blockfelds, schreibt `migrate` (FluidAddon::install) einmal je
+  Änderung den bisherigen Zustand in alle gespeicherten Blöcke ohne Wert – Slices (Live und Arbeitsversion), Versionen
+  (`rex_article_slice_history`) und Felder „Fluid-Blöcke“ in YForm-Tabellen. Idempotent, vorhandene Werte (auch `null`) bleiben,
+  erledigte Änderungen stehen in der Konfiguration `block_defaults`. Neu: `console fluid:upgrade:defaults` (`--dry-run`) und der
+  Extension Point `FLUID_DEFAULT_CHANGES` für eigene Blöcke und Kits.
+- Dieses Release nutzt es für Text + Bild (`valign` → bisher „Mitte“), Bildergalerie (`single_size` → bisher „wie die Galerie“)
+  und Scrollytelling (`ratio` → bisher 4:5). Testinstallation: 72 Slices, 706 Versionen, 2 Datensätze festgehalten; die
+  Demo-Seiten sehen danach gleich aus (Pixelvergleich).
+
+### Blockoptionen
+
+- **Text + Bild → „Bild ausrichten“:** Mitlaufen (Standard für neue Blöcke: bei langem Text steht das Bild oben und bleibt beim
+  Scrollen neben dem Text, haftend unter dem Kopf; nur nebeneinander), Oben, Mitte (bisher). Beide Kits.
+- **Bildergalerie → „Größe bei nur einem Bild“:** wie die Galerie (eine Spalte, bisher), Mittel (zentriert, höchstens 44 rem) oder
+  Groß (volle Inhaltsbreite im Originalformat, höchstens 85 % der Fensterhöhe; Standard für neue Blöcke). Lightbox wie sonst.
+- **Scrollytelling:** Text je Abschnitt als Rich-Text (Zwischenüberschriften, Links, Listen; Überschriften im Text liegen unter
+  dem Abschnittstitel). Alter Klartext erscheint unverändert wie bisher, der Editor macht beim Bearbeiten Absätze daraus. Bild je
+  Abschnitt optional – ohne eigenes Bild bleibt das vorige stehen (`data-img`). Neues Bildformat „Automatisch“ (jedes Bild ganz,
+  ohne Zuschnitt; Standard für neue Blöcke). Fokus in einem Abschnitt aktiviert ihn. Beide Kits.
+
+### Fußbereich
+
+- **Handlungsaufruf im Fuß** (Website → Kopf, Fuß & Hinweis: Beschriftung + Ziel), getrennt vom Button im Kopf –
+  `fluid_footer_cta()`. Kit fluid: „Spalten“ unter Claim/Text, „Schlicht“/„Zentriert“ in der Zeile, „Großer Schriftzug“ statt des
+  Kopf-Buttons; Kit NativeCSS: unter dem Text. Leer = wie bisher.
+- **Dichte des Fußbereichs** (Design → Kopf & Fuß bzw. im Kit NativeCSS unter „Form & Raum“): Normal (bisher) oder Kompakt – weniger
+  Abstand, Links als Zeilen, Adresse in einer Zeile, Touch-Ziele ≥ 2,75 rem. Telefon (Demo): fluid 854 → 429 px, NativeCSS 865 → 458 px.
+- **Kopf weicht dem Fuß:** Auf dem Telefon lag der haftende Kopf am Seitenende über Logo und Claim des Fußes. Er gleitet jetzt per
+  View-Timeline (ohne JavaScript) mit dem Anfang des Fußes weg; kurze Füße (Desktop) erreichen ihn nie – keine Änderung.
+
+### Block „Interaktives Bild“
+
+- Neuer Block `fluid.hotspots` (Medien): Bild aus dem Medienpool mit Markierungen – Punkt, Kreis, Rechteck, Fläche (in %).
+  Hinweisfenster per `<button popovertarget>` (Esc, Klick daneben, Fokus zurück), Flächen als SVG, Klick auf eine Fläche öffnet ihre
+  Markierung. Auf dem Telefon (bzw. mit Option „Immer“) zusätzlich als Liste unter dem Bild, sonst für Screenreader. Rich-Text
+  ohne Bilder, Link per Linkmap, Glossar-Begriff optional (`FLUID_HOTSPOT_TERM`), Symbol statt Nummer.
+- **Marker-Editor** in der Seitenleiste (und im Backend): ins Bild klicken setzt eine Markierung, ziehen verschiebt sie, Pfeiltasten
+  (Umschalt 5 %, Alt 0,1 %), Entf, Eingabe, Bild auf/ab; Ecke, Radius und Eckpunkte an der gewählten Markierung; Ansagen für
+  Screenreader. Feld `Klxm\Fluid\Field\Hotspots` für eigene Blöcke.
+- **Datenformat Version 1 exakt wie KLXM Studio** (`Klxm\Fluid\Hotspots`, `{v: 1, items: […]}`) – Markierungen sind austauschbar.
+- **Andockstelle für externe Editoren:** Extension Point `FLUID_HOTSPOT_EDITORS`, Dialog mit `postMessage` – gleiches Protokoll wie
+  Studio.
+- CSP-tauglich: keine `style`-Attribute (Lage über Klassen `x0`–`x100`/`y0`–`y100`, genau per CSSOM), Skript und Stile nur auf
+  Seiten mit dem Block.
+
+### Video-Links in der Lightbox
+
+- Website → Kopf, Fuß & Hinweis → „Video-Links in Lightbox öffnen“ (Standard aus): Links und Buttons auf YouTube- und
+  Vimeo-Videos öffnen nach Einwilligung den Player (youtube-nocookie.com / player.vimeo.com) in einem modalen Dialog. Einwilligung:
+  AddOn consent_kit (`window.ConsentKit.has`), sonst die Freigabe „Videos künftig direkt laden“ des Blocks Video. **Ohne Einwilligung
+  bleibt es ein normaler Link** – keine Anfrage an den Anbieter.
+- Ausnahme je Button: „Video ohne Lightbox öffnen“ hinter jedem Link-Feld (nur bei eingeschalteter Einstellung, Editor auf der
+  Website), im HTML `data-video-lb="off"` (bleibt im Rich-Text erhalten). `Klxm\Fluid\VideoLinks`, `js/video-lightbox.js`,
+  `css/video-lightbox.css`.
+
+### Termine: „In den Kalender“
+
+- Datenliste → „In den Kalender in der Detailansicht anbieten (.ics)“ (Standard aus): Detailansicht mit Link
+  `/fluid-ics/{seite}-{eintrag}.ics` (`Klxm\Fluid\Data\Ics`) – ganztägig (Datum) oder mit Uhrzeit (Datum mit Uhrzeit, in UTC),
+  Ende und Ort aus passend benannten Feldern, Titel, Beschreibung und Adresse der Detailseite; dieselben Bedingungen wie die
+  Detailansicht. Serien mit einzelnen Vorkommen kennt fluid nicht (kein Serienmodell) – jeder Eintrag ist ein Termin.
+
+### Selbsttest
+
+- `console fluid:selftest` → „Blöcke“ prüft zusätzlich: geänderte Standardwerte, Format und Ausgabe des Interaktiven Bilds (ohne
+  `style`), Video-Links (aus = unverändert), Kalenderdateien (Maskierung, 75-Byte-Zeilen) und Scrollytelling (Klartext, Ebenen).
+
+*EN:* Existing blocks keep their look when field defaults change (`DefaultChanges`, runs on `migrate`). New block options: text +
+image “image alignment” (follow/top/centre), single-image gallery size, scrollytelling with rich text, optional images and an
+“automatic” format. Footer call to action, compact footer density, sticky header yields to the footer. New “Interactive image”
+block (hotspots in Studio’s v1 format, sidebar editor, external editor hook). Video links in a lightbox after consent (off by
+default). “Add to calendar” (.ics) for data list detail pages.
+
 ## 1.0.0-beta.8 – 2026-11-22
 
 Fehler, die KLXM Studio ebenso hatte – die Lösungen von dort (MIT) übernommen und an REDAXO/fluid angepasst.

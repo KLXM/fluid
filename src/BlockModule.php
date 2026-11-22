@@ -322,7 +322,8 @@ abstract class BlockModule extends Module
                     $html = (string) ob_get_clean();
                 }
 
-                return $html;
+                // Video-Links: „ohne Lightbox“ je Link-Feld (nur bei eingeschalteter Einstellung)
+                return VideoLinks::optOut($html, $b->data);
             })(static::viewFile($b), $b, $b->data, $this);
         } finally {
             Block::$rendering = $outer;

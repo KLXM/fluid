@@ -14,6 +14,8 @@ $n = 0;
 for ($p = $b->prev; $p && $p->type === 'media_text' && ($p->data['variant'] ?? 'auto') === $v; $p = $p->prev) $n++;
 if ($v === 'auto') $side = $n % 2 ? 'left' : 'right';
 $list = fluid_lines($d['list'] ?? '');
+// Bild ausrichten: mitlaufen (Standard für neue Blöcke) · oben · mitte (bisher; bestehende Blöcke über DefaultChanges)
+$valign = in_array($d['valign'] ?? '', ['follow', 'top', 'center'], true) ? $d['valign'] : 'follow';
 $body = fluid_head($b, 'mt__head')
     . ((trim(strip_tags((string) $d['text'])) !== '' || is_editing()) ? '<div class="prose"' . $b->edit('text', 'rich') . '>' . rich((string) $d['text']) . '</div>' : '')
     . fluid_checks($list)
@@ -30,7 +32,7 @@ $body = fluid_head($b, 'mt__head')
   <div class="mt-over__card"><?= $body ?></div>
 </div>
 <?php else: ?>
-<div class="wrap mt mt--<?= e($side) ?><?= in_array($d['split'] ?? 'even', ['text', 'media', 'mediaxl'], true) ? ' mt--s-' . e($d['split']) : '' ?>">
+<div class="wrap mt mt--<?= e($side) ?> mt--va-<?= e($valign) ?><?= in_array($d['split'] ?? 'even', ['text', 'media', 'mediaxl'], true) ? ' mt--s-' . e($d['split']) : '' ?>">
   <div class="mt__text"><?= $body ?></div>
   <?= fluid_image($d['image'] ?? null, '(min-width: 1080px) 600px, 100vw', $ratio, 'mt__media') ?>
 </div>

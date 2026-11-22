@@ -80,4 +80,14 @@ final class MediaText extends FluidBlock
         note: 'Auch auf der Seite einstellbar: am inneren Rand des Bildes ziehen.',
     )]
     public string $split = 'even';
+
+    #[Choice(
+        'Bild ausrichten',
+        required: true,
+        choices: ['follow' => 'Mitlaufen', 'top' => 'Oben', 'center' => 'Mitte'],
+        width: 'half',
+        variants: ['auto', 'right', 'left'],
+        note: '„Mitlaufen“: Bei langem Text steht das Bild oben und bleibt beim Scrollen neben dem Text sichtbar; bei kurzem Text wie mittig. Auf dem Telefon stehen Bild und Text untereinander.',
+    )]
+    public string $valign = 'follow';
 }

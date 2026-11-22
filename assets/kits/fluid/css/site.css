@@ -50,3 +50,16 @@
 @media (forced-colors:active){.ic-duo .feat__ico{border-color:CanvasText}}
 /* Lange Adressen, Dateinamen und Code im Fließtext brechen notfalls an jeder Stelle um – sonst verbreitern sie die Seite auf dem Telefon (Texte ohne Überlauf bleiben unverändert) */
 :where(p,li,dd,dt,td,th,blockquote,figcaption,h2,h3,h4) :where(a,b,strong,em,code){overflow-wrap:anywhere}
+/* Handlungsaufruf im Fußbereich (Website → „Handlungsaufruf im Fuß“): Spalten → unter Claim/Text, Schlicht/Zentriert → in der Zeile */
+.ftr__action{margin-top:var(--f-s-xs)}
+.ftr__row .ftr__btn{flex:none}
+/* Am Seitenende weicht der haftende Kopf dem Fußbereich: Ist der Fuß höher als der Bildschirm (Telefon), lag der Kopf sonst über Logo
+   und Claim des Fußes. Der Kopf gleitet mit dem Anfang des Fußes nach oben weg (View-Timeline --f-ftr) und kommt beim Zurückscrollen
+   wieder. Kurzer Fuß (Desktop): erreicht den Kopf nie – keine Änderung. Ohne View-Timelines: wie bisher. Seitenleisten haften nicht oben. */
+@supports (animation-timeline:view()) and (timeline-scope:none){
+  body{timeline-scope:--f-ftr}
+  .ftr{view-timeline:--f-ftr block;view-timeline-inset:0}
+  .hdr-sticky .hdr:not(.hdr--floating,.hdr--rail,.hdr--sidebar){animation:f-hdr linear both,f-hdr-yield linear both;animation-timeline:scroll(),--f-ftr;animation-range:0 6rem,exit-crossing -8rem exit-crossing 0%}
+  .hdr-sticky .hdr--floating{animation:f-hdr-yield linear both;animation-timeline:--f-ftr;animation-range:exit-crossing -8rem exit-crossing 0%}
+}
+@keyframes f-hdr-yield{from{translate:none}to{translate:0 calc(-100% - 1rem)}}

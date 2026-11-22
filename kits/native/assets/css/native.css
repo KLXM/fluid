@@ -101,6 +101,35 @@
   .nv-footer__bottom { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--f-s-s); }
   .nv-footer__bottom p { margin: 0; }
   .nv-footer__legal { display: flex; flex-wrap: wrap; gap: var(--f-s-m); }
+  /* Handlungsaufruf im Fußbereich: Button-Farben von fluid gegen die Linkfarbe des Fußes */
+  .nv-footer .nv-footer__action { margin: 0; }
+  .nv-footer .nv-footer__action .btn--primary, .nv-footer .nv-footer__action .btn--primary:hover { color: var(--f-btn-ink); }
+  /* Haftende Kopfleiste am Seitenende: gleitet mit dem Anfang des Fußes weg, statt über Logo und Claim zu liegen (wie fluid,
+     f-hdr-yield). Browser ohne View-Timelines: wie bisher. */
+  @supports (animation-timeline: view()) and (timeline-scope: none) {
+    body { timeline-scope: --nv-ftr; }
+    .nv-footer { view-timeline: --nv-ftr block; view-timeline-inset: 0; }
+    .nv-topbar { animation: nv-topbar-yield linear both; animation-timeline: --nv-ftr; animation-range: exit-crossing -8rem exit-crossing 0%; }
+  }
+  @keyframes nv-topbar-yield { from { translate: none; } to { translate: 0 calc(-100% - 1rem); } }
+  /* Dichte des Fußbereichs „Kompakt“ (Design → Form & Raum, Token footer_density wie fluid): weniger Abstand, Listen als Zeilen,
+     Adresse einzeilig (.nv-footer__address--line), Copyright und Rechtliches enger. „Normal“ = wie bisher. */
+  .fd-compact .nv-footer { padding-block: var(--f-s-xl) var(--f-s-m); container-type: inline-size; }
+  .fd-compact .nv-footer .ncss-footer-inner { gap: var(--f-s-l); }
+  .fd-compact .nv-footer .ncss-stack { gap: var(--f-s-xs); }
+  .fd-compact .nv-footer__h { margin-block-end: 0; }
+  .fd-compact .nv-footer :is(.nv-footer__list, .ncss-nav-list) { gap: 0; }
+  .fd-compact .nv-footer :is(.nv-footer__list, .ncss-nav-list, .nv-footer__legal) a { min-block-size: 1.75rem; display: inline-flex; align-items: center; }
+  .nv-footer__address--line span { white-space: nowrap; }
+  .nv-footer__address--line span:not(:last-child)::after { content: "·" / ""; margin-inline-start: .3em; }
+  .fd-compact .nv-footer__bottom { margin-block-start: var(--f-s-l); padding-block-start: var(--f-s-s); gap: 0 var(--f-s-l); font-size: var(--f-t-2); }
+  .fd-compact .nv-footer__legal { gap: 0 1rem; }
+  @container (max-width: 36rem) {
+    .fd-compact .nv-footer :is(.nv-footer__list, .ncss-nav-list) { display: flex; flex-direction: row; flex-wrap: wrap; gap: 0 var(--f-s-m); }
+  }
+  @media (pointer: coarse) {
+    .fd-compact .nv-footer :is(.nv-footer__list, .ncss-nav-list, .nv-footer__legal) a { min-block-size: 2.75rem; }
+  }
   .nv-brand--footer .nv-brand__mark { inline-size: 1.8rem; block-size: 1.8rem; font-size: .875rem; }
 
   /* ------------------------------------------------------------------ Einstieg */
@@ -188,6 +217,11 @@
   .nv-mt { gap: clamp(1.5rem, 1rem + 4cqi, 4.5rem); }
   /* Bild füllt den Rahmen im gewählten Format (split.css setzt height: auto und überstimmt .frame img von fluid) */
   .nv-mt .ncss-split-media .frame img { height: 100%; }
+  /* Bild ausrichten (Feld valign): oben bzw. „mitlaufen“ = oben und – nur nebeneinander – haftend unter dem Kopf */
+  @container ncss-split (min-width: 36rem) {
+    .nv-mt:is(.nv-mt--va-top, .nv-mt--va-follow) .ncss-split-media { align-self: flex-start; }
+    .nv-mt--va-follow .ncss-split-media { position: sticky; top: calc(var(--hdr-h, 4.25rem) + var(--f-s-l)); }
+  }
   .nv-mt .ncss-split-content { display: flex; flex-direction: column; gap: var(--f-s-m); }
   .nv-mt .ncss-split-content > * { margin: 0; }
   .nv-mt__head { margin-block-end: 0; }
@@ -255,6 +289,8 @@
   /* Karte in Seitenfarbe: auch in farbigen Abschnitten die Schrift der Seite (--f0-*, wie die Karten von fluid) – sonst hell auf hell */
   .nv-scrolly .ncss-scrolly-step > * { background: var(--f-bg);
     --f-ink: var(--f0-ink); --f-text: var(--f0-text); --f-muted: var(--f0-muted); --f-link: var(--f0-link); --f-fg: var(--f0-ink); }
+  /* Bildformat „auto“: jedes Bild ganz (Hochformat nicht höher als die Bühne) */
+  .nv-scrolly--auto .ncss-scrolly-figure img { inline-size: auto; max-inline-size: 100%; max-block-size: calc(100svh - 6rem); margin-inline: auto; }
   .nv-scrolly__title { margin: 0 0 var(--f-s-xs); color: var(--f-ink); font-size: var(--f-t-3); }
 
   /* Text + Bild „Morphing beim Scrollen“ (.ncss-morph): unter der festen Kopfleiste kleben */

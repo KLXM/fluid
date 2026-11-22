@@ -435,4 +435,12 @@ return array (
   'Tabelle' => 'Table',
   'Enthalten:' => 'Included:',
   'Nicht enthalten:' => 'Not included:',
+  // Interaktives Bild, Termine (1.0.0-beta.9)
+  'In den Kalender' => 'Add to calendar',
+  'Interaktives Bild' => 'Interactive image',
+  'Interaktives Bild: {name}' => 'Interactive image: {name}',
+  'Markierung {n}' => 'Hotspot {n}',
+  'Markierungen im Bild' => 'Hotspots in the image',
+  '{n} Markierungen – zum Öffnen anklicken oder mit der Tab-Taste wählen.' => '{n} hotspots – click to open or select with the Tab key.',
+  '{n}: {title}' => '{n}: {title}',
 );

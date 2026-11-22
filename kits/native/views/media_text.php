@@ -47,10 +47,12 @@ $body = fluid_head($b, 'nv-mt__head')
 $pic = fluid_image($d['image'] ?? null, '(min-width: 1080px) 600px, 100vw', $ratio, 'ncss-radius-lg');
 $media = '' !== $pic ? '<div class="ncss-split-media">' . $pic . '</div>' : '';
 $split = in_array($d['split'] ?? 'even', ['text', 'media', 'mediaxl'], true) ? ' nv-mt--s-' . $d['split'] : '';
+// Bild ausrichten: mitlaufen (Standard für neue Blöcke) · oben · mitte (bisher; bestehende Blöcke über DefaultChanges)
+$valign = in_array($d['valign'] ?? '', ['follow', 'top', 'center'], true) ? $d['valign'] : 'follow';
 ?>
 <div class="wrap">
   <div class="ncss-split-container">
-    <div class="ncss-split nv-mt nv-mt--<?= e($side) ?><?= e($split) ?>">
+    <div class="ncss-split nv-mt nv-mt--<?= e($side) ?> nv-mt--va-<?= e($valign) ?><?= e($split) ?>">
       <?= 'left' === $side ? $media : '' ?>
       <div class="ncss-split-content"><?= $body ?></div>
       <?= 'right' === $side ? $media : '' ?>

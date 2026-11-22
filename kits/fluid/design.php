@@ -38,7 +38,7 @@ $base = [
     'secondary_role' => 'sections', 'heading_case' => 'normal', 'emphasis' => 'accent', 'links' => 'underline',
     'images' => 'radius', 'image_fx' => 'none', 'hover' => 'lift', 'icons' => 'soft', 'icon_pos' => 'top', 'dividers' => 'none', 'motion_style' => 'rise',
     'eyebrow' => 'line', 'header' => 'inline', 'header_sticky' => true, 'header_bg' => 'page', 'nav_style' => 'plain', 'topbar' => 'off',
-    'footer' => 'columns', 'footer_bg' => 'surface', 'sections' => 'flush', 'progress' => false, 'totop' => false, 'footer_line' => 'auto', 'footer_line_color' => 'auto', 'footer_line_width' => 'auto', 'header_height' => 'auto', 'pagebg' => 'plain',
+    'footer' => 'columns', 'footer_density' => 'normal', 'footer_bg' => 'surface', 'sections' => 'flush', 'progress' => false, 'totop' => false, 'footer_line' => 'auto', 'footer_line_color' => 'auto', 'footer_line_width' => 'auto', 'header_height' => 'auto', 'pagebg' => 'plain',
     'logo_size' => 'normal', 'side_width' => 'normal', 'side_tree' => 'branch', 'side_banner' => 'off', 'side_banner_height' => 'normal', 'side_banner_overlay' => 'none', 'palette' => 'brand',
     'motion' => true, 'transition' => 'off', 'dark' => true,
 ];
@@ -189,6 +189,10 @@ $design = [
                 'help' => 'Telefon, E-Mail und Social Media aus Website → Stammdaten, dazu ein kurzer Text (Website → „Text der Infoleiste“) – z. B. für Verbände, Praxen und Notdienste.'],
             ['name' => 'footer', 'label' => 'Fußbereich', 'type' => 'choice', 'class' => 'ft-{value}', 'default' => 'columns',
                 'options' => ['columns' => 'Spalten (Kontakt, Seiten, Social)', 'simple' => 'Schlicht in einer Zeile', 'centered' => 'Zentriert (Logo, Seiten, Social untereinander)', 'statement' => 'Großer Schriftzug mit Handlungsaufruf']],
+            // CSS css/opt-footer_density-compact.css (kit.php → design_css); „Kompakt“ gibt außerdem die Adresse einzeilig aus
+            ['name' => 'footer_density', 'label' => 'Dichte des Fußbereichs', 'type' => 'choice', 'class' => 'fd-{value}', 'default' => 'normal',
+                'options' => ['normal' => 'Normal', 'compact' => 'Kompakt – weniger Abstand, Links als Zeilen, Adresse in einer Zeile'],
+                'help' => '„Kompakt“ halbiert etwa die Höhe des Fußbereichs auf dem Telefon: Seiten und Social Media stehen nebeneinander statt untereinander, Copyright und Rechtliches in einer Zeile. Auf Touch-Geräten bleiben die Links groß genug zum Tippen.'],
             ['name' => 'footer_bg', 'label' => 'Hintergrund des Fußbereichs', 'type' => 'choice', 'class' => 'fbg-{value}', 'default' => 'surface',
                 'options' => ['surface' => 'Getönte Fläche', 'page' => 'Wie die Seite', 'dark' => 'Dunkel', 'accent' => 'Akzentfarbe', 'secondary' => 'Zweite Markenfarbe']],
             ['name' => 'footer_line', 'label' => 'Linie über dem Fußbereich', 'type' => 'choice', 'class' => 'fl-{value}', 'default' => 'auto',
