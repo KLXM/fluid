@@ -199,6 +199,7 @@ final class BlockOps
         $first = 0;
         foreach ($items as $i => $it) {
             [$values, $tunes] = self::clipValues($it);
+            $tunes = Lock::forCopy($user, $tunes);   // Kopie gesperrter Blöcke: nur mit Recht wieder gesperrt
             if (0 === $i) {
                 unset($tunes['col']);   // eingefügter Abschnitt steht auf oberster Ebene
             }
@@ -241,6 +242,7 @@ final class BlockOps
             throw new ApiError('Der Block „' . $m::label() . '“ ist im Template dieser Seite nicht erlaubt.');
         }
         [$values, $tunes] = self::clipValues($clip);
+        $tunes = Lock::forCopy($user, $tunes);
         $tunes['col'] = $col;
         $new = ContentHandler::addSlice($article->id, $article->languageId, $target->contentSectionId, $key, BlockModule::store($values, $tunes), $target->priority + 1, FluidAddon::revision());
         self::place($new, $target->priority + 1);
@@ -266,6 +268,9 @@ final class BlockOps
         $perm = $user->getComplexPerm('structure');
         if (null === $article || (!$user->admin && !($perm instanceof \Redaxo\Core\Content\StructurePermission && $perm->hasCategoryPerm($article->categoryId)))) {
             throw new ApiError('Eingefügt – das Original lässt sich ohne Recht auf seine Seite nicht entfernen.');
+        }
+        if (null !== BlockModule::classFor($source->moduleKey) && '' !== Lock::reason($user, $source)) {
+            throw new ApiError('Eingefügt – das Original ist gesperrt bzw. ohne Modulrecht und bleibt stehen.');
         }
         ContentHandler::deleteSlice($source->id);   // Spalten-Blöcke eines Layouts: FluidAddon (SliceDeleting)
         ArticleCache::delete($article->id, $article->languageId);

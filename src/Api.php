@@ -148,8 +148,8 @@ final class Api
                 return ['slice' => $id] + self::render($article, $id, false);
             })(),
             'render' => self::render($article, Request::post('slice', 'int', 0), false),
-            'status' => self::status($article),
-            'delete' => self::delete($article),
+            'status' => self::status($article, $user),
+            'delete' => self::delete($article, $user),
             'publish' => self::publish($article),
             'discard' => self::discard($article),
             'site', 'site_save', 'language_save', 'domain_save', 'domain_delete', 'redirect_save', 'redirect_delete', 'geocode' => SiteAdmin::handle(Request::get(self::PARAM, 'string'), $user),
@@ -218,6 +218,7 @@ final class Api
             'design' => self::design($article, $user, false),
             'design_save' => self::design($article, $user, true),
             'record_field' => Data\RecordInline::save($user, $article),   // Textfeld eines Datensatzes in der Detailansicht
+            'list_template' => Data\ListTemplates::api($user),   // Listen-Vorlagen verwalten (Seitenleiste, Perm::DESIGN_FULL)
             // gewöhnliche REDAXO-Module (keine fluid-Blöcke) in der Seitenleiste; html null = Formular des Cores im Rahmen
             'module_form' => ['html' => ModuleForm::form(self::plainSlice($article, $user))],
             'module_save' => (static function () use ($article, $user): array { ModuleForm::save(self::plainSlice($article, $user), (array) Request::post('m', 'array', [])); return []; })(),
@@ -256,6 +257,9 @@ final class Api
     private static function form(Article $article): array
     {
         [$slice, $module] = self::slice($article);
+        if (null !== ($u = Editing::user())) {
+            Lock::assert($u, $slice);
+        }
 
         return [
             'html' => Form\FieldForm::render($module::class, $module->values(), $module->tunes, 'f', false),
@@ -280,8 +284,10 @@ final class Api
     private static function save(Article $article, User $user): array
     {
         [$slice, $module] = self::slice($article);
-        self::requireModulePerm($user, $module::key());
+        // Modulrecht und Sperre (Lock); Abschnitts-Optionen nur mit dem Recht der Gestaltung (Perm::DESIGN …)
+        Lock::assert($user, $slice);
         [$data, $tunes] = self::input($module);
+        $tunes = Lock::tunes($user, $module->tunes, $tunes);
 
         ContentHandler::editSlice($slice->id, BlockModule::store($data, $tunes));
         Versions::snapshot($article->id, $article->languageId, FluidAddon::revision(), 'fluid_save');
@@ -396,17 +402,19 @@ final class Api
         return [];
     }
 
-    private static function status(Article $article): array
+    private static function status(Article $article, User $user): array
     {
         [$slice, $module] = self::slice($article);
+        Lock::assert($user, $slice);
         ContentHandler::changeSliceStatus($slice->id, 1 === $slice->status ? 0 : 1);
 
         return ['online' => 1 !== $slice->status] + self::render($article, $slice->id, false);
     }
 
-    private static function delete(Article $article): array
+    private static function delete(Article $article, User $user): array
     {
         [$slice] = self::slice($article);
+        Lock::assert($user, $slice);   // Modulrecht und Sperre
         $layout = Layout::isLayout($slice);
         ContentHandler::deleteSlice($slice->id);   // Spalten-Blöcke eines Layouts: FluidAddon (SliceDeleting)
 

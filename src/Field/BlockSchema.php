@@ -49,6 +49,9 @@ final class BlockSchema
         if ($block->reload) {
             $def['reload'] = true;
         }
+        if (false !== $block->listTemplate) {
+            $def['list_template'] = $block->listTemplate;
+        }
         $def['fields'] = self::fields($class);
 
         return $def;

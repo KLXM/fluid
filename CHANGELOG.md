@@ -1,5 +1,53 @@
 # Changelog
 
+## 1.0.0-beta.10 – 2026-11-22
+
+Nach dem Vorbild von KLXM Studio (MIT), angepasst an REDAXO/fluid. **Nach dem Update `php bin/console migrate`** – bestehende
+Rollen behalten dabei alle Rechte, bestehende Datenlisten bleiben unverändert.
+
+### Rollen: erlaubte Blöcke, gesperrte Blöcke, Gestaltung in zwei Stufen
+
+- **Erlaubte Blöcke = Modulrechte der Rolle** (REDAXO). fluid führt kein eigenes Recht ein: Die Blockauswahl zeigt nur erlaubte
+  Blöcke, Blöcke anderer Module stehen auf der Seite mit dem Hinweis „Kein Recht“ (verschiebbar, nicht änderbar). Die API prüft das
+  Modulrecht jetzt auch beim Löschen und beim Online-Schalter (vorher nur Einfügen und Speichern).
+- **Gesperrte Blöcke:** Seitenleiste → Abschnitt → „Block sperren“ (Abschnitts-Option `lock` im Slice). Gesperrte Blöcke bleiben
+  sichtbar und verschiebbar, lassen sich aber nur mit Recht ändern, ausblenden oder löschen – auf der Website (Leiste „Gesperrt“,
+  keine Felder direkt auf der Seite, keine Greifer), in der API, im MCP-Server und im Backend des Cores (Menü des Slices,
+  `SliceUpdating`/`SliceDeleting`). Kopien gesperrter Blöcke sind nur mit Recht wieder gesperrt; Ausschneiden lässt das Original stehen.
+- **Gestaltung in zwei Stufen** als Optionen der Rolle (`Klxm\Fluid\Perm`): `fluid[design]` – Abschnitt (Hintergrund, Abstände auch
+  per Greifer, Sprungmarke, Einblend-Effekt); `fluid[design_full]` – zusätzlich Blöcke sperren/entsperren, gesperrte Blöcke ändern und
+  Listen-Vorlagen verwalten. Ohne Recht bleiben die gespeicherten Werte, die Seitenleiste zeigt den Abschnitt nicht.
+- **Migration:** `migrate` gibt allen vorhandenen Rollen einmal beide Optionen (`Perm::migrateRoles()`, Merker `perm_design_roles`) –
+  niemand verliert etwas. Neue Rollen haben sie erst, wenn man sie anhakt. Admins dürfen ohnehin alles.
+
+### Listen-Vorlagen für die Datenliste
+
+- **Gespeicherte Darstellungen** (Optionssätze) je YForm-Tabelle: Darstellung, Bild-, Text- und Zusatzfeld, Sortierung,
+  Spalten-Sortierung, Filter für Besucher, Breite. Beim Block bleiben Überschrift, Tabelle, Titelfeld, Bedingung, Anzahl, Blättern,
+  Detailansicht und Kalender – also alles, was Inhalt und Adressen bestimmt.
+- **Auswahl im Block mit Vorschau:** Feld „Vorlage“ als Kacheln mit Vorschaubild je Darstellung, nur Vorlagen der gewählten Tabelle,
+  „Eigene Einstellungen“ zuerst. Mit gewählter Vorlage blendet die Seitenleiste ihre Felder aus; „Anpassen (Vorlage lösen)“ übernimmt die
+  Werte in den Block. Die Vorschau auf der Seite folgt sofort.
+- **Vorschläge je Tabelle** beim ersten Öffnen (Karten, Große Karten mit Bild bzw. Liste, Liste mit Bild, Tabelle sortierbar).
+- **Verwalten in der Seitenleiste** (Recht `fluid[design_full]`): „Als Vorlage speichern …“, „Als Standard der Tabelle“ (wird beim
+  Wählen der Tabelle vorausgewählt), „Mit diesen Einstellungen überschreiben“, Umbenennen, Löschen.
+- **Vordefiniert per Kit und Extension Point:** `kit.php` → `'list_templates'` (Schlüssel `kit:…`) und `FLUID_LIST_TEMPLATES`
+  (`ext:…`), nur lesbar, optional nur für bestimmte Tabellen und als Standard.
+- **Ohne gewählte Vorlage bleibt alles wie bisher** (auch alle bestehenden Blöcke); eine gelöschte Vorlage fällt auf die eigenen Werte
+  des Blocks zurück. Technik: `Klxm\Fluid\Data\ListTemplates` (Tabelle `rex_fluid_list_template`), Feld `Field\ListTemplate`,
+  `#[AsBlock(listTemplate: true)]` – auch für eigene Listenblöcke.
+
+### Selbsttest
+
+- `console fluid:selftest` hat die neuen Gruppen „Rechte“ und „Listen-Vorlagen“ (`Klxm\Fluid\FeatureSelfTest`).
+
+*EN:* Roles: allowed blocks come from REDAXO's module permissions (block picker, read-only blocks, API checks incl. delete and
+status). New locked blocks (visible and movable, editable only with permission – website, API, MCP, core backend). Two design
+levels as role options `fluid[design]` (section options) and `fluid[design_full]` (lock, list templates); existing roles get both on
+`migrate`. List templates for the data list: saved display option sets per YForm table with tile preview, suggestions, default per
+table, save/overwrite/rename/delete in the sidebar, predefined via kit or `FLUID_LIST_TEMPLATES`; blocks without a template are
+unchanged.
+
 ## 1.0.0-beta.9 – 2026-11-22
 
 Neue Funktionen nach dem Vorbild von KLXM Studio (MIT), angepasst an REDAXO/fluid. **Nach dem Update `php bin/console migrate`**

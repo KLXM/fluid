@@ -76,10 +76,14 @@ final class Detail
         $key = $articleId . '/' . $languageId;
         if (!\array_key_exists($key, $cache)) {
             $cache[$key] = null;
-            $rows = Sql::factory()->getArray("SELECT data FROM rex_article_slice WHERE article_id = ? AND language_id = ? AND revision = ? AND status = 1 AND module LIKE '%.datalist' ORDER BY priority",
+            $rows = Sql::factory()->getArray("SELECT module, data FROM rex_article_slice WHERE article_id = ? AND language_id = ? AND revision = ? AND status = 1 AND module LIKE '%.datalist' ORDER BY priority",
                 [$articleId, $languageId, ArticleRevision::LIVE]);
             foreach ($rows as $r) {
                 $d = BlockModule::stored($r['data'])['values'];
+                // Listen-Vorlage: Bild- und Textfeld der Vorlage (Titel, Bedingung und Adressen bleiben beim Block)
+                if (null !== ($cls = BlockModule::classFor((string) $r['module']))) {
+                    $d = ListTemplates::resolve($cls, $d);
+                }
                 if (!empty($d['detail']) && '' !== (string) ($d['table'] ?? '')) {
                     $cache[$key] = $d + ['_language' => $languageId];   // Sprache der Seite (Feld „Sprache“ der Tabelle)
                     break;

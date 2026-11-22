@@ -593,6 +593,113 @@
     normalize: hsNormalize,
   };
 
+  // ------------------------------------------------------------------ Listen-Vorlagen (Feld „Vorlage“, Data\ListTemplates)
+  // Kacheln der gewählten Tabelle zeigen; mit gewählter Vorlage die Felder ausblenden, die sie festlegt (data-keys).
+  // „Anpassen (Vorlage lösen)“ übernimmt die Werte der Vorlage in die Felder. Verwalten (nur Website, mit Recht): Speichern,
+  // Überschreiben, Umbenennen, Standard, Löschen über die API des Editors (window.FluidEditor.api).
+  function ltplBox(form) { return form.querySelector('[data-ltpl]'); }
+  function ltplValue(box) { return box.querySelector('input[type=radio]:checked')?.value || ''; }
+
+  function ltplSync(form) {
+    const box = ltplBox(form);
+    if (!box) return;
+    const table = form.querySelector('[data-yform-table]')?.value || '';
+    box.querySelectorAll('.ltpl-tile[data-table]').forEach((t) => {
+      const on = t.dataset.table === table;
+      t.hidden = !on;
+      const r = t.querySelector('input');
+      if (!on && r.checked) { r.checked = false; box.querySelector('.ltpl-tile:not([data-table]) input').checked = true; }
+    });
+    const val = ltplValue(box);
+    const keys = new Set(JSON.parse(box.dataset.keys || '[]'));
+    form.querySelectorAll(':scope > .blocks-form__grid > [data-fname], :scope > [data-fname]').forEach((f) => {
+      if (keys.has(f.dataset.fname)) f.toggleAttribute('data-ltpl-off', val !== '');
+    });
+    box.querySelector('[data-ltpl-detach]').hidden = val === '';
+    const manage = box.querySelector('[data-ltpl-manage]');
+    const cur = box.querySelector('input[type=radio]:checked')?.closest('.ltpl-tile');
+    if (manage) manage.hidden = val === '' || !!cur?.hasAttribute('data-locked');
+    if (manage && cur) manage.querySelector('[data-ltpl-op="default"]').textContent = cur.hasAttribute('data-default') ? 'Nicht mehr Standard' : 'Als Standard der Tabelle';
+  }
+
+  // Werte der Vorlage in die Felder schreiben (Anpassen) – Auswahl, Häkchen, Text
+  function ltplDetach(form, box, changed) {
+    const r = box.querySelector('input[type=radio]:checked');
+    let opts = {};
+    try { opts = JSON.parse(r?.dataset.options || '{}'); } catch { /* leer */ }
+    const prefix = r?.name.replace(/\[template\]$/, '') || '';
+    for (const [k, v] of Object.entries(opts)) {
+      const el = form.querySelector(`[name="${CSS.escape(prefix + '[' + k + ']')}"]:not([type=hidden])`) || form.querySelector(`[name="${CSS.escape(prefix + '[' + k + ']')}"]`);
+      if (!el) continue;
+      if (el.type === 'checkbox') el.checked = !!v; else el.value = v ?? '';
+    }
+    box.querySelector('.ltpl-tile:not([data-table]) input').checked = true;
+    variantFields(form);
+    ltplSync(form);
+    changed();
+  }
+
+  function initListTemplate(form, changed) {
+    const box = ltplBox(form);
+    if (!box || box.dataset.ready) return;
+    box.dataset.ready = '1';
+    box.addEventListener('change', () => ltplSync(form));
+    box.addEventListener('click', async (e) => {
+      if (e.target.closest('[data-ltpl-detach]')) { ltplDetach(form, box, changed); return; }
+      const b = e.target.closest('[data-ltpl-op]');
+      const api = window.FluidEditor?.api;
+      if (!b || !api) return;
+      const op = b.dataset.ltplOp;
+      const radio = box.querySelector('input[type=radio]:checked');
+      const fd = new FormData(form.closest('form') || undefined);
+      if (!form.closest('form')) form.querySelectorAll('input[name],select[name],textarea[name]').forEach((el) => { if ((el.type !== 'radio' && el.type !== 'checkbox') || el.checked) fd.append(el.name, el.value); });
+      fd.append('op', op);
+      fd.append('block', box.dataset.block);
+      fd.append('table', form.querySelector('[data-yform-table]')?.value || '');
+      fd.append('key', radio?.value || '');
+      fd.append('name_attr', radio?.name || '');
+      if (op === 'save') {
+        const n = box.querySelector('[data-ltpl-name]').value.trim();
+        if (!n) { box.querySelector('[data-ltpl-name]').focus(); return; }
+        fd.append('name', n);
+      } else if (op === 'rename') {
+        const cur = radio?.closest('.ltpl-tile')?.querySelector('.ltpl-tile__name')?.textContent || '';
+        const n = await (window.FluidEditor.prompt ? window.FluidEditor.prompt('Neuer Name der Vorlage', cur) : Promise.resolve(window.prompt('Neuer Name der Vorlage', cur)));
+        if (!n) return;
+        fd.append('name', n);
+      } else if (op === 'delete' || op === 'overwrite') {
+        const ok = await window.FluidEditor.ask({ title: op === 'delete' ? 'Vorlage löschen?' : 'Vorlage überschreiben?',
+          body: op === 'delete' ? 'Blöcke, die sie gewählt haben, zeigen danach ihre eigenen Einstellungen.' : 'Die Änderung gilt überall, wo die Vorlage gewählt ist.',
+          ok: op === 'delete' ? 'Löschen' : 'Überschreiben', danger: op === 'delete' });
+        if (!ok) return;
+      }
+      try {
+        const res = await api('list_template', fd);
+        const next = toEl(res.html);
+        box.replaceWith(next);
+        initListTemplate(form, changed);
+        const sel = [...next.querySelectorAll('input[type=radio]')].find((x) => x.value === res.key && (!x.closest('[data-table]') || x.closest('[data-table]').dataset.table === (form.querySelector('[data-yform-table]')?.value || '')));
+        (sel || next.querySelector('.ltpl-tile:not([data-table]) input')).checked = true;
+        ltplSync(form);
+        changed();
+        document.dispatchEvent(new CustomEvent('fluid:notice', { detail: { text: res.message || 'Gespeichert.' } }));
+      } catch (err) {
+        document.dispatchEvent(new CustomEvent('fluid:notice', { detail: { text: err.message, error: true } }));
+      }
+    });
+    ltplSync(form);
+  }
+
+  // Tabelle gewechselt: Standard-Vorlage der neuen Tabelle wählen (falls es eine gibt)
+  function ltplTable(form) {
+    const box = ltplBox(form);
+    if (!box) return;
+    const table = form.querySelector('[data-yform-table]')?.value || '';
+    const std = box.querySelector(`.ltpl-tile[data-default][data-table="${CSS.escape(table)}"] input`);
+    if (std) std.checked = true;
+    ltplSync(form);
+  }
+
   function init(scope, changed = () => {}) {
     initPickers(scope, changed);
     scope.querySelectorAll('[data-blocks-form]').forEach((form) => {
@@ -602,9 +709,10 @@
         form.dataset.blocksReady = '1';
         form.addEventListener('change', (e) => {
           if (e.target.matches('[data-blocks-variant]')) variantFields(form);
-          if (e.target.matches('[data-yform-table]')) yformFields(form);
+          if (e.target.matches('[data-yform-table]')) { yformFields(form); ltplTable(form); }
         });
       }
+      initListTemplate(form, changed);
       form.querySelectorAll('[data-blocks-repeater]').forEach((r) => initRepeater(r, changed));
     });
     initHotspots(scope, changed);

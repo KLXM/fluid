@@ -114,11 +114,27 @@ final class Block
      */
     public function edit(string $path, string $mode = 'plain'): string
     {
-        if (!Editing::active()) {
-            return '';
+        if (!Editing::active() || '' !== $this->readonly()) {
+            return '';   // gesperrt bzw. ohne Modulrecht: nicht direkt auf der Seite bearbeitbar
         }
 
         return ' data-edit="' . escape($path) . '"' . ('plain' !== $mode ? ' data-edit-mode="' . escape($mode) . '"' : '');
+    }
+
+    /** @var array<int, string> */
+    private static array $readonly = [];
+
+    /**
+     * Darf die angemeldete Person diesen Block ändern? '' = ja, 'perm' = kein Modulrecht, 'lock' = gesperrt (Lock).
+     * Blöcke aus Daten (Datensätze) prüft Data\RecordBlocks selbst.
+     */
+    public function readonly(): string
+    {
+        if (null === $this->slice || !Editing::active()) {
+            return '';
+        }
+
+        return self::$readonly[$this->slice->id] ??= Lock::reason(Editing::user(), $this->slice);
     }
 
     /** Zentral gepflegte Inhalte (z. B. aus den Einstellungen) im Bearbeiten-Modus kennzeichnen */

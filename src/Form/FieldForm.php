@@ -30,18 +30,27 @@ final class FieldForm
 {
     private static int $uid = 0;
 
+    /** Block, dessen Formular gerade entsteht (Feld „Vorlage“ braucht ihn) @var class-string<BlockModule>|null */
+    private static ?string $module = null;
+
+    /** Daten des Formulars, das gerade entsteht @var array<string, mixed> */
+    private static array $data = [];
+
     /**
      * @param array<string, mixed> $data
      * @param array<string, mixed> $tunes
      */
     /** @param bool $byProp Eingaben nach Eigenschaft benennen (Formular des Cores) statt nach Speicherschlüssel */
-    public static function render(string $module, array $data, array $tunes, string $prefix, bool $backend = true, string $dataKey = '1', string $tunesKey = '2', bool $byProp = false): string
+    /** @param bool $lockable Sperre anbieten (Slices; nicht für Blöcke in Datensätzen) */
+    public static function render(string $module, array $data, array $tunes, string $prefix, bool $backend = true, string $dataKey = '1', string $tunesKey = '2', bool $byProp = false, bool $lockable = true): string
     {
         $p1 = '' === $dataKey ? $prefix : $prefix . '[' . $dataKey . ']';
         $p2 = $prefix . '[' . $tunesKey . ']';
         $variants = $module::variants();
         $data = self::withDefaults($module::fields(), $data, $variants);
         $variant = (string) ($data['variant'] ?? '');
+        self::$module = $module;
+        self::$data = $data;
 
         $h = '<div class="blocks-form" data-blocks-form data-variant="' . escape($variant) . '">';
         $help = (string) ($module::definition()['help'] ?? '');
@@ -49,7 +58,7 @@ final class FieldForm
             $h .= '<p class="blocks-form__intro">' . escape($help) . '</p>';
         }
         if ($variants) {
-            $h .= self::row('Darstellung', self::select($p1 . '[variant]', $variants, $variant, ['data-blocks-variant' => '']), '', false);
+            $h .= self::row('Darstellung', self::select($p1 . '[variant]', $variants, $variant, ['data-blocks-variant' => '']), '', false, 'variant');
         }
         $h .= self::fields($module::fields(), $data, $p1, $backend, $byProp);
         // Layout: gezogene Spaltenbreiten (Griff auf der Website) beim Speichern des Formulars behalten
@@ -60,9 +69,36 @@ final class FieldForm
             }
         }
 
-        // Abschnitts-Optionen
+        // Abschnitts-Optionen – Gestaltung nur mit Recht (Perm::DESIGN, Sperre Perm::DESIGN_FULL); ohne Recht bleiben die Werte
+        // als versteckte Felder erhalten (das Formular des Cores im Backend speichert alle Abschnitts-Optionen neu)
+        $user = \Klxm\Fluid\Editing::user() ?? \Redaxo\Core\Core::getUser();
+        $design = null !== $user && \Klxm\Fluid\Perm::can($user, \Klxm\Fluid\Perm::DESIGN);
+        $designFull = null !== $user && \Klxm\Fluid\Perm::can($user, \Klxm\Fluid\Perm::DESIGN_FULL);
+        $hidden = static fn (string $k) => isset($tunes[$k]) && '' !== (string) $tunes[$k] && false !== $tunes[$k]
+            ? '<input type="hidden" name="' . escape($p2 . '[' . $k . ']') . '" value="' . escape(true === $tunes[$k] ? '1' : (string) $tunes[$k]) . '">' : '';
+        $locked = \Klxm\Fluid\Lock::locked($tunes);
+        if (!$designFull && $locked) {
+            $h .= $hidden(\Klxm\Fluid\Lock::TUNE);
+        }
+        if (!$design) {
+            foreach (\Klxm\Fluid\Lock::DESIGN_TUNES as $k) {
+                $h .= $hidden($k);
+            }
+            if ($module::nestable()) {
+                $cols = ['' => 'Nicht in einem Layout', '1' => 'Spalte 1', '2' => 'Spalte 2', '3' => 'Spalte 3', '4' => 'Spalte 4'];
+                $col = (string) ($tunes['col'] ?? (\Klxm\Fluid\Backend\SliceGrid::requestedCol() ?? ''));
+                $h .= '<div class="blocks-form__grid">' . self::row('Spalte im Layout', self::select($p2 . '[col]', $cols, $col), '', false) . '</div>';
+            }
+
+            return $h . '</div>';
+        }
         $bgs = $module::kit()->backgrounds();
-        $h .= '<details class="blocks-form__tunes"><summary>Abschnitt</summary><div class="blocks-form__grid">';
+        $h .= '<details class="blocks-form__tunes"' . ($locked ? ' open' : '') . '><summary>Abschnitt</summary><div class="blocks-form__grid">';
+        if ($designFull && $lockable) {
+            $h .= '<div class="blocks-form__field"><input type="hidden" name="' . escape($p2 . '[' . \Klxm\Fluid\Lock::TUNE . ']') . '" value="0"><div class="rex-check"><label class="blocks-form__check"><input type="checkbox" name="'
+                . escape($p2 . '[' . \Klxm\Fluid\Lock::TUNE . ']') . '" value="1"' . ($locked ? ' checked' : '') . '> Block sperren</label></div>'
+                . '<p class="rex-field-note">Gesperrte Blöcke bleiben sichtbar und lassen sich verschieben. Ändern, ausblenden oder löschen dürfen sie nur Personen mit dem Recht „Blöcke gestalten und sperren“.</p></div>';
+        }
         $h .= self::row('Hintergrund', self::select($p2 . '[background]', ['' => 'Standard'] + $bgs, (string) ($tunes['background'] ?? '')), 'In einer Layout-Spalte: ein anderer Hintergrund als das Layout macht den Block zur Karte.', true);
         $h .= self::row('Sprungmarke (Anker)', '<input class="rex-input" type="text" name="' . escape($p2 . '[anchor]') . '" value="' . escape((string) ($tunes['anchor'] ?? '')) . '" pattern="[a-z0-9\-]*" placeholder="z. B. kontakt">', 'Nur Kleinbuchstaben, Ziffern und Bindestriche.', true);
         $space = ['none' => 'Kein', 'small' => 'Klein', 'normal' => 'Normal', 'large' => 'Groß'];
@@ -102,7 +138,7 @@ final class FieldForm
             $name = (string) $f['name'];
             $only = isset($f['variants']) ? ' data-variants="' . escape(implode(' ', (array) $f['variants'])) . '"' : '';
             $half = 'half' === ($f['width'] ?? '');
-            $h .= '<div class="blocks-form__field' . ($half ? ' is-half' : '') . '"' . $only . '>'
+            $h .= '<div class="blocks-form__field' . ($half ? ' is-half' : '') . '" data-fname="' . escape($name) . '"' . $only . '>'
                 . self::control($f, $data[$name] ?? null, $base . '[' . ($byProp ? (string) ($f['prop'] ?? $name) : $name) . ']', $backend, $byProp)
                 . '</div>';
         }
@@ -164,11 +200,15 @@ final class FieldForm
             'hidden' => '<input type="hidden" name="' . $n . '" value="' . escape((string) $value) . '">',
             // Markierungen auf einem Bild (Field\Hotspots): Marker-Editor über einer Zeile je Markierung (assets/hotspots-field.js)
             'hotspots' => self::hotspots($f, $value, $name, $backend, $byProp),
+            // Listen-Vorlage (Data\ListTemplates): Kacheln mit Vorschau, Verwaltung in der Seitenleiste
+            'listtemplate' => null !== self::$module
+                ? \Klxm\Fluid\Data\ListTemplates::renderInput(self::$module, $name, (string) $value, (string) (self::$data['table'] ?? ''), $label, $help, $backend)
+                : '<input type="hidden" name="' . $n . '" value="' . escape((string) $value) . '">',
             default => '<input class="rex-input" type="text" id="' . $id . '" name="' . $n . '" value="' . escape((string) $value) . '"' . $req . $max . $ph . '>',
         };
 
-        if ('hidden' === $type) {
-            return $input;
+        if ('hidden' === $type || 'listtemplate' === $type) {
+            return $input;   // Vorlage: Beschriftung und Hilfe stehen im fieldset
         }
         if ('bool' === $type) {
             return $input . ('' !== $help ? '<p class="rex-field-note">' . escape($help) . '</p>' : '');
@@ -352,9 +392,9 @@ final class FieldForm
         return 'blocks_' . trim((string) preg_replace('~[^A-Za-z0-9_]+~', '_', $name), '_');
     }
 
-    private static function row(string $label, string $control, string $help, bool $half): string
+    private static function row(string $label, string $control, string $help, bool $half, string $field = ''): string
     {
-        return '<div class="blocks-form__field' . ($half ? ' is-half' : '') . '"><label class="rex-field-label">' . escape($label) . '</label>' . $control
+        return '<div class="blocks-form__field' . ($half ? ' is-half' : '') . '"' . ('' !== $field ? ' data-fname="' . escape($field) . '"' : '') . '><label class="rex-field-label">' . escape($label) . '</label>' . $control
             . ('' !== $help ? '<p class="rex-field-note">' . escape($help) . '</p>' : '') . '</div>';
     }
 

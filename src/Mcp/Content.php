@@ -291,6 +291,7 @@ final class Content
         $this->writable($a);
         $s = $this->slice($a, $id);
         $m = $this->module($s->moduleKey);
+        $this->unlocked($s);
         $old = BlockModule::valuesOf($s);
         $new = self::clean($m::fields(), $data);
         if ([] === $new) {
@@ -312,6 +313,14 @@ final class Content
         ContentHandler::editSlice($id, BlockModule::store($data, $tunes));
         Versions::snapshot($a->id, $a->languageId, FluidAddon::revision(), 'fluid_save');
         Activity::log('save', $a->id, $label . ' (MCP)');
+    }
+
+    /** Gesperrte Blöcke (Klxm\Fluid\Lock) ändert auch der MCP-Server nur mit dem Recht „Blöcke gestalten und sperren“ */
+    private function unlocked(\Redaxo\Core\Content\ArticleSlice $s): void
+    {
+        if (\Klxm\Fluid\Lock::locked(BlockModule::tunesOf($s)) && (null === $this->access->user || !\Klxm\Fluid\Perm::can($this->access->user, \Klxm\Fluid\Perm::DESIGN_FULL))) {
+            throw new ApiError('Dieser Block ist gesperrt.');
+        }
     }
 
     /** @param array<string, mixed> $data */
@@ -338,6 +347,7 @@ final class Content
         $this->writable($a);
         $s = $this->slice($a, $id);
         $this->module($s->moduleKey);
+        $this->unlocked($s);
         Versions::snapshot($a->id, $a->languageId, FluidAddon::revision(), 'fluid_save');
         ContentHandler::deleteSlice($s->id);   // Spalten-Blöcke eines Layouts räumt FluidAddon (SliceDeleting) mit ab
         ArticleCache::delete($a->id, $a->languageId);
@@ -365,7 +375,7 @@ final class Content
         if (!$this->access->can('publishSlice[]')) {
             throw new ApiError('Dieser Zugang darf Blöcke nicht ein- und ausschalten.');
         }
-        $this->slice($a, $id);
+        $this->unlocked($this->slice($a, $id));
         ContentHandler::changeSliceStatus($id, $online ? 1 : 0);
 
         return ['block' => $id, 'online' => $online];

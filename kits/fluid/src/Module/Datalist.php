@@ -3,7 +3,7 @@
 namespace Klxm\Fluid\Kit\Fluid\Module;
 
 use Klxm\Fluid\Field\AsBlock;
-use Klxm\Fluid\Field\{Checkbox, Choice, Number, Text, Textarea, YFormField, YFormTable};
+use Klxm\Fluid\Field\{Checkbox, Choice, ListTemplate, Number, Text, Textarea, YFormField, YFormTable};
 use Klxm\Fluid\Kit\Fluid\FluidBlock;
 use Redaxo\Core\Content\AsModule;
 
@@ -15,6 +15,7 @@ use Redaxo\Core\Content\AsModule;
     requires: 'yform',
     variants: ['cards' => 'Karten', 'list' => 'Liste', 'table' => 'Tabelle'],
     reload: true,
+    listTemplate: true,
 )]
 final class Datalist extends FluidBlock
 {
@@ -29,6 +30,9 @@ final class Datalist extends FluidBlock
 
     #[YFormTable('YForm-Tabelle', required: true)]
     public string $table = '';
+
+    #[ListTemplate('Vorlage', note: 'Eine Vorlage legt Darstellung, Felder, Sortierung, Filter und Breite fest – Änderungen an der Vorlage gelten überall, wo sie gewählt ist.')]
+    public string $template = '';
 
     #[YFormField('Titel', width: 'half', note: 'Leer = erstes Textfeld')]
     public string $titleField = '';

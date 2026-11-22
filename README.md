@@ -83,7 +83,9 @@ fluid läuft auch ohne.
 - **Formulare** zum Zusammenklicken – auch mehrstufig, speichern und/oder per E-Mail (im Stil der Website), mit Bestätigung (YForm);
   ein Mailfehler verwirft keine Eingabe
 - **Daten aus YForm** als Karten oder Liste mit eigener Adresse je Eintrag – und Blöcke auch in Datensätzen; Termine mit
-  „In den Kalender“ (.ics) in der Detailansicht
+  „In den Kalender“ (.ics) in der Detailansicht; **Listen-Vorlagen**: Darstellungen je Tabelle speichern und per Kachel wählen
+- **Rollen:** erlaubte Blöcke über die Modulrechte von REDAXO, **gesperrte Blöcke** (sichtbar und verschiebbar, nicht änderbar) und
+  Gestaltung in zwei Stufen als Optionen der Rolle
 - **Fußbereich:** eigener Handlungsaufruf (Website → Kopf, Fuß & Hinweis), Dichte „Kompakt“ (Design) – auf dem Telefon etwa
   halbe Höhe; der haftende Kopf gleitet am Seitenende mit dem Fuß weg
 - **Video-Links in der Lightbox** (Website → Kopf, Fuß & Hinweis, Standard aus): Links und Buttons auf YouTube oder Vimeo

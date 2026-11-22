@@ -38,5 +38,7 @@ final class AsBlock
         public readonly ?string $background = null,
         /** @var array<string, string>|null Strukturierte Daten (schema.org), z. B. ['type' => 'faq', …] */
         public readonly ?array $jsonld = null,
+        /** @var bool|list<string> Listen-Vorlagen (Data\ListTemplates): true bzw. Liste weiterer Felder, die beim Block bleiben */
+        public readonly bool|array $listTemplate = false,
     ) {}
 }

@@ -146,6 +146,7 @@
     <div class="bb" hidden>
       <button type="button" class="bb__parent" data-bb-parent hidden title="Das Layout auswählen, in dessen Spalte dieser Block steht">Layout ›</button>
       <span class="bb__label" data-bb-label draggable="true" title="Ziehen zum Verschieben"></span>
+      <span class="bb__lock" data-bb-lock hidden><svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true" focusable="false"><path fill="currentColor" d="M5 7V5a3 3 0 0 1 6 0v2h.5A1.5 1.5 0 0 1 13 8.5v5a1.5 1.5 0 0 1-1.5 1.5h-7A1.5 1.5 0 0 1 3 13.5v-5A1.5 1.5 0 0 1 4.5 7H5Zm1.5 0h3V5a1.5 1.5 0 0 0-3 0v2Z"/></svg><span data-bb-lock-text>Gesperrt</span></span>
       <button type="button" data-bb-edit class="bb__main">Bearbeiten</button>
       <button type="button" data-bb-up title="Nach oben" aria-label="Nach oben">↑</button>
       <button type="button" data-bb-down title="Nach unten" aria-label="Nach unten">↓</button>
@@ -335,7 +336,8 @@
   }
 
   // Rückfrage für andere Module (z. B. Präsenz: assets/editor/presence.js)
-  window.FluidEditor = { ...(window.FluidEditor || {}), ask, discard: () => dirty.clear() };
+  // api: auch für Formulare der Seitenleiste (form.js, z. B. Listen-Vorlagen verwalten)
+  window.FluidEditor = { ...(window.FluidEditor || {}), ask, api, discard: () => dirty.clear() };
 
   // ------------------------------------------------------------------ Status
 
@@ -394,7 +396,11 @@
     moreBtn.setAttribute('aria-expanded', 'false');
     document.dispatchEvent(new CustomEvent(b.dataset.noticeEvent, { detail: { button: b } }));
   }));
-  document.addEventListener('fluid:notice', (e) => say(String(e.detail || ''), true));
+  // detail: Text (Hinweis) oder {text, error} – z. B. Meldungen der Formulare (form.js)
+  document.addEventListener('fluid:notice', (e) => {
+    const d = e.detail;
+    if (d && typeof d === 'object') say(String(d.text || ''), !!d.error); else say(String(d || ''), true);
+  });
 
   // Abmelden (Api::logout): vorher ungespeicherte Änderungen klären, danach die Seite als Besucher laden
   $('[data-logout]')?.addEventListener('click', async () => {
@@ -1738,6 +1744,16 @@
     st.toggleAttribute('data-noperm', sec.hasAttribute('data-record') || !may('publishSlice'));
     st.textContent = offline ? 'Offline' : 'Online';
     st.classList.toggle('is-off', offline);
+    // Gesperrte Blöcke und Blöcke ohne Modulrecht (data-readonly, Klxm\Fluid\Lock): sichtbar und verschiebbar, nicht änderbar
+    const ro = sec.dataset.readonly || '';
+    const lockEl = $('[data-bb-lock]');
+    lockEl.hidden = !ro && !sec.hasAttribute('data-locked');
+    $('[data-bb-lock-text]').textContent = ro === 'perm' ? 'Kein Recht' : 'Gesperrt';
+    lockEl.title = ro === 'perm' ? 'Für diesen Blocktyp fehlt Ihnen das Modulrecht – verschieben geht, ändern nicht.'
+      : ro ? 'Gesperrter Block – verschieben geht, ändern und löschen nur mit dem Recht „Blöcke gestalten und sperren“.' : 'Gesperrter Block – Sie dürfen ihn trotzdem ändern.';
+    $('[data-bb-edit]').toggleAttribute('data-noperm', !!ro);
+    $('[data-bb-delete]').toggleAttribute('data-noperm', !!ro);
+    if (ro) st.setAttribute('data-noperm', '');
     const sib = siblings(sec);
     const i = sib.indexOf(sec);
     $('[data-bb-up]').disabled = i <= 0;
@@ -1876,7 +1892,7 @@
       emptyHint();
       el.scrollIntoView({ block: 'center', behavior: 'smooth' });
       select(el);
-      openPanel(el);
+      if (!el.dataset.readonly) openPanel(el);
     } catch (err) {
       say(err.message, true);
     }
@@ -2142,6 +2158,7 @@
     paste.disabled = !c || inCol;
     paste.textContent = c ? `${c.cut ? 'Verschieben hierher' : 'Einfügen darunter'}: „${c.label}“` : 'Einfügen darunter';
     bbMenu.querySelector('[data-bb-op="duplicate"]').disabled = inCol;
+    bbMenu.querySelector('[data-bb-op="cut"]').hidden = !!sec?.dataset.readonly;   // gesperrt: Original bliebe stehen
     bbMenu.querySelector('[data-bb-op="collapse"]').textContent = sec?.classList.contains('fluid-collapsed') ? 'Aufklappen' : 'Einklappen';
   });
   document.addEventListener('click', () => { bbMenu.hidden = true; bbMore.setAttribute('aria-expanded', 'false'); });
@@ -2373,7 +2390,13 @@
     const secs = scope.matches?.('section[data-block]') ? [scope] : [...scope.querySelectorAll('section[data-block]')];
     secs.forEach((sec) => {
       sec.querySelectorAll(':scope > .fluid-handle, [data-lay-col] > .fluid-handle').forEach((x) => x.remove());
-      requestAnimationFrame(() => { spaceHandles(sec); colHandles(sec); fieldHandles(sec); });
+      // Greifer: Abstände nur mit Recht der Gestaltung, Spalten und Felder nur bei änderbaren Blöcken
+      requestAnimationFrame(() => {
+        if (sec.dataset.readonly) return;
+        if (may('design')) spaceHandles(sec);
+        colHandles(sec);
+        fieldHandles(sec);
+      });
     });
   }
 

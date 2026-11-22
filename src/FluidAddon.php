@@ -83,11 +83,15 @@ final class FluidAddon extends Addon
             ->ensureColumn(new Column('user', 'varchar(191)', true))
             ->setPrimaryKey(['table_name', 'dataset_id'])
             ->ensure();
+        // Listen-Vorlagen der Datenliste (Data\ListTemplates)
+        Data\ListTemplates::install();
         \Redaxo\Core\Content\ArticleSliceHistory::checkTables();
         // Assets der Kits aus Projekt und Composer-Paketen nach assets/fluid-kits/ (das Kit fluid bringt der Core mit)
         Kit::publishAll();
         // Geänderte Standardwerte von Blockfeldern: bestehende Blöcke behalten ihr Aussehen (einmal je Änderung)
         DefaultChanges::run();
+        // Rechte der Gestaltung (1.0.0-beta.10): bestehende Rollen behalten alles (einmal)
+        Perm::migrateRoles();
     }
 
     /**
@@ -98,7 +102,7 @@ final class FluidAddon extends Addon
     #[Override]
     public function getOwnedSchema(): OwnedSchema
     {
-        return new OwnedSchema(tables: [PageSettings::TABLE, ...Routing\Schema::TABLES, Activity::TABLE, Data\Inbox::TABLE, Mcp\Tokens::TABLE]);
+        return new OwnedSchema(tables: [PageSettings::TABLE, ...Routing\Schema::TABLES, Activity::TABLE, Data\Inbox::TABLE, Mcp\Tokens::TABLE, Data\ListTemplates::TABLE]);
     }
 
     /** Backend: AddOns → fluid (Status, Hilfe) – nur Admins */
@@ -123,6 +127,9 @@ final class FluidAddon extends Addon
     {
         // Kategorie „Seitenvorlagen“: nicht löschbar, solange fluid installiert ist
         PageTemplatesGuard::boot();
+        // Rechte der Gestaltung (Rolle → Optionen) und gesperrte Blöcke im Backend
+        Perm::register();
+        Lock::boot();
         // navigation_array: Start der Website (Navigation ohne start) = Unterseiten einer Landing-Domain mit eigenem Seitenbaum
         Extension::register(\Klxm\NavigationArray\ExtensionPoint\NavigationStart::class, static function (\Klxm\NavigationArray\ExtensionPoint\NavigationStart $ep): mixed {
             $landing = Routing\Router::landing();

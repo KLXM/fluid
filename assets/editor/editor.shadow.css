@@ -122,6 +122,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .bb__label { padding: 0 8px; font-size: 12px; opacity: .75; max-width: 26ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .bb__main { background: var(--accent) !important; color: var(--accent-ink) !important; }
 .bb .is-off { color: #ffb4a8; }
+.bb__lock { display: inline-flex; align-items: center; gap: 4px; padding: 0 8px; min-height: 24px; border-radius: 6px; font-size: 12px; font-weight: 600; background: rgb(255 255 255 / .14); }
+.bb__lock[hidden] { display: none; }
 .bb__danger:hover { background: var(--danger) !important; }
 .addbtn {
   position: fixed; z-index: 2147482900; width: 36px; height: 36px; border-radius: 50%;
@@ -476,3 +478,31 @@ textarea[data-blocks-rte] { display: none !important; }
 .bb__parent:hover { opacity: 1; text-decoration: underline; }
 .tpls .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .tpls__actions a.btn { color: inherit; text-decoration: none; display: inline-flex; align-items: center; }
+
+/* ------------------------------------------------------------ Listen-Vorlagen (Feld „Vorlage“, Data\ListTemplates) */
+.ltpl { display: grid; gap: 8px; min-width: 0; margin: 0; padding: 0; border: 0; }
+.ltpl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr)); gap: 6px; }
+.ltpl-tile { position: relative; display: grid; gap: 4px; align-content: start; padding: 6px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); cursor: pointer; font-size: 12px; line-height: 1.3; }
+.ltpl-tile[hidden] { display: none; }
+.ltpl-tile:hover { border-color: var(--ink); }
+.ltpl-tile:has(input:checked) { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.ltpl-tile:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+.ltpl-tile input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.ltpl-tile__name { font-weight: 600; }
+.ltpl-tile__meta { color: var(--muted); font-size: 11px; }
+.ltpl-tile__own { display: grid; place-items: center; height: 3.6rem; color: var(--muted); }
+.ltpl-svg { display: block; width: 100%; height: 3.6rem; color: var(--ink); }
+.ltpl-svg__b { fill: currentColor; opacity: .22; }
+.ltpl-svg__t { fill: currentColor; opacity: .6; }
+.ltpl-svg__i { fill: var(--accent); opacity: .4; }
+.ltpl-svg__c { fill: var(--accent); opacity: .75; }
+.ltpl-actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.ltpl-actions [hidden] { display: none; }
+.ltpl-save { flex: 1 1 100%; }
+.ltpl-save > summary { display: inline-flex; align-items: center; list-style: none; }
+.ltpl-save > summary::-webkit-details-marker { display: none; }
+.ltpl-save__row { display: grid; grid-template-columns: 1fr auto; gap: 6px; margin-top: 6px; align-items: end; }
+.ltpl-save__row .rex-field-label { grid-column: 1 / -1; }
+.ltpl-manage { display: flex; flex-wrap: wrap; gap: 6px; flex: 1 1 100%; }
+.ltpl-warn { color: var(--danger-ink, var(--danger)); }
+[data-ltpl-off] { display: none !important; }

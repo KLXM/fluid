@@ -6,7 +6,7 @@ Technische Doku zu fluid für REDAXO 6. Einstieg und Installation: [README](../R
 
 - [Ein eigener Block](#ein-eigener-block) · [Eigene Kits](#eigene-kits)
 - [Extension Points](#extension-points)
-- [YForm: Formulare und Datenlisten](#yform-formulare-und-datenlisten)
+- [YForm: Formulare und Datenlisten](#yform-formulare-und-datenlisten) · [Listen-Vorlagen](#listen-vorlagen)
 - [Blöcke in YForm-Tabellen](#blöcke-in-yform-tabellen-feld-fluid-blöcke)
 - [Adressen, Domains, SEO](#adressen-domains-seo)
 - [Geänderte Standardwerte](#geänderte-standardwerte) · [Interaktives Bild](#interaktives-bild) · [Video-Links in der Lightbox](#video-links-in-der-lightbox) · [Termine (.ics)](#termine-ics) · [Fußbereich](#fußbereich)
@@ -365,6 +365,7 @@ Extension::register('FLUID_KIT', static fn (ExtensionPoint $ep) => 'shop.example
 | `FLUID_DEFAULT_CHANGES` | Änderungen (Kennung => [Typ => [Feld => bisher]]) | – | bestehende Blöcke behalten ihr Aussehen (siehe [Geänderte Standardwerte](#geänderte-standardwerte)) |
 | `FLUID_HOTSPOT_EDITORS` | Liste (`url`, `label`, `title`) | – | weiterer Editor für das Feld „Markierungen“ (siehe [Interaktives Bild](#interaktives-bild)) |
 | `FLUID_HOTSPOT_TERM` | `null` | `key` | Glossar-Begriff einer Markierung: `['term', 'short', 'url']` |
+| `FLUID_LIST_TEMPLATES` | Vorlagen (Schlüssel => `name`, `options`, `tables`, `default`, `block`) | `table`, `block` | Listen-Vorlagen vordefinieren (siehe [Listen-Vorlagen](#listen-vorlagen)) |
 
 Das Routing hat eigene Extension Points als Klassen (wie der Core), Namespace `Klxm\Fluid\Routing\ExtensionPoint`:
 
@@ -419,6 +420,29 @@ fluid arbeitet mit den Mitteln von YForm 6 – Tabellen und Formulare sind Klass
   Canonical des Eintrags, Eintrag in der Sitemap, 301 von alten `?eintrag=`-Links, 404 für fehlende Einträge.
   Wann Blog, wann Datenliste? Blog = Beiträge mit Blöcken, Entwurf und Versionen; Datenliste = gleichförmige Einträge
   mit festen Feldern, gepflegt in der YForm-Maske.
+
+## Listen-Vorlagen
+
+Gespeicherte Darstellungen der Datenliste (`Klxm\Fluid\Data\ListTemplates`, Tabelle `rex_fluid_list_template`) je YForm-Tabelle.
+Eine Vorlage legt Darstellung, Bild-, Text- und Zusatzfeld, Sortierung, Spalten-Sortierung, Besucher-Filter und Breite fest; beim
+Block bleiben Überschrift, Tabelle, Titelfeld, Bedingung, Anzahl, Blättern, Detailansicht und Menü (`ListTemplates::BLOCK_KEYS`).
+`BlockModule::data()`/`block()` legen die Werte der gewählten Vorlage über die Blockdaten – Views bekommen normale Daten. Ohne
+gewählte Vorlage (Feld `template` leer) ändert sich nichts; fehlt eine gewählte Vorlage, gelten die eigenen Werte des Blocks.
+
+```php
+// kit.php – Vorlagen des Kits (Schlüssel „kit:team“, nur lesbar); Feldwerte ohne Tabellen-Präfix
+'list_templates' => [
+    'team' => ['name' => 'Team mit Foto', 'tables' => ['rex_yf_team'], 'default' => true,
+        'options' => ['variant' => 'cards', 'size' => 's', 'image_field' => 'foto', 'meta_field' => 'funktion']],
+],
+
+// Extension Point – Vorlagen einer Erweiterung (Schlüssel „ext:…“)
+Extension::register('FLUID_LIST_TEMPLATES', static fn (ExtensionPoint $ep) => $ep->subject + ['kompakt' => ['name' => 'Kompakt', 'options' => ['variant' => 'list']]]);
+```
+
+Eigene Listenblöcke nehmen teil mit `#[AsBlock(listTemplate: true)]` (oder einer Liste weiterer Felder, die beim Block bleiben) und
+einem Feld `#[ListTemplate('Vorlage')] public string $template = '';`. Verwalten (Speichern, Standard, Überschreiben, Umbenennen,
+Löschen) in der Seitenleiste mit `fluid[design_full]`; Vorschläge je Tabelle legt `ListTemplates::seed()` beim ersten Öffnen an.
 
 ## Blöcke in YForm-Tabellen: Feld „Fluid-Blöcke“
 
@@ -1005,7 +1029,7 @@ Ohne Live-Kanal funktioniert es auch, dann mit 15 Sekunden Verzögerung.
 | `fluid:kit:create name` | eigenes Kit im Projekt anlegen (`--label`, `--parent`, `--view=hero,cards`, `--template`) |
 | `fluid:kit:ncss-update --from=…` | NativeCSS im Kit „NativeCSS“ aktualisieren – siehe [NativeCSS aktualisieren](#nativecss-aktualisieren) |
 | `fluid:search-index` | Suchindex neu aufbauen (sonst automatisch nach dem Veröffentlichen) |
-| `fluid:selftest` | Live-Aktualisierung, Präsenz, Bearbeitungssperre und Blöcke prüfen (Views ohne Code hinter `//`, Inhaltsverzeichnis, Video-Schalter …) |
+| `fluid:selftest` | Live-Aktualisierung, Präsenz, Bearbeitungssperre, Blöcke (Views ohne Code hinter `//`, Inhaltsverzeichnis, Video-Schalter …), Rechte und Listen-Vorlagen prüfen |
 | `fluid:upgrade:defaults` | geänderte Standardwerte in bestehende Blöcke schreiben (läuft auch bei `migrate`; `--dry-run` zählt nur) |
 | `fluid:upgrade:slices` | Blöcke älterer REDAXO-6-Datenbanken in die Spalte `data` übernehmen (`--drop-old` entfernt die alten Spalten) |
 
@@ -1019,6 +1043,16 @@ fluid nutzt die Rechte des Cores – eine Rolle wirkt auf der Website genau wie 
   neue Seiten bzw. Menüpunkte, `editArticle[]`/`editCategory[]` Seiteneinstellungen, `moveArticle[]`/`moveCategory[]`,
   `publishArticle[]`/`publishCategory[]`, `deleteArticle[]`/`deleteCategory[]`, `article2category[]` (Menüpunkt ja/nein),
   `copyContent[]` (Inhalt aus anderer Sprache). Die Leiste zeigt nur, was erlaubt ist; die API prüft jede Aktion.
+- **Erlaubte Blöcke** sind die Modulrechte der Rolle – fluid hat dafür kein eigenes Recht. Die Blockauswahl zeigt nur erlaubte
+  Blöcke; Blöcke anderer Module stehen im Editor als „Kein Recht“ (verschiebbar, nicht änderbar); die API prüft Einfügen, Speichern,
+  Online-Schalter und Löschen.
+- **Gestaltung in zwei Stufen** (Optionen der Rolle, `Klxm\Fluid\Perm`): `fluid[design]` – Abschnitt eines Blocks (Hintergrund,
+  Abstände auch per Greifer, Sprungmarke, Einblend-Effekt); `fluid[design_full]` – zusätzlich Blöcke sperren und entsperren, gesperrte
+  Blöcke ändern und löschen, Listen-Vorlagen verwalten. Ohne Recht bleiben die gespeicherten Werte (`Lock::tunes()`), die Seitenleiste
+  zeigt den Abschnitt nicht. `migrate` gibt bestehenden Rollen einmal beide Optionen (`Perm::migrateRoles()`), neue Rollen haben sie nicht.
+- **Gesperrte Blöcke** (`Klxm\Fluid\Lock`, Abschnitts-Option `lock` im Slice): sichtbar und verschiebbar, ändern, ausblenden und löschen
+  nur mit `fluid[design_full]` – geprüft in der API, im MCP-Server und im Backend des Cores (`SliceMenu`, `SliceUpdating`,
+  `SliceDeleting`). `Lock::reason($user, $slice)` liefert `''`, `'perm'` oder `'lock'`; der Editor bekommt es als `data-readonly`.
 - Design und Website-Einstellungen: Admins. YForm-Tabellen: Rechte von YForm (Tabellen ansehen/bearbeiten).
 
 ## Gastzugang (für AddOns)

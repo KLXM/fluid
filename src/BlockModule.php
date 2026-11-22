@@ -172,7 +172,8 @@ abstract class BlockModule extends Module
      */
     public function data(): array
     {
-        return FieldForm::withDefaults(static::fields(), $this->values(), static::variants());
+        // Listen-Vorlage (Data\ListTemplates): Werte der gewählten Vorlage über die Blockdaten – ohne Vorlage unverändert
+        return Data\ListTemplates::resolve(static::class, FieldForm::withDefaults(static::fields(), $this->values(), static::variants()));
     }
 
     /**
@@ -471,7 +472,10 @@ abstract class BlockModule extends Module
         return ' data-block="' . $slice->id . '" data-type="' . escape($type) . '" data-label="' . escape(static::label()) . '"'
             . (null !== $col ? ' data-col="' . $col . '"' : '')
             . ($this instanceof LayoutBlock ? ' data-layout' : '')
-            . (1 !== $slice->status ? ' data-offline' : '');
+            . (1 !== $slice->status ? ' data-offline' : '')
+            // Sperre und Modulrechte (Lock, Perm): Leiste und Seitenleiste zeigen nur, was erlaubt ist
+            . (Lock::locked($this->tunes) ? ' data-locked' : '')
+            . ('' !== ($ro = Lock::reason(Editing::user(), $slice)) ? ' data-readonly="' . $ro . '"' : '');
     }
 
     /**
@@ -509,7 +513,7 @@ abstract class BlockModule extends Module
     /** Block aus Daten (ohne Slice) – z. B. YForm-Feld „Fluid-Blöcke“, siehe BlockData */
     public static function blockFromData(string $id, array $data, array $tunes = [], ?Block $prev = null, int $articleId = 0): Block
     {
-        return new Block(null, static::class, FieldForm::withDefaults(static::fields(), $data, static::variants()), $tunes, $prev, $id, $articleId);
+        return new Block(null, static::class, Data\ListTemplates::resolve(static::class, FieldForm::withDefaults(static::fields(), $data, static::variants())), $tunes, $prev, $id, $articleId);
     }
 
     /**
@@ -545,7 +549,7 @@ abstract class BlockModule extends Module
         return new Block(
             $this->slice,
             static::class,
-            null !== $data ? FieldForm::withDefaults(static::fields(), $data, static::variants()) : $this->data(),
+            null !== $data ? Data\ListTemplates::resolve(static::class, FieldForm::withDefaults(static::fields(), $data, static::variants())) : $this->data(),
             $tunes ?? $this->tunes,
             $prev,
         );

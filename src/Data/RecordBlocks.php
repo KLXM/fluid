@@ -153,7 +153,7 @@ final class RecordBlocks
                 $i = $index($uid);
                 $m = $module($blocks[$i]['module']);
 
-                return ['html' => FieldForm::render($m, $blocks[$i]['data'], $blocks[$i]['tunes'], 'f', false), 'label' => $m::label()];
+                return ['html' => FieldForm::render($m, $blocks[$i]['data'], $blocks[$i]['tunes'], 'f', false, lockable: false), 'label' => $m::label()];
             case 'preview':
                 $i = $index($uid);
                 [$blocks[$i]['data'], $blocks[$i]['tunes']] = Api::applyInput($blocks[$i]['data'], $blocks[$i]['tunes']);
@@ -164,7 +164,7 @@ final class RecordBlocks
                 $m = $module($blocks[$i]['module']);
                 [$data, $tunes] = Api::applyInput($blocks[$i]['data'], $blocks[$i]['tunes']);
                 $blocks[$i]['data'] = FieldForm::withDefaults($m::fields(), FieldForm::normalize($m::fields(), $data), $m::variants());
-                $blocks[$i]['tunes'] = $tunes;
+                $blocks[$i]['tunes'] = \Klxm\Fluid\Lock::tunes($user, $blocks[$i]['tunes'], $tunes);   // Gestaltung nur mit Recht
                 $store();
 
                 return $one($i);

@@ -42,7 +42,7 @@ final class BlocksApi extends ApiFunction
             $data = json_decode(Request::post('data', 'string', ''), true);
             $tunes = json_decode(Request::post('tunes', 'string', ''), true);
             self::send(['ok' => true, 'label' => $module::label(),
-                'html' => FieldForm::render($module, \is_array($data) ? $data : [], \is_array($tunes) ? $tunes : [], 'fb', true)]);
+                'html' => FieldForm::render($module, \is_array($data) ? $data : [], \is_array($tunes) ? $tunes : [], 'fb', true, lockable: false)]);
         } catch (Throwable $e) {
             $code = (int) $e->getCode();
             self::send(['ok' => false, 'error' => $e->getMessage()], $code >= 400 && $code < 600 ? $code : 400);
