@@ -2,6 +2,8 @@
 
 namespace Klxm\Fluid;
 
+use Klxm\Fluid\Media\ImageEffect;
+use Klxm\Fluid\Media\ImageFit;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\ArticleRevision;
 use Redaxo\Core\Content\Module;
@@ -102,6 +104,11 @@ final class Toolbar
             'glossary' => $guest ? null : Glossary\Glossary::toolbar($user),
             // Addon image_editor (optional): Bilder auf der Website bearbeiten
             'imageEditor' => !$guest && class_exists(\Klxm\ImageEditor\ImageEditorAddon::class) ? \Klxm\ImageEditor\ImageEditorAddon::config() : null,
+            // Bild an dieser Stelle (Effekt, Darstellung, Ausschnitt): Auswahl mit Beschriftungen aus lang/
+            'imagePlace' => [
+                'effects' => array_map(static fn (ImageEffect $e) => [$e->value, $e->label()], ImageEffect::cases()),
+                'fits' => array_map(static fn (ImageFit $f) => [$f->value, $f->label()], ImageFit::cases()),
+            ],
             'css' => $addon->getAssetsUrl('editor/editor.shadow.css') . '?v=' . self::version('editor/editor.shadow.css'),
             'rteCss' => $addon->getAssetsUrl('rte.css') . '?v=' . self::version('rte.css'),
             // Versionen-Ansicht (Zeitleiste, Vorschau, Vergleich) – lädt erst beim Öffnen

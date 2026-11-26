@@ -2,6 +2,7 @@
 
 namespace Klxm\Fluid;
 
+use Klxm\Fluid\Media\ImagePlaces;
 use Klxm\Fluid\Form\FieldForm;
 use Klxm\Fluid\Form\Stored;
 use Override;
@@ -314,6 +315,7 @@ abstract class BlockModule extends Module
     {
         $outer = Block::$rendering;   // Layout: Spalten-Blöcke werden innerhalb seiner View ausgegeben
         Block::$rendering = $b;
+        ImagePlaces::enter($b->data);
         try {
             return (static function (string $__file, Block $b, array $d, BlockModule $m): string {
                 ob_start();
@@ -327,6 +329,7 @@ abstract class BlockModule extends Module
                 return VideoLinks::optOut($html, $b->data);
             })(static::viewFile($b), $b, $b->data, $this);
         } finally {
+            ImagePlaces::leave();
             Block::$rendering = $outer;
         }
     }
@@ -339,9 +342,11 @@ abstract class BlockModule extends Module
         $m->block = $b;
         $outer = Block::$rendering;
         Block::$rendering = $b;
+        ImagePlaces::enter($b->data);
         try {
             return $m->output();
         } finally {
+            ImagePlaces::leave();
             Block::$rendering = $outer;
         }
     }

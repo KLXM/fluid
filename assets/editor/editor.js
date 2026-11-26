@@ -41,6 +41,15 @@
     if ((await Promise.all(waits)).some((ok) => ok === false)) throw new Error('Abgebrochen.');
   }
 
+  // Regeln von InlineStyle aus API-Antworten (die Seite hat sie nur für den ersten Aufruf im Kopf): mit der Nonce der Seite
+  const cssNonce = document.querySelector('style[nonce], script[nonce]')?.nonce || '';
+  function addCss(css) {
+    const st = document.createElement('style');
+    if (cssNonce) st.nonce = cssNonce;
+    st.textContent = css;
+    document.head.append(st);
+  }
+
   async function api(action, data = {}) {
     if (WRITES.has(action)) await beforeSave(action);
     const fd = data instanceof FormData ? data : new FormData();
@@ -63,6 +72,7 @@
     }
     const json = await res.json().catch(() => ({ ok: false, error: `Ungültige Antwort (${res.status}).` }));
     if (!json.ok) throw new Error(json.error || 'Unbekannter Fehler.');
+    if (json.css) addCss(json.css);
     document.dispatchEvent(new CustomEvent('fluid:api-done', { detail: { action, fd, json } }));
     // Server verlangt neu laden (z. B. erster Block eines Datensatzes)
     if (json.refresh) { dirty?.clear(); location.reload(); return new Promise(() => {}); }
@@ -1857,7 +1867,6 @@
     const barH = bar.offsetHeight;
     blockbar.hidden = r.bottom < barH + 40 || r.top > innerHeight - 40;
     blockbar.style.top = `${Math.max(r.top + 8, barH + 8)}px`;
-    blockbar.style.left = `${Math.max(8, r.left + 8)}px`;
     // Verschachtelt (Spalte eines Layouts): Pfad „Layout › Spalte n/m · Block“, „Layout ›“ wählt das Layout aus
     const col = sec.closest('[data-lay-col]');
     const parentSec = col?.parentElement?.closest('[data-block]') || null;
@@ -1886,6 +1895,9 @@
     const i = sib.indexOf(sec);
     $('[data-bb-up]').disabled = i <= 0;
     $('[data-bb-down]').disabled = i === sib.length - 1;
+    // rechts am Block wie die Slice-Leiste im REDAXO-Backend – erst jetzt, die Breite hängt von Bezeichnung und Knöpfen ab
+    const bw = blockbar.offsetWidth;
+    blockbar.style.left = `${Math.max(8, Math.min(innerWidth - bw - 8, r.right - bw - 8))}px`;
     // „+“ an der Unterkante des Blocks – bei hohen Blöcken am unteren Fensterrand, solange der Block sichtbar ist
     addbtn.hidden = !panel.hidden || r.bottom < barH || r.top > innerHeight;
     addbtn.style.top = `${Math.min(r.bottom - 18, innerHeight - 52)}px`;
@@ -2200,7 +2212,12 @@
 
   // ------------------------------------------------------------------ Bilder bearbeiten (Addon image_editor, optional)
 
-  const ieBtn = h('<div class="iebtn" hidden><button type="button" data-ie="edit">✎ Bearbeiten</button><button type="button" data-ie="adjust">◐ Anpassen</button><button type="button" data-ie="crop" hidden>⬚ Ausschnitt</button></div>');
+  const ieBtn = h(`<div class="iebtn" hidden>
+      <button type="button" data-ie="place" title="Nur an dieser Stelle: Effekt, Darstellung im Rahmen, Ausschnitt">◧ Hier anpassen</button>
+      <button type="button" data-ie="edit" title="Bild im Medienpool bearbeiten – gilt für alle Verwendungen">✎ Bearbeiten</button>
+      <button type="button" data-ie="adjust" title="Farben im Medienpool anpassen – gilt für alle Verwendungen">◐ Anpassen</button>
+      <button type="button" data-ie="crop" title="Zuschnitt für dieses Format im Medienpool – gilt für alle Verwendungen">⬚ Ausschnitt</button>
+    </div>`);
   root.append(ieBtn);
   let ieImg = null;
   // Skript-Lader in form.js: CSS und Dialog gehören in diese Ebene
@@ -2209,49 +2226,252 @@
     root.append(h(`<link rel="stylesheet" href="${esc(unamp(e.detail.css))}">`));
     window.ImageEditor.setLayer(layer);
   });
-  if (cfg.imageEditor) {
-    // Bild unter dem Zeiger – auch wenn eine Ebene darüber liegt (ganze Karte als Link mit ::after, Verlauf, Beschriftung);
-    // dann trifft mouseover nie das <img> (wie KLXM Studio _media.js imgAt)
-    const imgAt = (e) => e.target.closest?.('img[data-ie-file]')
-      || document.elementsFromPoint(e.clientX, e.clientY).find((x) => x.matches?.('img[data-ie-file]')) || null;
-    let ieRaf = 0;
-    main.addEventListener('mousemove', (e) => {
-      if (ieRaf) return;
-      ieRaf = requestAnimationFrame(() => { ieRaf = 0; showIe(imgAt(e)); });
-    }, { passive: true });
-    const showIe = (img) => {
-      if (!img || img === ieImg) return;
-      ieImg = img;
-      // „Ausschnitt“ nur, wenn das Bild in einem festen Format steht (data-ie-ratio)
-      ieBtn.querySelector('[data-ie="crop"]').hidden = !img.dataset.ieRatio;
-      ieBtn.hidden = false;
-      const r = img.getBoundingClientRect();
-      ieBtn.style.top = `${Math.max(bar.offsetHeight + 8, r.top + 10)}px`;
-      ieBtn.style.left = `${Math.max(8, r.right - ieBtn.offsetWidth - 10)}px`;
-    };
-    window.addEventListener('scroll', () => { ieBtn.hidden = true; ieImg = null; }, { passive: true });
-    ieBtn.addEventListener('click', async (e) => {
-      const which = e.target.closest('[data-ie]')?.dataset.ie;
-      const img = ieImg;
-      const sec = img?.closest('[data-block]');
-      if (!which || !img || !sec) return;
-      ieBtn.hidden = true;
-      try {
-        const IE = await window.BlocksPick.imageEditor(cfg.imageEditor);
-        const opts = { file: img.dataset.ieFile, api: cfg.imageEditor.api };
-        const item = which === 'adjust' ? await IE.adjust(opts)
-          : which === 'crop' ? await IE.crop({ ...opts, ratio: img.dataset.ieRatio })
-          : await IE.open({ ...opts, tool: 'crop' });
-        if (!item) return;
-        const res = await api('render', { slice: sec.dataset.block });
-        apply(res, sec);
-        say('Bild gespeichert – das Original bleibt im Medienpool erhalten.');
-      } catch (err) {
-        say(err.message, true);
-      }
-      ieImg = null;
-    });
+  // Bild unter dem Zeiger – auch wenn eine Ebene darüber liegt (ganze Karte als Link mit ::after, Verlauf, Beschriftung);
+  // dann trifft mouseover nie das <img> (wie KLXM Studio _media.js imgAt)
+  const IMG = 'img[data-ie-file], img[data-img-path]';
+  const imgAt = (e) => e.target.closest?.(IMG) || document.elementsFromPoint(e.clientX, e.clientY).find((x) => x.matches?.(IMG)) || null;
+  let ieRaf = 0;
+  main.addEventListener('mousemove', (e) => {
+    if (ieRaf || !ipPop.hidden) return;
+    ieRaf = requestAnimationFrame(() => { ieRaf = 0; showIe(imgAt(e)); });
+  }, { passive: true });
+  function showIe(img) {
+    if (!img || img === ieImg) return;
+    ieImg = img;
+    // Medium (image_editor) und „nur hier“ (Feldpfad, nicht bei gesperrten Blöcken)
+    const media = !!(cfg.imageEditor && img.dataset.ieFile);
+    const here = !!img.dataset.imgPath && !img.closest('[data-block]')?.dataset.readonly;
+    ieBtn.querySelector('[data-ie="place"]').hidden = !here;
+    ieBtn.querySelector('[data-ie="edit"]').hidden = !media;
+    ieBtn.querySelector('[data-ie="adjust"]').hidden = !media;
+    ieBtn.querySelector('[data-ie="crop"]').hidden = !media || !img.dataset.ieRatio;
+    ieBtn.hidden = !media && !here;
+    if (ieBtn.hidden) return;
+    const r = img.getBoundingClientRect();
+    let top = Math.max(bar.offsetHeight + 8, r.top + 10);
+    const left = Math.max(8, r.right - ieBtn.offsetWidth - 10);
+    // die Blockleiste sitzt oben rechts am Block – liegt das Bild dort, weicht der Knopf darunter aus
+    if (!blockbar.hidden) {
+      const b = blockbar.getBoundingClientRect();
+      if (left < b.right && left + ieBtn.offsetWidth > b.left && top < b.bottom && top + ieBtn.offsetHeight > b.top) top = b.bottom + 6;
+    }
+    ieBtn.style.top = `${top}px`;
+    ieBtn.style.left = `${left}px`;
   }
+  window.addEventListener('scroll', () => { ieBtn.hidden = true; ieImg = null; }, { passive: true });
+  ieBtn.addEventListener('click', async (e) => {
+    const which = e.target.closest('[data-ie]')?.dataset.ie;
+    const img = ieImg;
+    const sec = img?.closest('[data-block]');
+    if (!which || !img || !sec) return;
+    ieBtn.hidden = true;
+    ieImg = null;
+    if (which === 'place') {
+      ipOpen(img, sec);
+      return;
+    }
+    try {
+      const IE = await window.BlocksPick.imageEditor(cfg.imageEditor);
+      const opts = { file: img.dataset.ieFile, api: cfg.imageEditor.api };
+      const item = which === 'adjust' ? await IE.adjust(opts)
+        : which === 'crop' ? await IE.crop({ ...opts, ratio: img.dataset.ieRatio })
+        : await IE.open({ ...opts, tool: 'crop' });
+      if (!item) return;
+      const res = await api('render', { slice: sec.dataset.block });
+      apply(res, sec);
+      say('Bild gespeichert – das Original bleibt im Medienpool erhalten.');
+    } catch (err) {
+      say(err.message, true);
+    }
+  });
+
+  // ------------------------------------------------------------------ Bild an dieser Stelle (Klxm\Fluid\Media\ImagePlace)
+
+  // Vorschau und Speichern über den Server (Aktion preview, patch „@img:pfad“) – die Darstellung entsteht nur in PHP.
+  // Gespeichert wird mit „Speichern“ zusammen mit den übrigen Änderungen (patchBlock).
+  const IP = cfg.imagePlace || { effects: [], fits: [] };
+  const ipRange = (k, label, min, max) => `<label class="imgpop__r"><span>${label}</span>
+      <input type="range" name="${k}" min="${min}" max="${max}" step="${k === 'z' ? 10 : k === 'x' || k === 'y' ? 1 : 10}"><output></output></label>`;
+  const ipPop = h(`<form class="recpop imgpop" hidden role="dialog" aria-modal="false" aria-labelledby="fluid-imgpop-l">
+      <strong class="recpop__l" id="fluid-imgpop-l">Bild an dieser Stelle</strong>
+      <div class="imgpop__tabs" role="tablist" aria-label="Einstellung">
+        <button type="button" role="tab" data-ip-tab="fx" aria-selected="true">Effekt</button>
+        <button type="button" role="tab" data-ip-tab="fit" aria-selected="false">Darstellung</button>
+        <button type="button" role="tab" data-ip-tab="crop" aria-selected="false">Ausschnitt</button>
+      </div>
+      <div data-ip-panel="fx" role="tabpanel">
+        <div class="imgpop__opts" role="radiogroup" aria-label="Effekt">
+          <label><input type="radio" name="fx" value=""> Wie im Medienpool</label>
+          ${IP.effects.map(([v, l]) => `<label><input type="radio" name="fx" value="${esc(v)}"> ${esc(l)}</label>`).join('')}
+        </div>
+        ${ipRange('s', 'Sättigung', 0, 200)}${ipRange('b', 'Helligkeit', 50, 150)}${ipRange('c', 'Kontrast', 50, 150)}
+      </div>
+      <div data-ip-panel="fit" role="tabpanel" hidden>
+        <div class="imgpop__opts" role="radiogroup" aria-label="Darstellung im Rahmen">
+          ${IP.fits.map(([v, l]) => `<label><input type="radio" name="fit" value="${esc(v)}"> ${esc(l)}</label>`).join('')}
+        </div>
+        <fieldset class="imgpop__bg" data-ip-bg><legend>Hintergrund</legend>
+          <label><input type="radio" name="bg" value=""> Keiner</label>
+          <label><input type="radio" name="bg" value="blur"> Unscharfes Bild</label>
+          <label><input type="radio" name="bg" value="accent"> Akzentfarbe</label>
+          <label><input type="radio" name="bg" value="color"> Farbe <input type="color" name="color" value="#ffffff" aria-label="Farbe"></label>
+        </fieldset>
+      </div>
+      <div data-ip-panel="crop" role="tabpanel" hidden>
+        <p class="imgpop__hint" data-ip-noframe hidden>Ein Ausschnitt wirkt nur in Rahmen mit festem Format.</p>
+        <p class="imgpop__hint">Bild ziehen, Regler oder Pfeiltasten.</p>
+        ${ipRange('x', 'Waagerecht', 0, 100)}${ipRange('y', 'Senkrecht', 0, 100)}${ipRange('z', 'Zoom', 100, 300)}
+      </div>
+      <div class="recpop__a"><button type="button" class="btn imgpop__reset" data-ip-reset>Zurücksetzen</button>
+        <button type="button" class="btn" data-ip-cancel>Abbrechen</button><button type="submit" class="btn btn--primary">Übernehmen</button></div>
+    </form>`);
+  root.append(ipPop);
+  let ip = null;   // { sec, path, before }
+  let ipTimer = 0;
+  let ipSeq = 0;
+
+  const ipImg = () => ip && byId(ip.sec.dataset.block)?.querySelector(`img[data-img-path="${CSS.escape(ip.path)}"]`);
+  const ipValues = () => {
+    const f = ipPop.elements;
+    const v = { fx: f.fx.value, s: +f.s.value, b: +f.b.value, c: +f.c.value, fit: f.fit.value || 'cover' };
+    if (v.fit === 'contain' && f.bg.value) v.bg = f.bg.value === 'color' ? f.color.value : f.bg.value;
+    if (+f.x.value !== 50 || +f.y.value !== 50 || +f.z.value !== 100) Object.assign(v, { x: +f.x.value, y: +f.y.value, z: +f.z.value });
+    if (!v.fx) delete v.fx;
+    return v;
+  };
+  const ipFill = (v) => {
+    const f = ipPop.elements;
+    f.fx.value = v.fx || '';
+    f.s.value = v.s ?? 100;
+    f.b.value = v.b ?? 100;
+    f.c.value = v.c ?? 100;
+    f.fit.value = v.fit || 'cover';
+    const bg = v.bg || '';
+    f.bg.value = bg.startsWith('#') ? 'color' : bg;
+    if (bg.startsWith('#')) f.color.value = bg;
+    f.x.value = v.x ?? 50;
+    f.y.value = v.y ?? 50;
+    f.z.value = v.z ?? 100;
+    ipSync();
+  };
+  // Ausgaben der Regler, Hintergrund nur bei „Ganzes Bild“
+  function ipSync() {
+    ipPop.querySelectorAll('.imgpop__r').forEach((l) => {
+      const i = l.querySelector('input');
+      const unit = ['x', 'y', 's', 'b', 'c', 'z'].includes(i.name) ? ' %' : '';
+      l.querySelector('output').textContent = i.value + unit;
+      i.setAttribute('aria-valuetext', i.value + unit);
+    });
+    ipPop.querySelector('[data-ip-bg]').disabled = ipPop.elements.fit.value !== 'contain';
+  }
+  const ipTab = (name) => {
+    ipPop.querySelectorAll('[data-ip-tab]').forEach((t) => t.setAttribute('aria-selected', String(t.dataset.ipTab === name)));
+    ipPop.querySelectorAll('[data-ip-panel]').forEach((p) => { p.hidden = p.dataset.ipPanel !== name; });
+  };
+
+  function ipOpen(img, sec) {
+    const path = img.dataset.imgPath;
+    const pending = dirty.get(sec.dataset.block)?.[`@img:${path}`];
+    const before = pending ?? img.dataset.imgPlace ?? '';
+    ip = { sec, path, before };
+    ipFill(before ? JSON.parse(before) : {});
+    ipTab('fx');
+    ipPop.querySelector('[data-ip-noframe]').hidden = !!img.dataset.imgFrame;
+    ipPop.hidden = false;
+    ipPlace();
+    ipPop.querySelector('[data-ip-tab="fx"]').focus({ preventScroll: true });
+  }
+  function ipPlace() {
+    const img = ipImg();
+    if (!img || ipPop.hidden) return;
+    const r = img.getBoundingClientRect();
+    const w = ipPop.offsetWidth, ht = ipPop.offsetHeight;
+    // neben dem Bild (rechts, sonst links), damit die Vorschau sichtbar bleibt
+    const left = r.right + 12 + w < innerWidth ? r.right + 12 : r.left - 12 - w > 0 ? r.left - 12 - w : Math.max(8, innerWidth - w - 8);
+    ipPop.style.left = `${left}px`;
+    ipPop.style.top = `${Math.max(bar.offsetHeight + 8, Math.min(r.top, innerHeight - ht - 8))}px`;
+  }
+  // Vorschau vom Server: alle ungespeicherten Änderungen des Blocks plus diese Einstellung
+  async function ipRender(ctx, value) {
+    const seq = ++ipSeq;
+    const id = ctx.sec.dataset.block;
+    try {
+      const res = await api('preview', { slice: id, patch: { ...(dirty.get(id) || {}), [`@img:${ctx.path}`]: value } });
+      if (seq !== ipSeq) return;
+      ctx.sec = apply(res, byId(id) || ctx.sec);
+      ipPlace();
+    } catch (err) {
+      say(err.message, true);
+    }
+  }
+  function ipPreview(value) {
+    clearTimeout(ipTimer);
+    const ctx = ip;
+    ipTimer = setTimeout(() => ctx && ipRender(ctx, value), 200);
+  }
+  function ipClose(restore) {
+    const ctx = ip;
+    if (!ctx) return;
+    ip = null;
+    clearTimeout(ipTimer);
+    ipPop.hidden = true;
+    if (restore) ipRender(ctx, ctx.before);
+  }
+
+  ipPop.addEventListener('click', (e) => {
+    const tab = e.target.closest('[data-ip-tab]')?.dataset.ipTab;
+    if (tab) ipTab(tab);
+  });
+  ipPop.querySelector('.imgpop__tabs').addEventListener('keydown', (e) => {
+    if (!['ArrowLeft', 'ArrowRight'].includes(e.key)) return;
+    const tabs = [...ipPop.querySelectorAll('[data-ip-tab]')];
+    const i = (tabs.indexOf(e.target) + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length;
+    tabs[i].focus();
+    ipTab(tabs[i].dataset.ipTab);
+  });
+  ipPop.addEventListener('input', () => {
+    ipSync();
+    ipPreview(JSON.stringify(ipValues()));
+  });
+  ipPop.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (!ip) return;
+    // Werte wie im Medienpool entfernt der Server (ImagePlace::fromArray) – kein eigener Vergleich nötig
+    patchBlock(byId(ip.sec.dataset.block) || ip.sec, `@img:${ip.path}`, JSON.stringify(ipValues()));
+    ipClose(false);
+    say('Bild an dieser Stelle geändert – mit „Speichern“ sichern.');
+  });
+  ipPop.querySelector('[data-ip-reset]').addEventListener('click', () => {
+    ipFill({});
+    ipPreview('');
+  });
+  ipPop.querySelector('[data-ip-cancel]').addEventListener('click', () => ipClose(true));
+  ipPop.addEventListener('keydown', (e) => { if (e.key === 'Escape') { e.stopPropagation(); ipClose(true); } });
+  addEventListener('scroll', ipPlace, { passive: true });
+  addEventListener('resize', ipPlace);
+
+  // Ausschnitt durch Ziehen am Bild (Reiter „Ausschnitt“): Bewegung nach rechts zeigt mehr vom linken Bildrand
+  main.addEventListener('pointerdown', (e) => {
+    const img = ipImg();
+    if (!img || ipPop.hidden || ipPop.querySelector('[data-ip-panel="crop"]').hidden || !document.elementsFromPoint(e.clientX, e.clientY).includes(img)) return;
+    e.preventDefault();
+    const f = ipPop.elements;
+    const start = { x: e.clientX, y: e.clientY, px: +f.x.value, py: +f.y.value };
+    const r = img.getBoundingClientRect();
+    const move = (ev) => {
+      f.x.value = Math.max(0, Math.min(100, Math.round(start.px - ((ev.clientX - start.x) / r.width) * 100)));
+      f.y.value = Math.max(0, Math.min(100, Math.round(start.py - ((ev.clientY - start.y) / r.height) * 100)));
+      ipSync();
+      img.style.objectPosition = `${f.x.value}% ${f.y.value}%`;   // nur während des Ziehens, danach Vorschau vom Server
+    };
+    const up = () => {
+      removeEventListener('pointermove', move);
+      removeEventListener('pointerup', up);
+      ipPreview(JSON.stringify(ipValues()));
+    };
+    addEventListener('pointermove', move);
+    addEventListener('pointerup', up);
+  });
 
   // ------------------------------------------------------------------ Formatierung (Studio-Editor, assets/rte.js)
 
@@ -2484,8 +2704,6 @@
     .h:is(:hover,:focus-visible,.is-drag) .g{opacity:1;scale:1.12}
     .h--x::before{content:"";position:absolute;top:0;bottom:0;left:50%;width:2px;margin-left:-1px;background:var(--k);opacity:0;transition:opacity .15s}
     .h--x:is(:hover,:focus-visible,.is-drag)::before{opacity:.55}
-    .h--y::before{content:"";position:absolute;left:-28px;right:calc(-1 * min(600px, 100vw - 220px));top:50%;height:2px;margin-top:-1px;background:var(--k);opacity:0;transition:opacity .15s;pointer-events:none}
-    .h--y:is(:hover,:focus-visible,.is-drag)::before{opacity:.45}
     .h:focus-visible{outline:2px solid var(--k);outline-offset:3px;border-radius:8px}
     .t{position:absolute;left:0;top:-32px;padding:4px 9px;border-radius:999px;background:var(--k);color:#fff;font:600 12px/1.2 system-ui,-apple-system,sans-serif;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;box-shadow:0 4px 12px rgb(0 0 0/.2)}
     .h--x .t{top:50%;left:50%;translate:-50% calc(-50% - 44px)}
@@ -2556,13 +2774,26 @@
         h.setAttribute('aria-valuemax', '3');
         h.setAttribute('aria-valuetext', SPACE[v]);
       };
-      const preview = (v) => { values.forEach((x) => sec.classList.remove(pre + x)); if (v !== 'normal') sec.classList.add(pre + v); show(v); };
+      // der Abstand selbst ist beim Zeigen und Ziehen schraffiert (wie KLXM Studio), der Abschnitt leuchtet auf
+      const band = document.createElement('div');
+      band.className = `fluid-handle fluid-band fluid-band--${side}`;
+      band.contentEditable = 'false';
+      band.setAttribute('aria-hidden', 'true');
+      sec.append(band);
+      const sizeBand = () => { band.style.height = getComputedStyle(sec)[prop]; };
+      const own = (on) => { if (on) sizeBand(); band.classList.toggle('is-on', on); sec.classList.toggle('fluid-band-owner', on); };
+      const preview = (v) => { values.forEach((x) => sec.classList.remove(pre + x)); if (v !== 'normal') sec.classList.add(pre + v); show(v); sizeBand(); };
       const commit = (v) => { patchBlock(sec, key, v); say(`${label}: ${SPACE[v]} – noch nicht gespeichert.`); };
       show(cur());
       let drag = null;
+      h.addEventListener('pointerenter', () => own(true));
+      h.addEventListener('pointerleave', () => { if (!drag) own(false); });
+      h.addEventListener('focus', () => own(true));
+      h.addEventListener('blur', () => { if (!drag) own(false); });
       h.addEventListener('pointerdown', (e) => {
         e.preventDefault(); e.stopPropagation();
         h.setPointerCapture(e.pointerId); h.classList.add('is-drag');
+        own(true);
         drag = { y: e.clientY, i0: values.indexOf(cur()), i: values.indexOf(cur()) };
       });
       h.addEventListener('pointermove', (e) => {
@@ -2573,6 +2804,7 @@
       const end = (e) => {
         if (!drag) return;
         const { i, i0 } = drag; drag = null; h.classList.remove('is-drag');
+        if (!h.matches(':hover') && sr.activeElement !== h) own(false);
         if (h.hasPointerCapture?.(e.pointerId)) h.releasePointerCapture(e.pointerId);
         if (i !== i0) commit(values[i]);
       };

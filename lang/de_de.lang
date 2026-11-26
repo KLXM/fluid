@@ -1,0 +1,11 @@
+fluid_image_effect_none = Kein Effekt
+fluid_image_effect_gray = Schwarzweiß
+fluid_image_effect_sepia = Sepia
+fluid_image_effect_warm = Warm
+fluid_image_effect_cool = Kühl
+fluid_image_effect_muted = Gedämpft
+fluid_image_effect_vivid = Kräftig
+fluid_image_effect_contrast = Kontrast
+fluid_image_fit_cover = Rahmen füllen
+fluid_image_fit_contain = Ganzes Bild
+fluid_image_fit_original = Originalgröße

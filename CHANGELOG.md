@@ -1,5 +1,33 @@
 # Changelog
 
+## Unveröffentlicht
+
+### Bild an dieser Stelle
+
+- Am Bild im Bearbeiten-Modus neu **„◧ Hier anpassen“** – gilt nur für diese Verwendung im Block, nicht für das Medium:
+  **Effekt** (Schwarzweiß, Sepia, Warm, Kühl, Gedämpft, Kräftig, Kontrast, „Kein Effekt“ schaltet auch den Effekt des Designs ab;
+  Regler für Sättigung, Helligkeit, Kontrast), **Darstellung im Rahmen** (füllen, ganzes Bild mit Hintergrund unscharf/Akzentfarbe/
+  eigene Farbe, Originalgröße) und **Ausschnitt** (Position und Zoom, durch Ziehen am Bild, Regler oder Tastatur; in Rahmen mit
+  festem Format). Vorschau live auf der Seite, gespeichert mit „Speichern“ wie Texte.
+- Gespeichert im Block unter `_img` (Feldpfad → Einstellung), gilt nur, solange an der Stelle dasselbe Bild steht. Ausgabe als
+  Klassen (CSP), ohne neue Bildfassungen. Klassen `Klxm\Fluid\Media\ImagePlace`, `ImagePlaces`, `ImageEffect`, `ImageFit`.
+- Funktioniert auch ohne das AddOn image_editor; die Knöpfe für das Medium („Bearbeiten“, „Anpassen“, „Ausschnitt“) erklären
+  jetzt per Tooltip, dass sie für alle Verwendungen gelten.
+
+### Editor
+
+- **Blockleiste rechts** am Block (wie die Slice-Leiste im REDAXO-Backend); Bild- und Modul-Knöpfe weichen ihr aus.
+- **Abstand ziehen:** Der Abstand ist beim Zeigen und Ziehen schraffiert, der Abschnitt leuchtet auf (wie KLXM Studio).
+
+### Behoben
+
+- Klassen für Fokuspunkt und Bildeinstellungen fehlten in Blöcken, die der Editor per API neu ausgibt (z. B. nach „Bild
+  bearbeiten“): Die API liefert ihre Regeln jetzt mit (`InlineStyle::css()`).
+
+### Neu für Entwickler
+
+- Übersetzungen in `lang/` (`I18n::msg('fluid_…')`), zuerst für die Bildeinstellungen.
+
 ## 1.0.0-beta.11 – 2026-11-22
 
 Nach dem Vorbild von KLXM Studio (MIT) – schlanke erste Fassungen, angepasst an REDAXO/fluid. **Nach dem Update

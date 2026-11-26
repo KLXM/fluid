@@ -60,9 +60,17 @@ final class InlineStyle
     /** <style nonce> mit allen Regeln – leer, wenn keine anfielen */
     public static function tag(): string
     {
-        if (!self::$rules) {
-            return '';
-        }
+        $css = self::css();
+
+        return '' !== $css ? '<style nonce="' . escape(Response::getNonce()) . '">' . $css . '</style>' : '';
+    }
+
+    /**
+     * Alle Regeln als CSS-Text (danach geleert) – für Antworten ohne Seitenkopf, z. B. die API des Editors, die neu
+     * ausgegebene Blöcke liefert.
+     */
+    public static function css(): string
+    {
         $css = '';
         foreach (self::$rules as $class => $declarations) {
             $parts = [];
@@ -76,7 +84,7 @@ final class InlineStyle
         }
         self::$rules = [];
 
-        return '<style nonce="' . escape(Response::getNonce()) . '">' . $css . '</style>';
+        return $css;
     }
 
     private static function boot(): void

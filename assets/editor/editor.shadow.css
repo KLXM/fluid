@@ -470,6 +470,29 @@ textarea[data-blocks-rte] { display: none !important; }
 .recpop__opts label { display: flex; gap: 8px; align-items: center; }
 .recpop__a { display: flex; justify-content: flex-end; gap: 8px; }
 
+/* Bild an dieser Stelle (Effekt, Darstellung, Ausschnitt) – baut auf .recpop auf */
+.imgpop { z-index: 2147483000; box-sizing: border-box; width: min(340px, calc(100vw - 16px)); max-height: calc(100vh - var(--bar-h) - 16px); overflow: auto; }
+.imgpop input[type="radio"], .imgpop input[type="range"], .imgpop input[type="color"] { width: auto; min-height: 0; padding: 0; margin: 0; border: 0; }
+.imgpop input[type="radio"] { accent-color: var(--accent); }
+.imgpop__opts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.imgpop__tabs { display: flex; gap: 2px; min-width: 0; padding: 2px; border-radius: 8px; background: var(--surface); }
+.imgpop__tabs button { flex: 1 1 0; min-width: 0; min-height: 32px; padding: 0 6px; font-size: 13px; border: 0; border-radius: 6px; background: none; color: var(--ink); font: inherit; font-weight: 600; cursor: pointer; }
+.imgpop__tabs [aria-selected="true"] { background: var(--bg); box-shadow: 0 1px 3px rgb(0 0 0 / .12); }
+.imgpop__tabs button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.imgpop [role="tabpanel"] { display: grid; gap: 10px; }
+.imgpop [role="tabpanel"][hidden] { display: none; }
+.imgpop__r { display: grid; grid-template-columns: 7.5em 1fr 3.5em; align-items: center; gap: 8px; }
+.imgpop__r input[type="range"] { width: 100%; accent-color: var(--accent); }
+.imgpop__r output { text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); }
+.imgpop__bg { display: grid; gap: 6px; margin: 0; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; }
+.imgpop__bg:disabled { opacity: .45; }
+.imgpop__bg label { display: flex; gap: 8px; align-items: center; }
+.imgpop__bg input[type="color"] { width: 2.2em; height: 1.6em; padding: 0; border: 1px solid var(--line); border-radius: 4px; background: none; }
+.imgpop__hint { margin: 0; font-size: 13px; color: var(--muted); }
+.imgpop__hint[hidden] { display: none; }
+.imgpop .recpop__a { flex-wrap: wrap; }
+.imgpop__reset { margin-right: auto; }
+
 /* Seitenleiste: Formular eines gewöhnlichen REDAXO-Moduls (Backend im Rahmen) statt der Block-Felder */
 .panel__frame { flex: 1 1 auto; width: 100%; border: 0; background: var(--bg); }
 

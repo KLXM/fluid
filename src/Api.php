@@ -2,6 +2,7 @@
 
 namespace Klxm\Fluid;
 
+use Klxm\Fluid\Media\ImagePlaces;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\ArticleCache;
 use Redaxo\Core\Content\ArticleHandler;
@@ -788,7 +789,8 @@ final class Api
         $f = Request::post('f', 'array', []);
         if (isset($f[1]) && is_array($f[1])) {
             // gezogene Spaltenbreiten stehen nicht im Formular: behalten (ein anderes Raster verwirft sie beim Ausgeben)
-            $data = Form\Stored::clean($f[1]) + (isset($data['widths']) ? ['widths' => $data['widths']] : []);
+            // Einstellungen der Bilder an ihrer Stelle (_img) bleiben, solange das Bild an seinem Pfad steht
+            $data = ImagePlaces::keep(Form\Stored::clean($f[1]) + (isset($data['widths']) ? ['widths' => $data['widths']] : []), $data);
         }
         if (isset($f[2]) && is_array($f[2])) {
             $tunes = Form\Stored::clean($f[2]);
@@ -801,6 +803,11 @@ final class Api
                 if (in_array($value, ['none', 'small', 'normal', 'large'], true)) {
                     $tunes[substr($path, 1)] = $value;
                 }
+                continue;
+            }
+            // Bild an dieser Stelle: Effekt, Darstellung, Ausschnitt (JSON, leer = zurücksetzen)
+            if (str_starts_with($path, '@img:')) {
+                $data = ImagePlaces::apply($data, substr($path, 5), '' !== $value ? json_decode($value, true) : null);
                 continue;
             }
             if ('widths' === $path) {
@@ -872,6 +879,11 @@ final class Api
     {
         while (ob_get_level()) {
             ob_end_clean();
+        }
+        // Klassen aus InlineStyle (Fokuspunkt, Bild an dieser Stelle …) neu ausgegebener Blöcke: ihre Regeln mitliefern
+        $css = InlineStyle::css();
+        if ('' !== $css) {
+            $data['css'] = $css;
         }
         http_response_code($status);
         header('Content-Type: application/json; charset=utf-8');

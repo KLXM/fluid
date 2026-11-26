@@ -274,10 +274,18 @@ function img(?string $name, string $sizes = '100vw', array $opt = []): string
     $eager = \array_key_exists('eager', $opt) ? !empty($opt['eager']) : \Klxm\Fluid\Block::firstImage();
     $editor = class_exists(\Klxm\ImageEditor\ImageEditor::class) ? \Klxm\ImageEditor\ImageEditor::class : null;
     $editable = $editor && null === $editor::editable($m);
+    // Einstellung an dieser Stelle (Effekt, Darstellung, Ausschnitt – je Einbindung im Block)
+    $at = \Klxm\Fluid\Media\ImagePlaces::take($m->fileName);
+    $place = $at['place'] ?? null;
+    $frameRatio = (string) ($opt['ratio'] ?? '');
     // Bildformat (16:9 …): Ausschnitt je Format aus image_editor – eigener Ausschnitt oder automatisch um den Fokuspunkt.
     // Nicht bei „Einpassen“ (contain): dann zeigt der Rahmen das ganze Bild.
-    $ratio = (string) ($opt['ratio'] ?? '');
+    $ratio = $frameRatio;
     if (!$editable || !\defined($editor . '::RATIOS') || !\in_array($ratio, $editor::RATIOS, true) || str_contains($editor::imgStyle($m->fileName), 'contain')) {
+        $ratio = '';
+    }
+    // eigener Ausschnitt oder andere Darstellung an dieser Stelle: das ganze Bild laden, nicht den Zuschnitt des Formats
+    if (null !== $place && ($place->hasCrop() || \Klxm\Fluid\Media\ImageFit::Cover !== $place->fit)) {
         $ratio = '';
     }
     if ($editable) {
@@ -291,8 +299,18 @@ function img(?string $name, string $sizes = '100vw', array $opt = []): string
     }
     $wh = $w && $h ? ' width="' . $w . '" height="' . $h . '"' : '';
     $ie = $editable && is_editing() ? ' data-ie-file="' . e($m->fileName) . '"' . ('' !== $ratio ? ' data-ie-ratio="' . e($ratio) . '"' : '') : '';
-    // Fokuspunkt und Einpassen (image_editor): object-position / object-fit am Bild
+    // Bild an dieser Stelle bearbeiten (Editor): Feldpfad, Format des Rahmens, gespeicherte Einstellung
+    if (null !== $at && is_editing()) {
+        $ie .= ' data-img-path="' . e($at['path']) . '"'
+            . ('' !== $frameRatio ? ' data-img-frame="' . e($frameRatio) . '"' : '')
+            . (null !== $place ? ' data-img-place="' . e(json_encode($place->toArray(), \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE)) . '"' : '');
+    }
+    // Fokuspunkt und Einpassen (image_editor): object-position / object-fit am Bild, danach die Einstellung an dieser Stelle
     $style = $editable ? $editor::imgStyle($m->fileName) : '';
+    if (null !== $place) {
+        $blur = \Klxm\Fluid\Media\ImagePlace::BACKGROUND_BLUR === $place->background ? ($editable ? $editor::url($m->fileName, 64) : $m->getUrl()) : '';
+        $style = trim($style . ';' . $place->declarations($blur), ';');
+    }
 
     return '<img src="' . e($src) . '"' . $srcset . ' alt="' . e($alt) . '"' . $wh . ($eager ? ' fetchpriority="high"' : ' loading="lazy"') . ' decoding="async"'
         . \Klxm\Fluid\InlineStyle::attr($style, (string) ($opt['class'] ?? '')) . $ie . '>';   // Fokuspunkt als Klasse (CSP: keine style-Attribute)
@@ -449,8 +467,10 @@ function fluid_min(array $d, string $key = 'size'): string
 
 function fluid_image(?string $id, string $sizes, string $ratio, string $class = '', array $opt = []): string
 {
-    // Einpassen „Originalformat“ (image_editor): Rahmen ohne festes Seitenverhältnis
-    if ($id && class_exists(\Klxm\ImageEditor\ImageEditor::class) && 'original' === (\Klxm\ImageEditor\ImageEditor::stored($id)['fit'] ?? '')) {
+    // Originalgröße (am Medium oder an dieser Stelle): Rahmen ohne festes Seitenverhältnis
+    $place = $id ? \Klxm\Fluid\Media\ImagePlaces::peek($id) : null;
+    $fit = null !== $place ? $place->fit->value : ($id && class_exists(\Klxm\ImageEditor\ImageEditor::class) ? (\Klxm\ImageEditor\ImageEditor::stored($id)['fit'] ?? '') : '');
+    if ('original' === $fit) {
         $ratio = '';
     }
     $pic = img($id, $sizes, ('' !== $ratio ? ['ratio' => $ratio] : []) + $opt);
