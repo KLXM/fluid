@@ -1,6 +1,6 @@
 # Changelog
 
-## Unveröffentlicht
+## 1.0.0-beta.12 – 2026-11-27
 
 ### Bild an dieser Stelle
 
