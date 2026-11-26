@@ -20,6 +20,8 @@
   ist 320 px). Jetzt mit dem neuen Medientyp `image_editor_backdrop` (48 px, weichgezeichnet; image_editor 021f2a8).
   Dazu Abstände in der Auswahl „Darstellung“ – eine Option je Zeile.
 - Demo „REDAXO 6“: Seite „Adressen“ zeigt Endung, eigene Adressen, Kurzlinks und die Extension Points (deutsch und englisch).
+- Fix: „Originalgröße“ (an dieser Stelle oder am Medium) ließ das Bild verschwinden – der Rahmen ohne Seitenverhältnis war
+  0 px hoch. Neu `frame--natural`: das Bild steht in eigener Größe, zentriert, höchstens so breit wie die Spalte.
 - Fix: Automatische Weiterleitungen nach geänderten Adressen führten aus einer weiteren Sprache auf die Seite der Startsprache
   (`/en/alt` → `/neu` statt `/en/new`). Neue Regeln speichern die Sprache (`redaxo://ID@Sprache`), bestehende nehmen die Sprache der
   aufgerufenen Adresse – ohne Migration.

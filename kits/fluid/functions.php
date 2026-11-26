@@ -475,7 +475,8 @@ function fluid_image(?string $id, string $sizes, string $ratio, string $class = 
         $ratio = '';
     }
     $pic = img($id, $sizes, ('' !== $ratio ? ['ratio' => $ratio] : []) + $opt);
-    $cls = 'frame' . ('' !== $ratio ? ' r-' . str_replace(':', '-', $ratio) : '') . ('' !== $class ? ' ' . $class : '');
+    // original size: the image keeps its own proportions (frame--natural lets it flow instead of filling a fixed box)
+    $cls = 'frame' . ('' !== $ratio ? ' r-' . str_replace(':', '-', $ratio) : '') . ('original' === $fit ? ' frame--natural' : '') . ('' !== $class ? ' ' . $class : '');
     if ('' !== $pic) {
         return '<div class="' . e($cls) . '">' . $pic . '</div>';
     }
