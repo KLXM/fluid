@@ -2,9 +2,9 @@
 
 namespace Klxm\Fluid\Routing;
 
+use Klxm\Fluid\Routing\ExtensionPoint\RobotsTxt;
 use Redaxo\Core\Core;
 use Redaxo\Core\ExtensionPoint\Extension;
-use Klxm\Fluid\Routing\ExtensionPoint\RobotsTxt;
 
 /**
  * robots.txt: Regeln plus Zeile „Sitemap:“ (immer).
@@ -12,7 +12,7 @@ use Klxm\Fluid\Routing\ExtensionPoint\RobotsTxt;
  * Teilen trotzdem lesen (PREVIEW_BOTS) – Facebook, LinkedIn & Co. halten sich an die robots.txt und zeigten sonst nur ein
  * graues Bild. Suchmaschinen bleiben draußen. Nur ausdrücklich, denn wer alles sperrt, meint das oft so (Test, Vorschau).
  *   Extension Point RobotsTxt, part 'rules'  Regeln ersetzen (z. B. eigener Text aus den Website-Einstellungen)
- *   Extension Point RobotsTxt, part 'text'   fertiger Text inklusive Sitemap-Zeile – Regeln ergänzen
+ *   Extension Point RobotsTxt, part 'text'   fertiger Text inklusive Sitemap-Zeile – Regeln ergänzen.
  */
 final class Robots
 {

@@ -2,9 +2,11 @@
 
 namespace Klxm\Fluid\Routing\Attribute;
 
+use Klxm\Fluid\Routing\RouteSource;
+
 /**
  * Spalte einer Tabelle mit einer Rolle (Slug, Titel …). Editierbare Spalten kann ein Editor (z. B. fluid auf der Website)
- * anbieten – {@see \Klxm\Fluid\Routing\RouteSource::editable()}.
+ * anbieten – {@see RouteSource::editable()}.
  */
 abstract readonly class MetaColumn
 {

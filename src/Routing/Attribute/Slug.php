@@ -9,8 +9,12 @@ use Attribute;
 final readonly class Slug extends MetaColumn
 {
     /** @param bool $withId ID anhängen („titel-12“): stabil, wenn der Titel nicht eindeutig ist */
-    public function __construct(string $column, public bool $withId = false, ?string $label = null, bool $editable = true)
-    {
+    public function __construct(
+        string $column,
+        public bool $withId = false,
+        ?string $label = null,
+        bool $editable = true,
+    ) {
         parent::__construct($column, $label, $editable);
     }
 

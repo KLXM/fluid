@@ -3,9 +3,10 @@
 namespace Klxm\Fluid\Routing\Attribute;
 
 use Attribute;
+use Klxm\Fluid\Routing\TableSource;
 
 /**
- * Datensätze einer Tabelle als Adressen unter einer Seite ({@see \Klxm\Fluid\Routing\TableSource}).
+ * Datensätze einer Tabelle als Adressen unter einer Seite ({@see TableSource}).
  *
  * @see Slug, Title, Description, Image, Modified für die Spalten
  */

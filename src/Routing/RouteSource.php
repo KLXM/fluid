@@ -87,7 +87,7 @@ abstract class RouteSource
     private function attribute(): AsRouteSource
     {
         if (null === $this->attribute) {
-            $attrs = (new ReflectionClass($this))->getAttributes(AsRouteSource::class);
+            $attrs = new ReflectionClass($this)->getAttributes(AsRouteSource::class);
             if (!$attrs) {
                 throw new LogicException(sprintf('%s braucht #[AsRouteSource] oder eine eigene key()-Methode.', static::class));
             }

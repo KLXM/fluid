@@ -2,12 +2,12 @@
 
 namespace Klxm\Fluid\Routing\Seo;
 
-use Klxm\Meta\Alt;
 use Klxm\Fluid\Routing\ExtensionPoint\ArticleMeta;
 use Klxm\Fluid\Routing\ExtensionPoint\PageMetaResolved;
 use Klxm\Fluid\Routing\Router;
 use Klxm\Fluid\Routing\Routes;
 use Klxm\Fluid\Routing\Sources;
+use Klxm\Meta\Alt;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Core;
 use Redaxo\Core\ExtensionPoint\Extension;
@@ -68,7 +68,7 @@ final class Head
 
     /**
      * Angaben aus einer Ausgabe überschreiben – z. B. ein Block, der einen Eintrag zeigt. Muss vor dem Seitenkopf passieren
-     * (Templates rendern den Inhalt vor dem Kopf). Arrays: title, description, image, canonical (bzw. url), type …
+     * (Templates rendern den Inhalt vor dem Kopf). Arrays: title, description, image, canonical (bzw. url), type ….
      *
      * @param PageMeta|array<string, mixed> $meta
      */

@@ -5,6 +5,7 @@ namespace Klxm\Fluid\Routing;
 use Redaxo\Core\Database\Sql;
 use Throwable;
 
+use function in_array;
 use function str_ends_with;
 use function str_starts_with;
 use function strtolower;
@@ -77,7 +78,7 @@ final class Domains
     {
         foreach (self::all() as $d) {
             if (DomainRole::Landing === $d->role && null !== $d->articleId
-                && ($d->articleId === $articleId || ($d->subtree && \in_array($d->articleId, $ancestors, true)))) {
+                && ($d->articleId === $articleId || ($d->subtree && in_array($d->articleId, $ancestors, true)))) {
                 return $d;
             }
         }

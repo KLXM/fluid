@@ -2,9 +2,9 @@
 
 namespace Klxm\Fluid\Routing;
 
+use Klxm\Fluid\Routing\ExtensionPoint\SitemapEntries;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\ExtensionPoint\Extension;
-use Klxm\Fluid\Routing\ExtensionPoint\SitemapEntries;
 use Redaxo\Core\Language\Language;
 
 use function array_filter;
@@ -15,8 +15,9 @@ use function ceil;
 use function count;
 use function date;
 use function is_array;
-
 use function Redaxo\Core\View\escape;
+
+use const DATE_ATOM;
 
 /**
  * sitemap.xml der Hauptadresse bzw. einer Landing-Domain.
@@ -131,9 +132,7 @@ final class Sitemap
         return is_array($out) ? array_values($out) : [];
     }
 
-    /**
-     * Inhalt von /sitemap.xml ($part = 0) bzw. /sitemap-{part}.xml; null = diesen Teil gibt es nicht.
-     */
+    /** Inhalt von /sitemap.xml ($part = 0) bzw. /sitemap-{part}.xml; null = diesen Teil gibt es nicht. */
     public static function xml(?Domain $landing, int $part = 0): ?string
     {
         $entries = self::entries($landing);
@@ -174,9 +173,7 @@ final class Sitemap
         return $xml . '</sitemapindex>' . "\n";
     }
 
-    /**
-     * /sitemap.xsl: Tabellenansicht der Sitemap im Browser (Suchmaschinen lesen das XML).
-     */
+    /** /sitemap.xsl: Tabellenansicht der Sitemap im Browser (Suchmaschinen lesen das XML). */
     public static function xsl(): string
     {
         return <<<'XSL'
