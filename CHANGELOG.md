@@ -17,8 +17,9 @@
 - Weiterleitungen können ablaufen (Spalte `expires`).
 - Adressen aus Titeln schreiben Akzente um (`Café` → `cafe`, `Łódź` → `lodz`), bisher wurden sie zu Bindestrichen.
 - Fix: „Ganzes Bild“ mit Hintergrund „Unscharfes Bild“ zeigte ein fast scharfes Bild (die kleinste Breite des Bildeditors
-  ist 320 px). Jetzt mit dem neuen Medientyp `image_editor_backdrop` (48 px, weichgezeichnet; image_editor ab f534560+1).
+  ist 320 px). Jetzt mit dem neuen Medientyp `image_editor_backdrop` (48 px, weichgezeichnet; image_editor 021f2a8).
   Dazu Abstände in der Auswahl „Darstellung“ – eine Option je Zeile.
+- Demo „REDAXO 6“: Seite „Adressen“ zeigt Endung, eigene Adressen, Kurzlinks und die Extension Points (deutsch und englisch).
 - Fix: Automatische Weiterleitungen nach geänderten Adressen führten aus einer weiteren Sprache auf die Seite der Startsprache
   (`/en/alt` → `/neu` statt `/en/new`). Neue Regeln speichern die Sprache (`redaxo://ID@Sprache`), bestehende nehmen die Sprache der
   aufgerufenen Adresse – ohne Migration.

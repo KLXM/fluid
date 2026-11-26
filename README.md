@@ -10,7 +10,7 @@ dann fehlen nur diese Teile. Alles andere ist eingebaut:
 
 | Eingebaut in fluid | statt eines eigenen AddOns für |
 |---|---|
-| Schöne Adressen, Domains und Landingpages, Weiterleitungen, Sitemap, robots.txt, canonical/hreflang | URL-Verwaltung und SEO |
+| Schöne Adressen (Endung nach Wahl, eigene Adressen, Ebenen ausblenden), Kurzlinks, Domains und Landingpages, Weiterleitungen, Sitemap, robots.txt, canonical/hreflang | URL-Verwaltung, Kurzlinks und SEO |
 | Suche mit Tippfehler-Toleranz ([Loupe](https://github.com/loupe-php/loupe), per Composer) | Volltextsuche |
 | Blog/News mit Schlagworten und RSS | News und Blog |
 | Design-Vorlagen, Farben, Schriften (selbst gehostet) | Theme-Verwaltung |
@@ -60,6 +60,12 @@ fluid läuft auch ohne.
 - **Wer arbeitet gerade wo:** In der Leiste und im Seitenbaum steht, wer eine Seite gerade bearbeitet. Hat jemand
   anderes inzwischen gespeichert, fragt fluid vor dem Speichern nach.
 - **Seiten:** Seitenbaum mit Ziehen, neue Seiten (leer, als Kopie, aus einer Vorlage), Adresse und SEO-Angaben
+- **Adressen und Kurzlinks:** Endung wählen (ohne, `/`, `.html`, gemischt, eigene) unter Website → Adressen; je Seite eine
+  eigene Adresse ohne Elternseiten oder den Menüpunkt in den Adressen der Unterseiten ausblenden; Kurzlinks für Druck und
+  soziale Medien (Wunschadresse oder Code, Klicks, Ablaufdatum) – alte Adressen leiten immer weiter. Erweiterbar über
+  Extension Points wie im Core (Entwickler-Referenz).
+- **Bild an dieser Stelle:** je Verwendung Effekt, Darstellung (Rahmen füllen, ganzes Bild mit unscharfem Hintergrund,
+  Akzent- oder eigener Farbe, Originalgröße) und Ausschnitt mit Zoom – das Bild im Medienpool bleibt unverändert.
 - **Design:** fertige Design-Vorlagen (u. a. „REDAXO · Blau“) oder Farben, Schriften und Formen einzeln – mit
   Kontrastprüfung, live auf der Seite
 - **Kits:** zwei Gestaltungen zur Wahl – „Fluid“ und „NativeCSS“ (auf Basis von [NativeCSS](https://github.com/skerbis/nativecss)),

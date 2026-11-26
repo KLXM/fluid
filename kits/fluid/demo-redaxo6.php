@@ -244,7 +244,7 @@ use Klxm\Fluid\Routing\UrlFormat;
 public function configure(): void
 {
     // Endung der Adressen: none() · slash() · html() · mixed() · suffix('.htm')
-    // jede andere Schreibweise leitet per 301 auf diese um
+    // jede andere Schreibweise leitet per 301 auf diese um; im Code gesetzt, zeigt „Website → Adressen“ sie nur an
     Router::$config = new RoutingConfig(format: UrlFormat::mixed());
 
     // eigene Tags auf jeder Seite (gleicher Schlüssel ersetzt eine Angabe des Routings)
@@ -331,6 +331,33 @@ export function render(el, spec, theme) {
     dispose: () => chart.destroy(),
     image: () => chart.png(),          // optional: Bild für den Druck
   };
+}
+CODE,
+    'rshort' => <<<'CODE'
+use Klxm\Fluid\Routing\ExtensionPoint\RedirectMatched;
+use Klxm\Fluid\Routing\ExtensionPoint\ShortlinkPath;
+use Klxm\Fluid\Routing\Shortlinks;
+use Redaxo\Core\ExtensionPoint\AsExtension;
+
+final class Campaigns
+{
+    // alle Kurzlinks unter /go/… – aus „sommerfest“ wird /go/sommerfest
+    #[AsExtension]
+    public static function prefix(ShortlinkPath $ep): string
+    {
+        return '/go' . $ep->subject;
+    }
+
+    // Klicks über Kurzlinks in der Statistik erkennen
+    #[AsExtension]
+    public static function campaign(RedirectMatched $ep): ?string
+    {
+        if (Shortlinks::ORIGIN !== $ep->rule['origin']) {
+            return null;   // null = Ziel bleibt
+        }
+
+        return $ep->subject . (str_contains($ep->subject, '?') ? '&' : '?') . 'utm_source=kurzlink';
+    }
 }
 CODE,
     'rendpoint' => <<<'CODE'
@@ -1321,7 +1348,7 @@ vollständig: Module, Templates, Schema'],
                         ['icon' => 'squares-four', 'title' => 'Bausteine', 'text' => 'Weitere Blöcke des Kits: Logos, Bento, Reiter, Preise und mehr.', 'link_label' => 'Ansehen', 'link' => '/bausteine'],
                         ['icon' => 'terminal-window', 'title' => 'fluid-Projekt', 'text' => 'fluid einbinden, Demo anlegen und eigene Blöcke bauen.', 'link_label' => 'Lesen', 'link' => '/fluid-projekt'],
                         ['icon' => 'paint-brush', 'title' => 'Eigenes Kit', 'text' => 'Was ein Kit ist und wie man eins baut – vererbt von fluid, mit eigenen Views und eigenem CSS.', 'link_label' => 'Lesen', 'link' => '/eigenes-kit'],
-                        ['icon' => 'signpost', 'title' => 'Adressen', 'text' => 'Feste Adressen, Weiterleitungen, Sitemap und Seitenkopf – auch für Einträge anderer AddOns.', 'link_label' => 'Lesen', 'link' => '/adressen'],
+                        ['icon' => 'signpost', 'title' => 'Adressen', 'text' => 'Feste Adressen, Kurzlinks, Weiterleitungen, Sitemap und Seitenkopf – auch für Einträge anderer AddOns.', 'link_label' => 'Lesen', 'link' => '/adressen'],
                         ['icon' => 'chart-line-up', 'title' => 'Diagramme', 'text' => 'Balken, Linie, Torte – von Hand oder live aus Daten, mit austauschbarer Engine.', 'link_label' => 'Ansehen', 'link' => '/diagramme'],
                         ['icon' => 'squares-four', 'title' => 'Abschnitte & Spalten', 'text' => 'Hintergründe, Spalten, Raster und flexible Kacheln – mit Beispielen.', 'link_label' => 'Ansehen', 'link' => '/abschnitte-spalten'],
                         ['icon' => 'film-slate', 'title' => 'Video', 'text' => 'Video-Block, Hintergrundvideo und der Video-Editor im Medienpool – mit einem Kätzchen.', 'link_label' => 'Ansehen', 'link' => '/video'],
@@ -1542,11 +1569,11 @@ vollständig: Module, Templates, Schema'],
             'slug' => 'adressen', 'title' => 'Adressen', 'menu' => true, 'parent' => 'fluid',
             'blocks' => [
                 ['type' => 'hero', 'tunes' => ['background' => 'muted'], 'data' => ['variant' => 'compact', 'eyebrow' => 'fluid',
-                    'title' => 'Schöne Adressen – für Seiten und Daten', 'text' => 'Der Rewriter von fluid: feste Adressen, Weiterleitungen, Sitemap und Seitenkopf – auch für Einträge anderer AddOns.']],
+                    'title' => 'Schöne Adressen – für Seiten und Daten', 'text' => 'Der Rewriter von fluid: feste Adressen, Endung nach Wahl, Kurzlinks, Weiterleitungen, Sitemap und Seitenkopf – auch für Einträge anderer AddOns.']],
                 ['type' => 'richtext', 'data' => ['variant' => 'standard', 'eyebrow' => '', 'title' => 'So arbeitet der Rewriter', 'intro' => '', 'meta' => '',
                     'measure' => 'normal', 'dropcap' => false, 'toc' => false, 'reveal' => 'off', 'scrollspy' => 'off',
-                    'text' => '<p class="t-warn"><strong>In Entwicklung:</strong> REDAXO 6 entsteht im Branch 6.x von redaxo/core. Die Beispiele entsprechen dem Stand vom November 2026 – Namen und Details können sich bis zur Veröffentlichung noch ändern.</p><h3>Feste Adressen</h3><p>Jede Seite bekommt je Sprache einen Slug aus ihrem Namen – beim Anlegen, nicht bei jedem Umbenennen. Die Adresse ist der Weg durch die Elternseiten, etwa <code>/leistungen/beratung</code>. Ändern lässt sie sich in den Seiteneinstellungen; die alte leitet danach von selbst weiter.</p><h3>Eine Adresse je Seite</h3><p>Andere Schreibweisen – Großbuchstaben, Schrägstrich am Ende, eine andere Endung, <code>/EN/</code> statt <code>/en/</code>, alte Links mit <code>?article_id=</code> – leiten per 301 auf die eine richtige Adresse. Suchmaschinen sehen nie zwei Fassungen derselben Seite.</p><h3>Sprachen und Domains</h3><p>Weitere Sprachen haben ein Präfix (<code>/en/…</code>). Weitere Domains leiten auf die Hauptadresse, Landing-Domains zeigen eine einzelne Seite unter eigener Adresse.</p><h3>Alles aus einer Hand</h3><p>Aus denselben Adressen entstehen <code>sitemap.xml</code> mit Sprachfassungen und Bildern, <code>robots.txt</code>, Canonical, hreflang, Open Graph und schema.org – für Seiten und für Einträge.</p><h3>Mehr als Seiten</h3><p>News, Termine oder Produkte bekommen eine eigene Adresse unter ihrer Seite – aus einer Tabelle nur mit Attributen, oder aus einer eigenen Quelle. Der Rewriter speichert die Adressen, hält sie eindeutig und leitet nach einer Änderung weiter.</p><h3>Im Code eingestellt</h3><p>Wie REDAXO 6 selbst: Einstellungen in <code>Project::configure()</code>, Quellen und Endpunkte als Attribute, Erweiterungen über Extension Points. Ein Backend braucht es dafür nicht.</p>']],
-                ['type' => 'code', 'data' => ['eyebrow' => '', 'title' => 'Adressformat und Seitenkopf einstellen', 'intro' => 'Ohne Angabe gelten Adressen ohne Endung. Ein Wechsel braucht keinen Neuaufbau: Gespeichert wird immer ohne Endung.', 'note' => 'Startseiten (/ und /en/) haben nie eine Endung.',
+                    'text' => '<p class="t-warn"><strong>In Entwicklung:</strong> REDAXO 6 entsteht im Branch 6.x von redaxo/core. Die Beispiele entsprechen dem Stand vom November 2026 – Namen und Details können sich bis zur Veröffentlichung noch ändern.</p><h3>Feste Adressen</h3><p>Jede Seite bekommt je Sprache einen Slug aus ihrem Namen – beim Anlegen, nicht bei jedem Umbenennen. Die Adresse ist der Weg durch die Elternseiten, etwa <code>/leistungen/beratung</code>. Ändern lässt sie sich in den Seiteneinstellungen; die alte leitet danach von selbst weiter.</p><h3>Eine Adresse je Seite</h3><p>Andere Schreibweisen – Großbuchstaben, Schrägstrich am Ende, eine andere Endung, <code>/EN/</code> statt <code>/en/</code>, alte Links mit <code>?article_id=</code> – leiten per 301 auf die eine richtige Adresse. Suchmaschinen sehen nie zwei Fassungen derselben Seite.</p><h3>Endung nach Wahl</h3><p>Ohne Endung, mit Schrägstrich, mit <code>.html</code>, gemischt (Menüpunkte mit <code>/</code>, Seiten mit <code>.html</code>) oder eine eigene – auf der Website unter „Website → Adressen“, mit Beispielen echter Seiten. Bisherige Schreibweisen leiten danach per 301 um.</p><h3>Adressen gestalten</h3><p>In den Seiteneinstellungen: „Eigene Adresse“ ganz ohne übergeordnete Seiten, auch mit Schrägstrich wie <code>angebot/sommer</code>. Für Menüpunkte „In den Adressen der Unterseiten ausblenden“ – aus <code>/leistungen/beratung</code> wird <code>/beratung</code>, in allen Sprachen. Umlaute und Akzente werden umschrieben: <code>Café Müller</code> wird <code>cafe-mueller</code>.</p><h3>Kurzlinks</h3><p>Für Plakate, Flyer und soziale Medien: eine Wunschadresse wie <code>/sommerfest</code> oder ein kurzer Code ohne verwechselbare Zeichen. Kurzlinks zählen Klicks, können ablaufen und führen auch zu anderen Websites. Angelegt werden sie auf der Website – ohne Backend.</p><h3>Sprachen und Domains</h3><p>Weitere Sprachen haben ein Präfix (<code>/en/…</code>). Weitere Domains leiten auf die Hauptadresse, Landing-Domains zeigen eine einzelne Seite unter eigener Adresse.</p><h3>Alles aus einer Hand</h3><p>Aus denselben Adressen entstehen <code>sitemap.xml</code> mit Sprachfassungen und Bildern, <code>robots.txt</code>, Canonical, hreflang, Open Graph und schema.org – für Seiten und für Einträge.</p><h3>Mehr als Seiten</h3><p>News, Termine oder Produkte bekommen eine eigene Adresse unter ihrer Seite – aus einer Tabelle nur mit Attributen, oder aus einer eigenen Quelle. Der Rewriter speichert die Adressen, hält sie eindeutig und leitet nach einer Änderung weiter.</p><h3>Im Code oder auf der Website</h3><p>Wie REDAXO 6 selbst: Einstellungen in <code>Project::configure()</code>, Quellen und Endpunkte als Attribute, Erweiterungen über Extension Points – etwa für Kurzlinks und Weiterleitungen. Was die Redaktion braucht, stellt sie auf der Website ein; legt das Projekt etwas im Code fest, gilt der Code. Ein Backend braucht es dafür nicht.</p>']],
+                ['type' => 'code', 'data' => ['eyebrow' => '', 'title' => 'Adressformat und Seitenkopf einstellen', 'intro' => 'Ohne Angabe gilt die Wahl unter „Website → Adressen“ (Vorgabe: ohne Endung). Ein Wechsel braucht keinen Neuaufbau: Gespeichert wird immer ohne Endung.', 'note' => 'Startseiten (/ und /en/) haben nie eine Endung.',
                     'items' => [
                         $c('rconfig', 'src/Project.php', 'php'),
                     ]]],
@@ -1562,6 +1589,10 @@ vollständig: Module, Templates, Schema'],
                 ['type' => 'code', 'data' => ['eyebrow' => '', 'title' => 'Eine eigene Quelle', 'intro' => 'Für alles, was keine einfache Tabelle ist: entries() liefert die Einträge, meta() die Angaben für den Seitenkopf.', 'note' => 'Ein Slug darf „/“ enthalten – jeder Teil wird wie ein Seitenname bereinigt.',
                     'items' => [
                         $c('rcode', 'src/Routing/EventRoutes.php', 'php'),
+                    ]]],
+                ['type' => 'code', 'data' => ['eyebrow' => '', 'title' => 'Kurzlinks und Weiterleitungen erweitern', 'intro' => 'Extension Points wie im Core: eine Klasse je Ereignis, angemeldet mit #[AsExtension].', 'note' => 'Weitere: ShortlinkAdded, ShortlinkDeleted, PageAddressChanged, UrlFormatChanged, RoutesRebuilt.',
+                    'items' => [
+                        $c('rshort', 'src/Campaigns.php', 'php'),
                     ]]],
                 ['type' => 'code', 'data' => ['eyebrow' => '', 'title' => 'Eigene Adressen und Tags im Seitenkopf', 'intro' => 'Endpunkte antworten vor den Seiten. Tags mit demselben Schlüssel ersetzen die Angaben des Rewriters.', 'note' => 'Von X/Twitter kommt nur twitter:card – Titel, Text und Bild liest X aus Open Graph.',
                     'items' => [

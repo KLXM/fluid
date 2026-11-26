@@ -739,6 +739,16 @@ Extension::register('FLUID_SITE_TRANSLATIONS', static function (ExtensionPoint $
   `--hx-vt-border-width`, `--hx-vt-radius`, `--hx-vt-x`, `--hx-vt-y`, `--hx-vt-focus`, `--hx-vt-focus-halo`,
   `--hx-vt-focus-width`, `--hx-vt-font-size`.
 
+## Bild an dieser Stelle
+
+Im Bearbeiten-Modus hat jedes Bild aus `img()` den Knopf „Hier anpassen“: Effekt (`Media\ImageEffect`), Sättigung,
+Helligkeit, Kontrast, Darstellung (`Media\ImageFit`: Rahmen füllen, ganzes Bild, Originalgröße) mit Hintergrund (unscharfes
+Bild, Akzentfarbe, eigene Farbe) und Ausschnitt mit Zoom. Gespeichert wird **je Verwendung** im Block unter `_img`, Schlüssel
+ist der Feldpfad (`image`, `items.2.image`) – nicht an der Datei; die Einstellung gilt nur, solange dieselbe Datei an der
+Stelle steht (`Media\ImagePlace`, `Media\ImagePlaces`). Ausgabe als Klasse über `InlineStyle` (CSP, kein `style`-Attribut).
+Der unscharfe Hintergrund braucht image_editor (Medientyp `image_editor_backdrop`, `ImageEditor::backdropUrl()`); ohne ihn
+bleibt der Hintergrund leer. Ein eigenes Kit bekommt das, wenn es Bilder über `img()` ausgibt.
+
 ## Interaktives Bild
 
 Block `fluid.hotspots` (Gruppe Medien): ein Bild aus dem Medienpool mit Markierungen – Punkt (Nummer), Kreis, Rechteck oder Fläche
