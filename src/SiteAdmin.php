@@ -2,6 +2,7 @@
 
 namespace Klxm\Fluid;
 
+use Redaxo\Core\Translation\I18n;
 use Klxm\Fluid\Form\FieldForm;
 use Klxm\Fluid\Form\Picker;
 use Klxm\Fluid\Maps\Maps;
@@ -36,7 +37,7 @@ final class SiteAdmin
             $tabs[$k] = $g['label'];
         }
 
-        return $tabs + ['languages' => 'Sprachen', 'domains' => 'Domains', 'redirects' => 'Weiterleitungen'];
+        return $tabs + ['languages' => 'Sprachen', 'addresses' => I18n::msg('fluid_addresses_tab'), 'domains' => 'Domains', 'redirects' => 'Weiterleitungen'];
     }
 
     public static function handle(string $action, User $user): array
@@ -61,6 +62,10 @@ final class SiteAdmin
                 $msg = 'Domain entfernt.';
                 $tab = 'domains';
                 break;
+            case 'addresses_save':
+                $msg = Seo\Addresses::save(Request::post('ending', 'string', ''), Request::post('suffix', 'string', ''));
+                $tab = 'addresses';
+                break;
             case 'redirect_save':
                 $msg = self::redirectSave();
                 $tab = 'redirects';
@@ -78,7 +83,7 @@ final class SiteAdmin
                 return ['results' => Maps::geocode(Request::post('q', 'string', ''))];
         }
 
-        return ['html' => self::render($tab, Request::post('lang', 'int', 0) ?: Language::getStartId()), 'tab' => $tab, 'tabs' => self::tabs(), 'message' => $msg, 'reload' => in_array($action, ['site_save', 'language_save'], true)];
+        return ['html' => self::render($tab, Request::post('lang', 'int', 0) ?: Language::getStartId()), 'tab' => $tab, 'tabs' => self::tabs(), 'message' => $msg, 'reload' => in_array($action, ['site_save', 'language_save', 'addresses_save'], true)];
     }
 
     public static function render(string $tab, int $lang = 0): string
@@ -88,6 +93,7 @@ final class SiteAdmin
             'domains' => self::domains(),
             'languages' => self::languages(),
             'redirects' => self::redirects(),
+            'addresses' => Seo\Addresses::render(),
             default => isset(Settings::schema()[$tab]) ? self::settingsForm($tab, $lang) : '',
         };
     }

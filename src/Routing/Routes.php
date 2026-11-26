@@ -207,7 +207,6 @@ final class Routes
         Extension::dispatch(new RoutesRebuilt());
     }
 
-    /** Sprachpräfix ('' für die Startsprache, sonst '/en') */
     /**
      * Language of a path from its prefix (`/en/…`, start language without prefix) and the path without prefix and slashes.
      *
@@ -228,6 +227,7 @@ final class Routes
         return [Language::getStartId(), $rest];
     }
 
+    /** Sprachpräfix ('' für die Startsprache, sonst '/en') */
     public static function prefix(int $languageId): string
     {
         if (Language::count() < 2 || $languageId === Language::getStartId()) {

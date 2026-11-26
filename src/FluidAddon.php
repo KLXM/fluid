@@ -215,6 +215,7 @@ final class FluidAddon extends Addon
         });
         // Schöne Adressen: Asset-Adressen ab dem Basis-Pfad. Adresse → Seite, ArticleUrl und Neuaufbau nach
         // Strukturänderungen hängen per #[AsExtension] am Router (Routing\Router::handleRequest …).
+        Seo\Addresses::boot();   // ending chosen on the website, unless the project sets Router::$config
         Routing\Router::boot();
 
         // Suchindex: jede Inhaltsänderung des Cores (Blöcke hinzufügen, löschen, verschieben, online/offline, Inhalte kopieren –

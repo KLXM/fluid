@@ -32,6 +32,7 @@ final class FeatureSelfTest
             'Menü' => static fn () => (new self())->run('menu'),
             'Glossar' => static fn () => (new self())->run('glossary'),
             'Wissen' => static fn () => (new self())->run('knowledge'),
+            'Adressen' => static fn () => (new self())->run('addresses'),
         ];
     }
 
@@ -113,6 +114,34 @@ final class FeatureSelfTest
         $this->eq('Vorlage aus dem Extension Point', isset($code['ext:selbsttest']) ? [$code['ext:selbsttest']['variant'], $code['ext:selbsttest']['locked']] : null, ['list', true]);
         $this->eq('Nur für ihre Tabelle', isset(ListTemplates::code($m, 'rex_andere')['ext:selbsttest']), false);
         $this->eq('Vorschau je Darstellung', str_contains(ListTemplates::preview('table'), '<svg') && str_contains(ListTemplates::preview('table'), 'aria-hidden="true"'), true);
+    }
+
+    // ------------------------------------------------------------------ Addresses
+
+    private function addresses(): void
+    {
+        $mixed = Seo\UrlEnding::Mixed->format();
+        $this->eq('Ending mixed', [$mixed->append('a', true), $mixed->append('a/b')], ['a/', 'a/b.html']);
+        $this->eq('Custom ending', Seo\UrlEnding::Custom->format('.htm')->append('a'), 'a.htm');
+        $this->eq('Invalid custom ending', (static function (): bool {
+            try {
+                Seo\UrlEnding::Custom->format('htm!');
+            } catch (\InvalidArgumentException) {
+                return true;
+            }
+
+            return false;
+        })(), true);
+        $this->eq('Page target with language', Routing\Redirects::parseTarget('redaxo://5@2#top'), ['type' => 'page', 'id' => '5', 'source' => '', 'lang' => 2, 'anchor' => '#top']);
+        $this->eq('Page target without language', Routing\Redirects::parseTarget('redaxo://5'), ['type' => 'page', 'id' => '5', 'source' => '', 'lang' => null, 'anchor' => '']);
+        $this->eq('Entry target', Routing\Redirects::parseTarget('route://news/12@1'), ['type' => 'entry', 'id' => '12', 'source' => 'news', 'lang' => 1, 'anchor' => '']);
+        $this->eq('Start language without prefix', Routing\Routes::splitLanguage('/a/b/'), [\Redaxo\Core\Language\Language::getStartId(), 'a/b']);
+        foreach (\Redaxo\Core\Language\Language::getAll() as $l) {
+            if ($l->id !== \Redaxo\Core\Language\Language::getStartId()) {
+                $this->eq('Language prefix ' . $l->code, Routing\Routes::splitLanguage('/' . strtoupper($l->code) . '/a'), [$l->id, 'a']);
+            }
+        }
+        $this->eq('Choices in the site panel', substr_count(Seo\Addresses::render(), 'name="ending"'), count(Seo\UrlEnding::cases()));
     }
 
     // ------------------------------------------------------------------ Menü

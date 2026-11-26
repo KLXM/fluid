@@ -71,6 +71,8 @@ final class Router
     /** Einstellungen des Projekts (Project::configure()); null = Vorgaben */
     public static ?RoutingConfig $config = null;
 
+    private static ?RoutingConfig $defaults = null;
+
     /** Parameter, bei denen ein ?article_id-Aufruf bleibt, wie er ist (API, Arbeitsversion, Media Manager; weitere per keep()) */
     private static array $keep = ['rex-api-call', 'rex_version', 'rex_history_date', 'rex_media_type', 'rex_media_file'];
 
@@ -97,7 +99,22 @@ final class Router
 
     public static function config(): RoutingConfig
     {
-        return self::$config ??= new RoutingConfig();
+        return self::$config ?? self::$defaults ??= new RoutingConfig();
+    }
+
+    /**
+     * Default configuration of an addon (e.g. chosen in its interface) – used only while the project sets no
+     * Router::$config. Priority: project › addon › built-in defaults.
+     */
+    public static function defaults(?RoutingConfig $config): void
+    {
+        self::$defaults = $config;
+    }
+
+    /** Does the project set the configuration in code? Interfaces then show it read-only. */
+    public static function configuredByProject(): bool
+    {
+        return null !== self::$config;
     }
 
     // ------------------------------------------------------------------ Anmeldung der Bausteine

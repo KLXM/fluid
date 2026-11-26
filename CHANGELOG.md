@@ -3,6 +3,9 @@
 ## Unveröffentlicht
 
 - Schraffur beim Abstand-Ziehen mit weißen Linien – auch auf dunklen Abschnitten gut zu sehen.
+- **Endung der Adressen auf der Website wählen** (Website → Adressen): ohne, Schrägstrich, `.html`, gemischt (Menüpunkte `/`,
+  Seiten `.html`) oder eigene – mit Beispielen echter Seiten. Bisherige Schreibweisen leiten per 301 um. Setzt das Projekt
+  `Router::$config`, gilt der Code (Anzeige nur lesend); neu dafür `Router::defaults()` und `Router::configuredByProject()`.
 - Fix: Automatische Weiterleitungen nach geänderten Adressen führten aus einer weiteren Sprache auf die Seite der Startsprache
   (`/en/alt` → `/neu` statt `/en/new`). Neue Regeln speichern die Sprache (`redaxo://ID@Sprache`), bestehende nehmen die Sprache der
   aufgerufenen Adresse – ohne Migration.
