@@ -2,9 +2,11 @@
 
 namespace Klxm\Fluid\Routing;
 
+use Klxm\Fluid\Routing\ExtensionPoint\RedirectMatched;
 use Normalizer;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Database\Sql;
+use Redaxo\Core\ExtensionPoint\Extension;
 use Redaxo\Core\Filesystem\Url;
 use Redaxo\Core\Language\Language;
 use Throwable;
@@ -15,6 +17,7 @@ use function count;
 use function explode;
 use function implode;
 use function in_array;
+use function is_string;
 use function mb_check_encoding;
 use function mb_substr;
 use function preg_match;
@@ -150,7 +153,7 @@ final class Redirects
             array_unshift($hashes, sha1(self::key($trimmed . '?' . $query)));
         }
         try {
-            $rules = Sql::factory()->getArray('SELECT * FROM ' . self::TABLE . ' WHERE active = 1 AND (source_hash IN (' . implode(',', array_fill(0, count($hashes), '?')) . ') OR wildcard = 1) ORDER BY id', $hashes);
+            $rules = Sql::factory()->getArray('SELECT * FROM ' . self::TABLE . ' WHERE active = 1 AND (expires IS NULL OR expires > NOW()) AND (source_hash IN (' . implode(',', array_fill(0, count($hashes), '?')) . ') OR wildcard = 1) ORDER BY id', $hashes);
         } catch (Throwable) {
             return null;
         }
@@ -170,6 +173,10 @@ final class Redirects
         if (!str_contains((string) $rule['source'], '?') && '' !== $query) {
             [$u, $frag] = array_pad(explode('#', $loc, 2), 2, null);
             $loc = $u . (str_contains($u, '?') ? '&' : '?') . $query . (null !== $frag ? '#' . $frag : '');
+        }
+        $loc = Extension::dispatch(new RedirectMatched($loc, $rule, $code));
+        if (!is_string($loc) || '' === $loc) {
+            return null;
         }
         // Schleife (Ziel = Quelle): keine Weiterleitung
         $locPath = preg_match('~^https?://~i', $loc) ? (string) parse_url($loc, PHP_URL_PATH) : explode('?', explode('#', $loc, 2)[0], 2)[0];
@@ -227,6 +234,12 @@ final class Redirects
         }
 
         return null;
+    }
+
+    /** Is there a rule for exactly this address (no wildcard)? */
+    public static function exists(string $source): bool
+    {
+        return [] !== Sql::factory()->getArray('SELECT id FROM ' . self::TABLE . ' WHERE source_hash = ? AND wildcard = 0 LIMIT 1', [sha1(self::key(self::normalize($source)))]);
     }
 
     public static function hit(int $id): void

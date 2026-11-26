@@ -4,8 +4,10 @@ namespace Klxm\Fluid;
 
 use InvalidArgumentException;
 use Klxm\Fluid\Data\ListTemplates;
+use Redaxo\Core\Content\Article;
 use Redaxo\Core\ExtensionPoint\Extension;
 use Redaxo\Core\ExtensionPoint\ExtensionPoint;
+use Redaxo\Core\Filesystem\Url;
 use Redaxo\Core\Language\Language;
 use Redaxo\Core\Security\Permission;
 use Throwable;
@@ -43,6 +45,7 @@ final class FeatureSelfTest
             'Glossar' => static fn () => new self()->run('glossary'),
             'Wissen' => static fn () => new self()->run('knowledge'),
             'Adressen' => static fn () => new self()->run('addresses'),
+            'Kurzlinks' => static fn () => new self()->run('shortlinks'),
         ];
     }
 
@@ -154,6 +157,47 @@ final class FeatureSelfTest
         $this->eq('Slug with umlauts and accents', Routing\Routes::slugify('Café Müller – Łódź'), 'cafe-mueller-lodz');
         $this->eq('Own address with slash', Routing\Routes::slugifyPath(' Angebot / Sommer 2027 /'), 'angebot/sommer-2027');
         $this->eq('Choices in the site panel', substr_count(Seo\Addresses::render(), 'name="ending"'), count(Seo\UrlEnding::cases()));
+    }
+
+    // ------------------------------------------------------------------ Shortlinks (with their extension points)
+
+    private function shortlinks(): void
+    {
+        $home = Article::getSiteStartArticleId();
+        $target = 'redaxo://' . $home . '@' . Language::getStartId();
+        $events = [];
+        $suppress = false;
+        Extension::register(Routing\ExtensionPoint\ShortlinkPath::class, static fn (Routing\ExtensionPoint\ShortlinkPath $ep): string => '/selftest' . $ep->subject);
+        Extension::register(Routing\ExtensionPoint\ShortlinkAdded::class, static function (Routing\ExtensionPoint\ShortlinkAdded $ep) use (&$events): void {
+            $events[] = 'added ' . $ep->shortlink->path;
+        });
+        Extension::register(Routing\ExtensionPoint\ShortlinkDeleted::class, static function (Routing\ExtensionPoint\ShortlinkDeleted $ep) use (&$events): void {
+            $events[] = 'deleted ' . $ep->shortlink->path;
+        });
+        Extension::register(Routing\ExtensionPoint\RedirectMatched::class, static function (Routing\ExtensionPoint\RedirectMatched $ep) use (&$suppress): ?string {
+            return $suppress && 'short' === $ep->rule['origin'] ? '' : null;
+        });
+        $link = Routing\Shortlinks::create('Probe Link', $target);
+        try {
+            $this->eq('Path from the extension point', $link->path, '/selftest/probe-link');
+            $this->eq('Taken address rejected', (static function () use ($target): bool {
+                try {
+                    Routing\Shortlinks::create('probe-link', $target);
+                } catch (InvalidArgumentException) {
+                    return true;
+                }
+
+                return false;
+            })(), true);
+            $match = Routing\Redirects::match($link->path);
+            $this->eq('Leads to the page with 302', [$match['code'] ?? null, $match['location'] ?? null], [302, Url::article($home)]);
+            $suppress = true;
+            $this->eq('RedirectMatched can suppress', Routing\Redirects::match($link->path), null);
+        } finally {
+            Routing\Shortlinks::delete($link->id, $target);
+        }
+        $this->eq('Events', $events, ['added /selftest/probe-link', 'deleted /selftest/probe-link']);
+        $this->eq('Deleted', Routing\Redirects::exists($link->path), false);
     }
 
     // ------------------------------------------------------------------ Menü

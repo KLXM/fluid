@@ -536,6 +536,22 @@ Eingestellt wird er wie REDAXO 6 selbst im Code, ein Backend braucht er nicht.
   „Eigene Adresse“ – der Slug ist die ganze Adresse ohne Elternseiten, auch mit `/` (`Routes::setAddress()`);
   „In den Adressen der Unterseiten ausblenden“ für Menüpunkte – aus `/leistungen/beratung` wird `/beratung`, in allen
   Sprachen (`Routes::setHidden()`). Kollisionen bekommen eine Nummer, alte Adressen eine Weiterleitung.
+- **Kurzlinks** (`Routing\Shortlinks`): Weiterleitungen mit `origin = 'short'`, Code 302 (Ziel änderbar, jeder Klick
+  zählt), optional mit Ablaufdatum (`expires`, danach 404). Anlegen in den Seiteneinstellungen (Wunschadresse oder Code
+  ohne Verwechsler wie 0/o, 1/l) oder unter „Website → Weiterleitungen“ auch zu anderen Websites. Belegte Adressen (Seite,
+  Eintrag, Regel) werden abgelehnt.
+- **Extension Points** (Klassen in `Routing\ExtensionPoint`, wie im Core): `ShortlinkPath` (Adresse eines neuen Kurzlinks
+  ändern, z. B. Präfix `/go/`), `ShortlinkAdded`, `ShortlinkDeleted`, `RedirectMatched` (Ziel einer Weiterleitung ändern,
+  z. B. Kampagnen-Parameter; `''` = nicht weiterleiten), `PageAddressChanged`, `UrlFormatChanged`, dazu wie bisher
+  `RoutesRebuilt`, `ArticleMeta`, `PageMetaResolved`, `SitemapEntries`, `RobotsTxt`.
+
+  ```php
+  #[AsExtension]
+  public static function shortlinkPrefix(ShortlinkPath $ep): string
+  {
+      return '/go' . $ep->subject;
+  }
+  ```
 - **Endung** (`UrlFormat`): auf der Website unter „Website → Adressen“ (Vorgabe des AddOns über `Router::defaults()`) oder
   im Projekt per `Router::$config` – das Projekt gewinnt, die Oberfläche zeigt es dann nur an.
 - **Neu berechnet** wird nach jeder Strukturänderung (Artikel, Kategorien, Status, Sprachen – per `#[AsExtension]` am

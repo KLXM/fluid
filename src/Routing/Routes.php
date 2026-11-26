@@ -2,6 +2,7 @@
 
 namespace Klxm\Fluid\Routing;
 
+use Klxm\Fluid\Routing\ExtensionPoint\PageAddressChanged;
 use Klxm\Fluid\Routing\ExtensionPoint\RoutesRebuilt;
 use Normalizer;
 use Redaxo\Core\Content\Article;
@@ -145,6 +146,7 @@ final class Routes
             ON DUPLICATE KEY UPDATE slug = VALUES(slug), own_path = VALUES(own_path)', [$articleId, $languageId, $slug, '', $ownPath ? 1 : 0]);
         self::invalidate();
         self::rebuild();
+        Extension::dispatch(new PageAddressChanged($articleId, $languageId, self::options($articleId, $languageId)));
 
         return self::slug($articleId, $languageId) ?? $slug;
     }
@@ -155,6 +157,7 @@ final class Routes
         Sql::factory()->setQuery('UPDATE ' . self::TABLE . ' SET hide = ? WHERE article_id = ?', [$hide ? 1 : 0, $articleId]);
         self::invalidate();
         self::rebuild();
+        Extension::dispatch(new PageAddressChanged($articleId, null, new AddressOptions(hidden: $hide)));
     }
 
     public static function options(int $articleId, int $languageId): AddressOptions

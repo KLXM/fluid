@@ -9,6 +9,12 @@
 - **Adressen gestalten** in den Seiteneinstellungen: „Eigene Adresse“ ohne übergeordnete Seiten (auch mit `/`, z. B.
   `angebot/sommer`) und für Menüpunkte „In den Adressen der Unterseiten ausblenden“ (`/leistungen/beratung` → `/beratung`).
   Adressen werden jetzt entlang des Seitenbaums berechnet und auf der ganzen Adresse eindeutig gehalten; alte leiten weiter.
+- **Kurzlinks** in den Seiteneinstellungen: Wunschadresse oder kurzer Code, kopieren mit einem Klick, Klicks zählen,
+  optional gültig bis zu einem Datum. Unter „Website → Weiterleitungen“ auch zu anderen Websites (Art „Kurzlink“).
+  Belegte Adressen werden abgelehnt. Redakteure brauchen dafür kein Backend, nur das Recht, die Seite zu bearbeiten.
+- **Extension Points** fürs Routing wie im Core: `ShortlinkPath`, `ShortlinkAdded`, `ShortlinkDeleted`, `RedirectMatched`,
+  `PageAddressChanged`, `UrlFormatChanged`.
+- Weiterleitungen können ablaufen (Spalte `expires`).
 - Adressen aus Titeln schreiben Akzente um (`Café` → `cafe`, `Łódź` → `lodz`), bisher wurden sie zu Bindestrichen.
 - Fix: Automatische Weiterleitungen nach geänderten Adressen führten aus einer weiteren Sprache auf die Seite der Startsprache
   (`/en/alt` → `/neu` statt `/en/new`). Neue Regeln speichern die Sprache (`redaxo://ID@Sprache`), bestehende nehmen die Sprache der

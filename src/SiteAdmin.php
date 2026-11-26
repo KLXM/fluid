@@ -2,6 +2,7 @@
 
 namespace Klxm\Fluid;
 
+use InvalidArgumentException;
 use Klxm\Fluid\Form\FieldForm;
 use Klxm\Fluid\Form\Picker;
 use Klxm\Fluid\Maps\Maps;
@@ -9,6 +10,7 @@ use Klxm\Fluid\Routing\DomainRole;
 use Klxm\Fluid\Routing\Domains;
 use Klxm\Fluid\Routing\Redirects;
 use Klxm\Fluid\Routing\Routes;
+use Klxm\Fluid\Routing\Shortlinks;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Database\Sql;
 use Redaxo\Core\Http\Request;
@@ -252,7 +254,7 @@ final class SiteAdmin
             . '<form class="site-card" data-site-form="redirect_save" data-tab="redirects"><div class="blocks-form__grid">'
             . '<div class="blocks-form__field"><label class="control-label">Alte Adresse</label><input class="form-control" name="source" placeholder="/alte-seite oder /alt/*" required data-redirect-source></div>'
             . '<div class="blocks-form__field"><label class="control-label">Ziel</label>' . Picker::link('redirect_target', 'target', '', false) . '<p class="help-block">Seite, /pfad oder https://…</p></div>'
-            . '<div class="blocks-form__field is-half"><label class="control-label">Art</label><select class="form-control" name="code"><option value="301">301 – dauerhaft</option><option value="302">302 – vorübergehend</option><option value="410">410 – gelöscht (ohne Ziel)</option></select></div>'
+            . '<div class="blocks-form__field is-half"><label class="control-label">Art</label><select class="form-control" name="code"><option value="301">301 – dauerhaft</option><option value="302">302 – vorübergehend</option><option value="410">410 – gelöscht (ohne Ziel)</option><option value="short">' . I18n::msg('fluid_shortlink_option') . '</option></select></div>'
             . '<div class="blocks-form__field is-half"><label class="control-label">Notiz (optional)</label><input class="form-control" name="note" maxlength="190"></div>'
             . '</div><div class="site-actions"><button type="submit" class="btn btn--primary">Weiterleitung anlegen</button></div></form>';
         try {
@@ -270,7 +272,9 @@ final class SiteAdmin
                     $target = $a->name . ' (' . (Routes::prefix($a->languageId) . '/' . Routes::path($a->id, $a->languageId)) . ')';
                 }
                 $h .= '<li class="site-list__item"><span class="site-list__main"><code>' . escape((string) $r['source']) . '</code> → ' . escape(410 === (int) $r['code'] ? 'gelöscht (410)' : $target)
-                    . '<small>' . (int) $r['code'] . ' · ' . ('auto' === $r['origin'] ? 'automatisch' : 'manuell') . ' · ' . (int) $r['hits'] . ' Aufrufe' . ('' !== (string) $r['note'] && 'auto' !== $r['origin'] ? ' · ' . escape((string) $r['note']) : '') . '</small></span>'
+                    . '<small>' . (int) $r['code'] . ' · ' . match ((string) $r['origin']) {
+                        'auto' => 'automatisch', Shortlinks::ORIGIN => I18n::msg('fluid_shortlink'), default => 'manuell'
+                    } . ' · ' . (int) $r['hits'] . ' Aufrufe' . (null !== $r['expires'] && strtotime((string) $r['expires']) < time() ? ' · ' . I18n::msg('fluid_shortlink_expired', date('d.m.Y', (int) strtotime((string) $r['expires']))) : '') . ('' !== (string) $r['note'] && 'auto' !== $r['origin'] ? ' · ' . escape((string) $r['note']) : '') . '</small></span>'
                     . '<button type="button" class="btn btn--icon" data-site-act="redirect_delete" data-id="' . (int) $r['id'] . '" data-confirm="Weiterleitung löschen?" aria-label="Löschen">✕</button></li>';
             }
             $h .= '</ul>';
@@ -290,7 +294,8 @@ final class SiteAdmin
     private static function redirectSave(): string
     {
         $source = Redirects::normalize(Request::post('source', 'string', ''));
-        $code = Request::post('code', 'int', 301);
+        $short = 'short' === Request::post('code', 'string', '');
+        $code = $short ? 302 : Request::post('code', 'int', 301);
         $target = trim(Request::post('target', 'string', ''));
         if ('' === $source || '/' === $source) {
             throw new ApiError('Bitte die alte Adresse angeben (z. B. /alte-seite).');
@@ -300,6 +305,15 @@ final class SiteAdmin
         }
         if (preg_match('~^\d+$~', $target)) {
             $target = 'redaxo://' . $target;
+        }
+        if ($short) {
+            try {
+                Shortlinks::create($source, $target, null, Request::post('note', 'string', ''));
+            } catch (InvalidArgumentException $e) {
+                throw new ApiError(I18n::rawMsg('fluid_shortlink_taken', $e->getMessage()));
+            }
+
+            return I18n::rawMsg('fluid_shortlink_saved', $source);
         }
         Redirects::save(['source' => $source, 'target' => 410 === $code ? '' : $target, 'code' => $code, 'note' => Request::post('note', 'string', '')]);
 

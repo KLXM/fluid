@@ -685,6 +685,32 @@
         if (v !== sl.value) sl.value = v;
       }
     });
+    // Shortlinks: own small actions, no page reload; the new link is copied right away
+    const copy = async (text) => { try { await navigator.clipboard.writeText(text); return true; } catch { return false; } };
+    const shortlink = async (action, data) => {
+      const box = pform.querySelector('[data-shortlinks]');
+      const fd = new FormData();
+      Object.entries(data).forEach(([k, v]) => fd.append(k, v));
+      try {
+        const res = await api(action, fd);
+        if (box) box.outerHTML = res.html;
+        if (res.copy) await copy(res.copy);
+        say(res.message);
+        pageSaved = snap();
+      } catch (err) { say(err.message, true); }
+    };
+    pform.addEventListener('click', async (e) => {
+      const c = e.target.closest('[data-copy]');
+      if (c) { say((await copy(c.dataset.copy)) ? 'Kopiert: ' + c.dataset.copy : c.dataset.copy); return; }
+      const del = e.target.closest('[data-shortlink-delete]');
+      if (del) { if (await ask({ title: 'Kurzlink löschen?', body: 'Wer ihn danach aufruft, landet auf „nicht gefunden“.', ok: 'Löschen', danger: true })) shortlink('shortlink_delete', { id: del.dataset.shortlinkDelete }); return; }
+      if (e.target.closest('[data-shortlink-add]')) {
+        shortlink('shortlink_add', { path: pform.querySelector('[data-shortlink-path]')?.value || '', expires: pform.querySelector('[data-shortlink-expires]')?.value || '' });
+      }
+    });
+    pform.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && e.target.matches('[data-shortlink-path], [data-shortlink-expires]')) { e.preventDefault(); pform.querySelector('[data-shortlink-add]')?.click(); }
+    });
     $('[data-page-settings]')?.addEventListener('click', async () => {
       menu.hidden = true;
       if (!panel.hidden || !dpanel.hidden) return say('Bitte zuerst die andere Seitenleiste schließen.', true);

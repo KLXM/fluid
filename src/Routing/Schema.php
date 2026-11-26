@@ -61,6 +61,7 @@ final class Schema
             ->ensureColumn(new Column('hits', 'int(10) unsigned', false, '0'))
             ->ensureColumn(new Column('last_hit', 'datetime', true))
             ->ensureColumn(new Column('active', 'tinyint(1)', false, '1'))
+            ->ensureColumn(new Column('expires', 'datetime', true))
             ->ensureColumn(new Column('created', 'datetime', true))
             ->ensureColumn(new Column('updated', 'datetime', true))
             ->ensureIndex(new Index('source_hash', ['source_hash']))

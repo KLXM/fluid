@@ -5,12 +5,14 @@ namespace Klxm\Fluid\Seo;
 use InvalidArgumentException;
 use Klxm\Fluid\ApiError;
 use Klxm\Fluid\FluidAddon;
+use Klxm\Fluid\Routing\ExtensionPoint\UrlFormatChanged;
 use Klxm\Fluid\Routing\Router;
 use Klxm\Fluid\Routing\Routes;
 use Klxm\Fluid\Routing\RoutingConfig;
 use Klxm\Fluid\Routing\UrlFormat;
 use Redaxo\Core\Cache;
 use Redaxo\Core\Content\Article;
+use Redaxo\Core\ExtensionPoint\Extension;
 use Redaxo\Core\Language\Language;
 use Redaxo\Core\Translation\I18n;
 
@@ -65,6 +67,7 @@ final class Addresses
         }
         FluidAddon::instance()->setConfig(self::CONFIG, ['ending' => $choice->value, 'suffix' => $suffix]);
         Router::defaults(new RoutingConfig(format: $format));
+        Extension::dispatch(new UrlFormatChanged($format));
         Cache::delete();   // rendered content contains the old addresses
 
         return I18n::rawMsg('fluid_addresses_saved');

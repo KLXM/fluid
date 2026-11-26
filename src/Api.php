@@ -2,6 +2,8 @@
 
 namespace Klxm\Fluid;
 
+use DateTimeImmutable;
+use InvalidArgumentException;
 use Klxm\Fluid\Media\ImagePlaces;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\ArticleCache;
@@ -119,7 +121,7 @@ final class Api
             'move', 'reorder', 'col_move' => 'moveSlice[]',
             'status' => 'publishSlice[]',
             'lang_copy' => 'copyContent[]',
-            'page_save' => $isCat ? 'editCategory[]' : 'editArticle[]',
+            'page_save', 'shortlink_add', 'shortlink_delete' => $isCat ? 'editCategory[]' : 'editArticle[]',
             'page_add' => 'menu' === Request::post('kind', 'string', 'page') ? 'addCategory[]' : 'addArticle[]',
             'template_save' => 'addArticle[]',
             default => null,
@@ -208,6 +210,7 @@ final class Api
             })(),
             'page' => self::page($article),
             'page_save' => self::pageSave($article, $user),
+            'shortlink_add', 'shortlink_delete' => self::shortlinkAction($article, $action),
             'page_add' => self::pageAdd($article, $user),
             'template_save' => (static function () use ($article, $user) {
                 if (!self::mayTemplates($user)) {
@@ -489,6 +492,7 @@ final class Api
             . $f('Bild für soziale Netzwerke', Form\Picker::media('page_image', 'image', $s['image'], true, false), 'Erscheint, wenn die Seite geteilt wird (z. B. 1200 × 630 px).')
             . '<div class="blocks-form__field"><label class="blocks-form__check"><input type="checkbox" name="noindex" value="1"' . ($s['noindex'] ? ' checked' : '') . '> Nicht in Suchmaschinen aufnehmen</label></div>'
             . self::blogFields($article, $f)
+            . self::shortlinkField($article)
             . '</div></div>';
 
         return ['html' => $html, 'label' => 'Seiteneinstellungen'];
@@ -641,6 +645,59 @@ final class Api
         }
 
         return $html;
+    }
+
+    /** Shortlinks of the page in this language: list with clicks, copy and delete, plus a row to add one */
+    private static function shortlinkField(Article $article): string
+    {
+        $items = '';
+        foreach (Routing\Shortlinks::forTarget(self::shortlinkTarget($article)) as $link) {
+            $url = Routing\Router::absolute(Routing\Router::base() . $link->path);
+            $meta = I18n::msg('fluid_shortlink_hits', $link->hits)
+                . (null !== $link->expires ? ' · ' . I18n::msg($link->isExpired() ? 'fluid_shortlink_expired' : 'fluid_shortlink_until', $link->expires->format('d.m.Y')) : '');
+            $items .= '<li class="shortlinks__item' . ($link->isExpired() ? ' is-expired' : '') . '"><span><code>' . escape($url) . '</code><small>' . $meta . '</small></span>'
+                . '<button type="button" class="btn btn--icon" data-copy="' . escape($url) . '" aria-label="' . I18n::msg('fluid_shortlink_copy') . '" title="' . I18n::msg('fluid_shortlink_copy') . '">⧉</button>'
+                . '<button type="button" class="btn btn--icon" data-shortlink-delete="' . $link->id . '" aria-label="' . I18n::msg('fluid_shortlink_delete') . '" title="' . I18n::msg('fluid_shortlink_delete') . '">✕</button></li>';
+        }
+
+        return '<div class="blocks-form__field shortlinks" data-shortlinks><span class="control-label">' . I18n::msg('fluid_shortlinks') . '</span>'
+            . ('' !== $items ? '<ul class="shortlinks__list" role="list">' . $items . '</ul>' : '')
+            . '<div class="shortlinks__add"><span class="blocks-slug__base">' . escape(Routing\Routes::prefix($article->languageId) . '/') . '</span>'
+            . '<input class="form-control" type="text" data-shortlink-path maxlength="60" spellcheck="false" placeholder="' . I18n::msg('fluid_shortlink_placeholder') . '" aria-label="' . I18n::msg('fluid_shortlink_path') . '">'
+            . '<input class="form-control" type="date" data-shortlink-expires aria-label="' . I18n::msg('fluid_shortlink_expires') . '" title="' . I18n::msg('fluid_shortlink_expires') . '">'
+            . '<button type="button" class="btn" data-shortlink-add>' . I18n::msg('fluid_shortlink_add') . '</button></div>'
+            . '<p class="help-block">' . I18n::msg('fluid_shortlink_help') . '</p></div>';
+    }
+
+    /** @return array{html: string, message: string, copy?: string} */
+    private static function shortlinkAction(Article $article, string $action): array
+    {
+        $target = self::shortlinkTarget($article);
+        if ('shortlink_delete' === $action) {
+            Routing\Shortlinks::delete(Request::post('id', 'int', 0), $target);
+
+            return ['html' => self::shortlinkField($article), 'message' => I18n::rawMsg('fluid_shortlink_deleted')];
+        }
+        $expires = Request::post('expires', 'string', '');
+        $date = 1 === preg_match('~^\d{4}-\d{2}-\d{2}$~', $expires) ? new DateTimeImmutable($expires) : null;
+        if (null !== $date && $date < new DateTimeImmutable('today')) {
+            self::fail(I18n::rawMsg('fluid_shortlink_past'));
+        }
+        $wish = trim(Request::post('path', 'string', ''), "/ \t");
+        try {
+            $link = Routing\Shortlinks::create('' === $wish ? '' : Routing\Routes::prefix($article->languageId) . '/' . $wish, $target, $date);
+        } catch (InvalidArgumentException $e) {
+            self::fail(I18n::rawMsg('fluid_shortlink_taken', $e->getMessage()));
+        }
+
+        $url = Routing\Router::absolute(Routing\Router::base() . $link->path);
+
+        return ['html' => self::shortlinkField($article), 'message' => I18n::rawMsg('fluid_shortlink_created', $url), 'copy' => $url];
+    }
+
+    private static function shortlinkTarget(Article $article): string
+    {
+        return 'redaxo://' . $article->id . '@' . $article->languageId;
     }
 
     /** Adresse der Elternseiten (für die Anzeige vor dem Slug), z. B. „/leistungen/“ */
