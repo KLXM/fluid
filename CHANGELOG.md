@@ -2,6 +2,7 @@
 
 ## Unveröffentlicht
 
+- Schraffur beim Abstand-Ziehen mit weißen Linien – auch auf dunklen Abschnitten gut zu sehen.
 - Demo „REDAXO 6“: Die Dachzeile der Startseite zeigt mit dem AddOn fluid_demo die aktuelle Version von fluid (`{fluid-version}`).
 
 ## 1.0.0-beta.12 – 2026-11-27

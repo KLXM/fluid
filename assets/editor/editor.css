@@ -118,9 +118,9 @@ html:not(.blocks-editing) .fluid-mod__btn { display: none; }
 @media (forced-colors:active){.cms-target-edit.cms-target-edit{border:1px solid ButtonText;background:ButtonFace;color:ButtonText;opacity:1}}
 
 /* Abstand ziehen: der Abstand (padding oben/unten) ist schraffiert, der Abschnitt leuchtet auf – editor.js spaceHandles */
-html.blocks-editing .fluid-band { position: absolute; left: 0; right: 0; z-index: 7; height: 0; pointer-events: none; opacity: 0; transition: opacity .15s, height .15s; background: repeating-linear-gradient(-45deg, rgb(124 58 237 / .16) 0 6px, rgb(124 58 237 / .06) 6px 12px); }
-html.blocks-editing .fluid-band--top { top: 0; border-bottom: 1px dashed rgb(124 58 237 / .6); }
-html.blocks-editing .fluid-band--bottom { bottom: 0; border-top: 1px dashed rgb(124 58 237 / .6); }
+html.blocks-editing .fluid-band { position: absolute; left: 0; right: 0; z-index: 7; height: 0; pointer-events: none; opacity: 0; transition: opacity .15s, height .15s; background: repeating-linear-gradient(-45deg, rgb(124 58 237 / .28) 0 5px, rgb(255 255 255 / .55) 5px 6.5px, rgb(124 58 237 / .08) 6.5px 11px, rgb(255 255 255 / .55) 11px 12.5px); }
+html.blocks-editing .fluid-band--top { top: 0; border-bottom: 1px dashed rgb(124 58 237 / .8); box-shadow: 0 1px 0 rgb(255 255 255 / .7); }
+html.blocks-editing .fluid-band--bottom { bottom: 0; border-top: 1px dashed rgb(124 58 237 / .8); box-shadow: 0 -1px 0 rgb(255 255 255 / .7); }
 html.blocks-editing .fluid-band.is-on { opacity: 1; }
 html.blocks-editing .fluid-band-owner { box-shadow: inset 0 0 0 2px rgb(124 58 237 / .7), 0 0 0 4px rgb(124 58 237 / .14) !important; }
 html:not(.blocks-editing) .fluid-band { display: none; }
