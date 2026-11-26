@@ -2,9 +2,19 @@
 
 namespace Klxm\Fluid;
 
+use InvalidArgumentException;
 use Klxm\Fluid\Data\ListTemplates;
 use Redaxo\Core\ExtensionPoint\Extension;
 use Redaxo\Core\ExtensionPoint\ExtensionPoint;
+use Redaxo\Core\Language\Language;
+use Redaxo\Core\Security\Permission;
+use Throwable;
+
+use function array_slice;
+use function count;
+use function in_array;
+
+use const JSON_UNESCAPED_UNICODE;
 
 /**
  * Selbsttest der Funktionen aus 1.0.0-beta.10 ff. (`console fluid:selftest`): je Gruppe eine Methode, ohne Daten zu ändern.
@@ -27,12 +37,12 @@ final class FeatureSelfTest
     public static function groups(): array
     {
         return [
-            'Rechte' => static fn () => (new self())->run('rights'),
-            'Listen-Vorlagen' => static fn () => (new self())->run('listTemplates'),
-            'Menü' => static fn () => (new self())->run('menu'),
-            'Glossar' => static fn () => (new self())->run('glossary'),
-            'Wissen' => static fn () => (new self())->run('knowledge'),
-            'Adressen' => static fn () => (new self())->run('addresses'),
+            'Rechte' => static fn () => new self()->run('rights'),
+            'Listen-Vorlagen' => static fn () => new self()->run('listTemplates'),
+            'Menü' => static fn () => new self()->run('menu'),
+            'Glossar' => static fn () => new self()->run('glossary'),
+            'Wissen' => static fn () => new self()->run('knowledge'),
+            'Adressen' => static fn () => new self()->run('addresses'),
         ];
     }
 
@@ -41,7 +51,7 @@ final class FeatureSelfTest
     {
         try {
             $this->{$method}();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->fails[] = $method . ': ' . $e->getMessage();
         }
 
@@ -77,7 +87,7 @@ final class FeatureSelfTest
         $this->eq('Rolle bekommt beide Optionen', null !== $once && str_contains($once, '|moveSlice[]|fluid[design]|fluid[design_full]|'), true);
         $this->eq('Migration idempotent', Perm::withDesign((string) $once), null);
         $this->eq('Leere Optionen', json_decode((string) Perm::withDesign('{"options":null}'), true)['options'] ?? null, '|fluid[design]|fluid[design_full]|');
-        $this->eq('Optionen angemeldet', \Redaxo\Core\Security\Permission::has(Perm::DESIGN) && \Redaxo\Core\Security\Permission::has(Perm::DESIGN_FULL), true);
+        $this->eq('Optionen angemeldet', Permission::has(Perm::DESIGN) && Permission::has(Perm::DESIGN_FULL), true);
     }
 
     // ------------------------------------------------------------------ Listen-Vorlagen
@@ -91,7 +101,7 @@ final class FeatureSelfTest
             return;
         }
         $keys = ListTemplates::keys($m);
-        $this->eq('Darstellung gehört zur Vorlage', \in_array('variant', $keys, true), true);
+        $this->eq('Darstellung gehört zur Vorlage', in_array('variant', $keys, true), true);
         $this->eq('Tabelle, Titel, Bedingung und Adressen bleiben beim Block', array_values(array_intersect($keys, ['table', 'title', 'title_field', 'filter_field', 'detail', 'template', 'limit'])), []);
         $data = ['table' => 'rex_x', 'variant' => 'cards', 'size' => 's', 'title' => 'Hallo'];
         $this->eq('Ohne Vorlage unverändert', ListTemplates::resolve($m, $data), $data);
@@ -126,7 +136,7 @@ final class FeatureSelfTest
         $this->eq('Invalid custom ending', (static function (): bool {
             try {
                 Seo\UrlEnding::Custom->format('htm!');
-            } catch (\InvalidArgumentException) {
+            } catch (InvalidArgumentException) {
                 return true;
             }
 
@@ -135,12 +145,14 @@ final class FeatureSelfTest
         $this->eq('Page target with language', Routing\Redirects::parseTarget('redaxo://5@2#top'), ['type' => 'page', 'id' => '5', 'source' => '', 'lang' => 2, 'anchor' => '#top']);
         $this->eq('Page target without language', Routing\Redirects::parseTarget('redaxo://5'), ['type' => 'page', 'id' => '5', 'source' => '', 'lang' => null, 'anchor' => '']);
         $this->eq('Entry target', Routing\Redirects::parseTarget('route://news/12@1'), ['type' => 'entry', 'id' => '12', 'source' => 'news', 'lang' => 1, 'anchor' => '']);
-        $this->eq('Start language without prefix', Routing\Routes::splitLanguage('/a/b/'), [\Redaxo\Core\Language\Language::getStartId(), 'a/b']);
-        foreach (\Redaxo\Core\Language\Language::getAll() as $l) {
-            if ($l->id !== \Redaxo\Core\Language\Language::getStartId()) {
+        $this->eq('Start language without prefix', Routing\Routes::splitLanguage('/a/b/'), [Language::getStartId(), 'a/b']);
+        foreach (Language::getAll() as $l) {
+            if ($l->id !== Language::getStartId()) {
                 $this->eq('Language prefix ' . $l->code, Routing\Routes::splitLanguage('/' . strtoupper($l->code) . '/a'), [$l->id, 'a']);
             }
         }
+        $this->eq('Slug with umlauts and accents', Routing\Routes::slugify('Café Müller – Łódź'), 'cafe-mueller-lodz');
+        $this->eq('Own address with slash', Routing\Routes::slugifyPath(' Angebot / Sommer 2027 /'), 'angebot/sommer-2027');
         $this->eq('Choices in the site panel', substr_count(Seo\Addresses::render(), 'name="ending"'), count(Seo\UrlEnding::cases()));
     }
 
@@ -169,8 +181,8 @@ final class FeatureSelfTest
         $this->eq('Nicht in Links und Knöpfen', str_contains($out, '<a href="/x">SPF</a>') && str_contains($out, '<button>Barrierefreiheit</button>'), true);
         $this->eq('Nur das erste Vorkommen', substr_count($out, 'class="gl-term"'), 2);
         $this->eq('Popover mit Link zur Detailseite', str_contains($out, 'popovertarget="gl-1"') && str_contains($out, 'href="/glossar/spf"'), true);
-        $this->eq('Zweimal anwenden ändert nichts', (new Glossary\Annotator($terms, ['lang' => 'de']))->annotate($out), $out);
-        $this->eq('Ausnahme data-glossary="off"', (new Glossary\Annotator($terms))->annotate('<body><main><p data-glossary="off">SPF</p></main></body>'), '<body><main><p data-glossary="off">SPF</p></main></body>');
+        $this->eq('Zweimal anwenden ändert nichts', new Glossary\Annotator($terms, ['lang' => 'de'])->annotate($out), $out);
+        $this->eq('Ausnahme data-glossary="off"', new Glossary\Annotator($terms)->annotate('<body><main><p data-glossary="off">SPF</p></main></body>'), '<body><main><p data-glossary="off">SPF</p></main></body>');
         $this->eq('Schreibweisen', Glossary\Glossary::splitVariants("CDN, CDNs\nContent Delivery Network;CDN"), ['CDN', 'CDNs', 'Content Delivery Network']);
         $this->eq('Kurztext gekürzt', mb_strlen(Glossary\Glossary::short(str_repeat('Wort ', 80))) <= Glossary\Glossary::SHORT_MAX, true);
     }
@@ -195,9 +207,9 @@ final class FeatureSelfTest
         $num = static fn (int $id) => $tree['nodes'][$id]['number'];
         $this->eq('Nummern automatisch', [$num(1), $num(2), $num(4), $num(3), $num(5)], ['1', '2', '2.1', '2.2', '2.1.1']);
         $this->eq('Nummer überschreibbar, Kinder folgen', [$num(6), $num(7)], ['A', 'A.1']);
-        $this->eq('Lesereihenfolge', \array_slice($tree['order'], 0, 5), [1, 2, 4, 5, 3]);
-        $this->eq('Fehlendes Oberkapitel = oberste Ebene', \in_array(10, $tree['roots'], true), true);
-        $this->eq('Schleife bricht nicht', \count($tree['order']), 10);
+        $this->eq('Lesereihenfolge', array_slice($tree['order'], 0, 5), [1, 2, 4, 5, 3]);
+        $this->eq('Fehlendes Oberkapitel = oberste Ebene', in_array(10, $tree['roots'], true), true);
+        $this->eq('Schleife bricht nicht', count($tree['order']), 10);
         $this->eq('Oberkapitel', array_column(Data\Knowledge::ancestors($tree, 5), 'id'), [2, 4]);
         [$prev, $next] = Data\Knowledge::neighbours($tree, 4);
         $this->eq('Vor/Zurück', [$prev['id'] ?? null, $next['id'] ?? null], [2, 5]);

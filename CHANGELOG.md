@@ -6,6 +6,10 @@
 - **Endung der Adressen auf der Website wählen** (Website → Adressen): ohne, Schrägstrich, `.html`, gemischt (Menüpunkte `/`,
   Seiten `.html`) oder eigene – mit Beispielen echter Seiten. Bisherige Schreibweisen leiten per 301 um. Setzt das Projekt
   `Router::$config`, gilt der Code (Anzeige nur lesend); neu dafür `Router::defaults()` und `Router::configuredByProject()`.
+- **Adressen gestalten** in den Seiteneinstellungen: „Eigene Adresse“ ohne übergeordnete Seiten (auch mit `/`, z. B.
+  `angebot/sommer`) und für Menüpunkte „In den Adressen der Unterseiten ausblenden“ (`/leistungen/beratung` → `/beratung`).
+  Adressen werden jetzt entlang des Seitenbaums berechnet und auf der ganzen Adresse eindeutig gehalten; alte leiten weiter.
+- Adressen aus Titeln schreiben Akzente um (`Café` → `cafe`, `Łódź` → `lodz`), bisher wurden sie zu Bindestrichen.
 - Fix: Automatische Weiterleitungen nach geänderten Adressen führten aus einer weiteren Sprache auf die Seite der Startsprache
   (`/en/alt` → `/neu` statt `/en/new`). Neue Regeln speichern die Sprache (`redaxo://ID@Sprache`), bestehende nehmen die Sprache der
   aufgerufenen Adresse – ohne Migration.

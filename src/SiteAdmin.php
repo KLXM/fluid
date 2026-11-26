@@ -2,7 +2,6 @@
 
 namespace Klxm\Fluid;
 
-use Redaxo\Core\Translation\I18n;
 use Klxm\Fluid\Form\FieldForm;
 use Klxm\Fluid\Form\Picker;
 use Klxm\Fluid\Maps\Maps;
@@ -16,6 +15,7 @@ use Redaxo\Core\Http\Request;
 use Redaxo\Core\Language\Language;
 use Redaxo\Core\Language\LanguageHandler;
 use Redaxo\Core\Security\User;
+use Redaxo\Core\Translation\I18n;
 use Throwable;
 
 use function count;
@@ -37,7 +37,7 @@ final class SiteAdmin
             $tabs[$k] = $g['label'];
         }
 
-        return $tabs + ['languages' => 'Sprachen', 'addresses' => I18n::msg('fluid_addresses_tab'), 'domains' => 'Domains', 'redirects' => 'Weiterleitungen'];
+        return $tabs + ['languages' => 'Sprachen', 'addresses' => I18n::rawMsg('fluid_addresses_tab'), 'domains' => 'Domains', 'redirects' => 'Weiterleitungen'];
     }
 
     public static function handle(string $action, User $user): array

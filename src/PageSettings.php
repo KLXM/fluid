@@ -3,16 +3,13 @@
 namespace Klxm\Fluid;
 
 use Redaxo\Core\Content\Article;
-use Redaxo\Core\ExtensionPoint\AsExtension;
 use Redaxo\Core\Content\ArticleCache;
 use Redaxo\Core\Content\ArticleHandler;
 use Redaxo\Core\Content\ArticleRevision;
 use Redaxo\Core\Content\CategoryHandler;
 use Redaxo\Core\Database\Sql;
-use Redaxo\Core\Filesystem\Url;
+use Redaxo\Core\ExtensionPoint\AsExtension;
 use Redaxo\Core\MediaPool\Media;
-
-use function Redaxo\Core\View\escape;
 
 /**
  * Seiteneinstellungen auf der Website: Titel und Online-Status (Core) sowie Beschreibung, Social-Bild und „nicht indexieren“
@@ -30,7 +27,7 @@ final class PageSettings
     {
         if (null === self::$noindex) {
             self::$noindex = [];
-            foreach (\Redaxo\Core\Database\Sql::factory()->getArray('SELECT article_id, language_id FROM ' . self::TABLE . ' WHERE noindex = 1') as $r) {
+            foreach (Sql::factory()->getArray('SELECT article_id, language_id FROM ' . self::TABLE . ' WHERE noindex = 1') as $r) {
                 self::$noindex[$r['article_id'] . '|' . $r['language_id']] = true;
             }
         }
@@ -58,7 +55,7 @@ final class PageSettings
 
     /**
      * @internal SEO-Felder der Seite (Seiteneinstellungen) und Vorgaben der Website in die Meta-Angaben des Routings:
-     * eigener SEO-Titel = Titel im Browser-Tab und og:title, Beschreibung (sonst Standard der Website), Bild, „nicht indexieren“.
+     * eigener SEO-Titel = Titel im Browser-Tab und og:title, Beschreibung (sonst Standard der Website), Bild, „nicht indexieren“
      */
     #[AsExtension]
     public static function articleMeta(Routing\ExtensionPoint\ArticleMeta $ep): Routing\Seo\PageMeta
@@ -86,7 +83,7 @@ final class PageSettings
     }
 
     /** Titel, Status und Angaben speichern */
-    public static function save(Article $article, string $name, bool $online, string $description, string $image, bool $noindex, string $title = '', ?string $slug = null): void
+    public static function save(Article $article, string $name, bool $online, string $description, string $image, bool $noindex, string $title = '', ?string $slug = null, ?Routing\AddressOptions $address = null): void
     {
         $name = trim($name);
         if ('' === $name) {
@@ -112,9 +109,15 @@ final class PageSettings
         );
         // Adresse: eigener Slug (leer = aus dem Titel); die Startseite hat immer „/“
         if (null !== $slug && $article->id !== Article::getSiteStartArticleId()) {
+            $before = Routing\Routes::options($article->id, $article->languageId);
+            $ownPath = $address->ownPath ?? $before->ownPath;
             $want = '' !== trim($slug) ? trim($slug) : $name;
-            if (Routing\Routes::slugify($want) !== Routing\Routes::slug($article->id, $article->languageId)) {
-                Routing\Routes::setSlug($article->id, $article->languageId, $want);
+            $normalized = $ownPath ? Routing\Routes::slugifyPath($want) : Routing\Routes::slugify($want);
+            if ($normalized !== Routing\Routes::slug($article->id, $article->languageId) || $ownPath !== $before->ownPath) {
+                Routing\Routes::setAddress($article->id, $article->languageId, $want, $ownPath);
+            }
+            if (null !== $address && $article->isStartArticle() && $article->categoryId && $address->hidden !== $before->hidden) {
+                Routing\Routes::setHidden($article->id, $address->hidden);
             }
         }
         ArticleCache::delete($article->id, $article->languageId);

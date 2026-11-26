@@ -3,6 +3,7 @@
 namespace Klxm\Fluid\Routing;
 
 use Klxm\Fluid\Routing\ExtensionPoint\RoutesRebuilt;
+use Normalizer;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Database\Sql;
 use Redaxo\Core\ExtensionPoint\Extension;
@@ -63,6 +64,9 @@ final class Routes
     public static function slugify(string $s): string
     {
         $s = strtr(mb_strtolower(trim($s)), ['ä' => 'ae', 'ö' => 'oe', 'ü' => 'ue', 'ß' => 'ss', '’' => '', "'" => '', '´' => '', '`' => '']);
+        // other accents and scripts: é → e, ł → l, ø → o (intl, otherwise decomposed and marks removed)
+        $s = class_exists(Normalizer::class) ? (string) preg_replace('~\p{Mn}+~u', '', (string) Normalizer::normalize($s, Normalizer::FORM_D)) : $s;
+        $s = strtr($s, ['ł' => 'l', 'ø' => 'o', 'đ' => 'd', 'æ' => 'ae', 'œ' => 'oe', 'þ' => 'th']);
         $s = (string) preg_replace('~[^a-z0-9]+~', '-', $s);
 
         return trim($s, '-') ?: 'seite';
@@ -127,13 +131,37 @@ final class Routes
     /** Eigenen Slug setzen (Seiteneinstellungen); leer = aus dem Namen. Gibt den tatsächlich vergebenen Slug zurück. */
     public static function setSlug(int $articleId, int $languageId, string $slug): string
     {
-        $slug = self::slugify($slug);
-        Sql::factory()->setQuery('INSERT INTO ' . self::TABLE . ' (article_id, language_id, slug, path) VALUES (?, ?, ?, ?)
-            ON DUPLICATE KEY UPDATE slug = VALUES(slug)', [$articleId, $languageId, $slug, '']);
+        return self::setAddress($articleId, $languageId, $slug, self::options($articleId, $languageId)->ownPath);
+    }
+
+    /**
+     * Sets the address of a page in one language: a slug below the parent page, or with $ownPath a complete address
+     * of its own (may contain "/", e.g. "angebot/sommer"). Returns the slug actually given (numbered if taken).
+     */
+    public static function setAddress(int $articleId, int $languageId, string $slug, bool $ownPath): string
+    {
+        $slug = $ownPath ? self::slugifyPath($slug) : self::slugify($slug);
+        Sql::factory()->setQuery('INSERT INTO ' . self::TABLE . ' (article_id, language_id, slug, path, own_path) VALUES (?, ?, ?, ?, ?)
+            ON DUPLICATE KEY UPDATE slug = VALUES(slug), own_path = VALUES(own_path)', [$articleId, $languageId, $slug, '', $ownPath ? 1 : 0]);
         self::invalidate();
         self::rebuild();
 
         return self::slug($articleId, $languageId) ?? $slug;
+    }
+
+    /** Leaves the page out of the addresses of its subpages (all languages): /leistungen/beratung becomes /beratung */
+    public static function setHidden(int $articleId, bool $hide): void
+    {
+        Sql::factory()->setQuery('UPDATE ' . self::TABLE . ' SET hide = ? WHERE article_id = ?', [$hide ? 1 : 0, $articleId]);
+        self::invalidate();
+        self::rebuild();
+    }
+
+    public static function options(int $articleId, int $languageId): AddressOptions
+    {
+        $r = Sql::factory()->getArray('SELECT own_path, hide FROM ' . self::TABLE . ' WHERE article_id = ? AND language_id = ?', [$articleId, $languageId])[0] ?? [];
+
+        return new AddressOptions(ownPath: 1 === (int) ($r['own_path'] ?? 0), hidden: 1 === (int) ($r['hide'] ?? 0));
     }
 
     /**
@@ -144,7 +172,7 @@ final class Routes
     public static function rebuild(bool $sources = false): void
     {
         $sql = Sql::factory();
-        $rows = $sql->getArray('SELECT a.id, a.parent_id, a.path, a.priority, t.language_id, t.name, t.status, r.slug, r.path AS route
+        $rows = $sql->getArray('SELECT a.id, a.parent_id, a.path, a.priority, t.language_id, t.name, t.status, r.slug, r.path AS route, r.own_path, r.hide
             FROM rex_article a JOIN rex_article_translation t ON t.article_id = a.id
             LEFT JOIN ' . self::TABLE . ' r ON r.article_id = a.id AND r.language_id = t.language_id
             ORDER BY a.priority, a.id');
@@ -156,28 +184,36 @@ final class Routes
         $changes = [];
         $keep = [];
         foreach ($byLang as $lang => $items) {
-            // Slugs: vorhandene behalten, fehlende aus dem Namen; je Ebene eindeutig
-            $taken = [];
-            $slugs = [];
+            // Parents first, so every page builds on the final address of its parent
+            $depth = static fn (array $r): int => count(array_filter(explode('|', (string) $r['path'])));
+            uasort($items, static fn (array $a, array $b): int => $depth($a) <=> $depth($b));
+            $segments = [];   // page => segments of its own address
+            $taken = [];      // address => page (unique per language)
             foreach ($items as $id => $r) {
-                $level = (string) ($r['parent_id'] ?? '');
-                $base = '' !== (string) $r['slug'] ? (string) $r['slug'] : self::slugify((string) $r['name']);
-                $s = $base;
-                for ($n = 2; isset($taken[$level][$s]); ++$n) {
-                    $s = $base . '-' . $n;
+                $own = 1 === (int) ($r['own_path'] ?? 0);
+                $stored = (string) $r['slug'];
+                $base = '' !== $stored ? ($own ? self::slugifyPath($stored) : self::slugify($stored)) : self::slugify((string) $r['name']);
+                $prefix = [];
+                if (!$own) {
+                    // the next ancestor that is not hidden ("in den Adressen der Unterseiten ausblenden") gives the prefix
+                    foreach (array_reverse(array_values(array_filter(array_map('intval', explode('|', (string) $r['path']))))) as $a) {
+                        if (!isset($items[$a]) || 1 !== (int) ($items[$a]['hide'] ?? 0)) {
+                            $prefix = $segments[$a] ?? [(string) $a];
+                            break;
+                        }
+                    }
                 }
-                $taken[$level][$s] = true;
-                $slugs[$id] = $s;
-            }
-            foreach ($items as $id => $r) {
-                $anc = array_values(array_filter(array_map('intval', explode('|', (string) $r['path']))));
-                $parts = array_map(static fn (int $a) => $slugs[$a] ?? (string) $a, $anc);
-                $parts[] = $slugs[$id];
-                $path = $id === $home ? '' : implode('/', $parts);
+                $slug = $base;
+                for ($n = 2; $id !== $home && isset($taken[implode('/', [...$prefix, $slug])]); ++$n) {
+                    $slug = $base . '-' . $n;
+                }
+                $segments[$id] = [...$prefix, ...explode('/', $slug)];
+                $path = $id === $home ? '' : implode('/', $segments[$id]);
+                $taken[$path] = $id;
                 $keep[$id . '|' . $lang] = true;
-                if (null === $r['route'] || $path !== (string) $r['route'] || $slugs[$id] !== (string) $r['slug']) {
+                if (null === $r['route'] || $path !== (string) $r['route'] || $slug !== $stored) {
                     $sql->setQuery('INSERT INTO ' . self::TABLE . ' (article_id, language_id, slug, path) VALUES (?, ?, ?, ?)
-                        ON DUPLICATE KEY UPDATE slug = VALUES(slug), path = VALUES(path)', [$id, $lang, $slugs[$id], $path]);
+                        ON DUPLICATE KEY UPDATE slug = VALUES(slug), path = VALUES(path)', [$id, $lang, $slug, $path]);
                     if (null === $r['route'] || $path !== (string) $r['route']) {
                         $sources = true;   // Einträge unter dieser Seite bekommen einen neuen Pfad
                     }

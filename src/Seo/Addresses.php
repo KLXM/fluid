@@ -54,20 +54,20 @@ final class Addresses
     public static function save(string $ending, string $suffix): string
     {
         if (Router::configuredByProject()) {
-            throw new ApiError(I18n::msg('fluid_addresses_by_project'));
+            throw new ApiError(I18n::rawMsg('fluid_addresses_by_project'));
         }
         $choice = UrlEnding::tryFrom($ending) ?? UrlEnding::None;
         $suffix = UrlEnding::Custom === $choice ? '.' . ltrim(strtolower(trim($suffix)), '.') : '';
         try {
             $format = $choice->format($suffix);
         } catch (InvalidArgumentException) {
-            throw new ApiError(I18n::msg('fluid_addresses_invalid_suffix'));
+            throw new ApiError(I18n::rawMsg('fluid_addresses_invalid_suffix'));
         }
         FluidAddon::instance()->setConfig(self::CONFIG, ['ending' => $choice->value, 'suffix' => $suffix]);
         Router::defaults(new RoutingConfig(format: $format));
         Cache::delete();   // rendered content contains the old addresses
 
-        return I18n::msg('fluid_addresses_saved');
+        return I18n::rawMsg('fluid_addresses_saved');
     }
 
     /** Tab of the site panel */
@@ -83,17 +83,17 @@ final class Addresses
                 : $ending->format();
             $example = null !== $format ? '/' . $format->append($category, true) . ' · /' . $format->append($page) : '';
             $options .= '<label class="blocks-form__check site-choice"><input type="radio" name="ending" value="' . $ending->value . '"'
-                . ($ending === $current ? ' checked' : '') . ($locked ? ' disabled' : '') . '> <span>' . escape($ending->label())
+                . ($ending === $current ? ' checked' : '') . ($locked ? ' disabled' : '') . '> <span>' . $ending->label()
                 . ('' !== $example ? ' <code>' . escape($example) . '</code>' : '') . '</span></label>';
         }
         $options .= '<input class="form-control site-choice__suffix" name="suffix" value="' . escape(self::suffix()) . '" placeholder=".htm" maxlength="11"'
-            . ' pattern="\.?[a-z0-9]{1,10}" spellcheck="false" aria-label="' . escape(I18n::msg('fluid_url_ending_custom')) . '"' . ($locked ? ' disabled' : '') . '>';
+            . ' pattern="\.?[a-z0-9]{1,10}" spellcheck="false" aria-label="' . I18n::msg('fluid_url_ending_custom') . '"' . ($locked ? ' disabled' : '') . '>';
 
-        return '<p class="site-intro">' . escape(I18n::msg('fluid_addresses_intro')) . '</p>'
-            . ($locked ? '<p class="site-intro"><b>' . escape(I18n::msg('fluid_addresses_by_project')) . '</b></p>' : '')
+        return '<p class="site-intro">' . I18n::msg('fluid_addresses_intro') . '</p>'
+            . ($locked ? '<p class="site-intro"><b>' . I18n::msg('fluid_addresses_by_project') . '</b></p>' : '')
             . '<form class="site-card" data-site-form="addresses_save" data-tab="addresses"><fieldset class="blocks-form__field"><legend class="control-label">'
-            . escape(I18n::msg('fluid_addresses_ending')) . '</legend>' . $options . '</fieldset>'
-            . ($locked ? '' : '<div class="site-actions"><button type="submit" class="btn btn--primary">' . escape(I18n::msg('fluid_addresses_save')) . '</button></div>') . '</form>';
+            . I18n::msg('fluid_addresses_ending') . '</legend>' . $options . '</fieldset>'
+            . ($locked ? '' : '<div class="site-actions"><button type="submit" class="btn btn--primary">' . I18n::msg('fluid_addresses_save') . '</button></div>') . '</form>';
     }
 
     private static function stored(): ?UrlFormat

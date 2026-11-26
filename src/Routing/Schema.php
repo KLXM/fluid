@@ -21,6 +21,8 @@ final class Schema
             ->ensureColumn(new Column('language_id', 'int(10) unsigned'))
             ->ensureColumn(new Column('slug', 'varchar(191)'))
             ->ensureColumn(new Column('path', 'varchar(500)'))
+            ->ensureColumn(new Column('own_path', 'tinyint(1)', false, '0'))
+            ->ensureColumn(new Column('hide', 'tinyint(1)', false, '0'))
             ->setPrimaryKey(['article_id', 'language_id'])
             ->ensureIndex(new Index('lang_path', ['language_id', 'path']))
             ->ensure();

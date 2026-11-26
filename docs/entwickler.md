@@ -530,7 +530,14 @@ Eingestellt wird er wie REDAXO 6 selbst im Code, ein Backend braucht er nicht.
 
 - **Feste Adressen:** Jede Seite hat je Sprache einen Slug (Tabelle `rex_fluid_route`). Er entsteht beim Anlegen aus dem
   Namen und bleibt beim Umbenennen gleich; ändern lässt er sich in den Seiteneinstellungen. Adresse = Slugs der
-  Elternseiten + eigener Slug. Gleiche Slugs auf einer Ebene werden durchnummeriert (`-2`, `-3` …).
+  Elternseiten + eigener Slug. Gleiche Adressen werden durchnummeriert (`-2`, `-3` …); Umlaute und Akzente werden umschrieben
+  (`Café Müller` → `cafe-mueller`).
+- **Aufbau je Seite** (Seiteneinstellungen auf der Website, Spalten `own_path`/`hide` in `rex_fluid_route`):
+  „Eigene Adresse“ – der Slug ist die ganze Adresse ohne Elternseiten, auch mit `/` (`Routes::setAddress()`);
+  „In den Adressen der Unterseiten ausblenden“ für Menüpunkte – aus `/leistungen/beratung` wird `/beratung`, in allen
+  Sprachen (`Routes::setHidden()`). Kollisionen bekommen eine Nummer, alte Adressen eine Weiterleitung.
+- **Endung** (`UrlFormat`): auf der Website unter „Website → Adressen“ (Vorgabe des AddOns über `Router::defaults()`) oder
+  im Projekt per `Router::$config` – das Projekt gewinnt, die Oberfläche zeigt es dann nur an.
 - **Neu berechnet** wird nach jeder Strukturänderung (Artikel, Kategorien, Status, Sprachen – per `#[AsExtension]` am
   Router). Geänderte Adressen online stehender Seiten bekommen automatisch eine 301-Weiterleitung (`redaxo://ID@Sprache`; Ziele ohne `@Sprache` – aus älteren Versionen – nehmen die Sprache
   der aufgerufenen Adresse).

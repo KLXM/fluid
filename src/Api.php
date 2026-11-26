@@ -6,31 +6,40 @@ use Klxm\Fluid\Media\ImagePlaces;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\ArticleCache;
 use Redaxo\Core\Content\ArticleHandler;
-use Redaxo\Core\Content\CategoryHandler;
-use Redaxo\Core\Content\StructurePermission;
-use Redaxo\Core\Filesystem\Url;
 use Redaxo\Core\Content\ArticleRevision;
 use Redaxo\Core\Content\ArticleSlice;
+use Redaxo\Core\Content\Category;
+use Redaxo\Core\Content\CategoryHandler;
 use Redaxo\Core\Content\ContentHandler;
 use Redaxo\Core\Content\Module;
 use Redaxo\Core\Content\ModulePermission;
+use Redaxo\Core\Content\StructurePermission;
 use Redaxo\Core\Content\Template;
 use Redaxo\Core\Core;
 use Redaxo\Core\Database\Sql;
+use Redaxo\Core\Exception\UserMessageException;
 use Redaxo\Core\ExtensionPoint\Extension;
 use Redaxo\Core\ExtensionPoint\ExtensionPoint;
+use Redaxo\Core\Filesystem\Url;
 use Redaxo\Core\Http\Request;
 use Redaxo\Core\Http\Session;
+use Redaxo\Core\Language\Language;
 use Redaxo\Core\Security\BackendLogin;
 use Redaxo\Core\Security\CsrfToken;
 use Redaxo\Core\Security\User;
+use Redaxo\Core\Translation\I18n;
 use Throwable;
+use Yakamara\YForm\Table\Table;
+use Yakamara\YForm\Validation\ValidationException;
 
+use function array_key_exists;
 use function count;
-use function Redaxo\Core\View\escape;
 use function in_array;
-
 use function is_array;
+use function Redaxo\Core\View\escape;
+
+use const JSON_UNESCAPED_SLASHES;
+use const JSON_UNESCAPED_UNICODE;
 
 /**
  * Endpunkte des Editors auf der Website: `{Seitenadresse}?fluid_api={aktion}` (POST, CSRF-Token `_csrf_token`).
@@ -70,21 +79,21 @@ final class Api
                 'action' => $action, 'article' => $article, 'user' => $user, 'guest' => Editing::isGuest(),
                 'run' => static fn () => self::dispatch($action, $article, $user), 'state' => static fn () => self::state($article),
             ]));
-            if (\is_array($taken) && \is_array($taken['result'] ?? null)) {
+            if (is_array($taken) && is_array($taken['result'] ?? null)) {
                 self::send(['ok' => true, 'state' => (array) ($taken['state'] ?? self::state($article))] + $taken['result']);
             }
             if (Editing::isGuest()) {
                 self::fail('Für Gäste nicht verfügbar.', 403);
             }
             // Bearbeitungssperre: Änderungen an der Seite nur für die Person, die sie gerade hält (HTTP 423)
-            if (\in_array($action, self::LOCKED, true)) {
+            if (in_array($action, self::LOCKED, true)) {
                 EditLock::assert($article);
             }
             $result = self::dispatch($action, $article, $user);
             self::send(['ok' => true, 'state' => self::state($article)] + $result);
         } catch (ApiError $e) {
             self::send(['ok' => false, 'error' => $e->getMessage()], $e->getCode() ?: 400);
-        } catch (\Redaxo\Core\Exception\UserMessageException $e) {
+        } catch (UserMessageException $e) {
             // Fehler der Handler des Cores (Seite nicht gefunden, Regel verletzt …) mit übersetzter Meldung
             self::send(['ok' => false, 'error' => $e->getMessage()], 400);
         } catch (Throwable $e) {
@@ -101,10 +110,10 @@ final class Api
     {
         // Blöcke eines YForm-Datensatzes (Feld „Fluid-Blöcke“): eigener Handler, Rechte von YForm
         $ref = Request::post('slice', 'string', '') ?: Request::post('after', 'string', '');
-        if (Data\RecordBlocks::is($ref) && \in_array($action, Data\RecordBlocks::ACTIONS, true)) {
+        if (Data\RecordBlocks::is($ref) && in_array($action, Data\RecordBlocks::ACTIONS, true)) {
             return Editing::render(static fn () => Data\RecordBlocks::handle($action, $user, $article->id));
         }
-        $isCat = $article->isStartArticle() && null !== \Redaxo\Core\Content\Category::get($article->id);
+        $isCat = $article->isStartArticle() && null !== Category::get($article->id);
         $need = match ($action) {
             'publish' => 'version[live_version]',
             'move', 'reorder', 'col_move' => 'moveSlice[]',
@@ -123,14 +132,20 @@ final class Api
             Core::getRequest()->query->set(Data\Detail::PARAM, (string) $entry);
             $_GET[Data\Detail::PARAM] = (string) $entry;
         }
-        $result = Editing::render(fn () => match (Request::get(self::PARAM, 'string')) {
+        $result = Editing::render(static fn () => match (Request::get(self::PARAM, 'string')) {
             'form' => self::form($article),
             'preview' => self::preview($article),
             'save' => self::save($article, $user),
             'add' => self::add($article, $user),
             'move' => self::move($article),
-            'reorder' => (static function () use ($article) { BlockOps::reorder($article, Request::post('slice', 'int', 0), Request::post('before', 'int', 0)); return []; })(),
-            'col_move' => (static function () use ($article) { BlockOps::column($article, Request::post('slice', 'int', 0), 'left' === Request::post('dir', 'string') ? -1 : 1); return []; })(),
+            'reorder' => (static function () use ($article) {
+                BlockOps::reorder($article, Request::post('slice', 'int', 0), Request::post('before', 'int', 0));
+                return [];
+            })(),
+            'col_move' => (static function () use ($article) {
+                BlockOps::column($article, Request::post('slice', 'int', 0), 'left' === Request::post('dir', 'string') ? -1 : 1);
+                return [];
+            })(),
             'copy' => BlockOps::payload($article, Request::post('slice', 'int', 0)),
             'paste', 'duplicate' => (static function () use ($article, $user) {
                 $clip = 'duplicate' === Request::get(self::PARAM, 'string')
@@ -180,14 +195,14 @@ final class Api
             'activity' => ['activity' => Activity::recent(150)],
             // Inhalt einer Seite aus einer anderen Sprache übernehmen (in den Entwurf bzw. live ohne Arbeitsversion)
             'lang_copy' => (static function () use ($article) {
-                $from = Request::post('from', 'int', \Redaxo\Core\Language\Language::getStartId());
-                if ($from === $article->languageId || !\Redaxo\Core\Language\Language::exists($from)) {
+                $from = Request::post('from', 'int', Language::getStartId());
+                if ($from === $article->languageId || !Language::exists($from)) {
                     self::fail('Bitte eine andere Sprache wählen.');
                 }
                 // in den Entwurf bzw. live ohne Arbeitsversion – live bleibt unverändert bis „Veröffentlichen“
                 ContentHandler::copyContent($article->id, $article->id, $from, $article->languageId, FluidAddon::revision(), true);
                 ArticleCache::delete($article->id, $article->languageId);
-                Activity::log('save', $article->id, 'Inhalt aus ' . (\Redaxo\Core\Language\Language::get($from)->name ?? $from) . ' übernommen');
+                Activity::log('save', $article->id, 'Inhalt aus ' . (Language::get($from)->name ?? $from) . ' übernommen');
 
                 return ['reload' => true, 'message' => 'Inhalt übernommen – jetzt übersetzen und veröffentlichen.'];
             })(),
@@ -223,7 +238,10 @@ final class Api
             'glossary' => Glossary\Glossary::api($user, $article),   // Quick-Glossar: suchen, anlegen, Schreibweise hinzufügen   // Listen-Vorlagen verwalten (Seitenleiste, Perm::DESIGN_FULL)
             // gewöhnliche REDAXO-Module (keine fluid-Blöcke) in der Seitenleiste; html null = Formular des Cores im Rahmen
             'module_form' => ['html' => ModuleForm::form(self::plainSlice($article, $user))],
-            'module_save' => (static function () use ($article, $user): array { ModuleForm::save(self::plainSlice($article, $user), (array) Request::post('m', 'array', [])); return []; })(),
+            'module_save' => (static function () use ($article, $user): array {
+                ModuleForm::save(self::plainSlice($article, $user), (array) Request::post('m', 'array', []));
+                return [];
+            })(),
             default => self::fail('Unbekannte Aktion.', 400),
         });
         // Aktivitätsprotokoll (Speichern, Veröffentlichen, Verwerfen und Wiederherstellen protokollieren die Aktionen selbst)
@@ -464,9 +482,7 @@ final class Api
             . '<div class="blocks-form__field"><label class="blocks-form__check"><input type="checkbox" name="online" value="1"' . ($article->isOnline() ? ' checked' : '') . '> Online – für Besucher sichtbar</label></div>'
             . (Article::getSiteStartArticleId() === $article->id
                 ? $f('Adresse', '<p class="blocks-form__static"><code>/</code> – Startseite</p>')
-                : $f('Adresse', '<div class="blocks-slug"><span class="blocks-slug__base">' . escape(self::parentPath($article)) . '</span><input class="form-control" type="text" name="slug" value="'
-                    . escape((string) Routing\Routes::slug($article->id, $article->languageId)) . '" maxlength="120" pattern="[a-z0-9\-]*" spellcheck="false" data-slug></div>',
-                    'Nur Kleinbuchstaben, Ziffern und Bindestriche. Ändern Sie die Adresse, leitet die alte automatisch hierher weiter.'))
+                : self::addressField($article, $f))
             . $f('Titel für Suchmaschinen (optional)', '<input class="form-control" type="text" name="seo_title" value="' . escape($s['title']) . '" maxlength="191" data-count="60" placeholder="' . escape(PageSettings::title($article, Core::getProject()->instanceName)) . '">',
                 'Erscheint im Browser-Tab und in Suchergebnissen – etwa 50–60 Zeichen. Leer = Seitentitel und Name der Website.')
             . $f('Beschreibung für Suchmaschinen', '<textarea class="form-control" name="description" rows="3" maxlength="300" data-count="160">' . escape($s['description']) . '</textarea>', 'Etwa 120–160 Zeichen: worum geht es auf dieser Seite?')
@@ -481,7 +497,7 @@ final class Api
     /** Seiteneinstellungen: Menüseite → „Blog / News“, Beitrag → Datum, Autor, Schlagworte */
     private static function blogFields(Article $article, callable $f): string
     {
-        $isCat = $article->isStartArticle() && null !== \Redaxo\Core\Content\Category::get($article->id);
+        $isCat = $article->isStartArticle() && null !== Category::get($article->id);
         if ($isCat) {
             return '<div class="blocks-form__field"><label class="blocks-form__check"><input type="checkbox" name="blog" value="1"' . (Blog\Blog::isBlog($article->id) ? ' checked' : '') . '> Blog / News – Unterseiten sind Beiträge</label>'
                 . '<p class="help-block">Beiträge erscheinen nach Datum sortiert (neueste zuerst), mit Kopf (Datum, Autor, Bild) und „Vorheriger/Nächster Beitrag“; RSS-Feed unter …/feed.xml. Übersicht mit dem Block „Beiträge“.</p></div>';
@@ -552,20 +568,20 @@ final class Api
         }
         [$source, $entry] = $re;
         $values = array_map(static fn ($v) => trim((string) $v), $values);
-        $table = $source instanceof Routing\TableSource && class_exists(\Yakamara\YForm\Table\Table::class) ? Data\YFormBridge::table($source->table()->table) : null;
+        $table = $source instanceof Routing\TableSource && class_exists(Table::class) ? Data\YFormBridge::table($source->table()->table) : null;
         if (null !== $table) {
             if (Editing::isGuest() || !Data\RecordBlocks::canEdit($user, $table)) {
                 self::fail('Dafür fehlt Ihnen das Recht, diese YForm-Tabelle zu bearbeiten.', 403);
             }
             $record = $table::query()->where('id', (int) $entry->id)->first() ?? self::fail('Eintrag nicht gefunden.');
             foreach ($source->editable($entry) as $fd) {
-                if (\array_key_exists($fd->name, $values) && null !== ($field = $table->getField($fd->name))) {
+                if (array_key_exists($fd->name, $values) && null !== ($field = $table->getField($fd->name))) {
                     $record->set($fd->name, $field->fromInput($values[$fd->name]));
                 }
             }
             try {
                 $record->save();
-            } catch (\Yakamara\YForm\Validation\ValidationException $e) {
+            } catch (ValidationException $e) {
                 self::fail(implode(' ', $e->errors->all()) ?: 'Ein Wert ist nicht gültig.');
             }
             Routing\Routes::rebuildSource($source->key());
@@ -583,18 +599,48 @@ final class Api
     private static function pageSave(Article $article, User $user): array
     {
         $entryUrl = self::routeSave($article, $user);
-        if ($article->isStartArticle() && null !== \Redaxo\Core\Content\Category::get($article->id)) {
+        if ($article->isStartArticle() && null !== Category::get($article->id)) {
             Blog\Blog::setBlog($article->id, Request::post('blog', 'bool', false));
         } elseif (Blog\Blog::blogOf($article)) {
             Blog\Blog::saveMeta($article, Request::post('post_date', 'string', ''), Request::post('post_author', 'string', ''), Request::post('post_tags', 'string', ''));
         }
         PageSettings::save($article, Request::post('name', 'string', ''), Request::post('online', 'bool', false),
             Request::post('description', 'string', ''), Request::post('image', 'string', ''), Request::post('noindex', 'bool', false),
-            Request::post('seo_title', 'string', ''), Request::post('slug', 'string', null));
+            Request::post('seo_title', 'string', ''), Request::post('slug', 'string', null),
+            new Routing\AddressOptions(ownPath: Request::post('own_path', 'bool', false), hidden: Request::post('hide_in_children', 'bool', false)));
         Routing\Routes::rebuild();
 
         // Neue Adresse: dorthin wechseln (offline gibt es für die alte keine Weiterleitung)
         return ['message' => 'Seiteneinstellungen gespeichert.', 'reload' => true, 'url' => $entryUrl ?? Url::article($article->id, $article->languageId)];
+    }
+
+    /**
+     * Address of the page: slug below the parent pages or a complete address of its own; menu items can leave themselves
+     * out of the addresses of their subpages.
+     *
+     * @param callable(string, string, string=): string $f
+     */
+    private static function addressField(Article $article, callable $f): string
+    {
+        $options = Routing\Routes::options($article->id, $article->languageId);
+        $own = Routing\Routes::prefix($article->languageId) . '/';
+        $tree = self::parentPath($article);
+        $html = $f(I18n::rawMsg('fluid_address'), '<div class="blocks-slug"><span class="blocks-slug__base" data-slug-base data-tree="' . escape($tree) . '" data-own="' . escape($own) . '">'
+            . escape($options->ownPath ? $own : $tree) . '</span><input class="form-control" type="text" name="slug" value="'
+            . escape((string) Routing\Routes::slug($article->id, $article->languageId)) . '" maxlength="120" pattern="' . ($options->ownPath ? '[a-z0-9\\-\\/]*' : '[a-z0-9\\-]*') . '" spellcheck="false" data-slug></div>',
+            I18n::rawMsg('fluid_address_help'))
+            . '<div class="blocks-form__field"><label class="blocks-form__check"><input type="checkbox" name="own_path" value="1" data-own-path' . ($options->ownPath ? ' checked' : '') . '> '
+            . I18n::msg('fluid_address_own') . '</label></div>';
+        if ($article->isStartArticle() && $article->categoryId) {
+            $prefix = Routing\Routes::prefix($article->languageId) . '/';
+            $path = (string) Routing\Routes::path($article->id, $article->languageId);
+            $parent = false !== ($pos = strrpos($path, '/')) ? substr($path, 0, $pos + 1) : '';
+            $html .= '<div class="blocks-form__field"><label class="blocks-form__check"><input type="checkbox" name="hide_in_children" value="1"' . ($options->hidden ? ' checked' : '') . '> '
+                . I18n::msg('fluid_address_hide') . '</label><p class="help-block">'
+                . I18n::msg('fluid_address_hide_help', $prefix . $path . '/…', $prefix . $parent . '…') . '</p></div>';
+        }
+
+        return $html;
     }
 
     /** Adresse der Elternseiten (für die Anzeige vor dem Slug), z. B. „/leistungen/“ */
@@ -651,7 +697,7 @@ final class Api
         return $user->admin || ($perm instanceof StructurePermission && $perm->hasCategoryPerm(PageTemplates::categoryId()));
     }
 
-        /** Aktuelle Seite als Vorlage speichern (Seitenvorlagen) */
+    /** Aktuelle Seite als Vorlage speichern (Seitenvorlagen) */
     private static function templateSave(Article $article): array
     {
         $id = PageTemplates::saveFrom($article, Request::post('name', 'string', ''));
@@ -730,14 +776,14 @@ final class Api
     }
 
     /** Slice eines gewöhnlichen Moduls (kein fluid-Block) – mit Modulrecht, nicht für Gäste */
-    private static function plainSlice(Article $article, \Redaxo\Core\Security\User $user): \Redaxo\Core\Content\ArticleSlice
+    private static function plainSlice(Article $article, User $user): ArticleSlice
     {
         $slice = self::reload($article, Request::post('slice', 'int', 0));
         if (null !== BlockModule::classFor($slice->moduleKey) || Editing::isGuest()) {
             self::fail('Dieses Modul lässt sich hier nicht bearbeiten.');
         }
         $perm = $user->getComplexPerm('modules');
-        if (!$user->admin && (!$perm instanceof \Redaxo\Core\Content\ModulePermission || !$perm->hasPerm($slice->moduleKey))) {
+        if (!$user->admin && (!$perm instanceof ModulePermission || !$perm->hasPerm($slice->moduleKey))) {
             self::fail('Dafür fehlt Ihnen das Recht an diesem Modul.');
         }
 

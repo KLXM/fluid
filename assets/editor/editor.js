@@ -669,9 +669,19 @@
     });
     pform.addEventListener('input', (e) => {
       count();
-      const sl = e.target.closest?.('[data-slug]');
+      const own = pform.querySelector('[data-own-path]');
+      if (e.target === own) {
+        // own address: without the parent pages, "/" allowed
+        const base = pform.querySelector('[data-slug-base]');
+        if (base) base.textContent = own.checked ? base.dataset.own : base.dataset.tree;
+        pform.querySelector('[data-slug]')?.setAttribute('pattern', own.checked ? '[a-z0-9\\-\\/]*' : '[a-z0-9\\-]*');
+      }
+      const sl = e.target.closest?.('[data-slug]') || (e.target === own ? pform.querySelector('[data-slug]') : null);
       if (sl) {
-        const v = sl.value.toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss').replace(/[^a-z0-9-]+/g, '-').replace(/-{2,}/g, '-');
+        // same rules as Routes::slugify() (umlauts, accents); the server normalizes again
+        const v = sl.value.toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss')
+          .normalize('NFD').replace(/\p{M}/gu, '')
+          .replace(own?.checked ? /[^a-z0-9/-]+/g : /[^a-z0-9-]+/g, '-').replace(/-{2,}/g, '-').replace(/\/{2,}/g, '/');
         if (v !== sl.value) sl.value = v;
       }
     });
