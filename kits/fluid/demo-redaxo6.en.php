@@ -36,6 +36,7 @@ Modules as PHP classes
 In-context editing',
     'Start' => 'Home',
     'REDAXO 6 · in Entwicklung' => 'REDAXO 6 · in development',
+    'fluid {fluid-version} · REDAXO 6 in Entwicklung' => 'fluid {fluid-version} · REDAXO 6 in development',
     'REDAXO im Frontend, *einfach*.' => 'REDAXO on the website, *simply*.',
     'REDAXO 6 räumt unter der Haube auf: PHP 8.5, Composer, Module und Templates als PHP-Klassen. Das macht etwas möglich, das in REDAXO lange gefehlt hat – Seiten direkt auf der Website bearbeiten, mit echten Slices. REDAXO 6 ist noch in Entwicklung – es kann sich noch einiges ändern.' => 'REDAXO 6 cleans up under the hood: PHP 8.5, Composer, modules and templates as PHP classes. That makes something possible REDAXO has long been missing – editing pages directly on the website, with real slices. REDAXO 6 is still in development – some things may still change.',
     'Was sich ändert' => 'What changes',

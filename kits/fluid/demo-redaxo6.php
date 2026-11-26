@@ -813,7 +813,9 @@ return [
             'slug' => 'start', 'title' => 'Start', 'is_home' => true, 'menu' => false,
             'blocks' => [
                 ['type' => 'hero', 'data' => [
-                    'variant' => 'type', 'eyebrow' => 'REDAXO 6 · in Entwicklung',
+                    'variant' => 'type',
+                    // Release von fluid in der Dachzeile – der Platzhalter braucht das AddOn fluid_demo (sonst bliebe er roh stehen)
+                    'eyebrow' => class_exists(\Klxm\FluidDemo\FluidVersion::class) ? 'fluid {fluid-version} · REDAXO 6 in Entwicklung' : 'REDAXO 6 · in Entwicklung',
                     'title' => 'REDAXO im Frontend, *einfach*.',
                     'text' => 'REDAXO 6 räumt unter der Haube auf: PHP 8.5, Composer, Module und Templates als PHP-Klassen. Das macht etwas möglich, das in REDAXO lange gefehlt hat – Seiten direkt auf der Website bearbeiten, mit echten Slices. REDAXO 6 ist noch in Entwicklung – es kann sich noch einiges ändern.',
                     'button_label' => 'Was sich ändert', 'button_link' => '/was-sich-aendert',
