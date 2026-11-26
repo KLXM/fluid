@@ -489,6 +489,9 @@ fieldset.blocks-form__field { border: 0; padding: 0; margin: 0; min-width: 0; }
 .imgpop input[type="radio"], .imgpop input[type="range"], .imgpop input[type="color"] { width: auto; min-height: 0; padding: 0; margin: 0; border: 0; }
 .imgpop input[type="radio"] { accent-color: var(--accent); }
 .imgpop__opts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.imgpop__opts { display: grid; gap: 6px 12px; }
+.imgpop__opts label { display: flex; gap: 8px; align-items: center; min-width: 0; }
+[data-ip-panel="fit"] .imgpop__opts { grid-template-columns: 1fr; }
 .imgpop__tabs { display: flex; gap: 2px; min-width: 0; padding: 2px; border-radius: 8px; background: var(--surface); }
 .imgpop__tabs button { flex: 1 1 0; min-width: 0; min-height: 32px; padding: 0 6px; font-size: 13px; border: 0; border-radius: 6px; background: none; color: var(--ink); font: inherit; font-weight: 600; cursor: pointer; }
 .imgpop__tabs [aria-selected="true"] { background: var(--bg); box-shadow: 0 1px 3px rgb(0 0 0 / .12); }

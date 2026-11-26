@@ -308,7 +308,8 @@ function img(?string $name, string $sizes = '100vw', array $opt = []): string
     // Fokuspunkt und Einpassen (image_editor): object-position / object-fit am Bild, danach die Einstellung an dieser Stelle
     $style = $editable ? $editor::imgStyle($m->fileName) : '';
     if (null !== $place) {
-        $blur = \Klxm\Fluid\Media\ImagePlace::BACKGROUND_BLUR === $place->background ? ($editable ? $editor::url($m->fileName, 64) : $m->getUrl()) : '';
+        // small blurred version (image_editor); without it there is no blurred background
+        $blur = \Klxm\Fluid\Media\ImagePlace::BACKGROUND_BLUR === $place->background && $editable && method_exists($editor, 'backdropUrl') ? (string) $editor::backdropUrl($m->fileName) : '';
         $style = trim($style . ';' . $place->declarations($blur), ';');
     }
 

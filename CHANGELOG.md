@@ -16,6 +16,9 @@
   `PageAddressChanged`, `UrlFormatChanged`.
 - Weiterleitungen können ablaufen (Spalte `expires`).
 - Adressen aus Titeln schreiben Akzente um (`Café` → `cafe`, `Łódź` → `lodz`), bisher wurden sie zu Bindestrichen.
+- Fix: „Ganzes Bild“ mit Hintergrund „Unscharfes Bild“ zeigte ein fast scharfes Bild (die kleinste Breite des Bildeditors
+  ist 320 px). Jetzt mit dem neuen Medientyp `image_editor_backdrop` (48 px, weichgezeichnet; image_editor ab f534560+1).
+  Dazu Abstände in der Auswahl „Darstellung“ – eine Option je Zeile.
 - Fix: Automatische Weiterleitungen nach geänderten Adressen führten aus einer weiteren Sprache auf die Seite der Startsprache
   (`/en/alt` → `/neu` statt `/en/new`). Neue Regeln speichern die Sprache (`redaxo://ID@Sprache`), bestehende nehmen die Sprache der
   aufgerufenen Adresse – ohne Migration.
