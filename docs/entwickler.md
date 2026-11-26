@@ -532,7 +532,8 @@ Eingestellt wird er wie REDAXO 6 selbst im Code, ein Backend braucht er nicht.
   Namen und bleibt beim Umbenennen gleich; ändern lässt er sich in den Seiteneinstellungen. Adresse = Slugs der
   Elternseiten + eigener Slug. Gleiche Slugs auf einer Ebene werden durchnummeriert (`-2`, `-3` …).
 - **Neu berechnet** wird nach jeder Strukturänderung (Artikel, Kategorien, Status, Sprachen – per `#[AsExtension]` am
-  Router). Geänderte Adressen online stehender Seiten bekommen automatisch eine 301-Weiterleitung (`redaxo://ID`).
+  Router). Geänderte Adressen online stehender Seiten bekommen automatisch eine 301-Weiterleitung (`redaxo://ID@Sprache`; Ziele ohne `@Sprache` – aus älteren Versionen – nehmen die Sprache
+  der aufgerufenen Adresse).
 - **Eine Adresse je Seite:** Andere Schreibweise, Schrägstrich am Ende, eine andere Endung, `/EN/` statt `/en/`, die
   natürliche Adresse der Startseite (`/start`) und alte Links `?article_id=…` leiten per 301 auf die kanonische Adresse.
   POST-Anfragen werden nie umgeleitet.

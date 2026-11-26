@@ -3,6 +3,9 @@
 ## Unveröffentlicht
 
 - Schraffur beim Abstand-Ziehen mit weißen Linien – auch auf dunklen Abschnitten gut zu sehen.
+- Fix: Automatische Weiterleitungen nach geänderten Adressen führten aus einer weiteren Sprache auf die Seite der Startsprache
+  (`/en/alt` → `/neu` statt `/en/new`). Neue Regeln speichern die Sprache (`redaxo://ID@Sprache`), bestehende nehmen die Sprache der
+  aufgerufenen Adresse – ohne Migration.
 - Demo „REDAXO 6“: Die Dachzeile der Startseite zeigt mit dem AddOn fluid_demo die aktuelle Version von fluid (`{fluid-version}`).
 
 ## 1.0.0-beta.12 – 2026-11-27

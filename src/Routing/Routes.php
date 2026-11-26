@@ -15,6 +15,7 @@ use function array_fill;
 use function array_filter;
 use function array_keys;
 use function array_map;
+use function count;
 use function explode;
 use function function_exists;
 use function implode;
@@ -24,6 +25,7 @@ use function json_decode;
 use function json_encode;
 use function mb_strtolower;
 use function preg_replace;
+use function strlen;
 use function strtr;
 use function trim;
 use function var_export;
@@ -200,12 +202,32 @@ final class Routes
             }
             // Einträge von Quellen, die es nicht mehr gibt (AddOn entfernt)
             $known = array_keys(Sources::all());
-            $sql->setQuery('DELETE FROM ' . self::ENTRY_TABLE . ($known ? ' WHERE source NOT IN (' . implode(',', array_fill(0, \count($known), '?')) . ')' : ''), $known);
+            $sql->setQuery('DELETE FROM ' . self::ENTRY_TABLE . ($known ? ' WHERE source NOT IN (' . implode(',', array_fill(0, count($known), '?')) . ')' : ''), $known);
         }
         Extension::dispatch(new RoutesRebuilt());
     }
 
     /** Sprachpräfix ('' für die Startsprache, sonst '/en') */
+    /**
+     * Language of a path from its prefix (`/en/…`, start language without prefix) and the path without prefix and slashes.
+     *
+     * @return array{0: int, 1: string}
+     */
+    public static function splitLanguage(string $path): array
+    {
+        $rest = trim($path, '/');
+        if (Language::count() > 1) {
+            $first = explode('/', $rest, 2)[0];
+            foreach (Language::getAll() as $l) {
+                if ($l->id !== Language::getStartId() && $l->code === strtolower($first)) {
+                    return [$l->id, (string) substr($rest, strlen($first) + 1)];
+                }
+            }
+        }
+
+        return [Language::getStartId(), $rest];
+    }
+
     public static function prefix(int $languageId): string
     {
         if (Language::count() < 2 || $languageId === Language::getStartId()) {
@@ -307,7 +329,7 @@ final class Routes
             Extension::dispatch(new RoutesRebuilt($key));
         }
 
-        return \count($new);
+        return count($new);
     }
 
     /** Einzelne Einträge speichern bzw. neu berechnen (z. B. nach dem Speichern eines Datensatzes) */

@@ -15,7 +15,10 @@ use Redaxo\Core\Http\Request;
 use Redaxo\Core\Language\Language;
 use Redaxo\Core\Language\LanguageHandler;
 use Redaxo\Core\Security\User;
+use Throwable;
 
+use function count;
+use function in_array;
 use function Redaxo\Core\View\escape;
 
 /**
@@ -45,7 +48,7 @@ final class SiteAdmin
         $msg = '';
         switch ($action) {
             case 'site_save':
-                Settings::save($tab, (array) (Request::post('site', 'array', [])), Request::post('lang', 'int', 0) ?: null);
+                Settings::save($tab, (array) Request::post('site', 'array', []), Request::post('lang', 'int', 0) ?: null);
                 $msg = 'Gespeichert.';
                 break;
             case 'domain_save':
@@ -75,7 +78,7 @@ final class SiteAdmin
                 return ['results' => Maps::geocode(Request::post('q', 'string', ''))];
         }
 
-        return ['html' => self::render($tab, Request::post('lang', 'int', 0) ?: Language::getStartId()), 'tab' => $tab, 'tabs' => self::tabs(), 'message' => $msg, 'reload' => \in_array($action, ['site_save', 'language_save'], true)];
+        return ['html' => self::render($tab, Request::post('lang', 'int', 0) ?: Language::getStartId()), 'tab' => $tab, 'tabs' => self::tabs(), 'message' => $msg, 'reload' => in_array($action, ['site_save', 'language_save'], true)];
     }
 
     public static function render(string $tab, int $lang = 0): string
@@ -96,7 +99,7 @@ final class SiteAdmin
         $values = Settings::all();
         $switch = '';
         $translatable = Settings::translatable($tab);
-        if (\count(Language::getAll()) > 1 && $translatable) {
+        if (count(Language::getAll()) > 1 && $translatable) {
             $switch = '<nav class="site-lang" aria-label="Sprache der Texte">' . implode('', array_map(static fn (Language $l) => '<button type="button" data-site-lang="' . $l->id . '"'
                 . ($l->id === $lang ? ' aria-current="true"' : '') . '>' . escape($l->name) . '</button>', Language::getAll())) . '</nav>';
             if ($lang !== Language::getStartId()) {
@@ -159,7 +162,7 @@ final class SiteAdmin
         } else {
             LanguageHandler::add(['code' => $code, 'name' => $name, 'status' => $online]);
         }
-        Routing\Routes::rebuild();
+        Routes::rebuild();
 
         return $id ? 'Sprache gespeichert.' : 'Sprache „' . $name . '“ angelegt – Seitennamen sind übernommen, Seiten zunächst offline.';
     }
@@ -193,7 +196,7 @@ final class SiteAdmin
             . 'Eine <b>Landing-Domain</b> zeigt eine Seite (auf Wunsch mit Unterseiten) unter eigener Adresse. Alle Domains müssen im Hosting auf diese Installation zeigen.</p>';
         try {
             $rows = Sql::factory()->getArray('SELECT * FROM ' . Domains::TABLE . ' ORDER BY FIELD(role, "primary", "alias", "landing"), host');
-        } catch (\Throwable) {
+        } catch (Throwable) {
             $rows = [];
         }
         foreach ($rows as $r) {
@@ -249,14 +252,15 @@ final class SiteAdmin
         try {
             $rules = Sql::factory()->getArray('SELECT * FROM ' . Redirects::TABLE . ' ORDER BY updated DESC, id DESC LIMIT 200');
             $nf = Sql::factory()->getArray('SELECT path, hits, last_seen FROM ' . Redirects::TABLE_404 . ' ORDER BY hits DESC, last_seen DESC LIMIT 20');
-        } catch (\Throwable) {
+        } catch (Throwable) {
             $rules = $nf = [];
         }
         if ($rules) {
             $h .= '<h3 class="site-h">Weiterleitungen (' . count($rules) . ')</h3><ul class="site-list" role="list">';
             foreach ($rules as $r) {
                 $target = (string) $r['target'];
-                if (preg_match('~^redaxo://(\d+)~', $target, $m) && ($a = Article::get((int) $m[1]))) {
+                $internal = Redirects::parseTarget($target);
+                if ('page' === ($internal['type'] ?? '') && ($a = Article::get((int) $internal['id'], $internal['lang'] ?? Routes::splitLanguage((string) $r['source'])[0]))) {
                     $target = $a->name . ' (' . (Routes::prefix($a->languageId) . '/' . Routes::path($a->id, $a->languageId)) . ')';
                 }
                 $h .= '<li class="site-list__item"><span class="site-list__main"><code>' . escape((string) $r['source']) . '</code> → ' . escape(410 === (int) $r['code'] ? 'gelöscht (410)' : $target)

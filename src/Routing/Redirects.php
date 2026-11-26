@@ -6,6 +6,7 @@ use Normalizer;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Database\Sql;
 use Redaxo\Core\Filesystem\Url;
+use Redaxo\Core\Language\Language;
 use Throwable;
 
 use function array_fill;
@@ -28,6 +29,8 @@ use function strlen;
 use function strtolower;
 use function substr;
 use function trim;
+
+use const PHP_URL_PATH;
 
 /**
  * Weiterleitungen (Tabelle rex_fluid_redirect) und 404-Protokoll (rex_fluid_404) – Regeln aus KLXM Studio (Core\Redirects):
@@ -160,7 +163,7 @@ final class Redirects
         if (410 === $code) {
             return ['rule' => $rule, 'code' => 410, 'location' => ''];
         }
-        $loc = self::targetUrl((string) $rule['target'], $rest);
+        $loc = self::targetUrl((string) $rule['target'], $rest, Routes::splitLanguage($base)[0]);
         if (null === $loc) {
             return null;
         }
@@ -177,20 +180,44 @@ final class Redirects
         return ['rule' => $rule, 'code' => $code, 'location' => $loc];
     }
 
-    /** Zieladresse oder null (Seite fehlt bzw. ist offline) */
-    public static function targetUrl(string $target, string $rest = ''): ?string
+    /**
+     * Interne Ziele zerlegen: `redaxo://ID[@Sprache][#anker]` (Seite) und `route://quelle/ID[@Sprache]` (Eintrag einer Quelle).
+     * Ohne Sprache gilt die Sprache der aufgerufenen Adresse (Regeln älterer Versionen speicherten keine).
+     *
+     * @return array{type: 'page'|'entry', id: string, source: string, lang: ?int, anchor: string}|null
+     */
+    public static function parseTarget(string $target): ?array
     {
         $t = trim($target);
-        if (preg_match('~^redaxo://(\d+)(#[\w-]+)?$~', $t, $m)) {
-            $a = Article::get((int) $m[1]);
-
-            return $a && $a->isOnline() ? Url::article($a->id) . ($m[2] ?? '') : null;
+        if (preg_match('~^redaxo://(\d+)(?:@(\d+))?(#[\w-]+)?$~', $t, $m)) {
+            return ['type' => 'page', 'id' => $m[1], 'source' => '', 'lang' => '' !== ($m[2] ?? '') ? (int) $m[2] : null, 'anchor' => $m[3] ?? ''];
         }
-        // Eintrag einer Quelle: route://quelle/ID (automatisch bei geänderter Adresse)
-        if (preg_match('~^route://([^/]+)/(.+)$~', $t, $m)) {
-            $url = Router::urlFor($m[1], $m[2]);
+        if (preg_match('~^route://([^/]+)/([^@]+)(?:@(\d+))?$~', $t, $m)) {
+            return ['type' => 'entry', 'id' => $m[2], 'source' => $m[1], 'lang' => '' !== ($m[3] ?? '') ? (int) $m[3] : null, 'anchor' => ''];
+        }
 
-            return '' !== $url ? $url : null;
+        return null;
+    }
+
+    /**
+     * Zieladresse oder null (Seite fehlt bzw. ist offline).
+     *
+     * @param int|null $languageId Sprache der aufgerufenen Adresse – für interne Ziele ohne eigene Sprache
+     */
+    public static function targetUrl(string $target, string $rest = '', ?int $languageId = null): ?string
+    {
+        $t = trim($target);
+        $internal = self::parseTarget($t);
+        if (null !== $internal) {
+            $lang = $internal['lang'] ?? $languageId ?? Language::getStartId();
+            if ('entry' === $internal['type']) {
+                $url = Router::urlFor($internal['source'], $internal['id'], $lang);
+
+                return '' !== $url ? $url : null;
+            }
+            $a = Article::get((int) $internal['id'], $lang);
+
+            return $a && $a->isOnline() ? Url::article($a->id, $lang) . $internal['anchor'] : null;
         }
         if (preg_match('~^https?://~i', $t)) {
             return str_replace('*', $rest, $t);
@@ -229,7 +256,7 @@ final class Redirects
                 continue;
             }
             $old = self::normalize($prefix . '/' . $c['old']);
-            $target = $c['target'];
+            $target = $c['target'] . '@' . $c['lang'];   // mit Sprache, sonst führte /en/alt auf die Seite der Startsprache
             $row = $sql->getArray('SELECT id FROM ' . self::TABLE . ' WHERE source_hash = ? AND wildcard = 0 LIMIT 1', [sha1(self::key($old))])[0] ?? null;
             if ($row) {
                 $sql->setQuery('UPDATE ' . self::TABLE . ' SET target = ?, code = 301, active = 1, updated = NOW() WHERE id = ?', [$target, $row['id']]);

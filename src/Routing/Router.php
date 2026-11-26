@@ -9,6 +9,7 @@ use Redaxo\Core\Content\ExtensionPoint as ContentEp;
 use Redaxo\Core\Core;
 use Redaxo\Core\ExtensionPoint\AsExtension;
 use Redaxo\Core\ExtensionPoint\ExtensionLevel;
+use Redaxo\Core\Filesystem\Url;
 use Redaxo\Core\Http\Response;
 use Redaxo\Core\Language\ExtensionPoint as LanguageEp;
 use Redaxo\Core\Language\Language;
@@ -199,7 +200,7 @@ final class Router
     public static function boot(): void
     {
         if (self::config()->enabled && Core::isFrontend() && Core::hasRequest()) {
-            \Redaxo\Core\Filesystem\Url::init(new RootPathProvider(Core::getProject(), Core::getRequest()->getBasePath()));
+            Url::init(new RootPathProvider(Core::getProject(), Core::getRequest()->getBasePath()));
         }
     }
 
@@ -296,18 +297,7 @@ final class Router
         }
 
         // Sprache aus dem Präfix, Endung weg
-        $lang = Language::getStartId();
-        $rest = trim($path, '/');
-        if (Language::count() > 1) {
-            $first = explode('/', $rest, 2)[0];
-            foreach (Language::getAll() as $l) {
-                if ($l->id !== Language::getStartId() && $l->code === strtolower($first)) {
-                    $lang = $l->id;
-                    $rest = (string) substr($rest, strlen($first) + 1);
-                    break;
-                }
-            }
-        }
+        [$lang, $rest] = Routes::splitLanguage($path);
         $key = self::config()->format->strip($rest);
 
         // Landing-Domain: „/“ = Einstiegsseite, Unterseiten relativ dazu
