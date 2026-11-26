@@ -2,15 +2,19 @@
 
 namespace Klxm\Fluid\Seo;
 
-use Klxm\Meta\Alt;
-use Klxm\Fluid\Routing\Router;
+use Klxm\Fluid\Editing;
 use Klxm\Fluid\Routing\ExtensionPoint\PageMetaResolved;
+use Klxm\Fluid\Routing\Router;
 use Klxm\Fluid\Routing\Seo\PageMeta;
-use Redaxo\Core\ExtensionPoint\AsExtension;
-use Redaxo\Core\MediaPool\Media;
+use Klxm\Fluid\Settings;
+use Klxm\ImageEditor\ImageEditor;
+use Klxm\Meta\Alt;
 use Redaxo\Core\Content\Article;
+use Redaxo\Core\ExtensionPoint\AsExtension;
 use Redaxo\Core\Language\Language;
+use Redaxo\Core\MediaPool\Media;
 
+use const FILTER_VALIDATE_EMAIL;
 
 /**
  * Angaben von fluid für den Seitenkopf des Routings (Routing\Seo\Head): Bild für soziale Netzwerke mit image_editor
@@ -25,15 +29,15 @@ final class Head
     {
         $m = $ep->subject;
         // Netzwerke: 1200 × 630 als JPEG um den Fokuspunkt (LinkedIn kann kein WebP)
-        if (null !== $m->image && '' !== $m->image && !preg_match('~^https?://~i', $m->image) && class_exists(\Klxm\ImageEditor\ImageEditor::class)
-            && ($media = Media::get($m->image)) && null !== ($share = \Klxm\ImageEditor\ImageEditor::shareUrl($media->fileName))) {
+        if (null !== $m->image && '' !== $m->image && !preg_match('~^https?://~i', $m->image) && class_exists(ImageEditor::class)
+            && ($media = Media::get($m->image)) && null !== ($share = ImageEditor::shareUrl($media->fileName))) {
             $m->imageAlt ??= Alt::of($media) ?: null;
             $m->image = Router::absolute($share);
             $m->imageType = 'image/jpeg';
             $m->imageWidth = 1200;
             $m->imageHeight = 630;
         }
-        if (!\Klxm\Fluid\Editing::active()) {
+        if (!Editing::active()) {
             $m->jsonLd = [...(array) (StructuredData::graph($ep->article, $m)['@graph'] ?? []), ...$m->jsonLd];
         }
 
@@ -43,11 +47,11 @@ final class Head
     /** schema.org-Knoten der Organisation: Name, Logo, Adresse, Telefon, E-Mail, Geo, Öffnungszeiten, Social Media */
     public static function organizationNode(): array
     {
-        $s = static fn (string $k) => trim((string) \Klxm\Fluid\Settings::get($k, ''));
+        $s = static fn (string $k) => trim((string) Settings::get($k, ''));
         $type = $s('schema_type') ?: 'Organization';
         $origin = Router::canonical(Article::getSiteStartArticleId(), Language::getCurrentId());
-        $data = ['@type' => $type, '@id' => $origin . '#org', 'name' => \Klxm\Fluid\Settings::name(), 'url' => $origin];
-        if ('' !== $s('logo') && ($m = \Redaxo\Core\MediaPool\Media::get($s('logo')))) {
+        $data = ['@type' => $type, '@id' => $origin . '#org', 'name' => Settings::name(), 'url' => $origin];
+        if ('' !== $s('logo') && ($m = Media::get($s('logo')))) {
             $data['logo'] = Router::absolute($m->getUrl());
         }
         if ('' !== $s('street') || '' !== $s('city')) {
@@ -61,7 +65,7 @@ final class Head
         }
         $days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
         $spec = [];
-        foreach ((array) \Klxm\Fluid\Settings::get('hours', []) as $r) {
+        foreach ((array) Settings::get('hours', []) as $r) {
             if (isset($days[(int) ($r['tag'] ?? -1)]) && !empty($r['von']) && !empty($r['bis'])) {
                 $slots = !empty($r['pause_von']) && !empty($r['pause_bis']) ? [[$r['von'], $r['pause_von']], [$r['pause_bis'], $r['bis']]] : [[$r['von'], $r['bis']]];
                 foreach ($slots as [$o, $c]) {
@@ -72,7 +76,7 @@ final class Head
         if ($spec && 'Organization' !== $type && 'Person' !== $type) {
             $data['openingHoursSpecification'] = $spec;
         }
-        $same = array_values(array_filter(array_map(static fn ($x) => (string) ($x['url'] ?? ''), (array) \Klxm\Fluid\Settings::get('social', [])), static fn ($u) => (bool) preg_match('~^https?://~', $u)));
+        $same = array_values(array_filter(array_map(static fn ($x) => (string) ($x['url'] ?? ''), (array) Settings::get('social', [])), static fn ($u) => (bool) preg_match('~^https?://~', $u)));
         if ($same) {
             $data['sameAs'] = $same;
         }

@@ -10,10 +10,17 @@ use Klxm\Fluid\Routing\Seo\PageMeta;
 use Klxm\Fluid\Settings;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\Category;
+use Redaxo\Core\ExtensionPoint\Extension;
+use Redaxo\Core\ExtensionPoint\ExtensionPoint;
 use Redaxo\Core\Language\Language;
 
+use function count;
+use function in_array;
 use function is_array;
 use function is_callable;
+
+use const ENT_HTML5;
+use const ENT_QUOTES;
 
 /**
  * Strukturierte Daten (schema.org, JSON-LD) als verknüpfter @graph je Seite (Modell aus KLXM Studio – Core\StructuredData):
@@ -94,10 +101,10 @@ final class StructuredData
             '@type' => 'WebPage', '@id' => $url . '#webpage', 'url' => $url,
             'name' => null !== $meta ? ($meta->documentTitle ?? $meta->title) : ($s['title'] ?: $article->name),
             'description' => null !== $meta ? $meta->description : ($s['description'] ?: (string) Settings::get('default_meta_description', '') ?: null), 'inLanguage' => $lang,
-            'isPartOf' => ['@id' => $home . '#website'], 'breadcrumb' => \count($crumbs) > 1 ? ['@id' => $url . '#breadcrumb'] : null,
+            'isPartOf' => ['@id' => $home . '#website'], 'breadcrumb' => count($crumbs) > 1 ? ['@id' => $url . '#breadcrumb'] : null,
             'dateModified' => null !== $meta?->modified ? date('c', $meta->modified) : ($article->updateDate ? date('c', $article->updateDate) : null),
         ]);
-        if (\count($crumbs) > 1) {
+        if (count($crumbs) > 1) {
             $items = [];
             foreach ($crumbs as $i => [$name, $href]) {
                 $items[] = ['@type' => 'ListItem', 'position' => $i + 1, 'name' => $name, 'item' => $href];
@@ -112,7 +119,7 @@ final class StructuredData
             $graph[] = $n;
         }
 
-        return (array) \Redaxo\Core\ExtensionPoint\Extension::dispatch(new \Redaxo\Core\ExtensionPoint\ExtensionPoint('FLUID_STRUCTURED_DATA',
+        return (array) Extension::dispatch(new ExtensionPoint('FLUID_STRUCTURED_DATA',
             ['@context' => 'https://schema.org', '@graph' => $graph], ['article' => $article, 'url' => $url, 'org' => $org['@id'], 'lang' => $lang]));
     }
 }
