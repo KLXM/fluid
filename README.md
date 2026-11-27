@@ -116,7 +116,7 @@ fluid läuft auch ohne.
 
 **Für Entwickler:** Blöcke sind kleine PHP-Klassen mit Feld-Attributen (wie Module des Cores) und einer Ausgabe, Extension Points an allen wichtigen
 Stellen, YForm-Tabellen und -Formulare als Klassen, Textformate als kurze Liste in der `kit.php` des Kits, Formate anderer
-AddOns per `#[AsStyles]` ([Textformate im Kit](docs/entwickler.md#textformate-im-kit)) – mehr in der [Entwickler-Referenz](docs/entwickler.md).
+AddOns per `#[AsTiptapStyles]` ([Textformate im Kit](docs/entwickler.md#textformate-im-kit)) – mehr in der [Entwickler-Referenz](docs/entwickler.md).
 
 | Textformate im Kit „fluid“ | Listen und Buttons im Kit „NativeCSS“ |
 |---|---|

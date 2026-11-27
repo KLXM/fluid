@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.0-beta.16 – 2026-11-27
+
+- Formate per `#[AsTiptapStyles]` (vorher `#[AsStyles]`), setzt TipTap 1.0.0-beta.7 voraus.
+
 ## 1.0.0-beta.15 – 2026-11-27
 
 - Textformate der Kits kommen über `#[AsStyles('fluid.kit', …)]` in den Editor (`Tiptap\KitStyles`) – derselbe Weg, den

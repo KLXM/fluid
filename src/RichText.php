@@ -19,7 +19,7 @@ use const ENT_QUOTES;
 /**
  * Output rich text safely: paragraphs, headings h2–h4, quote, lists, <mark>, <code>, <sup>, <sub>, links (also
  * data-link="redaxo://ID"). Classes only as the text formats of fluid's editor profile (the kit's {@see TextFormats} and
- * those of other addons via `#[AsStyles]`) – others are dropped, also those of another kit. No style attributes; links to articles get the
+ * those of other addons via `#[AsTiptapStyles]`) – others are dropped, also those of another kit. No style attributes; links to articles get the
  * current address on output.
  */
 final class RichText
@@ -43,7 +43,7 @@ final class RichText
         }, $html);
         $html = Str::sanitizeHtml($html, self::config());
 
-        // Restrict classes to the text formats of fluid's editor profile (kit and other addons, #[AsStyles])
+        // Restrict classes to the text formats of fluid's editor profile (kit and other addons, #[AsTiptapStyles])
         $profile = Tiptap::profile(FluidProfile::NAME);
         $html = (string) preg_replace_callback('~<(p|span|ul|ol|h[2-4]|a)\b([^>]*?)\sclass="([^"]*)"~i', static function (array $m) use ($profile): string {
             $allowed = $profile->styleClasses($m[1]);

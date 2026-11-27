@@ -292,13 +292,13 @@ anderen Kits bei der Ausgabe weg – der Text bleibt. Bilder gibt es im Text nic
 und nimmt statt der Buttons von fluid `ncss-btn ncss-btn--primary|secondary|ghost`.
 
 **Wie die Formate in den Editor kommen:** fluid meldet sie bei TipTap an wie jedes andere AddOn, als Klasse
-`Tiptap\KitStyles` mit `#[AsStyles('fluid.kit', 'fluid-Kit', profiles: ['tiptap.fluid'])]`. Formate anderer AddOns und
+`Tiptap\KitStyles` mit `#[AsTiptapStyles('fluid.kit', 'fluid-Kit', profiles: ['tiptap.fluid'])]`. Formate anderer AddOns und
 des Projekts kommen auf demselben Weg dazu, etwa ein Link „Cookie-Einstellungen“ eines Consent-AddOns. Die Ausgabe
 (`RichText::html()`) behält genau die Klassen, die das Profil `tiptap.fluid` dann kennt
 (`Tiptap::profile('tiptap.fluid')->styleClasses('a')`):
 
 ```php
-#[AsStyles('project.text', 'Projekt', profiles: ['tiptap.fluid'])]
+#[AsTiptapStyles('project.text', 'Projekt', profiles: ['tiptap.fluid'])]
 final class ProjectStyles extends StyleDefinition
 {
     public function styles(): array

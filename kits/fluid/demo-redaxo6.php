@@ -401,11 +401,11 @@ $code = [
         ];
         CODE,
     'tiptapProfile' => <<<'CODE'
-        use Klxm\Tiptap\AsStyles;
+        use Klxm\Tiptap\AsTiptapStyles;
         use Klxm\Tiptap\StyleDefinition;
 
         // Formate für vorhandene Profile anmelden – wie #[AsModule], mit Kennung
-        #[AsStyles('shop.links', 'Shop', profiles: ['tiptap.fluid', 'tiptap.default'])]
+        #[AsTiptapStyles('shop.links', 'Shop', profiles: ['tiptap.fluid', 'tiptap.default'])]
         final class ShopStyles extends StyleDefinition
         {
             public function styles(): array
@@ -2038,14 +2038,14 @@ vollständig: Module, Templates, Schema'],
                         ['icon' => 'code', 'title' => 'Profile als PHP-Klassen', 'text' => 'Das Profil von fluid ist eine Klasse. Ein Projekt überschreibt es mit einer eigenen – versioniert im Git, ohne Abgleich der Datenbank zwischen Stage und Live.', 'link_label' => '', 'link' => ''],
                         ['icon' => 'shield-check', 'title' => 'Sauberes HTML', 'text' => 'Formate sind CSS-Klassen, nie style-Attribute – die Content-Security-Policy bleibt streng. Der Editor kennt nur die Formate des Kits, der Server bereinigt jede Eingabe.', 'link_label' => '', 'link' => ''],
                         ['icon' => 'check-circle', 'title' => 'Nichts geht verloren', 'text' => 'Bestehende Texte bleiben, wie sie sind: Absatzstile, Farben, Häkchen-Listen, Anker an Überschriften und Links auf Seiten.', 'link_label' => '', 'link' => ''],
-                        ['icon' => 'puzzle-piece', 'title' => 'Erweiterbar', 'text' => 'Plugins, Formate per #[AsStyles], eigene Link-Formate, eigene Seiten- und Medienauswahl – fluid nutzt genau die Schnittstellen, die jedes AddOn nutzen kann.', 'link_label' => '', 'link' => ''],
+                        ['icon' => 'puzzle-piece', 'title' => 'Erweiterbar', 'text' => 'Plugins, Formate per #[AsTiptapStyles], eigene Link-Formate, eigene Seiten- und Medienauswahl – fluid nutzt genau die Schnittstellen, die jedes AddOn nutzen kann.', 'link_label' => '', 'link' => ''],
                         ['icon' => 'users-three', 'title' => 'Gut für alle', 'text' => 'Was fluid brauchte, steckt jetzt in TipTap selbst: Bearbeiten direkt auf der Seite, Shadow DOM, Auswahl auf der Website. Davon profitiert jedes REDAXO-6-Projekt.', 'link_label' => '', 'link' => ''],
                     ],
                 ]],
                 ['type' => 'media_text', 'data' => ['variant' => 'left', 'eyebrow' => 'In der Seitenleiste', 'title' => 'Derselbe Editor für längere Texte',
                     'text' => '<p>Alle Felder eines Elements stehen in der Seitenleiste – formatierter Text mit der vollen Leiste von TipTap, samt Quelltext und Vollbild. Markdown einfügen wird zu Formatierung, Rechtsklick öffnet Menüs für Listen und Links.</p>',
                     'list' => '', 'image' => 'fluid-tiptap-seitenleiste.jpg', 'ratio' => '16:9', 'split' => 'media']],
-                ['type' => 'code', 'data' => ['eyebrow' => 'Für Entwickler', 'title' => 'Formate aus Kit und AddOns', 'intro' => 'Ein Kit legt seine Formate als kurze Liste in seine kit.php. Andere AddOns und das Projekt melden eigene Formate als Klasse mit #[AsStyles] an – wie Module mit #[AsModule], mit Kennung.', 'note' => 'Mehr in der Entwickler-Referenz von fluid, Abschnitte „Textformate im Kit“ und „Text-Editor (TipTap)“.',
+                ['type' => 'code', 'data' => ['eyebrow' => 'Für Entwickler', 'title' => 'Formate aus Kit und AddOns', 'intro' => 'Ein Kit legt seine Formate als kurze Liste in seine kit.php. Andere AddOns und das Projekt melden eigene Formate als Klasse mit #[AsTiptapStyles] an – wie Module mit #[AsModule], mit Kennung.', 'note' => 'Mehr in der Entwickler-Referenz von fluid, Abschnitte „Textformate im Kit“ und „Text-Editor (TipTap)“.',
                     'items' => [
                         $c('kitText', 'kits/fluid/kit.php', 'php'),
                         $c('tiptapProfile', 'src/ShopStyles.php', 'php'),
