@@ -462,13 +462,13 @@ Extension::register('FLUID_KIT', static fn (ExtensionPoint $ep) => 'shop.example
 | `FLUID_MENU_ENTRIES` | Menüpunkte (`label`, `href`, `current`, `active`, `children`, `entry`) | `article`, `language`, `config` | Einträge im Menü ändern (siehe [Einträge im Menü](#einträge-im-menü)) |
 | `FLUID_LIST_TEMPLATES` | Vorlagen (Schlüssel => `name`, `options`, `tables`, `default`, `block`) | `table`, `block` | Listen-Vorlagen vordefinieren (siehe [Listen-Vorlagen](#listen-vorlagen)) |
 
-Das Routing hat eigene Extension Points als Klassen (wie der Core), Namespace `Klxm\Fluid\Routing\ExtensionPoint`:
+Das Routing hat eigene Extension Points als Klassen (wie der Core), Namespace `Klxm\Routes\ExtensionPoint`:
 
 | Klasse | Subject | Eigenschaften | Zweck |
 |---|---|---|---|
 | `ArticleMeta` | `PageMeta` | `article`, `match` | Meta-Angaben der Seite, bevor Eintrag und Overrides dazukommen (fluid trägt hier die SEO-Felder ein) |
 | `PageMetaResolved` | `PageMeta` | `article`, `match` | fertige Meta-Angaben kurz vor der Ausgabe – ändern, eigene Tags, JSON-LD |
-| `SitemapEntries` | Einträge (`loc`, `lastmod`, `alternates`, `images`) | `landing` | Adressen der sitemap.xml ergänzen, ändern, entfernen |
+| `SitemapEntries` | Einträge (`loc`, `lastmod`, `alternates`, `images`) | `site`, `domain` | Adressen der sitemap.xml ergänzen, ändern, entfernen |
 | `RobotsTxt` | Text | `part` (`rules` bzw. `text`) | Regeln ersetzen (`rules`, fluid setzt hier den eigenen Text der Website) bzw. fertigen Text ergänzen |
 | `RoutesRebuilt` | – | `source` | Adressen wurden neu berechnet (Seiten bzw. eine Quelle) |
 
@@ -626,8 +626,10 @@ Vorlagen: `examples/yform/` (`TerminTable`, `NewsTable`, `ProjectTable`, `Anfrag
 
 ## Adressen, Domains, SEO
 
-Der Rewriter liegt in `src/Routing/` (Namespace `Klxm\Fluid\Routing`) und kennt nichts von fluid – er lässt
-sich als eigenes AddOn herauslösen oder später durch yrewrite und ein URL-AddOn ersetzen (`src/Routing/README.md`).
+Adressen, Websites und Domains, Weiterleitungen, Sitemap, robots.txt, llms.txt, Seitenkopf und SEO der Seiten kommen
+aus dem eigenständigen AddOn [klxm/routes](https://github.com/KLXM/routes) (Namespace `Klxm\Routes`, Doku dort unter
+„Für Entwickler“). fluid ist eine Oberfläche dafür: Seitenleiste „Websites & Domains“, „Weiterleitungen“, die
+SEO-Felder der Seiteneinstellungen, „SEO & KI“ und der Domain-Wechsel im Menü ⋯.
 Eingestellt wird er wie REDAXO 6 selbst im Code, ein Backend braucht er nicht.
 
 **So arbeitet er**
@@ -640,11 +642,11 @@ Eingestellt wird er wie REDAXO 6 selbst im Code, ein Backend braucht er nicht.
   „Eigene Adresse“ – der Slug ist die ganze Adresse ohne Elternseiten, auch mit `/` (`Routes::setAddress()`);
   „In den Adressen der Unterseiten ausblenden“ für Menüpunkte – aus `/leistungen/beratung` wird `/beratung`, in allen
   Sprachen (`Routes::setHidden()`). Kollisionen bekommen eine Nummer, alte Adressen eine Weiterleitung.
-- **Kurzlinks** (`Routing\Shortlinks`): Weiterleitungen mit `origin = 'short'`, Code 302 (Ziel änderbar, jeder Klick
+- **Kurzlinks** (`Klxm\Routes\Shortlinks`): Weiterleitungen mit `origin = 'short'`, Code 302 (Ziel änderbar, jeder Klick
   zählt), optional mit Ablaufdatum (`expires`, danach 404). Anlegen in den Seiteneinstellungen (Wunschadresse oder Code
   ohne Verwechsler wie 0/o, 1/l) oder unter „Website → Weiterleitungen“ auch zu anderen Websites. Belegte Adressen (Seite,
   Eintrag, Regel) werden abgelehnt.
-- **Extension Points** (Klassen in `Routing\ExtensionPoint`, wie im Core): `ShortlinkPath` (Adresse eines neuen Kurzlinks
+- **Extension Points** (Klassen in `Klxm\Routes\ExtensionPoint`, wie im Core): `ShortlinkPath` (Adresse eines neuen Kurzlinks
   ändern, z. B. Präfix `/go/`), `ShortlinkAdded`, `ShortlinkDeleted`, `RedirectMatched` (Ziel einer Weiterleitung ändern,
   z. B. Kampagnen-Parameter; `''` = nicht weiterleiten), `PageAddressChanged`, `UrlFormatChanged`, dazu wie bisher
   `RoutesRebuilt`, `ArticleMeta`, `PageMetaResolved`, `SitemapEntries`, `RobotsTxt`.
@@ -675,8 +677,8 @@ Eingestellt wird er wie REDAXO 6 selbst im Code, ein Backend braucht er nicht.
 **Einstellen** in `Project::configure()`:
 
 ```php
-use Klxm\Fluid\Routing\{Router, RoutingConfig, UrlFormat};
-use Klxm\Fluid\Routing\Seo\{Head, HeadConfig, HeadTag};
+use Klxm\Routes\{Router, RoutingConfig, UrlFormat};
+use Klxm\Routes\Seo\{Head, HeadConfig, HeadTag};
 
 Router::$config = new RoutingConfig(
     format: UrlFormat::mixed(),   // none() /a/b · slash() /a/b/ · html() /a/b.html · mixed() /a/ + /a/b.html · suffix('.htm')
@@ -763,7 +765,7 @@ Router::resolver(static function (string $path, int $lang, array $query): ?Route
 });
 ```
 
-**Seitenkopf** (`Routing\Seo\Head`, im Template `Head::title()` und `Head::render()` – bzw. die Kurzformen
+**Seitenkopf** (`Klxm\Routes\Seo\Head`, im Template `Head::title()` und `Head::render()` – bzw. die Kurzformen
 `PageSettings::title()`/`head()`): Titel, Beschreibung, robots, Canonical, hreflang samt `x-default`, `og:type`,
 `og:url`, `og:title`, `og:description`, `og:site_name`, `og:locale` (+ `og:locale:alternate`), `og:image` mit Typ,
 Maßen und Alt-Text, `article:published_time`/`modified_time`, `twitter:card` und JSON-LD. Von X/Twitter kommt nur
@@ -780,9 +782,13 @@ Gleicher Schlüssel ersetzt – so lässt sich jede Angabe des Rewriters übersc
 
 **Domains, Sitemap, robots.txt**
 
-- Domains (Website → Domains): **Hauptadresse**, **weitere Domains** (301 auf die Hauptadresse), **Landing-Domains**
-  (eigene Domain für eine Seite, optional mit Unterseiten, Canonical „eigene Domain“ oder „Spiegel“).
-- `sitemap.xml` je Domain (Hauptadresse bzw. Landing-Domain): Seiten, die online sind (samt Eltern), nicht auf „nicht
+- Websites & Domains (Website → Websites & Domains, Recht `routes[sites]`): mehrere **Websites** mit Startpunkt,
+  Sprachen, 404-Seite, Titel-Vorlage, KI-Crawlern und llms.txt; je Website **Hauptdomain** (auch je Sprache),
+  **Varianten** (Stage, lokal – nie indexiert) und **Aliase** (301), https erzwingen. Landing-Page = Website „nur diese
+  Seite“, Spiegel = Canonical bleibt auf der Haupt-Website. Im Code per `#[AsSite]` (klxm/routes).
+- Menü ⋯ → **Domain wechseln**: dieselbe Seite auf einer anderen Domain, dort angemeldet (eine Anmeldung für alle
+  Domains, klxm/routes `Sso`). Menü ⋯ → **SEO & KI**: Hinweise für diese Seite und die ganze Website.
+- `sitemap.xml` je Website und Host: Seiten, die online sind (samt Eltern), nicht auf „nicht
   indexieren“ stehen und deren Canonical auf diese Domain zeigt – mit `lastmod` (Änderungsdatum mit Uhrzeit), hreflang samt
   `x-default` (Startsprache), bis zu fünf Bildern je Adresse (Vorschaubild der Seite, Bilder der veröffentlichten Blöcke),
   den Einträgen der Quellen und den Detailseiten von Datenlisten. Ab 45 000 Adressen ein Sitemap-Index mit
@@ -795,10 +801,10 @@ Gleicher Schlüssel ersetzt – so lässt sich jede Angabe des Rewriters übersc
   Sitemap::children(static fn (int $id, int $lang, string $loc): iterable => …);  // dynamische Adressen unter einer Seite
   Extension::register(SitemapEntries::class, static fn (SitemapEntries $ep) => [...$ep->subject, ['loc' => 'https://example.org/extra', 'lastmod' => null, 'alternates' => []]]);
   ```
-- `robots.txt` je Domain mit Zeile „Sitemap:“; eigener Text unter Website → Recht & Suchmaschinen. Optional (Haken
-  „Linkvorschau beim Teilen erlauben …“, Standard aus; im Code `Robots::allowPreviews()`): Sperrt der Text die ganze
-  Website (`User-agent: *` + `Disallow: /`), dürfen Linkvorschauen trotzdem lesen (`Robots::PREVIEW_BOTS`: Facebook,
-  LinkedIn, WhatsApp …) – Suchmaschinen bleiben draußen. Eigene Regeln für diese Bots haben Vorrang.
+- `robots.txt` je Website mit Zeile „Sitemap:“ und Regeln für KI-Crawler (Einstellung der Website); eigener Text unter
+  Website → Recht & Suchmaschinen. Eine gesperrte Website (Einstellung „für Suchmaschinen sperren“, Varianten-Domains)
+  bekommt `Disallow: /`; Linkvorschauen dürfen dann wahlweise trotzdem lesen (`Robots::PREVIEW_BOTS`). Dazu `/llms.txt`
+  und die Markdown-Fassung jeder Seite (`/seite.md`) – siehe klxm/routes.
 - Erstes Bild im ersten Block der Seite: ohne Angabe im Kit sofort und mit `fetchpriority="high"` (Einstieg, LCP);
   `img(…, ['eager' => false])` im Kit hat Vorrang.
 - Weitere Sprachen bekommen ein Präfix (`/en/…`); die Sprachwahl zeigt nur Sprachen, in denen die Seite online ist
@@ -1302,7 +1308,7 @@ Umbau geht, gelten feste Regeln:
 
 | Baustein | Ordner | Meldet an | Braucht | Stand |
 |---|---|---|---|---|
-| **Routing** (schöne Adressen, Quellen, Domains, Weiterleitungen, 404-Protokoll, sitemap.xml, robots.txt, Seitenkopf) | `src/Routing/` | ArticleUrl, Strukturänderungen, `PACKAGES_INCLUDED` (alles per `#[AsExtension]`) | nur den Core | herauslösbar – kennt nichts von fluid |
+| **Routing** (schöne Adressen, Quellen, Domains, Weiterleitungen, 404-Protokoll, sitemap.xml, robots.txt, Seitenkopf) | AddOn `klxm/routes` | ArticleUrl, Strukturänderungen, `PACKAGES_INCLUDED` (alles per `#[AsExtension]`) | nur den Core | herauslösbar – kennt nichts von fluid |
 | SEO von fluid (SEO-Felder, Bild für soziale Netzwerke, schema.org) | `src/Seo/`, `PageSettings` | `ArticleMeta`, `PageMetaResolved` | Routing, Einstellungen von fluid | bleibt im Kern |
 | Suche (Loupe) | `src/Search/` | `RoutesRebuilt` | Routing, Block-Inhalte | herauslösbar nach dem Routing |
 | Karten (MapLibre, eigener Proxy) | `src/Maps/` | Endpunkt `/proxy/*`, Geo in schema.org | Routing, Einstellungen | herauslösbar |
@@ -1315,7 +1321,7 @@ Umbau geht, gelten feste Regeln:
 | Demo | eigenes AddOn [fluid_demo](https://github.com/KLXM/fluid_demo) | Gastzugang | Kern | eigenständig |
 | Bildeditor | eigenes AddOn [image_editor](https://github.com/KLXM/image_editor) | – | Core | eigenständig |
 
-**Haken des Routings** (`Klxm\Fluid\Routing`) – Attribute werden über die Klassenerkennung des Cores gefunden,
+**Haken des Routings** (`Klxm\Routes`) – Attribute werden über die Klassenerkennung des Cores gefunden,
 die Aufrufe gehen in `boot()` jedes AddOns (aufgelöst wird erst bei `PACKAGES_INCLUDED`):
 
 ```php

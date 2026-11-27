@@ -10,7 +10,7 @@ dann fehlen nur diese Teile. Alles andere ist eingebaut:
 
 | Eingebaut in fluid | statt eines eigenen AddOns für |
 |---|---|
-| Schöne Adressen (Endung nach Wahl, eigene Adressen, Ebenen ausblenden), Kurzlinks, Domains und Landingpages, Weiterleitungen, Sitemap, robots.txt, canonical/hreflang | URL-Verwaltung, Kurzlinks und SEO |
+| Schöne Adressen, mehrere Websites und Domains (auch je Sprache), Weiterleitungen, Sitemap, robots.txt, llms.txt, schema.org, Hinweise „SEO & KI“ – über [klxm/routes](https://github.com/KLXM/routes) | URL-Verwaltung, Kurzlinks, SEO und GEO |
 | Suche mit Tippfehler-Toleranz ([Loupe](https://github.com/loupe-php/loupe), per Composer) | Volltextsuche |
 | Blog/News mit Schlagworten und RSS | News und Blog |
 | Design-Vorlagen, Farben, Schriften (selbst gehostet) | Theme-Verwaltung |
@@ -480,7 +480,7 @@ und das Design von fluid kommen zwei Zeilen dazu – `<html <?= KitHead::htmlAtt
 `<?= KitHead::render() ?>` (Titel, SEO, Styles und Skripte des Kits; Entwickler-Referenz → „Eigenes Template“).
 
 **Navigation:** fluid baut sein Menü mit [navigation_array](https://github.com/KLXM/navigation_array)
-(Branch 6.x) – im eigenen Template genauso nutzbar. Für Landing-Domains mit eigenem Seitenbaum liefert fluid den Start
+(Branch 6.x) – im eigenen Template genauso nutzbar. Auf einer eigenen Website (klxm/routes) beginnt das Menü bei ihrem Startpunkt –
 über den Extension Point `NavigationStart`.
 
 ```php

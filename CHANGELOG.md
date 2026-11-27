@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.0.0-beta.17 – 2026-11-27
+
+- **Adressen, Websites, SEO und GEO kommen aus dem neuen AddOn [klxm/routes](https://github.com/KLXM/routes).** Das
+  bisherige Routing von fluid (`src/Routing`, Namespace `Klxm\Fluid\Routing`) ist dort neu gedacht aufgegangen –
+  Namespace jetzt `Klxm\Routes`. Die Migration übernimmt eigene Adressen, Domains (Landing-Domains werden Websites),
+  Weiterleitungen, 404-Protokoll und SEO-Felder unverändert.
+- Seitenleiste **Websites & Domains**: mehrere Websites mit Startpunkt, Sprachen, 404-Seite, Titel-Vorlage, KI-Crawlern,
+  llms.txt; Domains für alle oder ausgewählte Sprachen, Varianten, Aliase, https. Rechte `routes[sites]` und
+  `routes[redirects]` statt nur Admin.
+- **Domain wechseln** im Menü ⋯: dieselbe Seite auf einer anderen Domain – dort angemeldet (eine Anmeldung für alle Domains).
+- **SEO & KI** im Menü ⋯: Wertung und Hinweise für diese Seite und die ganze Website, verständlich für Redakteure.
+- Seiteneinstellungen → Erweitert (Recht `routes[seo]`): Canonical, Seite als Weiterleitung, nofollow, nicht in der
+  Sitemap, Seitentyp für schema.org.
+- Weiterleitungen: 301/302/303/307/308/410, je Website, Ablaufdatum, Parameter übernehmen, „Adresse testen“.
+- Menü nur mit den Seiten der aktuellen Website; Templates nutzen `Router::site()`/`Router::home()` statt `Router::landing()`.
+
 ## 1.0.0-beta.16 – 2026-11-27
 
 - Formate per `#[AsTiptapStyles]` (vorher `#[AsStyles]`), setzt TipTap 1.0.0-beta.7 voraus.

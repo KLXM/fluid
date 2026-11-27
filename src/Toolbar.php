@@ -202,7 +202,7 @@ final class Toolbar
             if ($d['current'] || ('variant' === $d['role'] && !Sites::isLocal($d['host']))) {
                 continue;
             }
-            $lang = null !== $d['language'] ? (Language::get($d['language'])->name ?? '') : '';
+            $lang = implode(', ', array_map(static fn (int $id): string => Language::get($id)->name ?? '', $d['languages']));
             $out[] = ['label' => $d['siteName'] . ('' !== $lang ? ' · ' . $lang : ''), 'host' => $d['host'],
                 'url' => Sso::switchUrl($d['host'], $d['site'] === $site ? $path : '/'), 'loggedIn' => $d['loggedIn']];
         }

@@ -287,10 +287,12 @@ final class SiteAdmin
         foreach (['primary' => 'Hauptdomain', 'variant' => 'Variante (Stage, lokal)', 'alias' => 'Alias (→ Hauptdomain)'] as $v => $l) {
             $roles .= '<option value="' . $v . '"' . (($d->role->value ?? 'primary') === $v ? ' selected' : '') . '>' . $l . '</option>';
         }
-        $langs = '<option value="">alle Sprachen (mit Präfix)</option>';
+        $langs = '';
+        $defaults = '<option value="0">Standard der Website</option>';
         foreach (Language::getAll() as $l) {
             if ($site->hasLanguage($l->id)) {
-                $langs .= '<option value="' . $l->id . '"' . ($d?->languageId === $l->id ? ' selected' : '') . '>nur ' . escape($l->name) . ' (ohne Präfix)</option>';
+                $langs .= '<label class="blocks-form__check"><input type="checkbox" name="languages[]" value="' . $l->id . '"' . (null !== $d && in_array($l->id, $d->languages, true) ? ' checked' : '') . $dis . '> ' . escape($l->name) . '</label> ';
+                $defaults .= '<option value="' . $l->id . '"' . ($d?->defaultLanguage() === $l->id ? ' selected' : '') . '>' . escape($l->name) . '</option>';
             }
         }
 
@@ -298,7 +300,8 @@ final class SiteAdmin
             . '<div class="blocks-form__grid">'
             . '<div class="blocks-form__field is-half"><label class="control-label">Domain</label><input class="form-control" name="host" value="' . escape($d->host ?? '') . '" placeholder="www.beispiel.de" required' . $dis . '></div>'
             . '<div class="blocks-form__field is-half"><label class="control-label">Rolle</label><select class="form-control" name="role"' . $dis . '>' . $roles . '</select></div>'
-            . '<div class="blocks-form__field is-half"><label class="control-label">Sprache</label><select class="form-control" name="language"' . $dis . '>' . $langs . '</select></div>'
+            . '<div class="blocks-form__field"><label class="control-label">Sprachen dieser Domain</label><div>' . $langs . '</div><p class="help-block">Keine gewählt = alle Sprachen der Website. Andere Sprachen leiten zu ihrer Domain.</p></div>'
+            . '<div class="blocks-form__field is-half"><label class="control-label">Sprache ohne Präfix</label><select class="form-control" name="default_language"' . $dis . '>' . $defaults . '</select></div>'
             . '<div class="blocks-form__field is-half"><label class="blocks-form__check"><input type="checkbox" name="https" value="1"' . (($d->https ?? true) ? ' checked' : '') . $dis . '> https erzwingen</label></div>'
             . '</div>' . ($site->isCode() ? '' : '<div class="site-actions">' . (null !== $d ? '<button type="button" class="btn" data-site-act="domain_delete" data-id="' . $d->id . '" data-confirm="Domain entfernen?">Entfernen</button>' : '')
                 . '<button type="submit" class="btn btn--primary">' . (null !== $d ? 'Speichern' : 'Domain hinzufügen') . '</button></div>') . '</form>';
@@ -333,10 +336,14 @@ final class SiteAdmin
 
     private static function domainSave(): string
     {
-        $lang = Request::post('language', 'string', '');
+        $langs = array_values(array_filter(array_map('intval', (array) Request::post('languages', 'array', [])), Language::exists(...)));
+        $default = Request::post('default_language', 'int', 0);
+        if ($default > 0) {
+            $langs = array_values(array_unique([$default, ...$langs]));   // the language without prefix comes first
+        }
         try {
             Sites::saveDomain(new Domain(Request::post('host', 'string', ''), Request::post('site', 'string', Site::MAIN),
-                DomainRole::tryFrom(Request::post('role', 'string', 'primary')) ?? DomainRole::Primary, '' !== $lang ? (int) $lang : null,
+                DomainRole::tryFrom(Request::post('role', 'string', 'primary')) ?? DomainRole::Primary, $langs,
                 Request::post('https', 'bool', false), Request::post('id', 'int', 0)));
         } catch (Throwable $e) {
             throw new ApiError($e->getMessage());
