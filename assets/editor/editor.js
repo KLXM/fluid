@@ -703,7 +703,7 @@
       const c = e.target.closest('[data-copy]');
       if (c) { say((await copy(c.dataset.copy)) ? 'Kopiert: ' + c.dataset.copy : c.dataset.copy); return; }
       const del = e.target.closest('[data-shortlink-delete]');
-      if (del) { if (await ask({ title: 'Kurzlink löschen?', body: 'Wer ihn danach aufruft, landet auf „nicht gefunden“.', ok: 'Löschen', danger: true })) shortlink('shortlink_delete', { id: del.dataset.shortlinkDelete }); return; }
+      if (del) { if (await ask({ title: 'Kurzlink löschen?', body: 'Wer ihn danach aufruft, landet auf „nicht gefunden“.', ok: 'Löschen', danger: true })) shortlink('shortlink_delete', { id: del.dataset.shortlinkDelete, path: del.dataset.shortlinkSource || '' }); return; }
       if (e.target.closest('[data-shortlink-add]')) {
         shortlink('shortlink_add', { path: pform.querySelector('[data-shortlink-path]')?.value || '', expires: pform.querySelector('[data-shortlink-expires]')?.value || '' });
       }

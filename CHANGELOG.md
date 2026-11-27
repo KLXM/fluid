@@ -22,6 +22,8 @@
 - Demo „REDAXO 6“: Seite „Adressen“ zeigt Endung, eigene Adressen, Kurzlinks und die Extension Points (deutsch und englisch).
 - Fix: „Originalgröße“ (an dieser Stelle oder am Medium) ließ das Bild verschwinden – der Rahmen ohne Seitenverhältnis war
   0 px hoch. Neu `frame--natural`: das Bild steht in eigener Größe, zentriert, höchstens so breit wie die Spalte.
+- `Routes::volatile()`: Routing ohne Cache-Dateien, für Änderungen in einer Transaktion, die zurückgerollt wird (fluid_demo).
+  Kurzlinks lassen sich auch über ihre Adresse löschen; „Anlegen“ liefert die vergebene Adresse (`wish`) mit.
 - Fix: Automatische Weiterleitungen nach geänderten Adressen führten aus einer weiteren Sprache auf die Seite der Startsprache
   (`/en/alt` → `/neu` statt `/en/new`). Neue Regeln speichern die Sprache (`redaxo://ID@Sprache`), bestehende nehmen die Sprache der
   aufgerufenen Adresse – ohne Migration.

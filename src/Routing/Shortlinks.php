@@ -54,6 +54,15 @@ final class Shortlinks
         return $link;
     }
 
+    /** Shortlink of this target at this address (ids change in a rolled back demo, addresses do not) */
+    public static function find(string $path, string $target): ?Shortlink
+    {
+        $row = Sql::factory()->getArray('SELECT * FROM ' . Redirects::TABLE . ' WHERE origin = ? AND target = ? AND source_hash = ? AND wildcard = 0 LIMIT 1',
+            [self::ORIGIN, $target, sha1(Redirects::key(Redirects::normalize($path)))])[0] ?? null;
+
+        return null !== $row ? Shortlink::fromRow($row) : null;
+    }
+
     /** Deletes a shortlink of this target (only shortlinks, only of this target) */
     public static function delete(int $id, string $target): void
     {

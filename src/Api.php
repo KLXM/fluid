@@ -39,6 +39,7 @@ use function count;
 use function in_array;
 use function is_array;
 use function Redaxo\Core\View\escape;
+use function strlen;
 
 use const JSON_UNESCAPED_SLASHES;
 use const JSON_UNESCAPED_UNICODE;
@@ -657,7 +658,7 @@ final class Api
                 . (null !== $link->expires ? ' · ' . I18n::msg($link->isExpired() ? 'fluid_shortlink_expired' : 'fluid_shortlink_until', $link->expires->format('d.m.Y')) : '');
             $items .= '<li class="shortlinks__item' . ($link->isExpired() ? ' is-expired' : '') . '"><span><code>' . escape($url) . '</code><small>' . $meta . '</small></span>'
                 . '<button type="button" class="btn btn--icon" data-copy="' . escape($url) . '" aria-label="' . I18n::msg('fluid_shortlink_copy') . '" title="' . I18n::msg('fluid_shortlink_copy') . '">⧉</button>'
-                . '<button type="button" class="btn btn--icon" data-shortlink-delete="' . $link->id . '" aria-label="' . I18n::msg('fluid_shortlink_delete') . '" title="' . I18n::msg('fluid_shortlink_delete') . '">✕</button></li>';
+                . '<button type="button" class="btn btn--icon" data-shortlink-delete="' . $link->id . '" data-shortlink-source="' . escape($link->path) . '" aria-label="' . I18n::msg('fluid_shortlink_delete') . '" title="' . I18n::msg('fluid_shortlink_delete') . '">✕</button></li>';
         }
 
         return '<div class="blocks-form__field shortlinks" data-shortlinks><span class="control-label">' . I18n::msg('fluid_shortlinks') . '</span>'
@@ -669,12 +670,14 @@ final class Api
             . '<p class="help-block">' . I18n::msg('fluid_shortlink_help') . '</p></div>';
     }
 
-    /** @return array{html: string, message: string, copy?: string} */
+    /** @return array{html: string, message: string, copy?: string, wish?: string} */
     private static function shortlinkAction(Article $article, string $action): array
     {
         $target = self::shortlinkTarget($article);
         if ('shortlink_delete' === $action) {
-            Routing\Shortlinks::delete(Request::post('id', 'int', 0), $target);
+            $path = Request::post('path', 'string', '');
+            $id = '' !== $path ? Routing\Shortlinks::find($path, $target)?->id ?? 0 : Request::post('id', 'int', 0);
+            Routing\Shortlinks::delete($id, $target);
 
             return ['html' => self::shortlinkField($article), 'message' => I18n::rawMsg('fluid_shortlink_deleted')];
         }
@@ -692,7 +695,10 @@ final class Api
 
         $url = Routing\Router::absolute(Routing\Router::base() . $link->path);
 
-        return ['html' => self::shortlinkField($article), 'message' => I18n::rawMsg('fluid_shortlink_created', $url), 'copy' => $url];
+        // wish: the address without language prefix – repeating the action gives the same shortlink (fluid_demo)
+        $wish = ltrim((string) substr($link->path, strlen(Routing\Routes::prefix($article->languageId))), '/');
+
+        return ['html' => self::shortlinkField($article), 'message' => I18n::rawMsg('fluid_shortlink_created', $url), 'copy' => $url, 'wish' => $wish];
     }
 
     private static function shortlinkTarget(Article $article): string

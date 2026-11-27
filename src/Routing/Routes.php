@@ -54,6 +54,8 @@ final class Routes
     /** @var array<int, array<int, array{0: string, 1: string, 2: bool}>>|null Seite => Sprache => [slug, path, Menüpunkt] */
     private static ?array $pages = null;
 
+    private static bool $volatile = false;
+
     /** @var array<int, array<string, int>>|null Sprache => path => Seite */
     private static ?array $byPath = null;
 
@@ -467,6 +469,16 @@ final class Routes
 
     // ------------------------------------------------------------------ Cache
 
+    /**
+     * Volatile mode: no cache files are read or written, addresses come from the database and stay in memory – for
+     * changes inside a transaction that is rolled back afterwards (e.g. a guest demo). Leaving it resets the memory.
+     */
+    public static function volatile(bool $on): void
+    {
+        self::$volatile = $on;
+        self::reset();
+    }
+
     /** Gespeicherte Adressen im Speicher vergessen (z. B. nach Änderungen durch einen anderen Prozess) */
     public static function reset(): void
     {
@@ -562,7 +574,7 @@ final class Routes
 
     private static function read(string $name): ?array
     {
-        if (!Router::config()->cache) {
+        if (!Router::config()->cache || self::$volatile) {
             return null;
         }
         $file = self::cacheFile($name);
@@ -577,7 +589,7 @@ final class Routes
     /** Cache-Datei schreiben bzw. löschen (null) */
     private static function write(string $name, ?array $data): void
     {
-        if (!Router::config()->cache) {
+        if (!Router::config()->cache || self::$volatile) {
             return;
         }
         $file = self::cacheFile($name);
