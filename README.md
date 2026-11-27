@@ -17,7 +17,7 @@ dann fehlen nur diese Teile. Alles andere ist eingebaut:
 | Karten ohne Einwilligung (Proxy), Videos mit Vorschaubild und Untertiteln | Karten und Medien |
 | Mehrsprachigkeit für Inhalte und Website-Texte | Sprach-Werkzeuge |
 | Entwurf, Versionen mit Vorschau und Vergleich, Aktivität | Versionierung |
-| Formular-Baukasten, Datenlisten, Postfach (auf Basis von YForm) | Formulare |
+| Formulare in Schritten, Datenlisten, Postfach (auf Basis von YForm) | Formulare |
 | MCP-Server für KI-Werkzeuge | Schnittstellen |
 
 Optional dazu gibt es [image_editor](https://github.com/KLXM/image_editor), ebenfalls von KLXM,
@@ -224,13 +224,13 @@ Im Backend findest du unter **AddOns → fluid** eine Statusseite, die prüft, o
 |---|---|
 | **Start** | Einstieg, Merkmale, Zahlen, Layout mit Text und Zitat in Spalten, Handlungsaufruf |
 | **Technik**, **Was sich ändert**, **Bearbeiten** | Schritte, Fließtext, Fragen & Antworten, Merkmale, Zitat, Spalten |
-| **Bausteine** | weitere Blöcke des Kits: Logos, Bento, Reiter, Preise, Vorher/Nachher (mit Einblend-Effekt im Kit NativeCSS) |
+| **Elemente** | weitere Elemente des Kits: Logos, Bento, Reiter, Preise, Vorher/Nachher (mit Einblend-Effekt im Kit NativeCSS) |
 | **Video** | eigenes Video mit Kapiteln und Untertiteln, Audio mit Playlist und Transkript |
 | **Daten** | YForm: Termine als Datenliste, Kontaktformular mit Postfach |
 | **Presse** | Kurzmeldungen aus YForm – nach Datum, mit Blättern und eigener Adresse je Meldung |
 | **Projekte** | Fallstudien: YForm-Einträge, deren Inhalt aus Blöcken besteht – direkt auf der Website bearbeitbar |
 | **Neuigkeiten** | Blog mit Beiträgen, Schlagworten und RSS |
-| **Anmeldung** | Formular-Baukasten mit drei Schritten (nicht im Menü: `/anmeldung`) |
+| **Anmeldung** | Formular mit drei Schritten (nicht im Menü: `/anmeldung`) |
 | **Suche** | Suche über alle Seiten |
 
 Die Beispiel-Tabellen (Termine, Anfragen, Meldungen, Projekte) liegen als YForm-Klassen in `src/YForm/` deines Projekts –
@@ -435,7 +435,7 @@ Alles Technische steht in der **[Entwickler-Referenz](docs/entwickler.md)**:
 - eigene Kits: erben vom Kit fluid und ersetzen nur CSS, Views oder Template (`fluid:kit:create`), Auswahl unter
   Website → Kit, Inhalte bleiben beim Wechsel
 - Extension Points (`FLUID_BLOCK_DEFINITION`, `FLUID_BLOCK_VIEW`, `FLUID_SETTINGS_SCHEMA` …)
-- YForm: Formular-Baukasten, Datenliste, YForm-Feld „Fluid-Blöcke“, Postfach
+- YForm: Formulare in Schritten, Datenliste, YForm-Feld „Fluid-Blöcke“, Postfach
 - Routing, Domains, SEO, Sprachen, Videos, Blog, Karten, Rechte, Konsole
 - Suche (was in den Index kommt, `'search' => false`), Live-Aktualisierung per SSE, „Neu laden auf Aktion“
   (`Live::region`, `data-live-nav`), Präsenz der Redaktion – Live und Präsenz wie in KLXM Studio

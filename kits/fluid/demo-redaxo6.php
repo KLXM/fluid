@@ -43,9 +43,9 @@ $yform = [
         ['title' => 'Kulturverein: Programm, Anmeldung, Archiv', 'client' => 'Kulturverein Beispielhausen', 'year' => 2025, 'image' => 'fluid-formular-schritte.jpg', 'online' => true,
             'teaser' => 'Veranstaltungen als Datenliste, Anmeldung mit mehrstufigem Formular und ein Archiv, das von selbst wächst.',
             'story' => [
-                ['module' => 'fluid.features', 'data' => ['variant' => 'cards', 'eyebrow' => 'Bausteine', 'title' => 'Was der Verein nutzt', 'items' => [
+                ['module' => 'fluid.features', 'data' => ['variant' => 'cards', 'eyebrow' => 'Elemente', 'title' => 'Was der Verein nutzt', 'items' => [
                     ['icon' => 'calendar', 'title' => 'Programm', 'text' => 'Termine aus YForm, nach Datum sortiert, mit Blättern.'],
-                    ['icon' => 'list-checks', 'title' => 'Anmeldung', 'text' => 'Formular-Baukasten in drei Schritten, mit Bestätigung.'],
+                    ['icon' => 'list-checks', 'title' => 'Anmeldung', 'text' => 'Formular in drei Schritten, mit Bestätigung.'],
                     ['icon' => 'archive', 'title' => 'Archiv', 'text' => 'Vergangene Termine wandern automatisch ins Archiv.'],
                 ]], 'tunes' => []],
                 ['module' => 'fluid.faq', 'data' => ['variant' => 'stacked', 'title' => 'Häufige Fragen', 'items' => [
@@ -862,6 +862,17 @@ return [
                     'list' => "Bildformat in der Seitenleiste\nAufteilung per Ziehen am Bildrand\nDarstellung oben im Block wählen",
                     'image' => 'fluid-website.jpg', 'ratio' => '16:9', 'split' => 'media']],
                 ['type' => 'features', 'data' => [
+                    'variant' => 'cards', 'eyebrow' => 'fluid', 'title' => 'Modular und erweiterbar',
+                    'intro' => 'fluid baut nichts um: Vorhandene Module und Templates laufen weiter. Nur wer die eigenen Funktionen von fluid nutzen möchte, passt wenig an.',
+                    'size' => 'm',
+                    'items' => [
+                        ['icon' => 'puzzle-piece', 'title' => 'Normale REDAXO-Module', 'text' => 'Module von REDAXO 6 laufen ohne Änderung mit – auf der Website bearbeitet in derselben Seitenleiste wie die Elemente.', 'link_label' => 'Native Module', 'link' => '/native-module'],
+                        ['icon' => 'code', 'title' => 'Eigene Elemente', 'text' => 'Ein Element ist eine PHP-Klasse: Felder als Attribute, Ausgabe in output(). Für Text direkt auf der Seite genügt $this->edit(\'feld\').', 'link_label' => 'Elemente ansehen', 'link' => '/elemente'],
+                        ['icon' => 'layout', 'title' => 'Eigenes Template', 'text' => 'Bearbeiten auf der Website klappt mit jedem Template. Für die Elemente und das Design von fluid bindet es die Styles des Kits ein – oder nimmt das Template von fluid.', 'link_label' => 'Module und Templates', 'link' => '/module-templates'],
+                        ['icon' => 'plugs-connected', 'title' => 'Erweitern wie im Core', 'text' => 'Gestaltung als austauschbares Kit, Erweiterungen über Extension Points und Attribute – so, wie REDAXO 6 selbst erweitert wird.', 'link_label' => 'Eigenes Kit', 'link' => '/eigenes-kit'],
+                    ],
+                ]],
+                ['type' => 'features', 'data' => [
                     'variant' => 'cards', 'eyebrow' => 'Unter der Haube', 'title' => 'Was REDAXO 6 mitbringt',
                     'intro' => 'Ein modernes Fundament – vertraut für alle, die REDAXO kennen, und ohne Altlasten.',
                     'size' => 'm',
@@ -907,7 +918,7 @@ return [
                     'title' => 'REDAXO 6 kennenlernen', 'text' => 'Backend, Projekt, Module, Templates, YForm und Navigation – mit Screenshots und Codebeispielen zum Nachbauen.']],
                 ['type' => 'richtext', 'data' => ['variant' => 'standard', 'eyebrow' => '', 'title' => '', 'intro' => '', 'meta' => '',
                     'measure' => 'normal', 'dropcap' => false, 'toc' => false, 'reveal' => 'off', 'scrollspy' => 'off',
-                    'text' => '<p class="t-warn"><strong>In Entwicklung:</strong> REDAXO 6 entsteht im Branch 6.x von redaxo/core. Die Beispiele entsprechen dem Stand vom November 2026 – Namen und Details können sich bis zur Veröffentlichung noch ändern.</p><p>Hier steht, wie ein Projekt mit REDAXO 6 entsteht und wie die wichtigsten Bausteine aussehen – und was sich gegenüber REDAXO 5 ändert.</p>']],
+                    'text' => '<p class="t-warn"><strong>In Entwicklung:</strong> REDAXO 6 entsteht im Branch 6.x von redaxo/core. Die Beispiele entsprechen dem Stand vom November 2026 – Namen und Details können sich bis zur Veröffentlichung noch ändern.</p><p>Hier steht, wie ein Projekt mit REDAXO 6 entsteht und wie die wichtigsten Teile aussehen – und was sich gegenüber REDAXO 5 ändert.</p>']],
                 ['type' => 'features', 'tunes' => ['background' => 'muted'], 'data' => [
                     'variant' => 'icons', 'eyebrow' => 'Themen', 'title' => 'Die Seiten in diesem Bereich', 'intro' => '', 'size' => 'm',
                     'items' => [
@@ -1077,13 +1088,13 @@ vollständig: Module, Templates, Schema'],
                     ],
                 ]],
                 ['type' => 'richtext', 'data' => [
-                    'variant' => 'article', 'eyebrow' => '', 'title' => 'Die wichtigsten Bausteine', 'intro' => '', 'meta' => 'Stand: Branch 6.x',
+                    'variant' => 'article', 'eyebrow' => '', 'title' => 'Die wichtigsten Komponenten', 'intro' => '', 'meta' => 'Stand: Branch 6.x',
                     'measure' => 'normal', 'dropcap' => false, 'toc' => true, 'reveal' => 'off', 'scrollspy' => 'mark',
                     'text' => '<h3>Namespaces statt rex_-Klassen</h3><p>Alle Klassen des Cores liegen unter <code>Redaxo\Core\…</code> – etwa <code>Redaxo\Core\Content\Article</code> oder <code>Redaxo\Core\Database\Sql</code>. Die Datenbank-Klasse hat typisierte Getter wie <code>getIntValue()</code>.</p>'
                         . '<h3>Module und Templates als PHP-Klassen</h3><p>Ein Modul erbt von <code>Module</code> und trägt das Attribut <code>#[AsModule(\'key\', \'Name\')]</code>, mit den Methoden <code>input()</code> und <code>output()</code>. Templates erben von <code>Template</code>, rendern sich selbst und legen fest, welche Module in welchem Inhaltsbereich erlaubt sind. REDAXO findet die Klassen automatisch.</p>'
                         . '<h3>AddOns sind Composer-Pakete</h3><p>Ein Paket vom Typ <code>redaxo-addon</code> ist installiert und aktiv – ohne zusätzlichen Schalter. Seine Tabellen beschreibt es in <code>install()</code>; das läuft bei jedem <code>console migrate</code> und muss deshalb wiederholbar sein. Einmalige Schritte sind Migrationen mit eigenem Protokoll.</p>'
                         . '<h3>Extension Points</h3><p>Erweiterungen hängen sich weiter über Extension Points ein – teils als eigene Klassen, etwa <code>ArticleContentUpdated</code> für jede Änderung an Inhalten.</p>'
-                        . '<h3>Symfony-Komponenten</h3><p>Konsole, Mailer, HTTP-Client, HTML-Sanitizer, Dotenv und Runtime kommen aus Symfony 8 – bewährte Bausteine statt Eigenbau.</p>',
+                        . '<h3>Symfony-Komponenten</h3><p>Konsole, Mailer, HTTP-Client, HTML-Sanitizer, Dotenv und Runtime kommen aus Symfony 8 – bewährte Komponenten statt Eigenbau.</p>',
                 ]],
                 ['type' => 'faq', 'tunes' => ['background' => 'muted'], 'data' => [
                     'variant' => 'stacked', 'eyebrow' => 'Fragen', 'title' => 'Häufige Fragen zu REDAXO 6', 'intro' => '',
@@ -1147,13 +1158,13 @@ vollständig: Module, Templates, Schema'],
                 ['type' => 'richtext', 'tunes' => ['background' => 'muted'], 'data' => [
                     'variant' => 'standard', 'eyebrow' => 'Für Entwickler', 'title' => 'Module und Formulare gestalten', 'intro' => '', 'meta' => '',
                     'measure' => 'normal', 'dropcap' => false, 'toc' => false, 'reveal' => 'off', 'scrollspy' => 'off',
-                    'text' => '<p>Das Backend bringt fertige Bausteine mit: Feldzeilen, Eingaben, Knöpfe, Kästen, Tabellen und ein Raster. Wer sie nutzt, muss fast nichts selbst gestalten – und bekommt hell, dunkel, Tastaturbedienung und Barrierefreiheit gleich mit.</p>'
+                    'text' => '<p>Das Backend bringt fertige Elemente mit: Feldzeilen, Eingaben, Knöpfe, Kästen, Tabellen und ein Raster. Wer sie nutzt, muss fast nichts selbst gestalten – und bekommt hell, dunkel, Tastaturbedienung und Barrierefreiheit gleich mit.</p>'
                         . '<ul><li><strong>Am einfachsten:</strong> Felder als Attribute im Modul – das Formular kommt komplett vom Core.</li>'
                         . '<li><strong>Eigenes Markup:</strong> die Klassen des Cores (<code>rex-field</code>, <code>rex-input</code>, <code>rex-button</code> …) statt eigener.</li>'
                         . '<li><strong>Eigene Komponenten:</strong> mit eigenem Präfix und den Farb-Variablen des Cores (<code>--rex-color-…</code>).</li>'
                         . '<li><strong>Nicht:</strong> Klassen des Cores überschreiben, <code>style="…"</code>, Inline-Skripte oder <code>onclick</code> – die Content-Security-Policy blockiert sie.</li></ul>',
                 ]],
-                ['type' => 'code', 'data' => ['eyebrow' => '', 'title' => 'Felder als Attribute, eigene Anordnung', 'intro' => 'Ohne input() stehen alle Felder untereinander. Mit input() lassen sich einzelne Zeilen ins Raster setzen; $form->rest() gibt die übrigen aus.', 'note' => 'Weitere Bausteine: $form->widget() (nur die Eingabe), $form->label() (nur das Label).',
+                ['type' => 'code', 'data' => ['eyebrow' => '', 'title' => 'Felder als Attribute, eigene Anordnung', 'intro' => 'Ohne input() stehen alle Felder untereinander. Mit input() lassen sich einzelne Zeilen ins Raster setzen; $form->rest() gibt die übrigen aus.', 'note' => 'Weitere Helfer: $form->widget() (nur die Eingabe), $form->label() (nur das Label).',
                     'items' => [
                         $c('beModule', 'src/Module/HeroModule.php', 'php'),
                     ]]],
@@ -1345,7 +1356,7 @@ vollständig: Module, Templates, Schema'],
                     'variant' => 'icons', 'eyebrow' => 'Themen', 'title' => 'Die Seiten in diesem Bereich', 'intro' => '', 'size' => 'm',
                     'items' => [
                         ['icon' => 'pencil-simple', 'title' => 'Bearbeiten', 'text' => 'Texte, Bilder, Blöcke und Design direkt auf der Seite – mit Entwurf und Veröffentlichen.', 'link_label' => 'Ansehen', 'link' => '/bearbeiten'],
-                        ['icon' => 'squares-four', 'title' => 'Bausteine', 'text' => 'Weitere Blöcke des Kits: Logos, Bento, Reiter, Preise und mehr.', 'link_label' => 'Ansehen', 'link' => '/bausteine'],
+                        ['icon' => 'squares-four', 'title' => 'Elemente', 'text' => 'Weitere Elemente des Kits: Logos, Bento, Reiter, Preise und mehr.', 'link_label' => 'Ansehen', 'link' => '/elemente'],
                         ['icon' => 'terminal-window', 'title' => 'fluid-Projekt', 'text' => 'fluid einbinden, Demo anlegen und eigene Blöcke bauen.', 'link_label' => 'Lesen', 'link' => '/fluid-projekt'],
                         ['icon' => 'paint-brush', 'title' => 'Eigenes Kit', 'text' => 'Was ein Kit ist und wie man eins baut – vererbt von fluid, mit eigenen Views und eigenem CSS.', 'link_label' => 'Lesen', 'link' => '/eigenes-kit'],
                         ['icon' => 'signpost', 'title' => 'Adressen', 'text' => 'Feste Adressen, Kurzlinks, Weiterleitungen, Sitemap und Seitenkopf – auch für Einträge anderer AddOns.', 'link_label' => 'Lesen', 'link' => '/adressen'],
@@ -1404,13 +1415,13 @@ vollständig: Module, Templates, Schema'],
             ],
         ],
 
-        // ------------------------------------------------------------------ Bausteine (Blöcke des Kits im Einsatz)
+        // ------------------------------------------------------------------ Elemente (Blöcke des Kits im Einsatz)
         [
-            'slug' => 'bausteine', 'title' => 'Bausteine', 'menu' => true, 'parent' => 'fluid',
+            'slug' => 'elemente', 'title' => 'Elemente', 'renamed_from' => ['Bausteine'], 'menu' => true, 'parent' => 'fluid',
             'blocks' => [
                 ['type' => 'hero', 'tunes' => ['background' => 'muted'], 'data' => ['variant' => 'compact', 'eyebrow' => 'Kit fluid',
-                    'title' => 'Bausteine für jede Seite', 'text' => 'Jeder Abschnitt ist ein Block mit Feldschema – und ein echter REDAXO-Slice.']],
-                ['type' => 'logos', 'data' => ['variant' => 'marquee', 'eyebrow' => '', 'title' => 'Gebaut auf bewährten Bausteinen', 'items' => [
+                    'title' => 'Elemente für jede Seite', 'text' => 'Jeder Abschnitt ist ein Element mit Feldschema – ein echter REDAXO-Slice. Modular: eigene Elemente kommen als PHP-Klasse dazu, gewöhnliche REDAXO-Module laufen mit.']],
+                ['type' => 'logos', 'data' => ['variant' => 'marquee', 'eyebrow' => '', 'title' => 'Gebaut auf bewährter Technik', 'items' => [
                     ['name' => 'REDAXO', 'link' => '', 'image' => null], ['name' => 'PHP 8.5', 'link' => '', 'image' => null],
                     ['name' => 'Composer', 'link' => '', 'image' => null], ['name' => 'Symfony', 'link' => '', 'image' => null],
                     ['name' => 'Intervention Image', 'link' => '', 'image' => null], ['name' => 'Friends Of REDAXO', 'link' => '', 'image' => null],
@@ -1815,7 +1826,7 @@ vollständig: Module, Templates, Schema'],
                         ['icon' => 'shield-check', 'title' => 'Sicher', 'text' => 'ffmpeg nur mit festen Vorlagen und Argumentlisten, keine Shell; keine Inline-Styles im Backend.', 'link_label' => '', 'link' => ''],
                     ],
                 ]],
-                ['type' => 'code', 'data' => ['eyebrow' => 'Für Entwickler', 'title' => 'Videos im eigenen Template', 'intro' => 'Ein fertiges <video> mit Poster, Fassungen und Untertiteln – oder die Bausteine einzeln.', 'note' => 'Die Fassungen erscheinen als <source> mit Media-Query: 480p bis 640 px Breite, 720p bis 1280 px, darüber WebM und 1080p.',
+                ['type' => 'code', 'data' => ['eyebrow' => 'Für Entwickler', 'title' => 'Videos im eigenen Template', 'intro' => 'Ein fertiges <video> mit Poster, Fassungen und Untertiteln – oder die Teile einzeln.', 'note' => 'Die Fassungen erscheinen als <source> mit Media-Query: 480p bis 640 px Breite, 720p bis 1280 px, darüber WebM und 1080p.',
                     'items' => [
                         $c('veHtml', 'Template (PHP)', 'php'),
                         $c('veConsole', 'Terminal', 'bash'),
@@ -1874,7 +1885,7 @@ vollständig: Module, Templates, Schema'],
         [
             'slug' => 'anmeldung', 'title' => 'Anmeldung', 'menu' => false, 'requires' => 'yform',
             'blocks' => [
-                ['type' => 'form', 'data' => ['variant' => 'split', 'eyebrow' => 'Formular-Baukasten', 'title' => 'Zum Workshop anmelden',
+                ['type' => 'form', 'data' => ['variant' => 'split', 'eyebrow' => 'Formulare', 'title' => 'Zum Workshop anmelden',
                     'intro' => 'Ein Formular, auf der Website zusammengestellt: drei Schritte, gespeichert in „Formular-Eingänge“, per E-Mail an das Team und mit Bestätigung an Sie.',
                     'form' => '', 'mode' => 'save_mail', 'mail_to' => 'team@example.test', 'mail_subject' => 'Anmeldung von {name}',
                     'confirm' => true, 'confirm_copy' => true, 'confirm_subject' => 'Ihre Anmeldung ist angekommen', 'confirm_text' => 'Hallo {name}, danke für Ihre Anmeldung zum Workshop „{workshop}“.',

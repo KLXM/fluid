@@ -24,6 +24,12 @@
   0 px hoch. Neu `frame--natural`: das Bild steht in eigener Größe, zentriert, höchstens so breit wie die Spalte.
 - `Routes::volatile()`: Routing ohne Cache-Dateien, für Änderungen in einer Transaktion, die zurückgerollt wird (fluid_demo).
   Kurzlinks lassen sich auch über ihre Adresse löschen; „Anlegen“ liefert die vergebene Adresse (`wish`) mit.
+- Demo „REDAXO 6“: Wortwahl „Elemente“ statt „Bausteine“/„Baukasten“; die Seite „Bausteine“ heißt „Elemente“
+  (`/fluid/elemente`, alte Adresse leitet weiter). Startseite mit „Modular und erweiterbar“: normale REDAXO-Module laufen
+  mit, eigene Elemente als Klasse, eigenes Template (Kit-Styles einbinden), Erweitern wie im Core.
+- `fluid:demo`: Seiten mit `'renamed_from' => ['Alter Titel']` werden mit `--update` umbenannt statt neu angelegt (neue
+  Adresse, alte leitet weiter). Fix: Beim Übersetzen bekam bei Menüpunkten nur die Kategorie den Titel – `<title>` blieb
+  in der Startsprache.
 - Fix: Automatische Weiterleitungen nach geänderten Adressen führten aus einer weiteren Sprache auf die Seite der Startsprache
   (`/en/alt` → `/neu` statt `/en/new`). Neue Regeln speichern die Sprache (`redaxo://ID@Sprache`), bestehende nehmen die Sprache der
   aufgerufenen Adresse – ohne Migration.
