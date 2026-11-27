@@ -254,6 +254,12 @@ final class DemoCommand extends AbstractCommand
                     $ids[$slug] = $old;
                     if ($update) {
                         Sql::factory()->setQuery('DELETE FROM rex_article_slice WHERE article_id = ? AND language_id = ?', [$old, $lang]);
+                        // posts: excerpt, image, date, author and tags as in the definition as well
+                        if (isset($def['post']) && ($art = Article::get($old, $lang))) {
+                            $post = (array) $def['post'];
+                            PageSettings::save($art, $art->name, true, (string) ($post['excerpt'] ?? ''), (string) ($post['image'] ?? ''), false);
+                            Blog::saveMeta($art, (string) ($post['date'] ?? date('Y-m-d')), (string) ($post['author'] ?? ''), (string) ($post['tags'] ?? ''));
+                        }
                         $io->note('„' . $def['title'] . '“ wird neu befüllt.');
                     } else {
                         $kept[$slug] = true;

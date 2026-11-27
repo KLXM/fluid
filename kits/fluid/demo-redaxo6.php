@@ -947,7 +947,7 @@ return [
                     'list' => "Ein Editor für Website, Backend und YForm\nProfile als PHP-Klassen – versioniert im Git\nBestehende Texte bleiben, wie sie sind",
                     'button_label' => 'Zur Meldung', 'button_link' => '/tiptap-meets-fluid',
                     'button2_label' => 'TipTap auf GitHub', 'button2_link' => 'https://github.com/KLXM/tiptap',
-                    'image' => 'fluid-tiptap-seite.jpg', 'ratio' => '16:9', 'split' => 'media']],
+                    'image' => 'fluid-tiptap-leiste.jpg', 'ratio' => '16:9', 'split' => 'media']],
                 // trailer right below the intro (only if the file is in the media pool – it is not part of the kit: fluid:demo --media-dir=…)
                 ...(is_file(Path::media('fluid-trailer-redaxo6.mp4')) ? [
                     ['type' => 'video', 'tunes' => ['background' => 'dark'], 'data' => ['variant' => 'cinema', 'eyebrow' => 'Trailer',
@@ -2020,7 +2020,7 @@ vollständig: Module, Templates, Schema'],
 
         [
             'slug' => 'tiptap-meets-fluid', 'title' => 'TipTap meets fluid', 'parent' => 'neuigkeiten',
-            'post' => ['date' => '2026-11-27', 'author' => 'KLXM Crossmedia', 'tags' => 'TipTap, Editor, REDAXO 6', 'image' => 'fluid-tiptap-seite.jpg',
+            'post' => ['date' => '2026-11-27', 'author' => 'KLXM Crossmedia', 'tags' => 'TipTap, Editor, REDAXO 6', 'image' => 'fluid-tiptap-leiste.jpg',
                 'excerpt' => 'Der Text-Editor von fluid ist jetzt TipTap: direkt auf der Seite, in der Seitenleiste und im Backend derselbe moderne Editor – mit Profilen als PHP-Klassen.'],
             'blocks' => [
                 ['type' => 'richtext', 'data' => ['variant' => 'article', 'eyebrow' => '', 'title' => '', 'intro' => '', 'measure' => 'normal', 'meta' => '', 'dropcap' => false, 'toc' => false, 'reveal' => 'off', 'scrollspy' => 'off',
@@ -2028,7 +2028,7 @@ vollständig: Module, Templates, Schema'],
                 ['type' => 'media_text', 'data' => ['variant' => 'right', 'eyebrow' => 'Direkt auf der Seite', 'title' => 'Schreiben, wo der Text steht',
                     'text' => '<p>Ein Klick in einen Text, und TipTap startet genau an dieser Stelle. Die Werkzeugleiste schwebt darüber – schlank in einer Zeile, seltene Werkzeuge hinter „⋯“. Hinweis-Box, Dachzeile oder Akzentfarbe erscheinen sofort in der echten Gestaltung der Website – so, wie Besucher sie sehen.</p>',
                     'list' => "Schreibmarke genau dort, wo man klickt\nFormate in der echten Gestaltung des Kits\nSeiten und Dateien verlinken mit der Auswahl von fluid",
-                    'image' => 'fluid-tiptap-seite.jpg', 'ratio' => '16:9', 'split' => 'media']],
+                    'image' => 'fluid-tiptap-leiste.jpg', 'ratio' => '16:9', 'split' => 'media']],
                 ['type' => 'media_text', 'tunes' => ['background' => 'muted'], 'data' => ['variant' => 'left', 'eyebrow' => 'Formate aus dem Kit', 'title' => 'Auszeichnen, was das Kit gestaltet',
                     'text' => '<p>Welche Formate es gibt, bringt das Kit mit: Absatz- und Überschriftenstile, Farben, Listen und Links als Button – jeweils in seiner echten Gestaltung. Was das Kit nicht kennt, verwirft der Editor, auch beim Einfügen aus Word oder von einer anderen Website.</p>',
                     'list' => "Kit „fluid“: Hinweis-Boxen, Dachzeile, große Überschrift, Zweitfarbe, Buttons\nWechselt das Kit, wechseln die Formate mit\nKeine style-Attribute, nur Klassen des Kits",
