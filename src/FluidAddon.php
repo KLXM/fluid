@@ -4,6 +4,7 @@ namespace Klxm\Fluid;
 
 use Klxm\NavigationArray\ExtensionPoint\NavigationStart;
 use Klxm\Routes\ExtensionPoint\RobotsTxt;
+use Klxm\Routes\Robots;
 use Klxm\Routes\Router;
 use Klxm\Routes\Sitemap;
 use Override;
@@ -209,7 +210,12 @@ final class FluidAddon extends Addon
         Sitemap::images(PageSettings::sitemapImages(...));
         Extension::register(RobotsTxt::class, static function (RobotsTxt $ep): string {
             if ('rules' !== $ep->part) {
-                return (string) $ep->subject;
+                // website settings → „Linkvorschau beim Teilen erlauben“: when the own text locks everything
+                $text = (string) $ep->subject;
+                $previews = (bool) Settings::get('robots_previews', false) && !($ep->site?->settings->previews ?? false);
+
+                return $previews && Robots::blocksAll($text) && !str_contains($text, 'facebookexternalhit')
+                    ? (string) preg_replace('~\n\nSitemap:~', "\n\n" . Robots::previewRules() . "\n\nSitemap:", $text, 1) : $text;
             }
             $own = trim((string) Settings::get('robots', ''));
 

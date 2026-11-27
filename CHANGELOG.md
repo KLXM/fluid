@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.0-beta.18 – 2026-11-27
+
+- „Linkvorschau beim Teilen erlauben“ (Website → Recht & Suchmaschinen) wirkt wieder mit dem eigenen robots-Text;
+  eine per robots-Text gesperrte Website gilt auch für Seitenkopf und llms.txt als gesperrt (klxm/routes 1.0.0-beta.2).
+
 ## 1.0.0-beta.17 – 2026-11-27
 
 - **Adressen, Websites, SEO und GEO kommen aus dem neuen AddOn [klxm/routes](https://github.com/KLXM/routes).** Das
