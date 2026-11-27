@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.0-beta.19 – 2026-11-27
+
+- **Deutsch und Englisch durchgehend:** Die Oberfläche auf der Website spricht die Sprache, die die Redakteurin im Backend-Profil gewählt hat (Gäste der Demo: Sprache der Seite) – Editor-Leiste, Seitenleisten, Seiteneinstellungen, Website-Einstellungen, alle Blöcke mit Feldern, Hilfen und Varianten, Stil-Editor, Backend-Seiten. Texte für Besucher folgen wie bisher der Seitensprache. Konsole, MCP und Selbsttests auf Englisch.\n- Texte des Editor-Skripts kommen aus den Sprachdateien (`fluid_js_*`), Datumsangaben in der Sprache der Redakteurin.\n- Feld-Attribute und `#[AsBlock]` nehmen `Translatable` – auch für eigene Blöcke im Projekt.
+
 ## 1.0.0-beta.18 – 2026-11-27
 
 - „Linkvorschau beim Teilen erlauben“ (Website → Recht & Suchmaschinen) wirkt wieder mit dem eigenen robots-Text;
