@@ -11,7 +11,6 @@ use Redaxo\Core\Exception\UserMessageException;
 use Redaxo\Core\Http\Request;
 use Redaxo\Core\Http\Response;
 use Redaxo\Core\Language\Language;
-use Redaxo\Core\Security\BackendLogin;
 use Throwable;
 
 /**
@@ -29,13 +28,15 @@ final class PickerApi extends ApiFunction
     public function execute(): Result
     {
         try {
-            $user = BackendLogin::createUser() ?? throw new PickerError('Bitte im Backend anmelden.', 403);
+            $user = FrontendPicker::user() ?? throw new PickerError('Bitte im Backend anmelden.', 403);
+            $readOnly = FrontendPicker::readOnly();
             $types = array_values(array_filter(array_map(static fn (string $t) => strtolower(trim($t)), explode(',', Request::post('types', 'string', '')))));
             $category = Request::post('category', 'int', 0);
 
             $data = match (Request::post('action', 'string', '')) {
-                'media' => MediaLibrary::list($user, $category, trim(Request::post('q', 'string', '')), $types, Request::post('page', 'int', 0)),
-                'media_upload' => ['item' => MediaLibrary::upload($user, $category, trim(Request::post('title', 'string', '')), $types, Core::getRequest()->files->get('file'))],
+                // guests see the upload button never (readOnly)
+                'media' => ($readOnly ? ['upload' => false] : []) + MediaLibrary::list($user, $category, trim(Request::post('q', 'string', '')), $types, Request::post('page', 'int', 0)),
+                'media_upload' => $readOnly ? throw new PickerError('Hochladen geht nur mit Anmeldung.', 403) : ['item' => MediaLibrary::upload($user, $category, trim(Request::post('title', 'string', '')), $types, Core::getRequest()->files->get('file'))],
                 'articles' => ['articles' => ArticleTree::all($user, Language::exists($l = Request::post('language', 'int', 0)) ? $l : Language::getCurrentId())],
                 default => throw new PickerError('Unbekannte Aktion.'),
             };

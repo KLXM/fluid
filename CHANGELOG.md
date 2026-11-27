@@ -61,6 +61,9 @@
   Größe je Feld, ausführbare Typen nie erlaubt) – Dateien gehen als Anhang an die Mail ans Team. „Mindestens/Höchstens“ je
   Feld: Zeichen bei Text, Wert bei Zahlen, Datum auch relativ (`today`, `+1 year`), der Datumswähler begrenzt mit.
   Demo: Seite „Anmeldung“.
+- Fix: Gäste der Demo konnten im Text keine Seiten und Dateien verlinken – der Link-Dialog bot nur eine Adresse an. Die
+  Seiten- und Medienauswahl (`Picker\FrontendPicker`) gibt es jetzt auch für Gäste (`FLUID_GUEST_USER`) mit den Rechten
+  ihrer Rolle, nur lesend: kein Hochladen. Neu `FrontendPicker::user()`/`readOnly()`.
 
 ## 1.0.0-beta.12 – 2026-11-27
 

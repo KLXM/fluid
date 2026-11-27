@@ -2,10 +2,12 @@
 
 namespace Klxm\Fluid\Picker;
 
+use Klxm\Fluid\Editing;
 use Redaxo\Core\Addon\Addon;
 use Redaxo\Core\Filesystem\Url;
 use Redaxo\Core\Language\Language;
 use Redaxo\Core\Security\BackendLogin;
+use Redaxo\Core\Security\User;
 
 use function Redaxo\Core\View\escape;
 
@@ -26,10 +28,10 @@ use const JSON_UNESCAPED_SLASHES;
  */
 final class FrontendPicker
 {
-    /** Script and configuration; empty without a backend session */
+    /** Script and configuration; empty without a backend session or a guest of the editor */
     public static function head(?int $languageId = null): string
     {
-        if (!BackendLogin::createUser()) {
+        if (!self::user()) {
             return '';
         }
         $assets = Addon::require('fluid')->getAssetsUrl('picker/');
@@ -42,6 +44,21 @@ final class FrontendPicker
         return '<script type="application/json" id="frontend-picker-config">'
             . json_encode($config, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) . '</script>'
             . '<script src="' . escape($assets . 'picker.js?v=' . self::version('picker.js')) . '" defer></script>';
+    }
+
+    /**
+     * Who picks: the backend session, otherwise a guest of the editor (FLUID_GUEST_USER, e.g. fluid_demo) with the
+     * permissions of its role. Guests only read ({@see self::readOnly()}).
+     */
+    public static function user(): ?User
+    {
+        return BackendLogin::createUser() ?? (Editing::isGuest() ? Editing::user() : null);
+    }
+
+    /** Without a backend session nothing is changed (no upload) */
+    public static function readOnly(): bool
+    {
+        return null === BackendLogin::createUser();
     }
 
     private static function version(string $file): string

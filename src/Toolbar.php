@@ -149,8 +149,8 @@ final class Toolbar
         $body = '<script type="application/json" id="blocks-editor-config">' . json_encode($config, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) . '</script>'
             . ($editing ? Links::json($article->languageId) : '')
             . implode('', array_map(static fn ($src) => '<script src="' . escape((string) $src) . '" defer></script>', (array) ($config['scripts'] ?? [])))
-            // Media and page picker (Picker\FrontendPicker, also for other addons); guests have no backend session
-            . ($guest ? '' : Picker\FrontendPicker::head($article->languageId))
+            // Media and page picker (Picker\FrontendPicker, also for other addons); guests only read (no upload)
+            . Picker\FrontendPicker::head($article->languageId)
             . '<script src="' . escape($addon->getAssetsUrl('form.js') . '?v=' . self::version('form.js')) . '" defer></script>'
             // TipTap: loader, plugins (fluid: tiptap-fluid.js) and profiles – before editor.js, which uses RexTiptap
             . Tiptap::assets(true)
