@@ -4,6 +4,11 @@
 
 - Text direkt auf der Seite: Die Werkzeugleiste von TipTap sieht aus wie die übrige fluid-Oberfläche (weiß, abgerundet,
   Farben, Schrift, dunkler Modus), bleibt einzeilig und zeigt seltene Werkzeuge hinter „⋯“ (TipTap 1.0.0-beta.3).
+- **Textformate bringt das Kit mit** (`kit.php` → `text`, optional, erbt vom Eltern-Kit): Absatz-, Überschriften-, Farb-,
+  Listen- und Linkformate. Der Editor bietet genau diese an, die Ausgabe behält nur diese Klassen (`TextFormats`).
+  Kit fluid neu: Zweite Markenfarbe, Überschrift „Groß“, Links als Button; Kit NativeCSS: Listen Punkte/Striche/
+  Trennlinien/Schritte, Buttons von NativeCSS, Farbverlauf für Überschriften. Nummerierte Listen behalten Zählart und
+  Start (`ol type/start`). `RichText::P_CLASSES` und `RichText::COLORS` entfallen.
 
 ## 1.0.0-beta.13 – 2026-11-27
 

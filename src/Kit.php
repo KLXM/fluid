@@ -215,8 +215,9 @@ abstract class Kit
     }
 
     /**
-     * Lay a kit's definition over its parent's: entries replace; blocks, backgrounds and the CSS mapping
-     * per block type are merged per key; `css` (stylesheets for every page) is appended.
+     * Lay a kit's definition over its parent's: entries replace; blocks, backgrounds, the CSS mapping
+     * per block type and the text formats (per group, {@see TextFormats}) are merged per key; `css` (stylesheets for
+     * every page) is appended.
      *
      * @param array<string, mixed> $parent
      * @param array<string, mixed> $own
@@ -234,6 +235,12 @@ abstract class Kit
             $out['blocks'] = (array) $parent['blocks'];
             foreach ((array) $own['blocks'] as $type => $block) {
                 $out['blocks'][$type] = self::overlayBlock((array) ($parent['blocks'][$type] ?? []), (array) $block);
+            }
+        }
+        if (isset($parent['text'], $own['text'])) {
+            $out['text'] = (array) $parent['text'];
+            foreach ((array) $own['text'] as $group => $formats) {
+                $out['text'][$group] = array_replace((array) ($parent['text'][$group] ?? []), (array) $formats);
             }
         }
         $out['css'] = [...(array) ($parent['css'] ?? []), ...(array) ($own['css'] ?? [])];

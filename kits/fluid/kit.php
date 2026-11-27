@@ -6,8 +6,22 @@
  * their output in views/{type}.php.
  */
 
+use Redaxo\Core\Translation\I18n;
+
+$t = static fn (string $key): string => I18n::rawMsg('fluid_rich_' . $key);
+
 return [
     'label' => 'Fluid (breakpointlos)',
+    // Text formats in the text editor, class => label (Klxm\Fluid\TextFormats) – styled in css/prose.css and css/rich-extra.css
+    'text' => [
+        'paragraphs' => ['t-lead' => $t('t-lead'), 't-small' => $t('t-small'), 't-note' => $t('t-note'), 't-tip' => $t('t-tip'),
+            't-warn' => $t('t-warn'), 't-kicker' => $t('t-kicker'), 't-center' => $t('t-center')],
+        'headings' => ['h-display' => $t('h-display')],
+        'colors' => ['c-accent' => $t('c_accent'), 'c-secondary' => $t('c_secondary'), 'c-muted' => $t('c_muted'),
+            'c-success' => $t('c_success'), 'c-warning' => $t('c_warning'), 'c-danger' => $t('c_danger')],
+        'lists' => ['check' => ['label' => $t('check'), 'list' => 'ul']],
+        'links' => ['btn btn--primary' => $t('btn'), 'btn btn--secondary' => $t('btn_secondary')],
+    ],
     // Style editor: colors, fonts, shape, header & footer, presets (Klxm\Fluid\Design)
     'design' => require __DIR__ . '/design.php',
     // Design options with their own stylesheet (only the selected one is loaded): css/opt-{option}-{value}.css

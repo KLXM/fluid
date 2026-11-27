@@ -1,5 +1,7 @@
 <?php
 
+use Redaxo\Core\Translation\I18n;
+
 /*
  * Kit „NativeCSS“ – inherits from kit fluid ($parent). Own page frame (template.view.php) and own views for
  * hero, cards, text + image, call to action and FAQ with the NativeCSS components; all other blocks come
@@ -65,8 +67,18 @@ $design['presets'] = [
                 'font_body' => 'inter', 'font_head' => 'inter', 'heading_weight' => 650, 'heading_tracking' => -2, 'radius' => 8, 'eyebrow' => 'plain'])],
 ] + $design['presets'];
 
+$t = static fn (string $key): string => I18n::rawMsg('fluid_rich_' . $key);
+
 return [
     'label' => 'NativeCSS',
+    // Text formats: those of fluid plus the lists and buttons of NativeCSS (components/lists.css, helpers/forms.css)
+    'text' => [
+        'headings' => ['ncss-text-gradient-brand' => $t('ncss_gradient')],
+        'lists' => ['ncss-list--dot' => ['label' => $t('ncss_dot'), 'list' => 'ul'], 'ncss-list--dash' => ['label' => $t('ncss_dash'), 'list' => 'ul'],
+            'ncss-list--divided' => $t('ncss_divided'), 'ncss-list--steps' => ['label' => $t('ncss_steps'), 'list' => 'ol']],
+        'links' => ['btn btn--primary' => false, 'btn btn--secondary' => false,
+            'ncss-btn ncss-btn--primary' => $t('btn'), 'ncss-btn ncss-btn--secondary' => $t('btn_secondary'), 'ncss-btn ncss-btn--ghost' => $t('ncss_ghost')],
+    ],
     // Bridge design bar → NativeCSS and styling of frame and blocks (layer „native“)
     'css' => ['css/native.css'],
     'design' => $design,

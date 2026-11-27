@@ -15,16 +15,13 @@ use function in_array;
 use const ENT_QUOTES;
 
 /**
- * Output rich text safely – class contract of the formatting bar from KLXM Studio (Core\Sanitizer):
- *   <p class="t-lead|t-small|t-note|t-tip|t-warn|t-kicker|t-center">, <span class="c-accent|c-muted|c-success|c-warning|c-danger">,
- *   <ul class="check">, <mark>, <code>, <sup>, <sub>, headings h2–h4, quote, lists, links (also data-link="redaxo://ID").
- * No style attributes; links to articles get the current address on output.
+ * Output rich text safely: paragraphs, headings h2–h4, quote, lists, <mark>, <code>, <sup>, <sub>, links (also
+ * data-link="redaxo://ID"). Classes only as the kit's text formats ({@see TextFormats}: paragraph, heading, color, list
+ * and link formats) – others are dropped, also those of another kit. No style attributes; links to articles get the
+ * current address on output.
  */
 final class RichText
 {
-    public const array P_CLASSES = ['t-lead', 't-small', 't-note', 't-tip', 't-warn', 't-kicker', 't-center'];
-    public const array COLORS = ['accent', 'muted', 'success', 'warning', 'danger'];
-
     public static function html(?string $html): string
     {
         $html = trim((string) $html);
@@ -44,13 +41,11 @@ final class RichText
         }, $html);
         $html = Str::sanitizeHtml($html, self::config());
 
-        // Restrict classes to the contract
-        $html = (string) preg_replace_callback('~<(p|span|ul)\b([^>]*)\sclass="([^"]*)"~i', static function (array $m): string {
-            $keep = array_filter(explode(' ', $m[3]), static fn (string $c) => match (strtolower($m[1])) {
-                'p' => in_array($c, self::P_CLASSES, true),
-                'span' => str_starts_with($c, 'c-') && in_array(substr($c, 2), self::COLORS, true),
-                default => 'check' === $c,
-            });
+        // Restrict classes to the text formats of the kit
+        $formats = TextFormats::active();
+        $html = (string) preg_replace_callback('~<(p|span|ul|ol|h[2-4]|a)\b([^>]*?)\sclass="([^"]*)"~i', static function (array $m) use ($formats): string {
+            $allowed = $formats->allowed(strtolower($m[1]));
+            $keep = array_filter(explode(' ', $m[3]), static fn (string $c): bool => in_array($c, $allowed, true));
 
             return '<' . $m[1] . $m[2] . ($keep ? ' class="' . implode(' ', $keep) . '"' : '');
         }, $html);
@@ -124,9 +119,9 @@ final class RichText
         return $config ??= new HtmlSanitizerConfig()
             ->allowElement('p', ['class'])->allowElement('br')->allowElement('strong')->allowElement('b')->allowElement('em')->allowElement('i')
             ->allowElement('mark')->allowElement('code')->allowElement('sup')->allowElement('sub')->allowElement('span', ['class'])
-            ->allowElement('h2', ['id'])->allowElement('h3', ['id'])->allowElement('h4', ['id'])
-            ->allowElement('ul', ['class'])->allowElement('ol')->allowElement('li')->allowElement('blockquote')
-            ->allowElement('a', ['href', 'title', 'target', 'rel', 'data-link', 'data-video-lb'])
+            ->allowElement('h2', ['id', 'class'])->allowElement('h3', ['id', 'class'])->allowElement('h4', ['id', 'class'])
+            ->allowElement('ul', ['class'])->allowElement('ol', ['class', 'type', 'start'])->allowElement('li')->allowElement('blockquote')
+            ->allowElement('a', ['href', 'title', 'target', 'rel', 'class', 'data-link', 'data-video-lb'])
             ->allowRelativeLinks()->allowLinkSchemes(['http', 'https', 'mailto', 'tel'])->withMaxInputLength(-1);
     }
 }

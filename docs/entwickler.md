@@ -261,9 +261,35 @@ return [
 ];
 ```
 
-`backgrounds` und `assets` werden je Schlüssel ergänzt, `css` wird angehängt, alle anderen Einträge ersetzt. `blocks` legt
+`backgrounds` und `assets` werden je Schlüssel ergänzt, `text` je Gruppe ([Textformate](#textformate-im-kit)), `css`
+wird angehängt, alle anderen Einträge ersetzt. `blocks` legt
 sich über die Definition aus der Blockklasse: `variants` und `variant_help` werden ergänzt, `fields` angehängt, alles
 andere (z. B. `label`, `help`) ersetzt.
+
+### Textformate im Kit
+
+Was Redakteure im Text auszeichnen können, bringt das Kit mit – passend zu seinem CSS. Optional: Ein Kit ohne `text` hat
+die Formate seines Eltern-Kits. Jede Angabe ist `Klasse => Bezeichnung`:
+
+```php
+'text' => [
+    'paragraphs' => ['t-quote' => 'Großes Zitat'],                    // Absatzformat
+    'headings' => ['h-line' => 'Mit Linie'],                          // für jede Überschrift, Ebene bleibt
+    'colors' => ['c-brand' => 'Markenfarbe'],                         // Textfarbe für markierten Text
+    'lists' => [
+        'list-arrows' => 'Pfeile',                                    // für ul und ol
+        'list-steps' => ['label' => 'Schritte', 'list' => 'ol'],      // nur nummerierte Listen
+    ],
+    'links' => ['btn btn--primary' => false, 'button' => 'Button'],   // false nimmt ein geerbtes Format weg
+],
+```
+
+Der Editor bietet genau diese Formate an (Menüs „Blockformat“, „Textformat“, Listenformat und Linkformat), und die Ausgabe
+behält nur diese Klassen (`RichText::html()`, `Klxm\Fluid\TextFormats`). Wechselt die Website das Kit, fallen Klassen des
+anderen Kits bei der Ausgabe weg – der Text bleibt. Bilder gibt es im Text nicht. Kit „fluid“: Absatzstile `t-*`,
+Überschrift „Groß“ `h-display`, Farben `c-accent|secondary|muted|success|warning|danger`, Häkchen-Liste `check`, Buttons
+`btn btn--primary|secondary`. Kit „NativeCSS“ ergänzt Farbverlauf für Überschriften, die Listen `ncss-list--dot|dash|divided|steps`
+und nimmt statt der Buttons von fluid `ncss-btn ncss-btn--primary|secondary|ghost`.
 
 **Design-Werte** speichert jedes Kit für sich. Solange ein abgeleitetes Kit keine eigenen hat, übernimmt es die seines
 Eltern-Kits – nach dem Wechsel sieht die Website also zunächst aus wie vorher.
@@ -804,9 +830,9 @@ Formatierter Text (`#[RichText]`, Ausgabe mit `rich()` bzw. `RichText::html()`) 
 direkt auf der Seite im Inline-Modus von TipTap (`RexTiptap.inline()`): Klick in den Text startet den Editor an der
 Stelle, die Werkzeugleiste schwebt darüber, Änderungen landen wie bei allen Feldern im Entwurf.
 
-- **Profil als Klasse:** `Klxm\Fluid\Tiptap\FluidProfile` – `#[AsProfile('tiptap.fluid', …)]`. Formate wie bisher:
-  Absatzstile `p.t-lead|t-small|t-note|t-tip|t-warn|t-kicker|t-center`, Farben `span.c-accent|muted|success|warning|danger`,
-  Häkchen-Liste `ul.check`, Überschriften h2–h4, Markieren, Hoch-/Tiefstellen, Zitat. Ein Projekt passt es an wie jedes
+- **Profil als Klasse:** `Klxm\Fluid\Tiptap\FluidProfile` – `#[AsProfile('tiptap.fluid', …)]`. Überschriften h2–h4,
+  Markieren, Hoch-/Tiefstellen, Zitat; Absatz-, Überschriften-, Farb-, Listen- und Linkformate kommen aus dem Kit
+  ([Textformate im Kit](#textformate-im-kit)). Ein Projekt passt es an wie jedes
   Profil: eigene Klasse mit demselben Namen (`tiptap.fluid`) – Code im Projekt geht vor.
 - **Plugin** `fluid` (`Tiptap\FluidTiptap`, `assets/tiptap-fluid.js`): behält Anker an Überschriften (`id`) und die
   Video-Lightbox an Links (`data-video-lb`).
