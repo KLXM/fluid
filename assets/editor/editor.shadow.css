@@ -82,6 +82,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 .menu button.menu-danger:hover, .menu button.menu-danger:focus-visible { background: color-mix(in srgb, var(--danger-ink) 12%, var(--bg)); }
 .menu-hint { color: var(--muted); font-size: .9em; }
+.menu-label { display: block; padding: 4px 10px 2px; color: var(--muted); font-size: .78em; text-transform: uppercase; letter-spacing: .04em; }
 [data-publish] .sm, .menu-sm { display: none !important; }
 @media (max-width: 760px) {
   .kind, .chip { display: none; }

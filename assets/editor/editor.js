@@ -143,6 +143,7 @@
             <button type="button" role="menuitem" data-compact>Kompaktansicht</button>
             ${may(cfg.article.menu ? 'editCategory' : 'editArticle') ? '<button type="button" role="menuitem" data-page-settings>Seiteneinstellungen …</button>' : ''}
             ${cfg.site ? '<button type="button" role="menuitem" data-site-open>Website …</button>' : ''}
+            ${cfg.domains ? `<hr class="menu-sep" role="separator"><span class="menu-label">Domain wechseln</span>${cfg.domains.map((d) => `<a role="menuitem" href="${esc(unamp(d.url))}" title="${esc(d.host)}${d.loggedIn ? ' – dort angemeldet' : ' – meldet Sie dort an'}">${esc(d.label)} <span class="menu-hint">${d.loggedIn ? '●' : '○'} ${esc(d.host)}</span></a>`).join('')}<hr class="menu-sep" role="separator">` : ''}
             ${may('addArticle') || may('addCategory') ? '<button type="button" role="menuitem" data-page-add>Neue Seite …</button>' : ''}
             ${may('addArticle') ? '<button type="button" role="menuitem" data-template-save>Als Vorlage speichern …</button>' : ''}
             ${may('addArticle') ? '<button type="button" role="menuitem" data-templates-open>Vorlagen …</button>' : ''}

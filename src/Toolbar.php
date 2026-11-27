@@ -6,6 +6,8 @@ use Klxm\Fluid\Media\ImageEffect;
 use Klxm\Fluid\Media\ImageFit;
 use Klxm\ImageEditor\ImageEditorAddon;
 use Klxm\Routes\Router;
+use Klxm\Routes\Sites;
+use Klxm\Routes\Sso;
 use Klxm\Tiptap\Tiptap;
 use Klxm\Tiptap\TiptapAddon;
 use Redaxo\Core\Content\Article;
@@ -21,6 +23,7 @@ use Redaxo\Core\Filesystem\Url;
 use Redaxo\Core\Http\Request;
 use Redaxo\Core\Language\Language;
 use Redaxo\Core\Security\CsrfToken;
+use Redaxo\Core\Security\User;
 
 use function count;
 use function is_array;
@@ -30,6 +33,7 @@ use const JSON_HEX_AMP;
 use const JSON_HEX_TAG;
 use const JSON_UNESCAPED_SLASHES;
 use const JSON_UNESCAPED_UNICODE;
+use const PHP_URL_PATH;
 
 /**
  * Bar and editor for logged-in editors – inserted via OUTPUT_FILTER, only when a backend user
@@ -109,6 +113,8 @@ final class Toolbar
             // Design: admins save; guests (e.g. demo) only preview in their own browser – the API rejects saving
             'design' => $user->admin || $guest ? self::designSchema($article) : null,
             'designSave' => $user->admin && !$guest,
+            // Several domains (klxm/routes): switch to another one – logged in there on demand (Sso)
+            'domains' => $guest ? null : self::domains($user),
             // Website settings (sidebar „Website“): admins only
             'site' => !$guest && [] !== ($siteTabs = SiteAdmin::tabs($user)) ? ['tabs' => $siteTabs] : null,
             // Action permissions of the core (roles → options) – the bar only shows what is allowed
@@ -176,6 +182,32 @@ final class Toolbar
     }
 
     /** Style editor: schema of the page's kit (administration only) */
+    /**
+     * Other domains of the installation for the menu ⋯ → „Domain wechseln“: the same page on another domain of the
+     * same website, the start page on another website – logged in there on demand (klxm/routes Sso).
+     *
+     * @return list<array{label: string, host: string, url: string, loggedIn: bool}>|null
+     */
+    private static function domains(User $user): ?array
+    {
+        if (!Sso::enabled()) {
+            return null;
+        }
+        $site = Router::site()->key;
+        $path = (string) parse_url((string) Request::server('REQUEST_URI', 'string', '/'), PHP_URL_PATH);
+        $out = [];
+        foreach (Sso::domains($user) as $d) {
+            if ($d['current'] || ('variant' === $d['role'] && !Sites::isLocal($d['host']))) {
+                continue;
+            }
+            $lang = null !== $d['language'] ? (Language::get($d['language'])->name ?? '') : '';
+            $out[] = ['label' => $d['siteName'] . ('' !== $lang ? ' · ' . $lang : ''), 'host' => $d['host'],
+                'url' => Sso::switchUrl($d['host'], $d['site'] === $site ? $path : '/'), 'loggedIn' => $d['loggedIn']];
+        }
+
+        return [] !== $out ? $out : null;
+    }
+
     private static function designSchema(Article $article): ?array
     {
         foreach (BlockModule::all() as $key => $m) {
