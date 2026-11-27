@@ -291,6 +291,26 @@ anderen Kits bei der Ausgabe weg – der Text bleibt. Bilder gibt es im Text nic
 `btn btn--primary|secondary`. Kit „NativeCSS“ ergänzt Farbverlauf für Überschriften, die Listen `ncss-list--dot|dash|divided|steps`
 und nimmt statt der Buttons von fluid `ncss-btn ncss-btn--primary|secondary|ghost`.
 
+**Wie die Formate in den Editor kommen:** fluid meldet sie bei TipTap an wie jedes andere AddOn, als Klasse
+`Tiptap\KitStyles` mit `#[AsStyles('fluid.kit', 'fluid-Kit', profiles: ['tiptap.fluid'])]`. Formate anderer AddOns und
+des Projekts kommen auf demselben Weg dazu, etwa ein Link „Cookie-Einstellungen“ eines Consent-AddOns. Die Ausgabe
+(`RichText::html()`) behält genau die Klassen, die das Profil `tiptap.fluid` dann kennt
+(`Tiptap::profile('tiptap.fluid')->styleClasses('a')`):
+
+```php
+#[AsStyles('project.text', 'Projekt', profiles: ['tiptap.fluid'])]
+final class ProjectStyles extends StyleDefinition
+{
+    public function styles(): array
+    {
+        return ['inlineStyles' => [['label' => 'Preis', 'class' => 'price']]];
+    }
+}
+```
+
+Die Kennung hat ein Präfix wie die fluid-Elemente (`project.text`). Eine Klasse im Projekt mit der Kennung `fluid.kit`
+ersetzt die von fluid. Mehr dazu in der Doku von TipTap, Abschnitt „Formate anmelden“.
+
 **Design-Werte** speichert jedes Kit für sich. Solange ein abgeleitetes Kit keine eigenen hat, übernimmt es die seines
 Eltern-Kits – nach dem Wechsel sieht die Website also zunächst aus wie vorher.
 

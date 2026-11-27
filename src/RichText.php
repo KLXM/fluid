@@ -4,6 +4,8 @@ namespace Klxm\Fluid;
 
 use Klxm\Fluid\Data\Detail;
 use Klxm\Fluid\Routing\Router;
+use Klxm\Fluid\Tiptap\FluidProfile;
+use Klxm\Tiptap\Tiptap;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Language\Language;
 use Redaxo\Core\MediaPool\Media;
@@ -16,8 +18,8 @@ use const ENT_QUOTES;
 
 /**
  * Output rich text safely: paragraphs, headings h2–h4, quote, lists, <mark>, <code>, <sup>, <sub>, links (also
- * data-link="redaxo://ID"). Classes only as the kit's text formats ({@see TextFormats}: paragraph, heading, color, list
- * and link formats) – others are dropped, also those of another kit. No style attributes; links to articles get the
+ * data-link="redaxo://ID"). Classes only as the text formats of fluid's editor profile (the kit's {@see TextFormats} and
+ * those of other addons via `#[AsStyles]`) – others are dropped, also those of another kit. No style attributes; links to articles get the
  * current address on output.
  */
 final class RichText
@@ -41,10 +43,10 @@ final class RichText
         }, $html);
         $html = Str::sanitizeHtml($html, self::config());
 
-        // Restrict classes to the text formats of the kit
-        $formats = TextFormats::active();
-        $html = (string) preg_replace_callback('~<(p|span|ul|ol|h[2-4]|a)\b([^>]*?)\sclass="([^"]*)"~i', static function (array $m) use ($formats): string {
-            $allowed = $formats->allowed(strtolower($m[1]));
+        // Restrict classes to the text formats of fluid's editor profile (kit and other addons, #[AsStyles])
+        $profile = Tiptap::profile(FluidProfile::NAME);
+        $html = (string) preg_replace_callback('~<(p|span|ul|ol|h[2-4]|a)\b([^>]*?)\sclass="([^"]*)"~i', static function (array $m) use ($profile): string {
+            $allowed = $profile->styleClasses($m[1]);
             $keep = array_filter(explode(' ', $m[3]), static fn (string $c): bool => in_array($c, $allowed, true));
 
             return '<' . $m[1] . $m[2] . ($keep ? ' class="' . implode(' ', $keep) . '"' : '');

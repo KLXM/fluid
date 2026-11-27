@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.0-beta.15 – 2026-11-27
+
+- Textformate der Kits kommen über `#[AsStyles('fluid.kit', …)]` in den Editor (`Tiptap\KitStyles`) – derselbe Weg, den
+  jedes AddOn und das Projekt für eigene Formate nutzen. `RichText::html()` behält die Klassen, die das Profil
+  `tiptap.fluid` dann kennt, also auch Formate anderer AddOns. Setzt TipTap 1.0.0-beta.6 voraus.
+- Demo-Beitrag „TipTap meets fluid“: Code-Beispiel für eigene Formate per `#[AsStyles]`.
+
 ## 1.0.0-beta.14 – 2026-11-27
 
 - Text direkt auf der Seite: Die Werkzeugleiste von TipTap sieht aus wie die übrige fluid-Oberfläche (weiß, abgerundet,
