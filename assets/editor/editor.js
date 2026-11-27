@@ -1312,6 +1312,28 @@
     document.addEventListener('keydown', (e) => {
       if (e.altKey && !e.ctrlKey && !e.metaKey && (e.code === 'KeyG')) { e.preventDefault(); open(selected()); }
     });
+    // Marked text in the content: a small button "Zum Glossar" below the selection (Alt+G does the same)
+    const chip = h('<button type="button" class="gloss-chip" hidden title="Markierten Begriff ins Glossar aufnehmen (Alt+G)">Zum Glossar</button>');
+    root.append(chip);
+    let chipText = '';
+    const chipHide = () => { chip.hidden = true; chipText = ''; };
+    const chipShow = () => {
+      const sel = window.getSelection?.();
+      const text = selected();
+      if (!sel || sel.isCollapsed || !sel.rangeCount || text.length < 2 || text.length > 120 || !main.contains(sel.anchorNode) || !gpanel.hidden) return chipHide();
+      const r = sel.getRangeAt(0).getBoundingClientRect();
+      if (!r.width && !r.height) return chipHide();
+      chipText = text;
+      chip.hidden = false;
+      const w = chip.offsetWidth;
+      chip.style.left = Math.max(8, Math.min(innerWidth - w - 8, r.left + r.width / 2 - w / 2)) + 'px';
+      chip.style.top = Math.min(innerHeight - chip.offsetHeight - 8, r.bottom + 10) + 'px';
+    };
+    let chipTimer = 0;
+    document.addEventListener('selectionchange', () => { clearTimeout(chipTimer); chipTimer = setTimeout(chipShow, 250); });
+    addEventListener('scroll', chipHide, { passive: true });
+    chip.addEventListener('mousedown', (e) => e.preventDefault());   // keep the selection
+    chip.addEventListener('click', () => { const text = chipText; chipHide(); open(text); });
     $('[data-gloss-close]').addEventListener('click', () => { gpanel.hidden = true; document.documentElement.classList.remove('blocks-panel-open'); });
     q.addEventListener('input', draw);
     gpanel.querySelector('[data-gloss-term]').addEventListener('input', dupe);

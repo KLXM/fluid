@@ -517,7 +517,7 @@ Ein Glossar je Website (`Klxm\Fluid\Glossary\Glossary`): Begriffe mit Schreibwei
 - **Übersicht und Detailseiten:** Block „Glossar“ (`fluid.glossary`). Die Seite mit dem Block ist die Übersicht; Begriffe haben die
   Adresse `{seite}/{slug}` (Resolver des Routings, Sitemap, DefinedTermSet/DefinedTerm). `Glossary::current()` liefert den Begriff der
   Detailseite.
-- **Quick-Glossar:** Menü ⋯ → Glossar bzw. Alt+G im Editor (API-Aktion `glossary`: `list`, `create`, `variant`); Recht über `canEdit()`
+- **Quick-Glossar:** Text im Inhalt markieren → Knopf „Zum Glossar“ unter der Markierung (2–120 Zeichen), Menü ⋯ → Glossar bzw. Alt+G im Editor (API-Aktion `glossary`: `list`, `create`, `variant`); Recht über `canEdit()`
   der Datenquelle (YForm: Tabelle bearbeiten).
 
 ## Wissensbereich

@@ -39,6 +39,8 @@
 - **Gewöhnliche REDAXO-Module auf der Website hinzufügen:** Die Auswahl zeigt sie unter „REDAXO-Module“ (wenn ihr Formular
   vollständig in der Seitenleiste geht, Modulrecht, Template und Kategorie erlauben es). Erst das Formular, nach
   „Übernehmen“ der Slice – geprüft wie im Backend. Neu: `ModuleForm::addable()/newForm()/create()`, API `module_new`/`module_add`.
+- **Glossar per Markieren:** Wer im Bearbeiten-Modus Text im Inhalt markiert, bekommt darunter den Knopf „Zum Glossar“ –
+  öffnet das Glossar mit dem Begriff (wie Alt+G, das bisher der einzige Weg mit Markierung war).
 - Fix: Automatische Weiterleitungen nach geänderten Adressen führten aus einer weiteren Sprache auf die Seite der Startsprache
   (`/en/alt` → `/neu` statt `/en/new`). Neue Regeln speichern die Sprache (`redaxo://ID@Sprache`), bestehende nehmen die Sprache der
   aufgerufenen Adresse – ohne Migration.
