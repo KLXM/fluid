@@ -4,3 +4,7 @@
 /tools/video/out/
 /tools/video/.work/
 /tools/video/.work-trailer/
+/composer.lock
+.php-cs-fixer.cache
+/.idea/
+/.claude/

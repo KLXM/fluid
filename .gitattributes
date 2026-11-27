@@ -1,0 +1,7 @@
+# Exclude development-only files from the distributed package (composer dist / git archive)
+/.gitattributes        export-ignore
+/.gitignore            export-ignore
+/.php-cs-fixer.dist.php export-ignore
+/AGENTS.md             export-ignore
+/install-dev.sh        export-ignore
+/tools/video           export-ignore

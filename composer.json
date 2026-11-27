@@ -36,6 +36,9 @@
         "klxm/navigation_array": "^1.0@dev",
         "klxm/klxm_meta": "^1.0@dev"
     },
+    "require-dev": {
+        "redaxo/php-cs-fixer-config": "^3.1"
+    },
     "suggest": {
         "yakamara/yform": "Formulare, Datenlisten, Postfach und das Feld „Fluid-Blöcke“ (YForm 6)",
         "klxm/image_editor": "Bilder auf der Website zuschneiden, drehen, Fokuspunkt setzen"
