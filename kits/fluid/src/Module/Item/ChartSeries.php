@@ -2,7 +2,8 @@
 
 namespace Klxm\Fluid\Kit\Fluid\Module\Item;
 
-use Klxm\Fluid\Field\{Text, Textarea};
+use Klxm\Fluid\Field\Text;
+use Klxm\Fluid\Field\Textarea;
 
 /** Reihe im Block „Diagramm“ (Werte von Hand) */
 final class ChartSeries

@@ -6,6 +6,7 @@ use Klxm\Fluid\Settings;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Language\Language;
 
+use function function_exists;
 use function preg_match;
 use function trim;
 
@@ -75,7 +76,7 @@ final class Legal
         foreach (self::LABELS as $type => $label) {
             $href = self::url($type);
             if ('' !== $href) {
-                $out[] = ['type' => $type, 'label' => \function_exists('lt') ? lt($label) : $label, 'href' => $href];
+                $out[] = ['type' => $type, 'label' => function_exists('lt') ? lt($label) : $label, 'href' => $href];
             }
         }
 

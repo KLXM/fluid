@@ -4,9 +4,16 @@ namespace Klxm\Fluid\Data;
 
 use Klxm\Fluid\ApiError;
 use Klxm\Fluid\BlockModule;
+use Klxm\Fluid\Editing;
 use Klxm\Fluid\FluidAddon;
+use Klxm\Fluid\Form\FieldForm;
+use Klxm\Fluid\Form\Stored;
 use Klxm\Fluid\Kit;
 use Klxm\Fluid\Perm;
+use Klxm\Fluid\Routing\Routes;
+use Klxm\Fluid\VideoLinks;
+use Redaxo\Core\Cache;
+use Redaxo\Core\Core;
 use Redaxo\Core\Database\Column;
 use Redaxo\Core\Database\Sql;
 use Redaxo\Core\Database\Table as DbTable;
@@ -14,10 +21,18 @@ use Redaxo\Core\ExtensionPoint\Extension;
 use Redaxo\Core\ExtensionPoint\ExtensionPoint;
 use Redaxo\Core\Http\Request;
 use Redaxo\Core\Security\User;
+use Throwable;
+use Yakamara\YForm\Field\Media;
 
+use function array_key_exists;
 use function in_array;
 use function is_array;
+use function is_string;
 use function Redaxo\Core\View\escape;
+use function strlen;
+
+use const JSON_UNESCAPED_SLASHES;
+use const JSON_UNESCAPED_UNICODE;
 
 /**
  * Listen-Vorlagen: gespeicherte Darstellungen (Optionssätze) für Listenblöcke wie die Datenliste – nach dem Vorbild von
@@ -90,7 +105,7 @@ final class ListTemplates
         $out = $module::variants() ? ['variant'] : [];
         foreach ($module::fields() as $f) {
             $n = (string) $f['name'];
-            if (!in_array($n, $keep, true) && 'listtemplate' !== ($f['type'] ?? '') && !str_ends_with($n, \Klxm\Fluid\VideoLinks::SUFFIX)) {
+            if (!in_array($n, $keep, true) && 'listtemplate' !== ($f['type'] ?? '') && !str_ends_with($n, VideoLinks::SUFFIX)) {
                 $out[] = $n;
             }
         }
@@ -115,7 +130,7 @@ final class ListTemplates
         $out = [];
         try {
             $rows = Sql::factory()->getArray('SELECT * FROM ' . self::TABLE . ' WHERE block = ? AND table_name = ? ORDER BY is_default DESC, id', [$module::key(), $table]);
-        } catch (\Throwable) {
+        } catch (Throwable) {
             $rows = [];   // vor migrate
         }
         foreach ($rows as $r) {
@@ -132,7 +147,7 @@ final class ListTemplates
     }
 
     /**
-     * Vorlagen aus dem Kit (kit.php → list_templates) und dem Extension Point FLUID_LIST_TEMPLATES
+     * Vorlagen aus dem Kit (kit.php → list_templates) und dem Extension Point FLUID_LIST_TEMPLATES.
      *
      * @param class-string<BlockModule> $module
      * @return array<string, array<string, mixed>>
@@ -234,9 +249,9 @@ final class ListTemplates
                 continue;
             }
             $f = $byName[$k] ?? [];
-            $v = \array_key_exists($k, $tpl['options']) ? $tpl['options'][$k] : ($f['default'] ?? ('bool' === ($f['type'] ?? '') ? false : ''));
+            $v = array_key_exists($k, $tpl['options']) ? $tpl['options'][$k] : ($f['default'] ?? ('bool' === ($f['type'] ?? '') ? false : ''));
             // YForm-Felder: ohne Präfix („title“) gilt die Tabelle des Blocks
-            if ('yform_field' === ($f['type'] ?? '') && \is_string($v) && '' !== $v && !str_contains($v, '.')) {
+            if ('yform_field' === ($f['type'] ?? '') && is_string($v) && '' !== $v && !str_contains($v, '.')) {
                 $v = $table . '.' . $v;
             }
             $data[$k] = $v;
@@ -254,13 +269,13 @@ final class ListTemplates
      */
     public static function optionsFrom(string $module, array $data, string $table): array
     {
-        $data = \Klxm\Fluid\Form\FieldForm::withDefaults($module::fields(), \Klxm\Fluid\Form\FieldForm::normalize($module::fields(), $data), $module::variants());
+        $data = FieldForm::withDefaults($module::fields(), FieldForm::normalize($module::fields(), $data), $module::variants());
         $byName = array_column($module::fields(), null, 'name');
         $out = [];
         foreach (self::keys($module) as $k) {
             $v = $data[$k] ?? null;
-            if ('yform_field' === ($byName[$k]['type'] ?? '') && \is_string($v) && str_starts_with($v, $table . '.')) {
-                $v = substr($v, \strlen($table) + 1);
+            if ('yform_field' === ($byName[$k]['type'] ?? '') && is_string($v) && str_starts_with($v, $table . '.')) {
+                $v = substr($v, strlen($table) + 1);
             }
             $out[$k] = $v;
         }
@@ -316,7 +331,7 @@ final class ListTemplates
     private static function changed(): void
     {
         self::$memo = [];
-        \Redaxo\Core\Cache::delete();   // Seiten mit der Vorlage neu ausgeben (Inhalts-Cache der Artikel)
+        Cache::delete();   // Seiten mit der Vorlage neu ausgeben (Inhalts-Cache der Artikel)
     }
 
     private static function cleanName(string $name): string
@@ -329,7 +344,7 @@ final class ListTemplates
     /** @param class-string<BlockModule> $module */
     private static function uniqueKey(string $module, string $table, string $name): string
     {
-        $base = trim((string) preg_replace('~[^a-z0-9]+~', '-', strtolower(\Klxm\Fluid\Routing\Routes::slugify($name))), '-') ?: 'vorlage';
+        $base = trim((string) preg_replace('~[^a-z0-9]+~', '-', strtolower(Routes::slugify($name))), '-') ?: 'vorlage';
         $base = substr($base, 0, 40);
         $key = $base;
         for ($i = 2; isset(self::forTable($module, $table)[$key]); ++$i) {
@@ -353,7 +368,7 @@ final class ListTemplates
         if (null === $t) {
             return [];
         }
-        $img = YFormBridge::field($t, '', [\Yakamara\YForm\Field\Media::class]);
+        $img = YFormBridge::field($t, '', [Media::class]);
         $out = [['name' => 'Karten', 'options' => ['variant' => 'cards', 'size' => 'm']]];
         if (null !== $img) {
             $out[] = ['name' => 'Große Karten mit Bild', 'options' => ['variant' => 'cards', 'size' => 'l', 'image_field' => $img->name]];
@@ -390,7 +405,7 @@ final class ListTemplates
                     ++$n;
                 }
             }
-        } catch (\Throwable) {
+        } catch (Throwable) {
             return 0;   // vor migrate
         }
         $done[$mk] = true;
@@ -445,7 +460,7 @@ final class ListTemplates
     public static function renderInput(string $module, string $name, string $value, string $table, string $label, string $help, bool $backend): string
     {
         $id = 'ltpl-' . substr(md5($name), 0, 8);
-        $user = \Klxm\Fluid\Editing::user() ?? \Redaxo\Core\Core::getUser();
+        $user = Editing::user() ?? Core::getUser();
         $manage = !$backend && null !== $user && Perm::can($user, Perm::DESIGN_FULL);
         if ('' !== $table) {
             self::seed($module, $table);   // Vorschläge der gewählten Tabelle beim ersten Öffnen
@@ -515,7 +530,7 @@ final class ListTemplates
         $op = Request::post('op', 'string', '');
         $key = Request::post('key', 'string', '');
         $f = Request::post('f', 'array', []);
-        $data = is_array($f[1] ?? null) ? \Klxm\Fluid\Form\Stored::clean($f[1]) : [];
+        $data = is_array($f[1] ?? null) ? Stored::clean($f[1]) : [];
         $tpl = '' !== $key ? self::find($module, $table, $key) : null;
         if ('save' !== $op && (null === $tpl || 'db' !== $tpl['source'])) {
             throw new ApiError('Diese Vorlage lässt sich hier nicht ändern (Vorlagen des Kits sind fest).');

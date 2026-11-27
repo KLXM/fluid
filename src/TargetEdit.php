@@ -15,16 +15,17 @@ use function array_key_exists;
 use function parse_url;
 use function preg_match;
 use function preg_replace;
+use function rawurldecode;
+use function Redaxo\Core\View\escape;
 use function str_contains;
 use function str_replace;
-use function rawurldecode;
 use function str_starts_with;
 use function strlen;
 use function strtolower;
 use function substr;
 use function trim;
 
-use function Redaxo\Core\View\escape;
+use const PHP_URL_PATH;
 
 /**
  * „Ziel bearbeiten“: kleine Aktion an Karten und Kacheln, die auf eine andere Seite oder einen Datensatz zeigen

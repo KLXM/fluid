@@ -2,17 +2,21 @@
 
 namespace Klxm\Fluid;
 
+use DateTimeImmutable;
+use IntlDateFormatter;
+use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\ArticleCache;
 use Redaxo\Core\Content\ArticleRevision;
 use Redaxo\Core\Content\ArticleSlice;
-use Redaxo\Core\Content\ArticleSliceReference;
 use Redaxo\Core\Content\ArticleSliceHistory;
-use Redaxo\Core\Content\Article;
+use Redaxo\Core\Content\ArticleSliceReference;
 use Redaxo\Core\Content\Module;
-use Redaxo\Core\Filesystem\Url;
+use Redaxo\Core\Core;
 use Redaxo\Core\Database\Sql;
 use Redaxo\Core\Database\Table;
+use Redaxo\Core\Filesystem\Url;
 
+use function array_key_exists;
 use function count;
 use function in_array;
 
@@ -32,11 +36,25 @@ use function in_array;
 final class Versions
 {
     public const int KEEP = 40;
-    /** Speichern innerhalb dieser Sekunden fasst ein Stand zusammen (Tippen, mehrere Blöcke) */
-    private const int MERGE = 120;
 
     public const array TYPES = ['fluid_save' => 'Gespeichert', 'fluid_published' => 'Veröffentlicht', 'fluid_publish' => 'Vor dem Veröffentlichen',
         'fluid_restore' => 'Vor dem Wiederherstellen', 'fluid_discard' => 'Vor dem Verwerfen'];
+
+    // ------------------------------------------------------------------ Versionen-Ansicht (wie KLXM Studio: Zeitleiste, Vorschau, Vergleich)
+
+    /** Vorschau eines Stands auf der Website: ?fluid_version=now|live|<revision>-<YmdHis> (&fluid_mark=1 hebt Änderungen hervor) */
+    public const string PARAM = 'fluid_version';
+    /** Speichern innerhalb dieser Sekunden fasst ein Stand zusammen (Tippen, mehrere Blöcke) */
+    private const int MERGE = 120;
+
+    /** Spalten, die zum Inhalt eines Blocks gehören (für Vergleich und Gleichheit von Ständen) */
+    private const array META = ['id', 'slice_id', 'article_id', 'language_id', 'revision', 'priority', 'createdate', 'updatedate', 'createuser', 'updateuser', 'history_type', 'history_date', 'history_user'];
+
+    /** @var array{revision: int, date: ?string}|null Stand, den die laufende Anfrage zeigt */
+    public static ?array $preview = null;
+
+    /** @var array<int, string> Slice-ID → new|changed (Hervorhebung in der Vorschau) */
+    public static array $marks = [];
 
     /**
      * Live-Schaltung: Arbeitsversion live schalten ($copy), den Stand, der live geht, ins Archiv – und die Zwischenstände der
@@ -86,7 +104,7 @@ final class Versions
         ArticleSliceHistory::checkTables();
         $sql = Sql::factory();
         $table = ArticleSliceHistory::getTable();
-        $user = \Redaxo\Core\Core::getUser()->login ?? Editing::user()->login ?? '';
+        $user = Core::getUser()->login ?? Editing::user()->login ?? '';
         // Speichern kurz hintereinander: letzten eigenen Stand ersetzen statt neuen anlegen
         if ('fluid_save' === $type) {
             $last = $sql->getArray('SELECT history_date, history_user, history_type FROM ' . $table . ' WHERE article_id = ? AND language_id = ? AND revision = ? ORDER BY history_date DESC LIMIT 1', [$articleId, $languageId, $revision])[0] ?? null;
@@ -175,24 +193,13 @@ final class Versions
         ArticleCache::delete($articleId, $languageId);
     }
 
-    // ------------------------------------------------------------------ Versionen-Ansicht (wie KLXM Studio: Zeitleiste, Vorschau, Vergleich)
-
-    /** Vorschau eines Stands auf der Website: ?fluid_version=now|live|<revision>-<YmdHis> (&fluid_mark=1 hebt Änderungen hervor) */
-    public const string PARAM = 'fluid_version';
-
-    /** @var array{revision: int, date: ?string}|null Stand, den die laufende Anfrage zeigt */
-    public static ?array $preview = null;
-
-    /** @var array<int, string> Slice-ID → new|changed (Hervorhebung in der Vorschau) */
-    public static array $marks = [];
-
     /** @return array{revision: int, date: ?string}|null */
     public static function parseKey(string $key): ?array
     {
         return match (true) {
             'now' === $key => ['revision' => FluidAddon::revision(), 'date' => null],
             'live' === $key => ['revision' => ArticleRevision::LIVE, 'date' => null],
-            1 === preg_match('/^(\d)-(\d{14})$/', $key, $m) && false !== $d = \DateTimeImmutable::createFromFormat('YmdHis', $m[2]) => ['revision' => (int) $m[1], 'date' => $d->format(Sql::FORMAT_DATETIME)],
+            1 === preg_match('/^(\d)-(\d{14})$/', $key, $m) && false !== $d = DateTimeImmutable::createFromFormat('YmdHis', $m[2]) => ['revision' => (int) $m[1], 'date' => $d->format(Sql::FORMAT_DATETIME)],
             default => null,
         };
     }
@@ -201,9 +208,6 @@ final class Versions
     {
         return $revision . '-' . date('YmdHis', (int) strtotime($date));
     }
-
-    /** Spalten, die zum Inhalt eines Blocks gehören (für Vergleich und Gleichheit von Ständen) */
-    private const array META = ['id', 'slice_id', 'article_id', 'language_id', 'revision', 'priority', 'createdate', 'updatedate', 'createuser', 'updateuser', 'history_type', 'history_date', 'history_user'];
 
     /**
      * Stände einer Seite, neueste zuerst. Erster Eintrag ist „Jetzt“ (Entwurf bzw. live); ältere Stände mit gleichem Inhalt
@@ -371,8 +375,8 @@ final class Versions
     private static function when(string $date, int $now): array
     {
         $ts = strtotime($date) ?: $now;
-        $fmt = static fn (string $pattern): string => class_exists(\IntlDateFormatter::class)
-            ? (string) (new \IntlDateFormatter('de_DE', \IntlDateFormatter::NONE, \IntlDateFormatter::NONE, date_default_timezone_get(), null, $pattern))->format($ts)
+        $fmt = static fn (string $pattern): string => class_exists(IntlDateFormatter::class)
+            ? (string) new IntlDateFormatter('de_DE', IntlDateFormatter::NONE, IntlDateFormatter::NONE, date_default_timezone_get(), null, $pattern)->format($ts)
             : date('d.m.Y', $ts);
         $diff = $now - $ts;
         $ago = match (true) {

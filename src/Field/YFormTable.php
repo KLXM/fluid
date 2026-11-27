@@ -3,6 +3,7 @@
 namespace Klxm\Fluid\Field;
 
 use Attribute;
+use Klxm\Fluid\Data\YFormBridge;
 use Redaxo\Core\Form\Field\Choice as CoreChoice;
 use Redaxo\Core\View\Renderable;
 
@@ -27,7 +28,7 @@ class YFormTable extends CoreChoice implements FluidField
         /** @var list<string>|null */
         public readonly ?array $variants = null,
     ) {
-        parent::__construct($label, static fn (): array => \Klxm\Fluid\Data\YFormBridge::tables(), placeholder: '–', note: $note, required: $required, key: $key);
+        parent::__construct($label, static fn (): array => YFormBridge::tables(), placeholder: '–', note: $note, required: $required, key: $key);
     }
 
     public function fluid(): array

@@ -12,7 +12,6 @@ use Redaxo\Core\Form\Widget\Textarea as TextareaWidget;
 use Redaxo\Core\View\Renderable;
 
 use function is_string;
-use function json_encode;
 
 /**
  * Markierungen auf einem Bild (Block „Interaktives Bild“): Eigenschaft vom Typ array im Format Klxm\Fluid\Hotspots

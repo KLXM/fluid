@@ -2,6 +2,7 @@
 
 namespace Klxm\Fluid;
 
+use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\ArticleSlice;
 
 use function in_array;
@@ -18,9 +19,29 @@ final class Block
     /** @var array<string, mixed> */
     public readonly array $tunes;
 
-    /**
-     * @param ArticleSlice|null $slice null = Block aus Daten (z. B. YForm-Feld „Fluid-Blöcke“), dann $id und $articleId angeben
-     */
+    public string $id {
+        get => $this->slice ? (string) $this->slice->id : $this->ownId;
+    }
+
+    /** Seite, auf der der Block steht (für Adressen wie Blättern oder Detailansicht) */
+    public int $articleId {
+        get => $this->slice->articleId ?? ($this->ownArticleId ?: (int) Article::getCurrentId());
+    }
+
+    /** Block, dessen View gerade ausgegeben wird (BlockModule::renderInner) */
+    public static ?self $rendering = null;
+
+    private static bool $firstImageUsed = false;
+
+    /** Blocktyp ohne Kit-Präfix (`cta`, `media_text` …) */
+    public string $type {
+        get => $this->module::type();
+    }
+
+    /** @var array<int, string> */
+    private static array $readonly = [];
+
+    /** @param ArticleSlice|null $slice null = Block aus Daten (z. B. YForm-Feld „Fluid-Blöcke“), dann $id und $articleId angeben */
     public function __construct(
         public readonly ?ArticleSlice $slice,
         /** @var class-string<BlockModule> */
@@ -38,20 +59,6 @@ final class Block
         }
         $this->tunes = $tunes + ['background' => $module::definition()['background'] ?? 'white', 'anchor' => '', 'spaceTop' => 'normal', 'spaceBottom' => 'normal'];
     }
-
-    public string $id {
-        get => $this->slice ? (string) $this->slice->id : $this->ownId;
-    }
-
-    /** Seite, auf der der Block steht (für Adressen wie Blättern oder Detailansicht) */
-    public int $articleId {
-        get => $this->slice->articleId ?? ($this->ownArticleId ?: (int) \Redaxo\Core\Content\Article::getCurrentId());
-    }
-
-    /** Block, dessen View gerade ausgegeben wird (BlockModule::renderInner) */
-    public static ?self $rendering = null;
-
-    private static bool $firstImageUsed = false;
 
     /** Erster sichtbarer Block der Seite – oder eine Spalte des ersten Layouts? */
     public function isFirst(): bool
@@ -81,11 +88,6 @@ final class Block
     public function fromSlice(): bool
     {
         return null !== $this->slice;
-    }
-
-    /** Blocktyp ohne Kit-Präfix (`cta`, `media_text` …) */
-    public string $type {
-        get => $this->module::type();
     }
 
     public function variant(): string
@@ -120,9 +122,6 @@ final class Block
 
         return ' data-edit="' . escape($path) . '"' . ('plain' !== $mode ? ' data-edit-mode="' . escape($mode) . '"' : '');
     }
-
-    /** @var array<int, string> */
-    private static array $readonly = [];
 
     /**
      * Darf die angemeldete Person diesen Block ändern? '' = ja, 'perm' = kein Modulrecht, 'lock' = gesperrt (Lock).

@@ -28,6 +28,7 @@ use Yakamara\YForm\Field\Url;
 use Yakamara\YForm\Table\Table;
 use Yakamara\YForm\Validation\ValidationException;
 
+use function count;
 use function implode;
 use function is_array;
 use function json_encode;
@@ -37,6 +38,7 @@ use function str_replace;
 use function trim;
 
 use const JSON_UNESCAPED_UNICODE;
+use const PHP_URL_PATH;
 
 /**
  * Felder eines Datensatzes direkt in der Detailansicht bearbeiten (Datenliste mit Detailansicht). Im Bearbeitungsmodus
@@ -128,7 +130,7 @@ final class RecordInline
     public static function save(User $user, Article $article): array
     {
         $ref = explode('~', Request::post('field', 'string', ''));
-        if (3 !== \count($ref)) {
+        if (3 !== count($ref)) {
             throw new ApiError('Feld nicht gefunden.');
         }
         [$tname, $rid, $fname] = $ref;

@@ -2,18 +2,16 @@
 
 namespace Klxm\Fluid;
 
+use Klxm\Fluid\Routing\Routes;
+use Klxm\NavigationArray\NavigationMeta;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\ArticleHandler;
 use Redaxo\Core\Content\Category;
 use Redaxo\Core\Content\CategoryHandler;
 use Redaxo\Core\Content\StructurePermission;
 use Redaxo\Core\Http\Request;
-use Redaxo\Core\Language\Language;
 use Redaxo\Core\Security\User;
-use Throwable;
 
-use function array_map;
-use function count;
 use function in_array;
 
 /**
@@ -34,7 +32,7 @@ final class Structure
     {
         $cat = Category::get($categoryId);
 
-        return null !== $cat && \Klxm\NavigationArray\NavigationMeta::of($cat)->navHidden;
+        return null !== $cat && NavigationMeta::of($cat)->navHidden;
     }
 
     private static function setHidden(int $categoryId, int $languageId, bool $hidden): void
@@ -124,7 +122,7 @@ final class Structure
                     $msg = '„' . $a->name . '“ gelöscht.';
                     break;
             }
-            \Klxm\Fluid\Routing\Routes::rebuild();
+            Routes::rebuild();
         }
 
         return ['tree' => self::tree($languageId), 'message' => $msg];

@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Kit „NativeCSS“ – erbt vom Kit fluid ($parent). Eigener Seitenrahmen (template.view.php) und eigene Views für
  * Einstieg, Karten, Text + Bild, Handlungsaufruf und FAQ mit den Komponenten von NativeCSS; alle übrigen Blöcke kommen

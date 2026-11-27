@@ -4,6 +4,7 @@ namespace Klxm\Fluid;
 
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Database\Sql;
+use Throwable;
 
 /**
  * Aktivitätsprotokoll (Modell aus KLXM Studio – Core\Activity): wer hat wann welche Seite gespeichert, veröffentlicht,
@@ -12,7 +13,6 @@ use Redaxo\Core\Database\Sql;
 final class Activity
 {
     public const string TABLE = 'rex_fluid_activity';
-    private const int MAX = 2000;
 
     public const array LABELS = [
         'save' => 'gespeichert', 'publish' => 'veröffentlicht', 'discard' => 'Entwurf verworfen', 'restore' => 'Version wiederhergestellt',
@@ -20,6 +20,7 @@ final class Activity
         'design' => 'Design geändert', 'site' => 'Website-Einstellungen geändert', 'block_add' => 'Block eingefügt', 'block_delete' => 'Block gelöscht',
         'form_mail_failed' => 'Formular-Mail nicht gesendet', 'lock_taken' => 'Bearbeitung übernommen',
     ];
+    private const int MAX = 2000;
 
     public static function log(string $action, ?int $articleId = null, string $detail = ''): void
     {
@@ -36,7 +37,7 @@ final class Activity
             if (1 === random_int(1, 50)) {
                 Sql::factory()->setQuery('DELETE FROM ' . self::TABLE . ' WHERE id < (SELECT m FROM (SELECT MAX(id) - ' . self::MAX . ' AS m FROM ' . self::TABLE . ') x)');
             }
-        } catch (\Throwable) {
+        } catch (Throwable) {
             // Protokoll ist nie wichtiger als die Aktion selbst
         }
     }
@@ -46,7 +47,7 @@ final class Activity
     {
         try {
             $rows = Sql::factory()->getArray('SELECT * FROM ' . self::TABLE . ' ORDER BY id DESC LIMIT ' . max(1, min(500, $limit)));
-        } catch (\Throwable) {
+        } catch (Throwable) {
             return [];
         }
 

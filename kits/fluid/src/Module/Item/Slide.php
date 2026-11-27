@@ -2,7 +2,11 @@
 
 namespace Klxm\Fluid\Kit\Fluid\Module\Item;
 
-use Klxm\Fluid\Field\{Choice, Link, MediaPicker, Text, Textarea};
+use Klxm\Fluid\Field\Choice;
+use Klxm\Fluid\Field\Link;
+use Klxm\Fluid\Field\MediaPicker;
+use Klxm\Fluid\Field\Text;
+use Klxm\Fluid\Field\Textarea;
 use Redaxo\Core\MediaPool\Media;
 
 /** Folie im Block „Slider“ */

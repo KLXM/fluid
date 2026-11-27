@@ -7,10 +7,12 @@ use Redaxo\Core\Database\Sql;
 use function count;
 use function dirname;
 use function file;
+use function function_exists;
 use function glob;
 use function implode;
 use function preg_match;
 use function str_contains;
+use function strlen;
 
 /**
  * Selbsttest der Blöcke und Kits (`console fluid:selftest`, Gruppe „Blöcke“) – Vorbild KLXM Studio (Core\Blocks\SelfTest):

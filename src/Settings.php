@@ -3,8 +3,12 @@
 namespace Klxm\Fluid;
 
 use Redaxo\Core\Core;
+use Redaxo\Core\ExtensionPoint\Extension;
+use Redaxo\Core\ExtensionPoint\ExtensionPoint;
+use Redaxo\Core\Language\Language;
 
 use function array_key_exists;
+use function count;
 use function is_array;
 
 /**
@@ -21,24 +25,24 @@ final class Settings
     /** @var array<string, mixed>|null */
     private static ?array $values = null;
 
+    /** @var array<string, array{label: string, fields: list<array<string, mixed>>}>|null */
+    private static ?array $schema = null;
+
     /** @return array<string, array{label: string, fields: list<array<string, mixed>>}> */
     public static function schema(): array
     {
-        return self::$schema ??= (array) \Redaxo\Core\ExtensionPoint\Extension::dispatch(new \Redaxo\Core\ExtensionPoint\ExtensionPoint('FLUID_SETTINGS_SCHEMA', self::baseSchema()));
+        return self::$schema ??= (array) Extension::dispatch(new ExtensionPoint('FLUID_SETTINGS_SCHEMA', self::baseSchema()));
     }
-
-    /** @var array<string, array{label: string, fields: list<array<string, mixed>>}>|null */
-    private static ?array $schema = null;
 
     /** @return array<string, array{label: string, fields: list<array<string, mixed>>}> */
     private static function baseSchema(): array
     {
         // Reiter „Kit“ nur, wenn es mehr als eins gibt (Projekt oder Composer-Pakete mit #[AsKit])
         $kits = Kit::options();
-        $kitTab = \count($kits) > 1 ? ['kit' => ['label' => 'Kit', 'fields' => [
+        $kitTab = count($kits) > 1 ? ['kit' => ['label' => 'Kit', 'fields' => [
             ['name' => 'kit', 'label' => 'Kit der Website', 'type' => 'select', 'required' => true, 'default' => Kit::DEFAULT, 'options' => $kits,
-                'help' => 'Das Kit bestimmt die Gestaltung der ganzen Website. Inhalte und Blöcke bleiben beim Wechsel erhalten; jedes Kit hat eigene Design-Einstellungen.'
-],
+                'help' => 'Das Kit bestimmt die Gestaltung der ganzen Website. Inhalte und Blöcke bleiben beim Wechsel erhalten; jedes Kit hat eigene Design-Einstellungen.',
+            ],
         ]]] : [];
 
         $days = ['1' => 'Montag', '2' => 'Dienstag', '3' => 'Mittwoch', '4' => 'Donnerstag', '5' => 'Freitag', '6' => 'Samstag', '0' => 'Sonntag'];
@@ -140,8 +144,8 @@ final class Settings
     public static function get(string $key, mixed $default = null): mixed
     {
         // weitere Sprachen: Übersetzung, sonst Text der Startsprache
-        $lang = \Redaxo\Core\Language\Language::getCurrentId();
-        if ($lang !== \Redaxo\Core\Language\Language::getStartId()) {
+        $lang = Language::getCurrentId();
+        if ($lang !== Language::getStartId()) {
             $t = self::translations($lang)[$key] ?? null;
             if (null !== $t && '' !== $t) {
                 return $t;
@@ -173,7 +177,7 @@ final class Settings
         if (null === $fields) {
             throw new ApiError('Unbekannter Bereich.');
         }
-        if (null !== $languageId && $languageId !== \Redaxo\Core\Language\Language::getStartId()) {
+        if (null !== $languageId && $languageId !== Language::getStartId()) {
             $i18n = FluidAddon::instance()->getConfig(self::CONFIG . '_i18n', []);
             $i18n = is_array($i18n) ? $i18n : [];
             foreach (self::translatable($tab) as $f) {

@@ -5,7 +5,7 @@ use Klxm\Fluid\Kit\Fluid\Module\Chart;
 
 $v = $b->variant() ?: 'standard';
 $chart = Charts::render(Chart::spec($d), ['table' => Chart::tableOption($d)]);
-if (is_editing() && '' === (string) ($d['source'] ?? '') && trim((string) ($d['labels'] ?? '')) === '') {
+if (is_editing() && '' === (string) ($d['source'] ?? '') && '' === trim((string) ($d['labels'] ?? ''))) {
     $chart = '<p class="empty-hint">Noch keine Werte – Beschriftungen und Reihen in der Seitenleiste eintragen.</p>';
 }
 ?>

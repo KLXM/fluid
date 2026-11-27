@@ -3,9 +3,9 @@
 namespace Klxm\Fluid\Field;
 
 use Attribute;
+use Redaxo\Core\Form\Field\ReferencesItems;
 use Redaxo\Core\Form\Field\Textarea as CoreTextarea;
 use Redaxo\Core\Form\Reference;
-use Redaxo\Core\Form\Field\ReferencesItems;
 use Redaxo\Core\View\Renderable;
 
 /**

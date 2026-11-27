@@ -2,15 +2,26 @@
 
 namespace Klxm\Fluid;
 
+use Klxm\Fluid\Routing\Attribute\AsEndpoint;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\ArticleRevision;
 use Redaxo\Core\Content\ArticleSlice;
-use Redaxo\Core\Content\Module;
 use Redaxo\Core\Filesystem\Path;
 use Redaxo\Core\Filesystem\Url;
 use Redaxo\Core\Http\Request;
 
+use function count;
+use function dirname;
+use function function_exists;
 use function Redaxo\Core\View\escape;
+
+use const ARRAY_FILTER_USE_BOTH;
+use const JSON_UNESCAPED_SLASHES;
+use const JSON_UNESCAPED_UNICODE;
+use const LOCK_EX;
+use const LOCK_NB;
+use const LOCK_UN;
+use const PHP_SAPI;
 
 /**
  * Live-Aktualisierung (Server-Sent Events) und „Neu laden auf Aktion“ – Modell aus KLXM Studio (Core\Live, MIT),
@@ -34,19 +45,19 @@ use function Redaxo\Core\View\escape;
  */
 final class Live
 {
-    /** @internal Endpunkt der Live-Aktualisierung (SSE) – vor der Domain-Umleitung */
-    #[\Klxm\Fluid\Routing\Attribute\AsEndpoint('/' . self::PATH, early: true)]
-    public static function serve(): void
-    {
-        self::stream();
-    }
-
     public const string PATH = 'fluid-live';
     public const string BLOCK = 'fluid_block';
     private const int MAX_STREAMS = 16;
     private const int SECONDS = 20;
 
     private static bool $assets = false;
+
+    /** @internal Endpunkt der Live-Aktualisierung (SSE) – vor der Domain-Umleitung */
+    #[AsEndpoint('/' . self::PATH, early: true)]
+    public static function serve(): void
+    {
+        self::stream();
+    }
 
     // ------------------------------------------------------------------ Versionen
 
@@ -63,8 +74,8 @@ final class Live
                 continue;
             }
             $f = self::file($c);
-            if (!is_dir(\dirname($f))) {
-                @mkdir(\dirname($f), 0o775, true);
+            if (!is_dir(dirname($f))) {
+                @mkdir(dirname($f), 0o775, true);
             }
             $v = max((int) round(microtime(true) * 1000), self::version($c) + 1);
             @file_put_contents($f, (string) $v, LOCK_EX);
@@ -154,7 +165,7 @@ final class Live
         self::$assets = true;
         $a = FluidAddon::instance();
         $v = static fn (string $f) => is_file($p = $a->getPath('assets/' . $f)) ? '?v=' . substr(md5((string) filemtime($p)), 0, 8) : '';
-        $lt = static fn (string $t) => \function_exists('lt') ? lt($t) : $t;   // Übersetzung des Kits (functions.php)
+        $lt = static fn (string $t) => function_exists('lt') ? lt($t) : $t;   // Übersetzung des Kits (functions.php)
 
         return '<link rel="stylesheet" href="' . escape($a->getAssetsUrl('live.css') . $v('live.css')) . '">'
             . '<script src="' . escape($a->getAssetsUrl('live.js') . $v('live.js')) . '" defer data-live-endpoint="' . escape(self::endpoint()) . '"'
@@ -198,7 +209,7 @@ final class Live
         $tokens = [];
         foreach (explode('&', (string) ($_SERVER['QUERY_STRING'] ?? '')) as $pair) {
             [$k, $v] = array_pad(explode('=', $pair, 2), 2, '');
-            if ('t' === $k && \count($tokens) < 20 && null !== ($ch = self::channels(rawurldecode($v)))) {
+            if ('t' === $k && count($tokens) < 20 && null !== ($ch = self::channels(rawurldecode($v)))) {
                 $tokens[rawurldecode($v)] = $ch;
             }
         }

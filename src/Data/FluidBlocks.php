@@ -10,7 +10,13 @@ use Yakamara\YForm\Data\Record;
 use Yakamara\YForm\Field\Field;
 use Yakamara\YForm\Form\FieldContext;
 
+use function count;
+use function is_array;
+use function is_string;
 use function Redaxo\Core\View\escape;
+
+use const JSON_UNESCAPED_SLASHES;
+use const JSON_UNESCAPED_UNICODE;
 
 // Nur mit YForm (fluid läuft auch ohne)
 if (!class_exists(Field::class)) {
@@ -62,13 +68,13 @@ final class FluidBlocks extends Field
     #[Override]
     public function toDb(mixed $value): array
     {
-        return [$this->name => BlockData::encode(\is_array($value) ? $value : [])];
+        return [$this->name => BlockData::encode(is_array($value) ? $value : [])];
     }
 
     #[Override]
     public function fromInput(mixed $input): mixed
     {
-        return \is_string($input) ? BlockData::decode(json_decode($input, true)) : [];
+        return is_string($input) ? BlockData::decode(json_decode($input, true)) : [];
     }
 
     #[Override]
@@ -80,7 +86,7 @@ final class FluidBlocks extends Field
     #[Override]
     public function listValue(mixed $value, Record $record): string
     {
-        $n = \count(BlockData::decode($value));
+        $n = count(BlockData::decode($value));
 
         return 0 === $n ? '' : escape($n . ' ' . (1 === $n ? 'Block' : 'Blöcke'));
     }

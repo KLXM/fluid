@@ -19,10 +19,10 @@ final class VideoTrack
     #[Choice(
         'Art',
         choices: [
-                    'subtitles' => 'Untertitel',
-                    'captions' => 'Untertitel für Gehörlose (mit Geräuschen)',
-                    'chapters' => 'Kapitel',
-                ],
+            'subtitles' => 'Untertitel',
+            'captions' => 'Untertitel für Gehörlose (mit Geräuschen)',
+            'chapters' => 'Kapitel',
+        ],
         width: 'half',
     )]
     public string $kind = 'subtitles';

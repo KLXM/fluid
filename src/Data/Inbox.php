@@ -11,6 +11,8 @@ use Yakamara\YForm\Field\Email;
 use Yakamara\YForm\Permission\Access;
 use Yakamara\YForm\Table\Table;
 
+use function sprintf;
+
 /**
  * Anfragen-Postfach (Modell aus KLXM Studio – Anfragen): Einträge der Tabellen, in die die Formulare der Website
  * speichern (Blöcke „Formular“/„Kontakt“ → #[AsForm]-Klasse → Aktion SaveRecord). Status neu/erledigt in rex_fluid_inbox –

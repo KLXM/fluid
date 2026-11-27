@@ -3,10 +3,11 @@
 namespace Klxm\Fluid\Glossary;
 
 use Klxm\Fluid\ApiError;
-use Klxm\Fluid\BlockModule;
 use Klxm\Fluid\Editing;
+use Klxm\Fluid\Kit;
 use Klxm\Fluid\Routing\RouteMatch;
 use Klxm\Fluid\Routing\Router;
+use Klxm\Fluid\Routing\Routes;
 use Klxm\Fluid\Routing\Seo\PageMeta;
 use Klxm\Fluid\Routing\Sitemap;
 use Klxm\Fluid\Settings;
@@ -16,10 +17,20 @@ use Redaxo\Core\Database\Sql;
 use Redaxo\Core\ExtensionPoint\Extension;
 use Redaxo\Core\ExtensionPoint\ExtensionPoint;
 use Redaxo\Core\Http\Request;
+use Redaxo\Core\Http\Response;
 use Redaxo\Core\Language\Language;
 use Redaxo\Core\Security\User;
+use Throwable;
 
+use function array_key_exists;
+use function array_slice;
+use function function_exists;
+use function in_array;
 use function Redaxo\Core\View\escape;
+use function strlen;
+
+use const ENT_HTML5;
+use const ENT_QUOTES;
 
 /**
  * Glossar der Website (nach KLXM Studio, Core\Glossary, MIT): EIN Glossar je Website – Begriffe mit Schreibweisen,
@@ -92,12 +103,12 @@ final class Glossary
     public static function page(int $languageId): ?int
     {
         static $cache = [];
-        if (!\array_key_exists($languageId, $cache)) {
+        if (!array_key_exists($languageId, $cache)) {
             try {
                 $row = Sql::factory()->getArray('SELECT s.article_id FROM rex_article_slice s JOIN rex_article_translation t ON t.article_id = s.article_id AND t.language_id = s.language_id
                     WHERE s.module = ? AND s.language_id = ? AND s.revision = ? AND s.status = 1 AND t.status = 1 ORDER BY s.article_id LIMIT 1', [self::BLOCK, $languageId, ArticleRevision::LIVE]);
                 $cache[$languageId] = isset($row[0]) ? (int) $row[0]['article_id'] : null;
-            } catch (\Throwable) {
+            } catch (Throwable) {
                 $cache[$languageId] = null;
             }
         }
@@ -129,12 +140,12 @@ final class Glossary
         $out = [];
         foreach (preg_split('~[\r\n;,]+~u', html_entity_decode(strip_tags($s), ENT_QUOTES | ENT_HTML5, 'UTF-8')) ?: [] as $v) {
             $v = trim((string) preg_replace('~\s+~u', ' ', $v));
-            if ('' !== $v && mb_strlen($v) <= 80 && !\in_array($v, $out, true)) {
+            if ('' !== $v && mb_strlen($v) <= 80 && !in_array($v, $out, true)) {
                 $out[] = $v;
             }
         }
 
-        return \array_slice($out, 0, 20);
+        return array_slice($out, 0, 20);
     }
 
     // ------------------------------------------------------------------ Anmelden
@@ -176,11 +187,11 @@ final class Glossary
             if ('' === $full || !self::available() || null === ($page = self::page($lang))) {
                 return null;
             }
-            $base = (string) \Klxm\Fluid\Routing\Routes::path($page, $lang);
+            $base = (string) Routes::path($page, $lang);
             if ('' === $base || !str_starts_with(strtolower($full), strtolower($base) . '/')) {
                 return null;
             }
-            $slug = substr($full, \strlen($base) + 1);
+            $slug = substr($full, strlen($base) + 1);
             foreach (self::terms($lang) as $t) {
                 if ($t['key'] === $slug) {
                     self::$current = $t;
@@ -214,7 +225,7 @@ final class Glossary
                     'url' => $abs($t['url']), 'inDefinedTermSet' => $set] + ($t['variants'] ? ['alternateName' => $t['variants']] : []);
             } else {
                 $set['hasDefinedTerm'] = array_map(static fn (array $x) => ['@type' => 'DefinedTerm', '@id' => $abs($x['url']) . '#term', 'name' => $x['term'], 'url' => $abs($x['url'])],
-                    \array_slice(self::terms($article->languageId), 0, 500));
+                    array_slice(self::terms($article->languageId), 0, 500));
                 $data['@graph'][] = $set;
             }
 
@@ -230,7 +241,7 @@ final class Glossary
      */
     public static function annotate(string $html): string
     {
-        if (!self::enabled() || Editing::active() || null !== Editing::user() && Editing::requested() || !str_contains($html, '</body>') || !str_starts_with(\Redaxo\Core\Http\Response::getStatus(), '200')) {
+        if (!self::enabled() || Editing::active() || null !== Editing::user() && Editing::requested() || !str_contains($html, '</body>') || !str_starts_with(Response::getStatus(), '200')) {
             return $html;
         }
         $terms = self::terms();
@@ -250,7 +261,7 @@ final class Glossary
     /** @return array<string, string> Feste Texte der Hinweisfenster (Sprache der Seite) */
     public static function labels(): array
     {
-        $lt = static fn (string $s): string => \function_exists('lt') ? (string) lt($s) : $s;
+        $lt = static fn (string $s): string => function_exists('lt') ? (string) lt($s) : $s;
 
         return ['more' => $lt('Mehr im Glossar'), 'close' => $lt('Erklärung schließen'), 'draft' => $lt('Entwurf'), 'newtab' => $lt('(öffnet in neuem Tab)')];
     }
@@ -262,7 +273,7 @@ final class Glossary
             return $html;   // Seite mit dem Block „Glossar“: das Kit hat beides schon eingebunden
         }
         // Dateien des Kits (css/glossary.css, js/glossary.js) – ein eigenes Kit kann sie ersetzen
-        $kit = \Klxm\Fluid\Kit::active();
+        $kit = Kit::active();
         $css = '<link rel="stylesheet" href="' . escape($kit->assetUrl('css/glossary.css')) . '">';
         $js = '<script src="' . escape($kit->assetUrl('js/glossary.js')) . '" defer></script>';
         if (false !== ($p = stripos($html, '</head>'))) {

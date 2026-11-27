@@ -2,21 +2,30 @@
 
 namespace Klxm\Fluid\Maps;
 
-use Klxm\Fluid\Routing\Router;
+use FilesystemIterator;
 use Generator;
 use InvalidArgumentException;
+use Klxm\Fluid\Routing\Attribute\AsEndpoint;
+use Klxm\Fluid\Routing\Router;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Redaxo\Core\Core;
 use Redaxo\Core\Filesystem\Path;
 use Redaxo\Core\Security\BackendLogin;
+use Throwable;
 
+use function dirname;
 use function function_exists;
 use function in_array;
 use function is_callable;
 use function is_dir;
 use function is_file;
 use function strlen;
+
+use const JSON_UNESCAPED_SLASHES;
+use const LOCK_EX;
+use const PHP_URL_HOST;
+use const PHP_URL_PATH;
 
 /**
  * Eigener Proxy für Dienste Dritter (aus KLXM Studio – Core\Proxy): Besucher laden Karten-Kacheln, Stile und Schriften
@@ -28,15 +37,6 @@ use function strlen;
  */
 final class Proxy
 {
-    /** @internal Eigener Proxy für Karten (Kacheln, Stile, Schriften) unter /proxy/{dienst}/… – Besucher verbinden sich nie mit Dritten */
-    #[\Klxm\Fluid\Routing\Attribute\AsEndpoint('/proxy/*')]
-    public static function serve(string $path, string $rest): void
-    {
-        if (preg_match('~^([a-z][a-z0-9_-]{1,30})(/.*)?$~', $rest, $m)) {
-            self::handle($m[1], (string) ($m[2] ?? ''));
-        }
-    }
-
     private const array DEFAULT_TYPES = ['image/', 'application/json', 'application/x-protobuf', 'application/vnd.mapbox-vector-tile',
         'application/octet-stream', 'font/', 'application/font', 'text/css', 'application/geo+json'];
     private const array COMPRESS = ['application/json', 'application/x-protobuf', 'application/vnd.mapbox-vector-tile', 'application/octet-stream', 'text/', 'application/geo+json'];
@@ -46,6 +46,15 @@ final class Proxy
     /** @var array<string, array<string, mixed>> */
     private static array $sources = [];
     private static bool $booted = false;
+
+    /** @internal Eigener Proxy für Karten (Kacheln, Stile, Schriften) unter /proxy/{dienst}/… – Besucher verbinden sich nie mit Dritten */
+    #[AsEndpoint('/proxy/*')]
+    public static function serve(string $path, string $rest): void
+    {
+        if (preg_match('~^([a-z][a-z0-9_-]{1,30})(/.*)?$~', $rest, $m)) {
+            self::handle($m[1], (string) ($m[2] ?? ''));
+        }
+    }
 
     public static function register(string $key, array $def): void
     {
@@ -188,7 +197,7 @@ final class Proxy
         $id = substr(hash('sha256', ($_SERVER['REMOTE_ADDR'] ?? '') . __FILE__), 0, 24);
         $file = self::dir('_rate') . '/' . $id . '-' . intdiv(time(), 600);
         if (!is_dir(dirname($file))) {
-            @mkdir(dirname($file), 0775, true);
+            @mkdir(dirname($file), 0o775, true);
         }
         $n = (int) @file_get_contents($file) + 1;
         @file_put_contents($file, (string) $n, LOCK_EX);
@@ -200,7 +209,7 @@ final class Proxy
     {
         $file = self::cacheFile($key, $path);
         if (!is_dir(dirname($file))) {
-            @mkdir(dirname($file), 0775, true);
+            @mkdir(dirname($file), 0o775, true);
         }
         $type = strtolower(trim(explode(';', (string) $res['type'])[0])) ?: 'application/octet-stream';
         if (self::isText($type)) {
@@ -256,7 +265,7 @@ final class Proxy
         if (!is_dir($dir)) {
             return;
         }
-        foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS)) as $f) {
+        foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir, FilesystemIterator::SKIP_DOTS)) as $f) {
             if ($f->isFile() && !str_ends_with($f->getFilename(), '.json') && !str_contains($f->getPathname(), '/_rate/')) {
                 yield $f->getPathname();
             }
@@ -298,7 +307,7 @@ final class Proxy
             $status = $res->getStatusCode();
             $body = $res->getContent(false);
             $type = (string) ($res->getHeaders(false)['content-type'][0] ?? '');
-        } catch (\Throwable) {
+        } catch (Throwable) {
             return null;
         }
         if (strlen($body) > $max) {

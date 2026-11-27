@@ -5,11 +5,13 @@ namespace Klxm\Fluid\Data;
 use Klxm\Fluid\Activity;
 use Klxm\Fluid\Api;
 use Klxm\Fluid\ApiError;
+use Klxm\Fluid\Block;
 use Klxm\Fluid\BlockData;
 use Klxm\Fluid\BlockModule;
 use Klxm\Fluid\BlockOps;
 use Klxm\Fluid\Editing;
 use Klxm\Fluid\Form\FieldForm;
+use Klxm\Fluid\Lock;
 use Redaxo\Core\Content\ModulePermission;
 use Redaxo\Core\Http\Request;
 use Redaxo\Core\Security\User;
@@ -17,6 +19,8 @@ use Yakamara\YForm\Data\Record;
 use Yakamara\YForm\Permission\Access;
 use Yakamara\YForm\Table\Table;
 
+use function count;
+use function is_array;
 use function Redaxo\Core\View\escape;
 
 /**
@@ -55,9 +59,7 @@ final class RecordBlocks
 
     // ------------------------------------------------------------------ Ausgabe
 
-    /**
-     * Blöcke eines Datensatzes für die Website – im Bearbeiten-Modus (mit Recht) bearbeitbar, sonst wie BlockData::render.
-     */
+    /** Blöcke eines Datensatzes für die Website – im Bearbeiten-Modus (mit Recht) bearbeitbar, sonst wie BlockData::render. */
     public static function render(Table $table, Record $record, FluidBlocks $field, int $articleId): string
     {
         $user = Editing::user();
@@ -89,12 +91,12 @@ final class RecordBlocks
             . $empty . $html . '</div>';
     }
 
-    /** @return array{0: \Klxm\Fluid\Block, 1: string} */
+    /** @return array{0: Block, 1: string} */
     private static function renderItem(string $table, int $rid, string $field, array $item, mixed $prev, int $articleId): array
     {
         $m = BlockData::module($item['module']) ?? throw new ApiError('Unbekannter Block.');
         $uid = (string) ($item['uid'] ?? '');
-        $b = $m::blockFromData('r-' . $uid, $item['data'], $item['tunes'], $prev instanceof \Klxm\Fluid\Block ? $prev : null, $articleId);
+        $b = $m::blockFromData('r-' . $uid, $item['data'], $item['tunes'], $prev instanceof Block ? $prev : null, $articleId);
 
         return [$b, $m::renderData($b, self::id($table, $rid, $field, $uid))];
     }
@@ -164,7 +166,7 @@ final class RecordBlocks
                 $m = $module($blocks[$i]['module']);
                 [$data, $tunes] = Api::applyInput($blocks[$i]['data'], $blocks[$i]['tunes']);
                 $blocks[$i]['data'] = FieldForm::withDefaults($m::fields(), FieldForm::normalize($m::fields(), $data), $m::variants());
-                $blocks[$i]['tunes'] = \Klxm\Fluid\Lock::tunes($user, $blocks[$i]['tunes'], $tunes);   // Gestaltung nur mit Recht
+                $blocks[$i]['tunes'] = Lock::tunes($user, $blocks[$i]['tunes'], $tunes);   // Gestaltung nur mit Recht
                 $store();
 
                 return $one($i);
@@ -180,7 +182,7 @@ final class RecordBlocks
                     $new = $blocks[$index($uid)];
                 } else {
                     $clip = json_decode(Request::post('clip', 'string', ''), true);
-                    if (!\is_array($clip) || isset($clip['children'])) {
+                    if (!is_array($clip) || isset($clip['children'])) {
                         throw new ApiError('Dieser Block lässt sich hier nicht einfügen.');
                     }
                     $m = $module((string) ($clip['module'] ?? ''));
@@ -214,7 +216,7 @@ final class RecordBlocks
                 $blocks = array_values(array_filter($blocks, static fn ($b) => ($b['uid'] ?? '') !== $uid));
                 $before = self::parse(Request::post('before', 'string', ''));
                 $pos = $before && '' !== $before[3] ? array_search($before[3], array_column($blocks, 'uid'), true) : false;
-                array_splice($blocks, false === $pos ? \count($blocks) : (int) $pos, 0, [$item]);
+                array_splice($blocks, false === $pos ? count($blocks) : (int) $pos, 0, [$item]);
                 $store();
 
                 return [];

@@ -2,14 +2,20 @@
 
 namespace Klxm\Fluid;
 
+use Klxm\Fluid\Routing\Attribute\AsEndpoint;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\StructurePermission;
 use Redaxo\Core\Database\Sql;
 use Redaxo\Core\Filesystem\Url;
 use Redaxo\Core\Security\CsrfToken;
 use Redaxo\Core\Security\User;
+use Throwable;
 
+use function count;
 use function Redaxo\Core\View\escape;
+
+use const JSON_UNESCAPED_SLASHES;
+use const JSON_UNESCAPED_UNICODE;
 
 /**
  * Präsenz der Redaktion (Presence) – Anbindung an fluid: Artikel je Sprache (type „article“, id = „{sprache}:{artikel}“).
@@ -24,16 +30,16 @@ use function Redaxo\Core\View\escape;
  */
 final class PresenceApi
 {
+    public const string PATH = 'fluid-presence';
+    public const string SITE = 'default';
+    private const array SAVES = ['save', 'publish', 'restore', 'discard', 'block_add', 'block_delete', 'page_settings'];
+
     /** @internal Endpunkt der Präsenz */
-    #[\Klxm\Fluid\Routing\Attribute\AsEndpoint('/' . self::PATH, early: true)]
+    #[AsEndpoint('/' . self::PATH, early: true)]
     public static function serve(): void
     {
         self::handle();
     }
-
-    public const string PATH = 'fluid-presence';
-    public const string SITE = 'default';
-    private const array SAVES = ['save', 'publish', 'restore', 'discard', 'block_add', 'block_delete', 'page_settings'];
 
     public static function on(): bool
     {
@@ -184,7 +190,7 @@ final class PresenceApi
     {
         preg_match_all('~\pL[\pL\pN]*~u', preg_replace('~\(.*?\)~u', '', self::name($u)) ?? '', $m);   // Wörter ohne Klammerzusatz
         $parts = $m[0] ?: ['?'];
-        $ini = mb_strtoupper(mb_substr($parts[0] ?? '?', 0, 1) . (\count($parts) > 1 ? mb_substr((string) end($parts), 0, 1) : ''));
+        $ini = mb_strtoupper(mb_substr($parts[0] ?? '?', 0, 1) . (count($parts) > 1 ? mb_substr((string) end($parts), 0, 1) : ''));
 
         return ['name' => self::name($u), 'initials' => $ini, 'avatar' => ''];
     }
@@ -199,9 +205,9 @@ final class PresenceApi
     private static function last(Article $article, User $user): ?array
     {
         try {
-            $row = Sql::factory()->getArray('SELECT user, created FROM ' . Activity::TABLE . ' WHERE article_id = ? AND action IN (' . implode(',', array_fill(0, \count(self::SAVES), '?')) . ') ORDER BY id DESC LIMIT 1',
+            $row = Sql::factory()->getArray('SELECT user, created FROM ' . Activity::TABLE . ' WHERE article_id = ? AND action IN (' . implode(',', array_fill(0, count(self::SAVES), '?')) . ') ORDER BY id DESC LIMIT 1',
                 [$article->id, ...self::SAVES])[0] ?? null;
-        } catch (\Throwable) {
+        } catch (Throwable) {
             return null;
         }
         if (!$row) {

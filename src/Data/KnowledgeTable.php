@@ -2,6 +2,7 @@
 
 namespace Klxm\Fluid\Data;
 
+use Klxm\Fluid\Glossary\GlossaryTable;
 use Yakamara\YForm\Field\Checkbox;
 use Yakamara\YForm\Field\Choice;
 use Yakamara\YForm\Field\Date;
@@ -61,8 +62,8 @@ abstract class KnowledgeTable extends Table
         yield FluidBlocks::new('content')->label('Inhalt (Blöcke)')->blocks(...$this->contentBlocks());
         yield Text::new('tags')->label('Schlagworte')->maxLength(255)->notice('Mit Komma getrennt.');
         yield ManyToMany::new('related')->label('Verwandte Kapitel')->target(static::class);
-        if (class_exists(\Klxm\Fluid\Glossary\GlossaryTable::class)) {
-            yield ManyToMany::new('terms')->label('Glossar-Begriffe')->target(\Klxm\Fluid\Glossary\GlossaryTable::class);
+        if (class_exists(GlossaryTable::class)) {
+            yield ManyToMany::new('terms')->label('Glossar-Begriffe')->target(GlossaryTable::class);
         }
         yield Date::new('reviewed')->label('Zuletzt geprüft');
         yield Checkbox::new('online')->label('Online')->default(true)->filterable();

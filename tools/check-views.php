@@ -1,4 +1,7 @@
 <?php
+
+use Klxm\Fluid\BlockSelfTest;
+
 /*
  * Prüft die Views der Kits (Blöcke, Seitenrahmen, Fragmente) auf Code hinter einem Zeilenkommentar – ohne REDAXO.
  *
@@ -10,7 +13,7 @@
 
 require dirname(__DIR__) . '/src/BlockSelfTest.php';
 
-$bad = Klxm\Fluid\BlockSelfTest::viewComments();
+$bad = BlockSelfTest::viewComments();
 if ($bad) {
     fwrite(STDERR, "Code hinter einem Zeilenkommentar in Views:\n  " . implode("\n  ", $bad) . "\n");
     exit(1);

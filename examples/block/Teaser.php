@@ -2,13 +2,14 @@
 
 namespace Project\Block;
 
-use Klxm\Fluid\InlineStyle;
 use Klxm\Fluid\Field\AsBlock;
 use Klxm\Fluid\Field\Link;
+use Klxm\Fluid\InlineStyle;
 use Klxm\Fluid\Kit\Fluid\FluidBlock;
 use Override;
 use Redaxo\Core\Content\AsModule;
-use Redaxo\Core\Form\Field\{Text, Textarea};
+use Redaxo\Core\Form\Field\Text;
+use Redaxo\Core\Form\Field\Textarea;
 
 use function Redaxo\Core\View\escape;
 
@@ -36,7 +37,7 @@ final class Teaser extends FluidBlock
         return '<div class="wrap"><div class="card ' . InlineStyle::class('padding:var(--f-s-l)') . '">'
             . '<h2 class="h3"' . $this->edit('title') . '>' . escape($this->title) . '</h2>'
             . '<p' . $this->edit('text', 'lines') . '>' . nl2br(escape($this->text), false) . '</p>'
-            . ('' !== trim($this->link) ? '<a class="btn btn--primary" ' . \fluid_link_attrs($this->link) . '>Mehr</a>' : '')
+            . ('' !== trim($this->link) ? '<a class="btn btn--primary" ' . fluid_link_attrs($this->link) . '>Mehr</a>' : '')
             . '</div></div>';
     }
 }

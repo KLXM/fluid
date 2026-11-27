@@ -2,11 +2,17 @@
 
 namespace Klxm\Fluid;
 
+use Klxm\Fluid\Data\Detail;
+use Klxm\Fluid\Routing\Router;
 use Redaxo\Core\Content\Article;
+use Redaxo\Core\Language\Language;
+use Redaxo\Core\MediaPool\Media;
 use Redaxo\Core\Util\Str;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig;
 
 use function in_array;
+
+use const ENT_QUOTES;
 
 /**
  * Rich Text sicher ausgeben – Klassenvertrag der Formatierungsleiste aus KLXM Studio (Core\Sanitizer):
@@ -68,19 +74,19 @@ final class RichText
             return $art ? $art->getUrl() . ($r[2] ?? '') : '#';
         }
         if (preg_match('~^media://(.+)$~', $ref, $r)) {
-            $media = \Redaxo\Core\MediaPool\Media::get(rawurldecode($r[1]));
+            $media = Media::get(rawurldecode($r[1]));
 
             return null !== $media ? $media->getUrl() : '#';
         }
         if (preg_match('~^detail://(\d+)/(\d+)(#[\w-]+)?$~', $ref, $r)) {
-            $lang = \Redaxo\Core\Language\Language::getCurrentId();
-            $cfg = \Klxm\Fluid\Data\Detail::config((int) $r[1], $lang);
-            $title = null !== $cfg ? \Klxm\Fluid\Data\Detail::title($cfg, (int) $r[2]) : null;
+            $lang = Language::getCurrentId();
+            $cfg = Detail::config((int) $r[1], $lang);
+            $title = null !== $cfg ? Detail::title($cfg, (int) $r[2]) : null;
 
-            return null === $title ? '#' : \Klxm\Fluid\Data\Detail::url(\Klxm\Fluid\Routing\Router::url((int) $r[1], $lang), $title, (int) $r[2]) . ($r[3] ?? '');
+            return null === $title ? '#' : Detail::url(Router::url((int) $r[1], $lang), $title, (int) $r[2]) . ($r[3] ?? '');
         }
         if (preg_match('~^route://([\w.-]+)/([^/#]+)(#[\w-]+)?$~', $ref, $r)) {
-            $url = \Klxm\Fluid\Routing\Router::urlFor($r[1], rawurldecode($r[2]));
+            $url = Router::urlFor($r[1], rawurldecode($r[2]));
 
             return ('' !== $url ? $url : '#') . ('' !== $url ? ($r[3] ?? '') : '');
         }

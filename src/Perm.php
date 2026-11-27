@@ -8,6 +8,8 @@ use Redaxo\Core\Database\Sql;
 use Redaxo\Core\Security\Permission;
 use Redaxo\Core\Security\User;
 
+use function is_array;
+
 /**
  * Aktionsrechte des Cores (Benutzer → Rollen → „Optionen“) auf der Website – dieselben Rechte wie im Backend:
  * wer dort keine Artikel löschen darf, darf es auch auf der Website nicht. Admins dürfen alles.
@@ -89,7 +91,7 @@ final class Perm
     public static function withDesign(string $json): ?string
     {
         $perms = json_decode($json, true);
-        if (!\is_array($perms)) {
+        if (!is_array($perms)) {
             return null;
         }
         $have = array_values(array_filter(explode('|', trim((string) ($perms[Permission::OPTIONS] ?? ''), '|'))));

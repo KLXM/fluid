@@ -5,6 +5,8 @@ namespace Klxm\Fluid;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\StructurePermission;
 use Redaxo\Core\Core;
+use Redaxo\Core\ExtensionPoint\Extension;
+use Redaxo\Core\ExtensionPoint\ExtensionPoint;
 use Redaxo\Core\Http\Request;
 use Redaxo\Core\Security\BackendLogin;
 use Redaxo\Core\Security\User;
@@ -42,7 +44,7 @@ final class Editing
         // Nie mit Admin-Rechten. Schreibende Aktionen von Gästen führt fluid nur aus, wenn ein AddOn sie über FLUID_API_ACTION
         // übernimmt (z. B. in einer Transaktion, die zurückgerollt wird) – sonst lehnt Api sie ab.
         if (!$user) {
-            $guest = \Redaxo\Core\ExtensionPoint\Extension::dispatch(new \Redaxo\Core\ExtensionPoint\ExtensionPoint('FLUID_GUEST_USER', null));
+            $guest = Extension::dispatch(new ExtensionPoint('FLUID_GUEST_USER', null));
             if ($guest instanceof User && !$guest->admin) {
                 $user = $guest;
                 self::$guest = true;
@@ -98,7 +100,7 @@ final class Editing
      */
     public static function lockedBy(): ?array
     {
-        $article = \Redaxo\Core\Content\Article::getCurrent();
+        $article = Article::getCurrent();
 
         return null !== $article ? EditLock::blockedFor($article) : null;
     }

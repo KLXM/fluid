@@ -12,7 +12,7 @@ use Klxm\Fluid\Routing\Attribute\Title;
 use Klxm\Fluid\Routing\TableSource;
 
 /**
- * News aus einer Tabelle unter der Seite „Aktuelles“ (ID 12): /aktuelles/sommerfest-im-garten
+ * News aus einer Tabelle unter der Seite „Aktuelles“ (ID 12): /aktuelles/sommerfest-im-garten.
  *
  * Die Seite bekommt die ID als ?news_id=… und gibt den Eintrag aus. Adresse, Sitemap, Canonical, hreflang, Open Graph
  * und die 301-Weiterleitung nach einer Titeländerung kommen vom Routing. Titel, Beschreibung, Bild und Adresse lassen

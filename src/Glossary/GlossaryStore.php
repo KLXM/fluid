@@ -6,7 +6,7 @@ use Redaxo\Core\Security\User;
 
 /**
  * Datenquelle des Glossars – eine kleine Schnittstelle, damit neben YForm (YFormGlossaryStore, Standard) später ein anderes
- * Backend möglich ist (z. B. Doctrine). Setzen in Project::configure(): `Glossary::$store = new MeinStore();`
+ * Backend möglich ist (z. B. Doctrine). Setzen in Project::configure(): `Glossary::$store = new MeinStore();`.
  *
  * Ein Begriff ist ein Array: id (int), key (Slug), term, short (Klartext, höchstens 240 Zeichen), variants (list<string>),
  * long (bool: es gibt eine ausführliche Erklärung), online (bool), language (Code oder '' = alle Sprachen).
@@ -17,7 +17,7 @@ interface GlossaryStore
     public function available(): bool;
 
     /**
-     * Begriffe der Sprache (Code); $all: auch offline
+     * Begriffe der Sprache (Code); $all: auch offline.
      *
      * @return list<array{id: int, key: string, term: string, short: string, variants: list<string>, long: bool, online: bool, language: string}>
      */

@@ -3,7 +3,10 @@
 namespace Klxm\Fluid\Kit\Fluid\Module;
 
 use Klxm\Fluid\Field\AsBlock;
-use Klxm\Fluid\Field\{Checkbox, Choice, Geo, Text};
+use Klxm\Fluid\Field\Checkbox;
+use Klxm\Fluid\Field\Choice;
+use Klxm\Fluid\Field\Geo;
+use Klxm\Fluid\Field\Text;
 use Klxm\Fluid\Kit\Fluid\FluidBlock;
 use Klxm\Fluid\Maps\Maps;
 use Redaxo\Core\Content\AsModule;

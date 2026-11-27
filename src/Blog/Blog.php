@@ -3,7 +3,12 @@
 namespace Klxm\Fluid\Blog;
 
 use Klxm\Fluid\PageSettings;
+use Klxm\Fluid\Routing\ExtensionPoint\PageMetaResolved;
+use Klxm\Fluid\Routing\RouteMatch;
 use Klxm\Fluid\Routing\Router;
+use Klxm\Fluid\Routing\Routes;
+use Klxm\Fluid\Routing\Seo\HeadTag;
+use Klxm\Fluid\Routing\Seo\PageMeta;
 use Klxm\Fluid\Settings;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\Category;
@@ -11,8 +16,14 @@ use Redaxo\Core\Database\Sql;
 use Redaxo\Core\ExtensionPoint\Extension;
 use Redaxo\Core\ExtensionPoint\ExtensionPoint;
 use Redaxo\Core\Language\Language;
+use Redaxo\Core\MediaManager\MediaManager;
 
+use function array_slice;
+use function count;
+use function in_array;
 use function Redaxo\Core\View\escape;
+
+use const DATE_RSS;
 
 /**
  * Blog / News: Eine Kategorie (Menüpunkt) wird in ihren Seiteneinstellungen zum Blog – ihre Seiten sind dann Beiträge.
@@ -25,11 +36,14 @@ use function Redaxo\Core\View\escape;
  */
 final class Blog
 {
+    /** @var array<int, bool>|null */
+    private static ?array $blogs = null;
+
     /** Beim Routing und SEO anmelden: RSS /{blog}/feed.xml, Feed-Link im Seitenkopf, schema.org Blog/BlogPosting */
     public static function boot(): void
     {
-        Router::resolver(static function (string $full, int $lang): ?\Klxm\Fluid\Routing\RouteMatch {
-            if (preg_match('~^(.+)/feed\.xml$~', $full, $m) && null !== ($bid = \Klxm\Fluid\Routing\Routes::find($m[1], $lang)) && self::isBlog($bid)) {
+        Router::resolver(static function (string $full, int $lang): ?RouteMatch {
+            if (preg_match('~^(.+)/feed\.xml$~', $full, $m) && null !== ($bid = Routes::find($m[1], $lang)) && self::isBlog($bid)) {
                 Language::setCurrentId($lang);
                 Router::respond(self::feed($bid), 'application/rss+xml; charset=utf-8');
             }
@@ -37,12 +51,12 @@ final class Blog
             return null;
         });
         // Feed-Link im Seitenkopf der Übersicht und der Beiträge
-        Extension::register(\Klxm\Fluid\Routing\ExtensionPoint\PageMetaResolved::class, static function (\Klxm\Fluid\Routing\ExtensionPoint\PageMetaResolved $ep): \Klxm\Fluid\Routing\Seo\PageMeta {
+        Extension::register(PageMetaResolved::class, static function (PageMetaResolved $ep): PageMeta {
             $article = $ep->article;
             $blog = self::isBlog($article->id) && $article->isStartArticle() ? $article->id : self::blogOf($article);
             if ($blog && ($b = Article::get($blog, $article->languageId))) {
                 $feed = self::feedUrl($blog, $article->languageId);
-                $ep->subject->add(\Klxm\Fluid\Routing\Seo\HeadTag::link('alternate', $feed, ['type' => 'application/rss+xml', 'title' => $b->name]));
+                $ep->subject->add(HeadTag::link('alternate', $feed, ['type' => 'application/rss+xml', 'title' => $b->name]));
             }
 
             return $ep->subject;
@@ -61,7 +75,7 @@ final class Blog
                     'datePublished' => $p->date->format('Y-m-d'), 'dateModified' => $article->updateDate ? date('c', $article->updateDate) : null,
                     'author' => '' !== $p->author ? ['@type' => 'Person', 'name' => $p->author] : ['@id' => $org],
                     'publisher' => ['@id' => $org], 'description' => '' !== $p->excerpt ? $p->excerpt : null,
-                    'image' => '' !== $p->image ? Router::absolute(\Redaxo\Core\MediaManager\MediaManager::getUrl('rex_media_large', $p->image)) : null,
+                    'image' => '' !== $p->image ? Router::absolute(MediaManager::getUrl('rex_media_large', $p->image)) : null,
                     'keywords' => $p->tags ? implode(', ', $p->tags) : null, 'inLanguage' => (string) $ep->getParam('lang'),
                     'mainEntityOfPage' => ['@id' => $url . '#webpage'], 'isPartOf' => ['@id' => Router::canonical($blog, $article->languageId) . '#blog'],
                 ]);
@@ -76,9 +90,6 @@ final class Blog
     {
         return rtrim(Router::config()->format->strip(Router::canonical($blogId, $languageId)), '/') . '/feed.xml';
     }
-
-    /** @var array<int, bool>|null */
-    private static ?array $blogs = null;
 
     /** Kategorien, die Blogs sind: [ID => Name] */
     public static function all(): array
@@ -144,17 +155,17 @@ final class Blog
         $out = [];
         foreach (preg_split('~[,;]~', $tags) ?: [] as $t) {
             $t = trim(preg_replace('~\s+~u', ' ', $t) ?? '');
-            if ('' !== $t && !\in_array(mb_strtolower($t), array_map('mb_strtolower', $out), true)) {
+            if ('' !== $t && !in_array(mb_strtolower($t), array_map('mb_strtolower', $out), true)) {
                 $out[] = mb_substr($t, 0, 40);
             }
         }
 
-        return \array_slice($out, 0, 12);
+        return array_slice($out, 0, 12);
     }
 
     public static function tagSlug(string $tag): string
     {
-        return \Klxm\Fluid\Routing\Routes::slugify($tag);
+        return Routes::slugify($tag);
     }
 
     /**
@@ -184,10 +195,10 @@ final class Blog
             . ' ORDER BY COALESCE(p.post_date, DATE(a.createdate)) DESC, a.id DESC';
         $rows = Sql::factory()->getArray($sql, $params);
         if ('' !== $tag) {
-            $rows = array_values(array_filter($rows, static fn (array $r) => \in_array($tag, array_map(self::tagSlug(...), self::splitTags((string) $r['tags'])), true)));
+            $rows = array_values(array_filter($rows, static fn (array $r) => in_array($tag, array_map(self::tagSlug(...), self::splitTags((string) $r['tags'])), true)));
         }
-        $total = \count($rows);
-        $rows = \array_slice($rows, max(0, (int) ($opt['offset'] ?? 0)), ($opt['limit'] ?? 0) > 0 ? (int) $opt['limit'] : null);
+        $total = count($rows);
+        $rows = array_slice($rows, max(0, (int) ($opt['offset'] ?? 0)), ($opt['limit'] ?? 0) > 0 ? (int) $opt['limit'] : null);
         $posts = [];
         foreach ($rows as $r) {
             if ($p = Post::get((int) $r['id'], $lang)) {

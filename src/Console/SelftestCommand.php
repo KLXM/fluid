@@ -12,6 +12,9 @@ use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
+use function count;
+use function sprintf;
+
 #[AsCommand(name: 'fluid:selftest', description: 'Prüft Live-Aktualisierung, Präsenz der Redaktion, Bearbeitungssperre, Blöcke (Views, Standardwerte, Video-Schalter …), Rechte und Listen-Vorlagen')]
 final class SelftestCommand extends AbstractCommand
 {
@@ -20,8 +23,8 @@ final class SelftestCommand extends AbstractCommand
         $fails = 0;
         foreach (['Live' => Live::selftest(...), 'Präsenz' => Presence::selftest(...), 'Sperre' => EditLock::selftest(...), 'Blöcke' => BlockSelfTest::selftest(...)] + FeatureSelfTest::groups() as $name => $test) {
             $r = $test();
-            $fails += \count($r['fails']);
-            $io->writeln(sprintf('%s: %d in Ordnung%s', $name, $r['ok'], $r['fails'] ? ', ' . \count($r['fails']) . ' Fehler' : ''));
+            $fails += count($r['fails']);
+            $io->writeln(sprintf('%s: %d in Ordnung%s', $name, $r['ok'], $r['fails'] ? ', ' . count($r['fails']) . ' Fehler' : ''));
             foreach ($r['fails'] as $f) {
                 $io->writeln('  ✗ ' . $f);
             }

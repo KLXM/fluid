@@ -3,6 +3,7 @@
 namespace Klxm\Fluid\Data;
 
 use Klxm\Fluid\Mail\Mail;
+use Klxm\Fluid\Routing\Router;
 use Klxm\Fluid\Routing\Routes;
 use Redaxo\Core\Content\Article;
 use Yakamara\YForm\Attribute\AsForm;
@@ -16,7 +17,14 @@ use Yakamara\YForm\Form\Definition\FormDefinition;
 use Yakamara\YForm\Form\Layout\Layout;
 use Yakamara\YForm\Form\Layout\Tab;
 
+use function count;
+use function function_exists;
+use function in_array;
+use function is_array;
 use function Redaxo\Core\View\escape;
+
+use const JSON_PRETTY_PRINT;
+use const JSON_UNESCAPED_UNICODE;
 
 if (!class_exists(FormDefinition::class)) {
     return;
@@ -61,7 +69,7 @@ final class BuiltForm extends FormDefinition
         $out = [];
         $used = [];
         foreach ((array) ($this->cfg['fields'] ?? []) as $i => $item) {
-            if (!\is_array($item) || !isset(self::TYPES[$item['type'] ?? ''])) {
+            if (!is_array($item) || !isset(self::TYPES[$item['type'] ?? ''])) {
                 continue;
             }
             $label = trim((string) ($item['label'] ?? ''));
@@ -149,7 +157,7 @@ final class BuiltForm extends FormDefinition
         if ($cur['fields']) {
             $steps[] = $cur;
         }
-        if (\count($steps) < 2) {
+        if (count($steps) < 2) {
             return $layout;
         }
         foreach ($steps as $i => $s) {
@@ -166,7 +174,7 @@ final class BuiltForm extends FormDefinition
         $mode = (string) ($this->cfg['mode'] ?? 'save_mail');
         $page = $this->article ? $this->article->name . ' (' . $this->article->getUrl() . ')' : '';
         // Gespeichert? Dann verwirft ein Mailfehler die Eingabe nicht (SafeMail) – sonst doppelte Einträge beim erneuten Absenden
-        $saved = \in_array($mode, ['save', 'save_mail'], true);
+        $saved = in_array($mode, ['save', 'save_mail'], true);
         if ($saved) {
             $target = trim((string) ($this->cfg['target'] ?? ''));
             yield '' !== $target && YFormBridge::table($target)
@@ -179,9 +187,9 @@ final class BuiltForm extends FormDefinition
                 });
         }
         $email = $this->emailField();
-        if (\in_array($mode, ['mail', 'save_mail'], true) && '' !== ($to = trim((string) ($this->cfg['mail_to'] ?? '')))) {
+        if (in_array($mode, ['mail', 'save_mail'], true) && '' !== ($to = trim((string) ($this->cfg['mail_to'] ?? '')))) {
             $subject = trim((string) ($this->cfg['mail_subject'] ?? '')) ?: 'Neue Nachricht: ' . ($this->definition->label ?? 'Formular');
-            $pageUrl = $this->article ? \Klxm\Fluid\Routing\Router::absolute($this->article->getUrl()) : '';
+            $pageUrl = $this->article ? Router::absolute($this->article->getUrl()) : '';
             yield new SafeMail(new SendMail(to: array_map('trim', explode(',', $to)), subject: $subject, html: true, replyTo: $email ? '{' . $email . '}' : null,
                 body: fn (Submission $s) => Mail::layout($s->interpolate($subject), $this->summaryHtml($s)
                     . ('' !== $pageUrl ? '<p style="margin:20px 0 0;font-size:14px;color:#6b7280">Gesendet über <a href="' . escape($pageUrl) . '">' . escape((string) $this->article?->name) . '</a></p>' : ''))),
@@ -210,10 +218,10 @@ final class BuiltForm extends FormDefinition
     {
         $msg = nl2br(htmlspecialchars(trim((string) ($this->cfg['success'] ?? '')) ?: 'Vielen Dank! Ihre Nachricht ist angekommen.'), false);
         // Eingabe gespeichert, aber die Bestätigung ging nicht raus: ehrlich sagen, damit niemand erneut absendet
-        if (\in_array(SafeMail::CONFIRM, SafeMail::$failed, true)) {
+        if (in_array(SafeMail::CONFIRM, SafeMail::$failed, true)) {
             $note = 'Die Bestätigung per E-Mail konnte gerade nicht gesendet werden – Ihre Angaben sind aber angekommen.';
             // ein Element: Meldungen der Kits sind oft Flex-Container (sonst stünde der Hinweis daneben)
-            $msg = '<span>' . $msg . '<br><small>' . htmlspecialchars(\function_exists('lt') ? lt($note) : $note) . '</small></span>';
+            $msg = '<span>' . $msg . '<br><small>' . htmlspecialchars(function_exists('lt') ? lt($note) : $note) . '</small></span>';
         }
 
         return $msg;
@@ -237,7 +245,7 @@ final class BuiltForm extends FormDefinition
     {
         $rows = '';
         foreach ($this->items() as $it) {
-            if (\in_array($it['type'], ['step', 'info'], true) || '' === ($v = $s->text($it['name']))) {
+            if (in_array($it['type'], ['step', 'info'], true) || '' === ($v = $s->text($it['name']))) {
                 continue;
             }
             // „Label: “ und Wert in <div>: so ergibt der Textteil (YForm SendMail::plainText) je Zeile „Label: Wert“
@@ -252,7 +260,7 @@ final class BuiltForm extends FormDefinition
     {
         $lines = [];
         foreach ($this->items() as $it) {
-            if (\in_array($it['type'], ['step', 'info'], true)) {
+            if (in_array($it['type'], ['step', 'info'], true)) {
                 continue;
             }
             $v = $s->text($it['name']);

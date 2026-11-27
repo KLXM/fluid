@@ -7,9 +7,13 @@ use Redaxo\Core\Content\ExtensionPoint\SliceDeleting;
 use Redaxo\Core\Content\ExtensionPoint\SliceMenu;
 use Redaxo\Core\Content\ExtensionPoint\SliceUpdating;
 use Redaxo\Core\Core;
+use Redaxo\Core\Database\Sql;
 use Redaxo\Core\Exception\UserMessageException;
 use Redaxo\Core\ExtensionPoint\Extension;
 use Redaxo\Core\Security\User;
+
+use function array_key_exists;
+use function in_array;
 
 /**
  * Gesperrte Blöcke und Gestaltungsrechte (siehe Perm): Ein gesperrter Block (`lock` in den Abschnitts-Optionen des Slices)
@@ -32,9 +36,7 @@ final class Lock
         return !empty($tunes[self::TUNE]);
     }
 
-    /**
-     * Warum ein Benutzer einen Block nicht ändern darf: '' (darf), 'perm' (kein Modulrecht), 'lock' (gesperrt, ohne Recht).
-     */
+    /** Warum ein Benutzer einen Block nicht ändern darf: '' (darf), 'perm' (kein Modulrecht), 'lock' (gesperrt, ohne Recht). */
     public static function reason(?User $user, ArticleSlice $slice): string
     {
         if (null === $user) {
@@ -74,7 +76,7 @@ final class Lock
     }
 
     /**
-     * Regel ohne Benutzer (Selbsttest)
+     * Regel ohne Benutzer (Selbsttest).
      *
      * @param array<string, mixed> $stored
      * @param array<string, mixed> $input
@@ -90,14 +92,14 @@ final class Lock
             $keep[] = self::TUNE;
         }
         foreach ($keep as $k) {
-            if (\array_key_exists($k, $stored)) {
+            if (array_key_exists($k, $stored)) {
                 $input[$k] = $stored[$k];
             } else {
                 unset($input[$k]);
             }
         }
         if (isset($input[self::TUNE])) {
-            $input[self::TUNE] = \in_array($input[self::TUNE], [true, 1, '1', 'on'], true);
+            $input[self::TUNE] = in_array($input[self::TUNE], [true, 1, '1', 'on'], true);
             if (!$input[self::TUNE]) {
                 unset($input[self::TUNE]);
             }
@@ -135,7 +137,7 @@ final class Lock
             if (null === $user || null === BlockModule::classFor($ep->moduleKey) || Perm::can($user, Perm::DESIGN_FULL)) {
                 return;
             }
-            $row = \Redaxo\Core\Database\Sql::factory()->getArray('SELECT data FROM rex_article_slice WHERE id = ?', [$ep->sliceId])[0] ?? null;
+            $row = Sql::factory()->getArray('SELECT data FROM rex_article_slice WHERE id = ?', [$ep->sliceId])[0] ?? null;
             if (null === $row || !self::locked(BlockModule::stored((string) $row['data'])['tunes'])) {
                 return;
             }

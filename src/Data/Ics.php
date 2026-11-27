@@ -4,13 +4,19 @@ namespace Klxm\Fluid\Data;
 
 use DateTimeImmutable;
 use DateTimeZone;
+use Klxm\Fluid\Routing\Attribute\AsEndpoint;
+use Klxm\Fluid\Routing\Router;
 use Redaxo\Core\Http\Request;
 use Redaxo\Core\Language\Language;
 use Throwable;
+use Yakamara\YForm\Field\Date;
+use Yakamara\YForm\Field\Text;
+use Yakamara\YForm\Field\Textarea;
 
 use function count;
 use function html_entity_decode;
 use function implode;
+use function ord;
 use function preg_match;
 use function preg_replace;
 use function str_replace;
@@ -18,6 +24,10 @@ use function strip_tags;
 use function strlen;
 use function substr;
 use function trim;
+
+use const ENT_HTML5;
+use const ENT_QUOTES;
+use const PHP_URL_HOST;
 
 /**
  * Termine: „In den Kalender“ als .ics je Eintrag einer Datenliste mit Detailansicht (Vorbild KLXM Studio, Termin-Aktionen).
@@ -49,7 +59,7 @@ final class Ics
     public static function dateField(object $table): ?object
     {
         foreach (YFormBridge::detailFields($table) as $f) {
-            if ($f instanceof \Yakamara\YForm\Field\Date && !preg_match('~(end|bis|until)~i', $f->name)) {
+            if ($f instanceof Date && !preg_match('~(end|bis|until)~i', $f->name)) {
                 return $f;
             }
         }
@@ -58,7 +68,7 @@ final class Ics
     }
 
     /** @internal Endpunkt /fluid-ics/{seite}-{eintrag}.ics */
-    #[\Klxm\Fluid\Routing\Attribute\AsEndpoint('/' . self::PATH . '/*')]
+    #[AsEndpoint('/' . self::PATH . '/*')]
     public static function serve(string $path, string $rest): void
     {
         if (!YFormBridge::available() || !preg_match('~^(\d+)-(\d+)\.ics$~', $rest, $m)) {
@@ -69,7 +79,7 @@ final class Ics
         if (null === $ics) {
             return;   // weiter wie eine unbekannte Adresse (404)
         }
-        \Klxm\Fluid\Routing\Router::respond($ics, 'text/calendar; charset=utf-8', ['Content-Disposition: attachment; filename="termin-' . (int) $m[2] . '.ics"', 'Cache-Control: no-cache', 'X-Content-Type-Options: nosniff']);
+        Router::respond($ics, 'text/calendar; charset=utf-8', ['Content-Disposition: attachment; filename="termin-' . (int) $m[2] . '.ics"', 'Cache-Control: no-cache', 'X-Content-Type-Options: nosniff']);
     }
 
     /** Kalenderdatei eines Eintrags oder null (keine Datenliste mit Kalender, Eintrag nicht sichtbar, kein Datum) */
@@ -95,18 +105,18 @@ final class Ics
         $endF = null;
         $placeF = null;
         foreach (YFormBridge::detailFields($t) as $f) {
-            if (null === $endF && $f instanceof \Yakamara\YForm\Field\Date && preg_match('~(end|bis|until)~i', $f->name)) {
+            if (null === $endF && $f instanceof Date && preg_match('~(end|bis|until)~i', $f->name)) {
                 $endF = $f;
             }
-            if (null === $placeF && $f instanceof \Yakamara\YForm\Field\Text && preg_match('~(place|ort|location|venue)~i', $f->name)) {
+            if (null === $placeF && $f instanceof Text && preg_match('~(place|ort|location|venue)~i', $f->name)) {
                 $placeF = $f;
             }
         }
-        $titleF = YFormBridge::field($t, (string) ($cfg['title_field'] ?? ''), [\Yakamara\YForm\Field\Text::class]);
-        $textF = YFormBridge::field($t, (string) ($cfg['text_field'] ?? ''), [\Yakamara\YForm\Field\Textarea::class]);
+        $titleF = YFormBridge::field($t, (string) ($cfg['title_field'] ?? ''), [Text::class]);
+        $textF = YFormBridge::field($t, (string) ($cfg['text_field'] ?? ''), [Textarea::class]);
         $title = $titleF ? YFormBridge::text($row, $titleF) : '#' . $entryId;
         $text = $textF ? trim((string) preg_replace('~\s+~u', ' ', html_entity_decode(strip_tags(YFormBridge::text($row, $textF)), ENT_QUOTES | ENT_HTML5, 'UTF-8'))) : '';
-        $url = \Klxm\Fluid\Routing\Router::absolute(Detail::url(\Klxm\Fluid\Routing\Router::url($articleId, $languageId), $title, $entryId));
+        $url = Router::absolute(Detail::url(Router::url($articleId, $languageId), $title, $entryId));
 
         return self::event([
             'uid' => 'fluid-' . $t->definition->name . '-' . $entryId . '@' . (string) (parse_url($url, PHP_URL_HOST) ?: 'localhost'),
@@ -166,7 +176,7 @@ final class Ics
     /** Text nach RFC 5545 maskieren (Backslash, Semikolon, Komma, Zeilenumbruch) */
     private static function text(string $s): string
     {
-        return str_replace(["\\", ';', ',', "\r\n", "\n", "\r"], ["\\\\", '\;', '\,', '\n', '\n', '\n'], $s);
+        return str_replace(['\\', ';', ',', "\r\n", "\n", "\r"], ['\\\\', '\;', '\,', '\n', '\n', '\n'], $s);
     }
 
     /** Zeilen nach 75 Bytes falten (Folgezeilen: Leerzeichen + 74 Bytes), ohne UTF-8-Zeichen zu teilen */
@@ -176,7 +186,7 @@ final class Ics
         $max = 75;
         while (strlen($line) > $max) {
             $cut = $max;
-            while ($cut > 0 && (\ord($line[$cut]) & 0xC0) === 0x80) {
+            while ($cut > 0 && (ord($line[$cut]) & 0xC0) === 0x80) {
                 --$cut;
             }
             $out[] = substr($line, 0, $cut);

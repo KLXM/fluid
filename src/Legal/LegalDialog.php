@@ -12,6 +12,7 @@ use Redaxo\Core\Database\Sql;
 use Redaxo\Core\Language\Language;
 
 use function array_key_exists;
+use function function_exists;
 use function html_entity_decode;
 use function htmlspecialchars;
 use function http_response_code;
@@ -23,12 +24,14 @@ use function preg_match;
 use function preg_replace;
 use function preg_replace_callback;
 use function rawurlencode;
+use function Redaxo\Core\View\escape;
 use function str_contains;
 use function strip_tags;
 use function strtolower;
 use function trim;
 
-use function Redaxo\Core\View\escape;
+use const JSON_UNESCAPED_SLASHES;
+use const JSON_UNESCAPED_UNICODE;
 
 /**
  * Rechtstexte im Dialog (optional, aus KLXM Studio – Core\LegalDialog): Der Link „Datenschutzhinweise“ an Formularen
@@ -83,7 +86,7 @@ final class LegalDialog
             http_response_code(404);
             Router::respond('{"ok":false}', 'application/json');
         }
-        $t = static fn (string $s): string => \function_exists('lt') ? lt($s) : $s;
+        $t = static fn (string $s): string => function_exists('lt') ? lt($s) : $s;
         Router::respond((string) json_encode([
             'ok' => true,
             'title' => $article->name,

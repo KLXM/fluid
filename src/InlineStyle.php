@@ -10,14 +10,13 @@ use Redaxo\Core\Http\Response;
 use function implode;
 use function md5;
 use function preg_split;
+use function Redaxo\Core\View\escape;
 use function str_contains;
 use function str_replace;
 use function stripos;
 use function substr;
 use function substr_replace;
 use function trim;
-
-use function Redaxo\Core\View\escape;
 
 /**
  * Keine style-Attribute (Content-Security-Policy, im Backend erzwungen): Werte, die sich nicht über feste Klassen

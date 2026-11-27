@@ -1,3 +1,5 @@
 <?php
 
-echo Klxm\Fluid\Backend\McpPage::run();
+use Klxm\Fluid\Backend\McpPage;
+
+echo McpPage::run();

@@ -5,20 +5,21 @@ namespace Klxm\Fluid\Backend;
 use Klxm\Fluid\BlockModule;
 use Klxm\Fluid\FluidAddon;
 use Klxm\Fluid\Layout;
+use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\ArticleSlice;
 use Redaxo\Core\Content\ExtensionPoint\ContentPageModuleSelect;
 use Redaxo\Core\Content\ExtensionPoint\SliceMenu;
 use Redaxo\Core\Content\ExtensionPoint\SliceOutput;
+use Redaxo\Core\Content\Module;
 use Redaxo\Core\Core;
-use Redaxo\Core\View\Asset;
 use Redaxo\Core\ExtensionPoint\Extension;
-use Redaxo\Core\Http\Request;
 use Redaxo\Core\Filesystem\Url;
+use Redaxo\Core\Http\Request;
+use Redaxo\Core\View\Asset;
 use Redaxo\Core\View\Fragment;
 
 use function array_diff;
 use function array_filter;
-use function array_key_exists;
 use function array_map;
 use function array_slice;
 use function array_unique;
@@ -29,11 +30,10 @@ use function in_array;
 use function max;
 use function min;
 use function preg_replace;
+use function Redaxo\Core\View\escape;
 use function str_contains;
 use function str_replace;
 use function strip_tags;
-
-use function Redaxo\Core\View\escape;
 
 /**
  * Slice-Liste des Backends wie die Website: Die Blöcke eines Layouts stehen im Layout-Panel nebeneinander in ihren
@@ -127,9 +127,7 @@ final class SliceGrid
             . '<a href="' . $url('tree') . '"' . (!$grid ? ' aria-current="true"' : '') . '><i class="rex-icon fa-sitemap" aria-hidden="true"></i> Baum</a></nav>';
     }
 
-    /**
-     * SliceOutput im Bearbeiten-Modus: Panel eines Spalten-Blocks einsammeln – null = normal ausgeben.
-     */
+    /** SliceOutput im Bearbeiten-Modus: Panel eines Spalten-Blocks einsammeln – null = normal ausgeben. */
     public static function collect(SliceOutput $ep): ?string
     {
         if (!self::active()) {
@@ -225,11 +223,11 @@ final class SliceGrid
     public static function compactMenu(SliceMenu $ep): void
     {
         $slice = ArticleSlice::getArticleSliceById($ep->sliceId, $ep->languageId, 0) ?? ArticleSlice::getArticleSliceById($ep->sliceId, $ep->languageId, 1);
-        if (null === $slice || !\Redaxo\Core\Content\Module::exists($slice->moduleKey)) {
+        if (null === $slice || !Module::exists($slice->moduleKey)) {
             return;
         }
         // Verdoppeln (auch ohne Skript); Kopieren, Ausschneiden, Einfügen ergänzt assets/slice-grid.js im Menü „⋯“
-        $article = \Redaxo\Core\Content\Article::get($slice->articleId, $slice->languageId);
+        $article = Article::get($slice->articleId, $slice->languageId);
         if (null !== $article && $ep->hasPerm) {
             self::$opsUrl ??= BlockOpsApi::url($article, $slice->contentSectionId);
             $ep->additionalActions[] = [

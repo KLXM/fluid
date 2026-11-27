@@ -2,18 +2,29 @@
 
 namespace Klxm\Fluid\Data;
 
+use DateTimeInterface;
 use Klxm\Fluid\Block;
 use Klxm\Fluid\Editing;
 use Klxm\Fluid\Glossary\Glossary;
+use Klxm\Fluid\Kit;
 use Klxm\Fluid\Routing\Router;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\ExtensionPoint\Extension;
 use Redaxo\Core\ExtensionPoint\ExtensionPoint;
+use Redaxo\Core\Http\Request;
 use Redaxo\Core\Language\Language;
 use Yakamara\YForm\Data\Record;
+use Yakamara\YForm\Field\Checkbox;
+use Yakamara\YForm\Field\Text;
 use Yakamara\YForm\Table\Table;
 
+use function array_slice;
+use function count;
+use function in_array;
 use function Redaxo\Core\View\escape;
+
+use const ENT_HTML5;
+use const ENT_QUOTES;
 
 /**
  * Wissensbereich (nach KLXM Studio, Core\Data\Knowledge und KnowledgeLd, MIT – schlanke erste Fassung): Kapitel einer
@@ -57,9 +68,9 @@ final class Knowledge
             $q->where('online', true);
         }
         if ($filter && '' !== ($v = trim((string) ($cfg['filter_value'] ?? '')))) {
-            $q->where($filter->name, $filter instanceof \Yakamara\YForm\Field\Checkbox ? (bool) $v : $v);
+            $q->where($filter->name, $filter instanceof Checkbox ? (bool) $v : $v);
         }
-        $titleF = YFormBridge::field($t, (string) ($cfg['title_field'] ?? ''), [\Yakamara\YForm\Field\Text::class]);
+        $titleF = YFormBridge::field($t, (string) ($cfg['title_field'] ?? ''), [Text::class]);
         $out = [];
         foreach ($q->limit(2000)->find() as $r) {
             $out[] = ['id' => (int) $r->id, 'parent' => (int) ($r->get('parent') ?? 0), 'title' => $titleF ? YFormBridge::text($r, $titleF) : (string) $r->get('title'),
@@ -208,7 +219,7 @@ final class Knowledge
         foreach ($tree['roots'] as $id) {
             $groups[(string) $tree['nodes'][$id]['area']][] = $id;
         }
-        uksort($groups, static fn ($a, $c) => (array_search($a, array_keys($areas), true) === false ? 999 : array_search($a, array_keys($areas), true)) <=> (array_search($c, array_keys($areas), true) === false ? 999 : array_search($c, array_keys($areas), true)));
+        uksort($groups, static fn ($a, $c) => (false === array_search($a, array_keys($areas), true) ? 999 : array_search($a, array_keys($areas), true)) <=> (false === array_search($c, array_keys($areas), true) ? 999 : array_search($c, array_keys($areas), true)));
         $hTag = '' !== trim((string) ($d['title'] ?? '')) ? 'h3' : 'h2';
         $h = '<div class="kn-toc">';
         foreach ($groups as $area => $ids) {
@@ -226,7 +237,7 @@ final class Knowledge
      */
     public static function detail(Block $b, array $d, Table $t, Record $row, string $pageUrl): string
     {
-        \Klxm\Fluid\Kit::active()->markUsed('@knowledge');
+        Kit::active()->markUsed('@knowledge');
         $tree = self::tree($t, $d + ['_language' => Language::getCurrentId()]);
         $id = (int) $row->id;
         $node = $tree['nodes'][$id] ?? ['number' => '', 'title' => (string) $row->get('title'), 'children' => [], 'depth' => 0];
@@ -250,7 +261,7 @@ final class Knowledge
         $navItem = static function (int $nid) use (&$navItem, $tree, $active, $id, $url): string {
             $n = $tree['nodes'][$nid];
             $kids = '';
-            if (\in_array($nid, $active, true) || 0 === (int) $n['depth']) {
+            if (in_array($nid, $active, true) || 0 === (int) $n['depth']) {
                 foreach ($n['children'] as $c) {
                     $kids .= $navItem($c);
                 }
@@ -309,7 +320,7 @@ final class Knowledge
                 . implode('', array_map(static fn ($n) => '<li><a href="' . escape($url($n)) . '"><span class="kn-nav__n">' . escape((string) $n['number']) . '</span> ' . escape((string) $n['title']) . '</a></li>', $rel)) . '</ul></div>';
         }
         $reviewed = $t->hasField('reviewed') ? $row->get('reviewed') : null;
-        if ($reviewed instanceof \DateTimeInterface) {
+        if ($reviewed instanceof DateTimeInterface) {
             $foot .= '<p class="kn-reviewed">' . escape(lt('Zuletzt geprüft')) . ': <time datetime="' . $reviewed->format('Y-m-d') . '">' . escape($reviewed->format('d.m.Y')) . '</time></p>';
         }
         [$prev, $next] = self::neighbours($tree, $id);
@@ -341,7 +352,7 @@ final class Knowledge
         }
         $out = [];
         foreach (Glossary::terms(null, false) as $term) {
-            if (\in_array((int) $term['id'], $ids, true)) {
+            if (in_array((int) $term['id'], $ids, true)) {
                 $out[] = ['id' => (int) $term['id'], 'term' => (string) $term['term'], 'url' => $term['url']];
             }
         }
@@ -357,7 +368,7 @@ final class Knowledge
         }
         $out = [];
         foreach (array_map('intval', (array) $row->get('related')) as $rid) {
-            if (isset($tree['nodes'][$rid]) && $rid !== (int) $row->id && \count($out) < $max) {
+            if (isset($tree['nodes'][$rid]) && $rid !== (int) $row->id && count($out) < $max) {
                 $out[] = $tree['nodes'][$rid];
             }
         }
@@ -394,7 +405,7 @@ final class Knowledge
         $page = Router::canonical($article->id, $article->languageId);
         $tree = self::tree($t, $cfg);
         $collection = ['@type' => 'Collection', '@id' => $page . '#collection', 'name' => $article->name, 'url' => $page];
-        $entry = (int) \Redaxo\Core\Http\Request::get(Detail::PARAM, 'int', 0);
+        $entry = (int) Request::get(Detail::PARAM, 'int', 0);
         $abs = static fn (array $n): string => Router::absolute(Detail::url(Router::url($article->id, $article->languageId), (string) $n['title'], (int) $n['id']));
         foreach ($data['@graph'] as $i => $node) {
             if (($node['@type'] ?? '') !== 'WebPage') {
@@ -423,7 +434,7 @@ final class Knowledge
                         $article_['about'] = array_values($about);
                     }
                     $reviewed = $t->hasField('reviewed') ? $row->get('reviewed') : null;
-                    if ($reviewed instanceof \DateTimeInterface) {
+                    if ($reviewed instanceof DateTimeInterface) {
                         $data['@graph'][$i]['lastReviewed'] = $reviewed->format('Y-m-d');
                     }
                     $rel = self::related($t, $row, $tree);
@@ -452,7 +463,7 @@ final class Knowledge
                 $data['@graph'][$i]['@type'] = 'CollectionPage';
                 $data['@graph'][$i]['mainEntity'] = ['@id' => $page . '#collection'];
                 $collection['hasPart'] = array_map(static fn (int $id) => ['@type' => 'Article', '@id' => $abs($tree['nodes'][$id]) . '#main', 'name' => $tree['nodes'][$id]['title'], 'url' => $abs($tree['nodes'][$id])],
-                    \array_slice($tree['order'], 0, 500));
+                    array_slice($tree['order'], 0, 500));
                 $data['@graph'][] = $collection;
             }
             break;

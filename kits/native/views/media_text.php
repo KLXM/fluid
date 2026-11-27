@@ -1,15 +1,19 @@
 <?php
+
+use Klxm\Fluid\Block;
+use Klxm\Fluid\Kit;
+
 /**
  * Text + Bild im Kit „NativeCSS“ (.ncss-split: nebeneinander, stapelt sich per Container Query – Bild links bzw. rechts
  * allein über die Reihenfolge im Markup). auto wechselt die Seite in einer Folge von „Text + Bild“-Blöcken wie bei fluid.
  * „split“ (randlos 50/50) und „overlap“ (Karte über großem Bild) kommen aus dem Kit fluid.
- * @var \Klxm\Fluid\Block $b  @var array $d
+ * @var Block $b  @var array $d
  */
 $v = $b->variant() ?: 'auto';
 // „Morphing beim Scrollen“ (nur dieses Kit, kit.php → blocks): beim Bearbeiten als „Bild rechts“ – die hohe Scroll-Strecke
 // stört dort nur; für Besucher .ncss-morph von NativeCSS (bei „Bewegung reduzieren“ statisch nebeneinander)
 if ('morph' === $v && !is_editing()) {
-    \Klxm\Fluid\Kit::active()->markUsed('media_text', '@morph');
+    Kit::active()->markUsed('media_text', '@morph');
     $mpic = img(!empty($d['image']) ? (string) $d['image'] : null, '(min-width: 1080px) 1200px, 100vw', ['ratio' => (string) ($d['ratio'] ?? '') ?: '4:3']);
     if ('' !== $mpic) {
         echo '<div class="wrap nv-morph"><div class="ncss-morph ncss-morph--card"><div class="ncss-morph-stage">'
@@ -26,7 +30,7 @@ if ('morph' === $v) {
     $v = 'right';
 }
 if (!in_array($v, ['auto', 'right', 'left'], true)) {
-    require \Klxm\Fluid\Kit::get('fluid')->view('media_text');
+    require Kit::get('fluid')->view('media_text');
 
     return;
 }

@@ -25,13 +25,13 @@ final class BentoItem
         'Fläche',
         required: true,
         choices: [
-                    'card' => 'Karte',
-                    'tint' => 'Akzent hell',
-                    'highlight' => 'Zweitfarbe',
-                    'accent' => 'Akzentfarbe',
-                    'dark' => 'Dunkel',
-                    'image' => 'Bild mit Text darauf',
-                ],
+            'card' => 'Karte',
+            'tint' => 'Akzent hell',
+            'highlight' => 'Zweitfarbe',
+            'accent' => 'Akzentfarbe',
+            'dark' => 'Dunkel',
+            'image' => 'Bild mit Text darauf',
+        ],
         width: 'half',
     )]
     public string $tone = 'card';

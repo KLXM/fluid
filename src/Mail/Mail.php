@@ -2,8 +2,13 @@
 
 namespace Klxm\Fluid\Mail;
 
+use DateTimeImmutable;
+use FilesystemIterator;
 use Klxm\Fluid\Kit;
+use Klxm\Fluid\Routing\Router;
 use Klxm\Fluid\Settings;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 use Redaxo\Core\Core;
 use Redaxo\Core\Cronjob\AsCronjob;
 use Redaxo\Core\Env;
@@ -18,11 +23,16 @@ use Symfony\Component\Mime\Email;
 use Symfony\Component\Mime\RawMessage;
 use Throwable;
 
+use function array_slice;
 use function count;
+use function dirname;
+use function function_exists;
 use function is_dir;
 use function is_file;
-
 use function Redaxo\Core\View\escape;
+use function strlen;
+
+use const ICONV_MIME_DECODE_CONTINUE_ON_ERROR;
 
 /**
  * Baustein „Mail“: alles, was fluid mit dem Mailer des Cores macht (Redaxo\Core\Mailer, Symfony Mailer).
@@ -103,7 +113,7 @@ final class Mail
             return [];
         }
         $files = [];
-        foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS)) as $f) {
+        foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir, FilesystemIterator::SKIP_DOTS)) as $f) {
             if ($f->isFile() && str_starts_with($f->getFilename(), 'not_sent_') && str_ends_with($f->getFilename(), '.eml')) {
                 $files[$f->getPathname()] = $f->getMTime();
             }
@@ -150,7 +160,7 @@ final class Mail
         } catch (Throwable $e) {
             return $e->getMessage();
         }
-        File::move($file, \dirname($file) . '/' . substr(basename($file), \strlen('not_sent_')));
+        File::move($file, dirname($file) . '/' . substr(basename($file), strlen('not_sent_')));
 
         return '';
     }
@@ -187,7 +197,7 @@ final class Mail
 
     private static function relative(string $file): string
     {
-        return ltrim(substr($file, \strlen(MailArchive::folder())), '/');
+        return ltrim(substr($file, strlen(MailArchive::folder())), '/');
     }
 
     /** Pfad im Archiv – nur echte not_sent_*.eml unterhalb des Archivs */
@@ -218,13 +228,13 @@ final class Mail
         $name = Settings::name();
         $logo = (string) Settings::get('logo', '');
         // SVG zeigen Gmail und Outlook in Mails nicht an – dann der Name als Schriftzug
-        $logoUrl = '' !== $logo && !str_ends_with(strtolower($logo), '.svg') && ($m = Media::get($logo)) ? \Klxm\Fluid\Routing\Router::absolute($m->getUrl()) : '';
+        $logoUrl = '' !== $logo && !str_ends_with(strtolower($logo), '.svg') && ($m = Media::get($logo)) ? Router::absolute($m->getUrl()) : '';
         $brand = '' !== $logoUrl
             ? '<img src="' . escape($logoUrl) . '" alt="' . escape($name) . '" height="40" style="display:block;height:40px;width:auto;border:0">'
             : '<span style="font:700 20px/1.2 Arial,Helvetica,sans-serif;color:' . $ink . '">' . escape($name) . '</span>';
         $address = implode(' · ', array_filter([trim((string) Settings::get('street', '')), trim(Settings::get('zip', '') . ' ' . Settings::get('city', '')), trim((string) Settings::get('phone', '')), trim((string) Settings::get('email', ''))]));
         $imprint = trim((string) Settings::get('imprint_page', ''));
-        $imprintUrl = '' !== $imprint && function_exists('link_href') ? \Klxm\Fluid\Routing\Router::absolute(link_href($imprint)) : '';
+        $imprintUrl = '' !== $imprint && function_exists('link_href') ? Router::absolute(link_href($imprint)) : '';
         $font = 'font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif';
 
         // kein <title>: der Textteil entsteht aus dem HTML (strip_tags) und hätte ihn sonst doppelt
@@ -258,6 +268,6 @@ final class Mail
             return 'Aufbewahrung unbegrenzt – nichts gelöscht.';
         }
 
-        return MailArchive::purge(new \DateTimeImmutable('-' . $days . ' days')) . ' archivierte Mails gelöscht (älter als ' . $days . ' Tage).';
+        return MailArchive::purge(new DateTimeImmutable('-' . $days . ' days')) . ' archivierte Mails gelöscht (älter als ' . $days . ' Tage).';
     }
 }

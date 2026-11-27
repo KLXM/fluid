@@ -2,6 +2,9 @@
 
 namespace Klxm\Fluid\Kit\Native;
 
+use FilesystemIterator;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 use RuntimeException;
 use ZipArchive;
 
@@ -11,9 +14,17 @@ use function count;
 use function dirname;
 use function file_get_contents;
 use function file_put_contents;
+use function in_array;
+use function is_array;
 use function is_dir;
 use function is_file;
+use function is_resource;
 use function sha1_file;
+use function strlen;
+
+use const ARRAY_FILTER_USE_KEY;
+use const GLOB_ONLYDIR;
+use const PREG_SET_ORDER;
 
 /**
  * Aktualisiert NativeCSS im Kit „NativeCSS“ (`assets/ncss/`) aus einer Arbeitskopie oder einem Release von
@@ -56,7 +67,7 @@ final class NcssUpdate
 
     /** Komponenten von NativeCSS, die fluid (noch) nicht verwendet – nicht im Manifest, die Dateien liegen trotzdem bereit */
     public const array UNUSED = [
-        'components/livesearch.css', 'components/scroll-video.css', 'components/scroll-frames.css', 
+        'components/livesearch.css', 'components/scroll-video.css', 'components/scroll-frames.css',
         'components/video-text.css', 'components/video-float.css', 'components/video-card.css', 'components/theme-toggle.css',
         'components/lightbox.css', 'components/subnav.css', 'components/spotlight.css', 'components/expand-panels.css',
         'components/command-palette.css', 'components/hovercard.css', 'components/notification.css', 'components/aurora.css',
@@ -90,7 +101,9 @@ final class NcssUpdate
     private array $cleanup = [];
 
     /** @param string $assets Ordner `assets` des Kits (enthält `ncss/` und `css/`) */
-    public function __construct(private readonly string $assets) {}
+    public function __construct(
+        private readonly string $assets,
+    ) {}
 
     public function __destruct()
     {
@@ -279,7 +292,7 @@ final class NcssUpdate
     private static function list(string $dir): array
     {
         $out = [];
-        $it = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS));
+        $it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir, FilesystemIterator::SKIP_DOTS));
         foreach ($it as $f) {
             if ($f->isFile() && '.' !== $f->getFilename()[0]) {
                 $out[str_replace('\\', '/', substr($f->getPathname(), strlen($dir) + 1))] = $f->getPathname();
@@ -303,7 +316,7 @@ final class NcssUpdate
     private static function packageVersion(string $root): ?string
     {
         $json = is_file($root . '/package.json') ? json_decode((string) file_get_contents($root . '/package.json'), true) : null;
-        $v = \is_array($json) ? (string) ($json['version'] ?? '') : '';
+        $v = is_array($json) ? (string) ($json['version'] ?? '') : '';
 
         return 1 === preg_match('~^\d+\.\d+\.\d+[\w.+-]*$~', $v) ? $v : null;
     }
@@ -312,7 +325,7 @@ final class NcssUpdate
     private static function run(array $cmd): string
     {
         $p = proc_open($cmd, [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes);
-        if (!\is_resource($p)) {
+        if (!is_resource($p)) {
             throw new RuntimeException('Befehl lässt sich nicht starten: ' . $cmd[0]);
         }
         $out = (string) stream_get_contents($pipes[1]);
@@ -339,7 +352,7 @@ final class NcssUpdate
         if (!is_dir($dir)) {
             return;
         }
-        $it = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS), \RecursiveIteratorIterator::CHILD_FIRST);
+        $it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir, FilesystemIterator::SKIP_DOTS), RecursiveIteratorIterator::CHILD_FIRST);
         foreach ($it as $f) {
             $f->isDir() ? rmdir($f->getPathname()) : unlink($f->getPathname());
         }

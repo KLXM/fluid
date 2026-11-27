@@ -2,15 +2,19 @@
 
 namespace Klxm\Fluid;
 
+use Klxm\Fluid\Routing\Router;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\ArticleHandler;
 use Redaxo\Core\Core;
-use Redaxo\Core\Database\Sql;
+use Redaxo\Core\Filesystem\Url;
 use Redaxo\Core\Http\Request;
+use Redaxo\Core\Http\Response;
 use Redaxo\Core\Language\Language;
 use Redaxo\Core\Security\CsrfToken;
+use RuntimeException;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
+use Throwable;
 
 use function Redaxo\Core\View\escape;
 
@@ -21,17 +25,17 @@ use function Redaxo\Core\View\escape;
  */
 final class Welcome
 {
+    private const string CSRF = 'fluid_welcome';
+
     /** Noch keine Startseite (frische Installation): „Erste Schritte“ statt Fehler – Endpunkte (Sitemap, Proxy …) bleiben erreichbar */
     public static function boot(): void
     {
-        \Klxm\Fluid\Routing\Router::gate(static function (string $path): void {
-            if (self::needed() && !\Klxm\Fluid\Routing\Router::isEndpoint($path)) {
+        Router::gate(static function (string $path): void {
+            if (self::needed() && !Router::isEndpoint($path)) {
                 self::handle();
             }
         });
     }
-
-    private const string CSRF = 'fluid_welcome';
 
     public static function needed(): bool
     {
@@ -54,7 +58,7 @@ final class Welcome
                     }
                     header('Location: ' . Core::getRequest()->getBasePath() . '/?' . Editing::PARAM . '=1', true, 303);
                     exit;
-                } catch (\Throwable $e) {
+                } catch (Throwable $e) {
                     $msg = 'Das hat nicht geklappt: ' . $e->getMessage();
                 }
             }
@@ -69,7 +73,7 @@ final class Welcome
             header('Retry-After: 3600');
         }
         $name = escape(Settings::name() ?: 'REDAXO');
-        $backend = escape(\Redaxo\Core\Filesystem\Url::backendController());
+        $backend = escape(Url::backendController());
         $body = $admin
             ? '<h1>Willkommen bei fluid</h1><p>Die Website hat noch keine Seiten. Wie möchten Sie anfangen?</p>'
                 . ('' !== $msg ? '<p class="err">' . escape($msg) . '</p>' : '')
@@ -81,7 +85,7 @@ final class Welcome
             : '<h1>' . $name . '</h1><p>Diese Website wird gerade eingerichtet.</p>'
                 . '<p class="small"><a href="' . $backend . '">Anmelden</a></p>';
         echo '<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex">'
-            . '<title>' . $name . '</title><style nonce="' . \Redaxo\Core\View\escape(\Redaxo\Core\Http\Response::getNonce()) . '">'
+            . '<title>' . $name . '</title><style nonce="' . \Redaxo\Core\View\escape(Response::getNonce()) . '">'
             . 'body{margin:0;min-height:100vh;display:grid;place-items:center;font:16px/1.55 system-ui,sans-serif;background:#f6f7fb;color:#1c1d26}'
             . 'main{max-width:34rem;margin:1rem;padding:2.25rem;background:#fff;border-radius:16px;box-shadow:0 10px 40px rgb(20 20 50/.08)}'
             . 'h1{margin:0 0 .5rem;font-size:1.6rem;letter-spacing:-.01em}form{display:flex;flex-wrap:wrap;gap:.6rem;margin:1.25rem 0}'
@@ -112,7 +116,7 @@ final class Welcome
         $cmd = new Console\DemoCommand();
         $code = $cmd->run(new ArrayInput(['--set' => 'redaxo6']), $out);
         if (0 !== $code) {
-            throw new \RuntimeException(trim(strip_tags($out->fetch())) ?: 'Beispielseiten konnten nicht angelegt werden.');
+            throw new RuntimeException(trim(strip_tags($out->fetch())) ?: 'Beispielseiten konnten nicht angelegt werden.');
         }
         Routing\Routes::rebuild();
     }

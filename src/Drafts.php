@@ -4,7 +4,9 @@ namespace Klxm\Fluid;
 
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\ArticleRevision;
+use Redaxo\Core\Content\StructurePermission;
 use Redaxo\Core\Database\Sql;
+use Redaxo\Core\Security\User;
 
 /**
  * Entwürfe-Übersicht (Modell aus KLXM Studio – Core\Review\Drafts): Seiten, deren Arbeitsversion vom Live-Stand abweicht
@@ -13,7 +15,7 @@ use Redaxo\Core\Database\Sql;
 final class Drafts
 {
     /** @return list<array{id: int, name: string, url: string, changed: string, user: string}> */
-    public static function all(int $languageId, ?\Redaxo\Core\Security\User $user = null): array
+    public static function all(int $languageId, ?User $user = null): array
     {
         if (ArticleRevision::LIVE === FluidAddon::revision()) {
             return [];
@@ -40,7 +42,7 @@ final class Drafts
             $a = Article::get($id, $languageId);
             // nur Seiten, auf die der Benutzer Strukturrechte hat
             $perm = $user?->getComplexPerm('structure');
-            if ($a && $user && !$user->admin && !($perm instanceof \Redaxo\Core\Content\StructurePermission && $perm->hasCategoryPerm($a->categoryId))) {
+            if ($a && $user && !$user->admin && !($perm instanceof StructurePermission && $perm->hasCategoryPerm($a->categoryId))) {
                 continue;
             }
             if ($a) {

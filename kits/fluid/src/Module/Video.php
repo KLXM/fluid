@@ -3,11 +3,18 @@
 namespace Klxm\Fluid\Kit\Fluid\Module;
 
 use Klxm\Fluid\Field\AsBlock;
-use Klxm\Fluid\Field\{Checkbox, Choice, Collection, MediaPicker, RichText, Text, Textarea, Url};
+use Klxm\Fluid\Field\Checkbox;
+use Klxm\Fluid\Field\Choice;
+use Klxm\Fluid\Field\Collection;
+use Klxm\Fluid\Field\MediaPicker;
+use Klxm\Fluid\Field\RichText;
+use Klxm\Fluid\Field\Text;
+use Klxm\Fluid\Field\Textarea;
+use Klxm\Fluid\Field\Url;
 use Klxm\Fluid\Kit\Fluid\FluidBlock;
-use Redaxo\Core\Content\AsModule;
 use Klxm\Fluid\Kit\Fluid\Module\Item\AudioTrack;
 use Klxm\Fluid\Kit\Fluid\Module\Item\VideoTrack;
+use Redaxo\Core\Content\AsModule;
 use Redaxo\Core\MediaPool\Media;
 
 #[AsModule('fluid.video', 'Video')]

@@ -2,6 +2,9 @@
 
 namespace Klxm\Fluid\Form;
 
+use Klxm\ImageEditor\ImageEditor;
+use Klxm\ImageEditor\ImageEditorAddon;
+use Klxm\VideoEditor\VideoEditor;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\Category;
 use Redaxo\Core\Language\Language;
@@ -31,10 +34,10 @@ final class Picker
         $media = '' !== $value ? Media::get($value) : null;
         $thumb = $media && in_array(strtolower($media->getExtension()), self::IMAGE_TYPES, true) ? '<img src="' . escape(self::thumb($media->fileName)) . '" alt="">' : '';
         // Addon image_editor: „Bearbeiten“ öffnet den Bildeditor (Zuschneiden, Drehen …) – API im jeweiligen Bereich
-        $ie = $images && class_exists(\Klxm\ImageEditor\ImageEditorAddon::class) ? \Klxm\ImageEditor\ImageEditorAddon::config() : null;
+        $ie = $images && class_exists(ImageEditorAddon::class) ? ImageEditorAddon::config() : null;
         // Addon video_editor: „Video bearbeiten“ öffnet das Video im Medienpool (Optimieren, Poster …) – nur mit Recht
-        $ve = !$images && (null === $types || [] !== array_intersect($types, self::VIDEO_TYPES)) && class_exists(\Klxm\VideoEditor\VideoEditor::class)
-            ? \Klxm\VideoEditor\VideoEditor::editUrlTemplate() : null;
+        $ve = !$images && (null === $types || [] !== array_intersect($types, self::VIDEO_TYPES)) && class_exists(VideoEditor::class)
+            ? VideoEditor::editUrlTemplate() : null;
 
         return '<div class="blocks-pick blocks-pick--media" data-blocks-pick="media" data-types="' . escape(implode(',', $types ?? [])) . '" data-preview="' . escape($preview) . '"'
             . ($ie ? ' data-ie-api="' . escape($ie['api']) . '" data-ie-js="' . escape($ie['js']) . '" data-ie-css="' . escape($ie['css']) . '"' : '')
@@ -61,8 +64,8 @@ final class Picker
     /** Vorschaubild (mit Addon image_editor die bearbeitete Fassung) */
     public static function thumb(string $file): string
     {
-        return class_exists(\Klxm\ImageEditor\ImageEditor::class)
-            ? \Klxm\ImageEditor\ImageEditor::url($file, 320)
+        return class_exists(ImageEditor::class)
+            ? ImageEditor::url($file, 320)
             : MediaManager::getUrl('rex_media_small', $file);
     }
 

@@ -2,9 +2,12 @@
 
 namespace Klxm\Fluid\Kit\Fluid;
 
-use Klxm\Fluid\VideoLinks;
 use Klxm\Fluid\BlockModule;
+use Klxm\Fluid\Data\MenuEntries;
+use Klxm\Fluid\Data\YFormBridge;
 use Klxm\Fluid\Kit;
+use Klxm\Fluid\Routing\Router;
+use Klxm\Fluid\VideoLinks;
 use Klxm\NavigationArray\Navigation;
 use Klxm\NavigationArray\NavigationItem;
 use Override;
@@ -14,6 +17,7 @@ use Redaxo\Core\Content\Category;
 use Redaxo\Core\Content\ContentSection;
 use Redaxo\Core\Content\Module;
 use Redaxo\Core\Content\Template;
+use Redaxo\Core\Language\Language;
 use Redaxo\Core\View\HasView;
 use Redaxo\Core\View\Renderer;
 
@@ -57,7 +61,7 @@ final class FluidTemplate extends Template
     {
         // Landing-Domain: Menü auf die Landingpage begrenzt (Unterseiten der Einstiegsseite, sonst keins)
         $start = 0;
-        if ($landing = \Klxm\Fluid\Routing\Router::landing()) {
+        if ($landing = Router::landing()) {
             if (!$landing->subtree || !Category::get((int) $landing->articleId)) {
                 return [];
             }
@@ -72,6 +76,6 @@ final class FluidTemplate extends Template
         $menu = array_map($map, new Navigation(start: $start, depth: $depth - 1)->items());
 
         // Einträge im Menü (Datenliste mit Detailansicht → „Einträge im Menü zeigen“): virtuelle Unterpunkte der Übersicht
-        return \Klxm\Fluid\Data\YFormBridge::available() ? \Klxm\Fluid\Data\MenuEntries::extend($menu, \Redaxo\Core\Language\Language::getCurrentId()) : $menu;
+        return YFormBridge::available() ? MenuEntries::extend($menu, Language::getCurrentId()) : $menu;
     }
 }

@@ -6,6 +6,7 @@ use Redaxo\Core\Database\Sql;
 use Redaxo\Core\Security\User;
 
 use function is_string;
+use function strlen;
 
 /**
  * Zugangsschlüssel für den MCP-Server (wie KLXM Studio: Core\Api\Tokens).

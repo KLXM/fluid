@@ -2,7 +2,16 @@
 
 namespace Klxm\Fluid\Glossary;
 
+use function count;
+use function in_array;
 use function Redaxo\Core\View\escape;
+use function strlen;
+
+use const ENT_HTML5;
+use const ENT_NOQUOTES;
+use const ENT_QUOTES;
+use const PHP_URL_HOST;
+use const PREG_SPLIT_DELIM_CAPTURE;
 
 /**
  * Übernommen aus KLXM Studio (Core\Glossary\Annotator, MIT) – unverändert bis auf Namespace und Escaping.
@@ -64,15 +73,19 @@ final class Annotator
     /**
      * $o: mode (page|section), headings (0–6: h1…hN überspringen, Standard 3), exclude (Liste von Begriffs-IDs),
      *     labels ([more, close, draft]), prefix (ID-Präfix, Standard „gl-“), main (null = automatisch: nur in <main>, falls vorhanden),
-     *     lang (Sprache der Seite für die Wortendungen, Standard „de“)
+     *     lang (Sprache der Seite für die Wortendungen, Standard „de“).
      */
-    public function __construct(array $terms, private array $o = [])
-    {
+    public function __construct(
+        array $terms,
+        private array $o = [],
+    ) {
         $this->o += ['mode' => 'page', 'headings' => 3, 'exclude' => [], 'labels' => [], 'prefix' => 'gl-', 'main' => null, 'lang' => 'de'];
         $this->o['labels'] += ['more' => 'Mehr im Glossar', 'close' => 'Schließen', 'draft' => 'Entwurf'];
         $exclude = array_map('intval', (array) $this->o['exclude']);
         foreach ($terms as $t) {
-            if (in_array((int) $t['id'], $exclude, true) || trim((string) ($t['short'] ?? '')) === '') continue;
+            if (in_array((int) $t['id'], $exclude, true) || '' === trim((string) ($t['short'] ?? ''))) {
+                continue;
+            }
             $this->byId[(int) $t['id']] = $t;
         }
         $this->rx = self::pattern(array_values($this->byId), (string) $this->o['lang']);
@@ -85,12 +98,16 @@ final class Annotator
         foreach ($terms as $t) {
             foreach (self::variants($t) as $v) {
                 [$src, $len] = self::alternative($v, $lang);
-                if ($src === '') continue;
+                if ('' === $src) {
+                    continue;
+                }
                 $alts[] = [$len, $src . '(*MARK:' . (int) $t['id'] . ')'];
             }
         }
-        if (!$alts) return null;
-        usort($alts, fn($a, $b) => $b[0] <=> $a[0]);
+        if (!$alts) {
+            return null;
+        }
+        usort($alts, static fn ($a, $b) => $b[0] <=> $a[0]);
         $alts = array_unique(array_column($alts, 1));
         // Linke Grenze: kein Buchstabe/Ziffer davor, auch kein Teil einer Adresse (.@/:) oder Entity (&); rechts ebenso (Satzpunkt erlaubt)
         return '~(?<![\p{L}\p{N}_@./:&=\\\\])(?:' . implode('|', $alts) . ')(?![\p{L}\p{N}_@=]|[.:/][\p{L}\p{N}])~u';
@@ -102,11 +119,15 @@ final class Annotator
         $out = [];
         foreach ([(string) $t['term'], ...array_map('strval', (array) ($t['variants'] ?? []))] as $v) {
             $v = trim((string) preg_replace('~\s+~u', ' ', $v));
-            if ($v !== '' && !in_array($v, $out, true)) $out[] = $v;
+            if ('' !== $v && !in_array($v, $out, true)) {
+                $out[] = $v;
+            }
         }
         // "Wort" in Anführungszeichen ersetzt dasselbe Wort ohne (auch den Begriff selbst): nur genaue Schreibweise
         foreach ($out as $v) {
-            if (preg_match('~^["„“](.+)["“”]$~u', $v, $m)) $out = array_values(array_filter($out, fn($x) => $x === $v || mb_strtolower($x) !== mb_strtolower(trim($m[1]))));
+            if (preg_match('~^["„“](.+)["“”]$~u', $v, $m)) {
+                $out = array_values(array_filter($out, static fn ($x) => $x === $v || mb_strtolower($x) !== mb_strtolower(trim($m[1]))));
+            }
         }
         return $out;
     }
@@ -118,7 +139,9 @@ final class Annotator
     public static function caseSensitive(string $v): bool
     {
         foreach (preg_split('~[\s\-/]+~u', $v) ?: [] as $w) {
-            if (preg_match_all('~\p{Lu}~u', $w) >= 2 || preg_match('~\p{Ll}\p{Lu}~u', $w)) return true;
+            if (preg_match_all('~\p{Lu}~u', $w) >= 2 || preg_match('~\p{Ll}\p{Lu}~u', $w)) {
+                return true;
+            }
         }
         return false;
     }
@@ -126,7 +149,7 @@ final class Annotator
     /** Sprache mit englischen statt deutschen Wortendungen? (en, en-gb …) */
     public static function english(string $lang): bool
     {
-        return $lang === 'en' || str_starts_with($lang, 'en-');
+        return 'en' === $lang || str_starts_with($lang, 'en-');
     }
 
     /** Teil-Ausdruck einer Variante: [Quelle, Länge] */
@@ -137,7 +160,9 @@ final class Annotator
             $v = trim($m[1]);
             $exact = true;
         }
-        if (mb_strlen($v) < 2) return ['', 0];
+        if (mb_strlen($v) < 2) {
+            return ['', 0];
+        }
         $cs = $exact || self::caseSensitive($v);
         // Im HTML stehen &, <, > als Entity; Leerraum darf auch ein geschütztes Leerzeichen sein
         $src = preg_quote(htmlspecialchars($v, ENT_NOQUOTES | ENT_HTML5, 'UTF-8'), '~');
@@ -147,12 +172,18 @@ final class Annotator
         $words = preg_split('~[\s\-/]+~u', $v) ?: [''];
         $last = (string) end($words);
         if (!$exact) {
-            if (preg_match('~\p{Lu}$~u', $v) && preg_match_all('~\p{Lu}~u', $last) >= 2) $suffix = '(?:s)?';
-            elseif (mb_strlen($last) >= 4 && preg_match('~\p{Ll}$~u', $v) && !preg_match('~\p{Ll}\p{Lu}~u', $last)) {
-                if (!self::english($lang)) $suffix = self::SUFFIX_WORD;
+            if (preg_match('~\p{Lu}$~u', $v) && preg_match_all('~\p{Lu}~u', $last) >= 2) {
+                $suffix = '(?:s)?';
+            } elseif (mb_strlen($last) >= 4 && preg_match('~\p{Ll}$~u', $v) && !preg_match('~\p{Ll}\p{Lu}~u', $last)) {
+                if (!self::english($lang)) {
+                    $suffix = self::SUFFIX_WORD;
+                }
                 // Englisch: entry → entries (Konsonant + y), sonst -s/-es
-                elseif (preg_match('~[^aeiouy]y$~iu', $last)) $src = substr($src, 0, -1) . '(?:y|ies)';
-                else $suffix = self::SUFFIX_WORD_EN;
+                elseif (preg_match('~[^aeiouy]y$~iu', $last)) {
+                    $src = substr($src, 0, -1) . '(?:y|ies)';
+                } else {
+                    $suffix = self::SUFFIX_WORD_EN;
+                }
             }
         }
         return [($cs ? '(?:' . $src . ')' : '(?i:' . $src . ')') . $suffix, mb_strlen($v)];
@@ -165,21 +196,29 @@ final class Annotator
         $this->marked = [];
         $this->hits = [];
         $this->seen = [];
-        if ($this->rx === null || $html === '') return $html;
+        if (null === $this->rx || '' === $html) {
+            return $html;
+        }
         // Nur der <body> (Kopf, JSON-LD, Meta-Angaben bleiben unberührt)
         $start = 0;
         $end = strlen($html);
         if (($b = stripos($html, '<body')) !== false) {
             $start = (int) strpos($html, '>', $b) + 1;
             $close = strripos($html, '</body>');
-            $end = $close !== false && $close > $start ? $close : $end;
+            $end = false !== $close && $close > $start ? $close : $end;
         }
         $body = substr($html, $start, $end - $start);
         // Schon markierte Begriffe (zweiter Durchlauf, z. B. Erweiterung + Kern) gelten als gesehen – nie doppelt
         if (str_contains($body, 'class="gl" data-gl="') && preg_match_all('~class="gl" data-gl="([^"]+)"~', $body, $done)) {
             $keys = array_flip($done[1]);
-            foreach ($this->byId as $id => $t) if (isset($keys[escape((string) $t['key'])])) $this->seen[$id] = true;
-            if (preg_match_all('~id="' . preg_quote((string) $this->o['prefix'], '~') . '(\d+)"~', $body, $ids)) $this->n = max($this->n, ...array_map('intval', $ids[1]));
+            foreach ($this->byId as $id => $t) {
+                if (isset($keys[escape((string) $t['key'])])) {
+                    $this->seen[$id] = true;
+                }
+            }
+            if (preg_match_all('~id="' . preg_quote((string) $this->o['prefix'], '~') . '(\d+)"~', $body, $ids)) {
+                $this->n = max($this->n, ...array_map('intval', $ids[1]));
+            }
         }
         $main = $this->o['main'] ?? (bool) preg_match('~<main[\s>]~i', $body);
         $out = $this->walk($body, $main);
@@ -196,18 +235,29 @@ final class Annotator
         $out = '';
         $parts = preg_split(self::RAW, $body, -1, PREG_SPLIT_DELIM_CAPTURE) ?: [$body];
         foreach ($parts as $i => $part) {
-            if ($i % 3 === 2) continue;                       // Name des Rohtext-Elements (Gruppe 2)
-            if ($i % 3 === 1) { $out .= $part; continue; }   // Rohtext-Bereich unverändert
+            if (2 === $i % 3) {
+                continue;
+            }                       // Name des Rohtext-Elements (Gruppe 2)
+            if (1 === $i % 3) {
+                $out .= $part;
+                continue;
+            }   // Rohtext-Bereich unverändert
             $tokens = preg_split('~(<[a-zA-Z/!?](?:[^>"\']|"[^"]*"|\'[^\']*\')*>)~', $part, -1, PREG_SPLIT_DELIM_CAPTURE) ?: [$part];
             foreach ($tokens as $j => $tok) {
-                if ($tok === '') continue;
-                if ($j % 2 === 1) {
+                if ('' === $tok) {
+                    continue;
+                }
+                if (1 === $j % 2) {
                     $out .= $tok;
-                    if (!preg_match('~^<(/?)([a-zA-Z][a-zA-Z0-9-]*)~', $tok, $m)) continue;   // Kommentar, Doctype
+                    if (!preg_match('~^<(/?)([a-zA-Z][a-zA-Z0-9-]*)~', $tok, $m)) {
+                        continue;
+                    }   // Kommentar, Doctype
                     $name = strtolower($m[2]);
-                    if ($m[1] === '/') {
-                        for ($k = count($stack) - 1; $k >= 0; $k--) {
-                            if ($stack[$k][0] !== $name) continue;
+                    if ('/' === $m[1]) {
+                        for ($k = count($stack) - 1; $k >= 0; --$k) {
+                            if ($stack[$k][0] !== $name) {
+                                continue;
+                            }
                             while (count($stack) > $k) {
                                 [, $s, $mn, $ar] = array_pop($stack);
                                 $skip -= $s ? 1 : 0;
@@ -218,7 +268,9 @@ final class Annotator
                         }
                         continue;
                     }
-                    if (in_array($name, self::VOID, true) || str_ends_with($tok, '/>')) continue;
+                    if (in_array($name, self::VOID, true) || str_ends_with($tok, '/>')) {
+                        continue;
+                    }
                     // Optional geschlossene Elemente (<p>, <li> …) – das offene gleichartige Element endet hier
                     if (isset(self::AUTO_CLOSE[$name]) && $stack && in_array($stack[count($stack) - 1][0], self::AUTO_CLOSE[$name], true)) {
                         [, $s, $mn, $ar] = array_pop($stack);
@@ -226,17 +278,19 @@ final class Annotator
                         $inMain -= $mn ? 1 : 0;
                         $inArticle -= $ar ? 1 : 0;
                     }
-                    $isMain = $name === 'main' || preg_match('~\srole\s*=\s*["\']?main\b~i', $tok);
+                    $isMain = 'main' === $name || preg_match('~\srole\s*=\s*["\']?main\b~i', $tok);
                     $isArticle = in_array($name, ['main', 'article', 'section', 'aside'], true);
                     $s = $this->skips($name, $tok, $maxH, $inArticle > 0);
                     $stack[] = [$name, $s, (bool) $isMain, $isArticle];
                     $skip += $s ? 1 : 0;
                     $inMain += $isMain ? 1 : 0;
                     $inArticle += $isArticle ? 1 : 0;
-                    if ($this->o['mode'] === 'section' && in_array($name, ['section', 'article'], true)) $this->seen = [];
+                    if ('section' === $this->o['mode'] && in_array($name, ['section', 'article'], true)) {
+                        $this->seen = [];
+                    }
                     continue;
                 }
-                $out .= ($skip === 0 && (!$mainOnly || $inMain > 0)) ? $this->text($tok) : $tok;
+                $out .= (0 === $skip && (!$mainOnly || $inMain > 0)) ? $this->text($tok) : $tok;
             }
         }
         return $out;
@@ -245,24 +299,48 @@ final class Annotator
     /** Wird ein Element übersprungen? */
     private function skips(string $name, string $tag, int $maxH, bool $inContent): bool
     {
-        if (in_array($name, self::SKIP_TAGS, true)) return true;
-        if ($maxH > 0 && preg_match('~^h([1-6])$~', $name, $h) && (int) $h[1] <= $maxH) return true;
+        if (in_array($name, self::SKIP_TAGS, true)) {
+            return true;
+        }
+        if ($maxH > 0 && preg_match('~^h([1-6])$~', $name, $h) && (int) $h[1] <= $maxH) {
+            return true;
+        }
         // Seitenkopf/-fuß – innerhalb von main/article/section sind header/footer Teil des Inhalts (z. B. Einleitung eines Blocks)
-        if (($name === 'header' || $name === 'footer') && !$inContent) return true;
-        if (!str_contains($tag, '=') && !preg_match('~\s(hidden|inert|contenteditable)\b~i', $tag)) return false;
-        if (preg_match('~\sdata-glossary\s*=\s*["\']?off\b~i', $tag)) return true;
-        if (preg_match('~\s(hidden|inert|contenteditable)(?=[\s=/>])~i', $tag)) return true;
-        if (preg_match('~\saria-hidden\s*=\s*["\']?true\b~i', $tag)) return true;
+        if (('header' === $name || 'footer' === $name) && !$inContent) {
+            return true;
+        }
+        if (!str_contains($tag, '=') && !preg_match('~\s(hidden|inert|contenteditable)\b~i', $tag)) {
+            return false;
+        }
+        if (preg_match('~\sdata-glossary\s*=\s*["\']?off\b~i', $tag)) {
+            return true;
+        }
+        if (preg_match('~\s(hidden|inert|contenteditable)(?=[\s=/>])~i', $tag)) {
+            return true;
+        }
+        if (preg_match('~\saria-hidden\s*=\s*["\']?true\b~i', $tag)) {
+            return true;
+        }
         if (preg_match('~\srole\s*=\s*["\']?([a-z]+)~i', $tag, $r)) {
             $role = strtolower($r[1]);
-            if (in_array($role, self::SKIP_ROLES, true)) return true;
-            if ($role === 'heading' && $maxH > 0 && (!preg_match('~aria-level\s*=\s*["\']?(\d)~', $tag, $lv) || (int) $lv[1] <= $maxH)) return true;
+            if (in_array($role, self::SKIP_ROLES, true)) {
+                return true;
+            }
+            if ('heading' === $role && $maxH > 0 && (!preg_match('~aria-level\s*=\s*["\']?(\d)~', $tag, $lv) || (int) $lv[1] <= $maxH)) {
+                return true;
+            }
         }
         if (preg_match('~\sclass\s*=\s*(?:"([^"]*)"|\'([^\']*)\'|([^\s>]+))~i', $tag, $c)) {
             $classes = preg_split('~\s+~', trim($c[1] . ($c[2] ?? '') . ($c[3] ?? ''))) ?: [];
-            if (array_intersect($classes, self::SKIP_CLASSES)) return true;
+            if (array_intersect($classes, self::SKIP_CLASSES)) {
+                return true;
+            }
             // Etiketten statt Fließtext: Dachzeilen, Schlagwörter, Badges (auch mit Präfix, z. B. cli-eyebrow, card__tag)
-            foreach ($classes as $c) if (preg_match(self::LABEL_CLASS, $c)) return true;
+            foreach ($classes as $c) {
+                if (preg_match(self::LABEL_CLASS, $c)) {
+                    return true;
+                }
+            }
         }
         return false;
     }
@@ -270,15 +348,21 @@ final class Annotator
     /** Textknoten: erstes Vorkommen noch nicht markierter Begriffe ersetzen */
     private function text(string $t): string
     {
-        if (!preg_match('~\p{L}{2}~u', $t)) return $t;
-        if ($this->o['mode'] !== 'section' && count($this->seen) >= count($this->byId)) return $t;
+        if (!preg_match('~\p{L}{2}~u', $t)) {
+            return $t;
+        }
+        if ('section' !== $this->o['mode'] && count($this->seen) >= count($this->byId)) {
+            return $t;
+        }
         return (string) preg_replace_callback($this->rx, function (array $m): string {
             $id = (int) ($m['MARK'] ?? 0);
-            if ($id === 0 || isset($this->seen[$id]) || !isset($this->byId[$id])) return $m[0];
+            if (0 === $id || isset($this->seen[$id]) || !isset($this->byId[$id])) {
+                return $m[0];
+            }
             $this->seen[$id] = true;
             $this->marked[$id] = true;
             $this->hits[$id] ??= html_entity_decode($m[0], ENT_QUOTES | ENT_HTML5, 'UTF-8');
-            $this->count++;
+            ++$this->count;
             return $this->markup($this->byId[$id], $m[0]);
         }, $t);
     }
@@ -293,7 +377,7 @@ final class Annotator
         $src = (string) ($t['link'] ?? '');
         $more = !empty($t['url']) && ($t['more'] ?? true)
             ? '<a class="gl-pop__more" href="' . escape((string) $t['url']) . '">' . escape($l['more']) . ' <span aria-hidden="true">→</span></a>'
-            : ($src !== '' && self::safeLink($src)
+            : ('' !== $src && self::safeLink($src)
                 ? '<a class="gl-pop__more gl-pop__src" href="' . escape($src) . '" target="_blank" rel="noopener">' . escape(self::linkHost($src)) . ' <span aria-hidden="true">↗</span><span class="gl-sr"> ' . escape($l['newtab'] ?? '') . '</span></a>'
                 : '');
         return '<span class="gl" data-gl="' . escape((string) $t['key']) . '">'

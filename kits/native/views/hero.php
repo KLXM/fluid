@@ -1,4 +1,8 @@
 <?php
+
+use Klxm\Fluid\Block;
+use Klxm\Fluid\Kit;
+
 /**
  * Einstieg (H1) im Kit „NativeCSS“:
  *   split     Text neben Bild (.ncss-split, stapelt sich per Container Query)
@@ -7,11 +11,11 @@
  *   type      großer Schriftzug, Betonung *Wort* im Markenverlauf (.ncss-text-gradient-brand), Etikett als .ncss-badge
  *   fullbleed Bild/Video vollflächig mit Text darauf (.ncss-hero)
  * Übrige Varianten (cards, scale, collage, compare) kommen aus dem Kit fluid.
- * @var \Klxm\Fluid\Block $b  @var array $d
+ * @var Block $b  @var array $d
  */
 $v = $b->variant() ?: 'split';
 if (!in_array($v, ['split', 'centered', 'compact', 'type', 'fullbleed'], true)) {
-    require \Klxm\Fluid\Kit::get('fluid')->view('hero');
+    require Kit::get('fluid')->view('hero');
 
     return;
 }
@@ -46,7 +50,7 @@ if ('fullbleed' === $v):
 <div class="ncss-hero nv-hero nv-hero--bleed nv-hero--<?= e($overlay) ?>"<?= $vid ? ' data-hero-video-box' : '' ?>>
   <div class="ncss-hero-media" aria-hidden="true">
     <?= !empty($d['image']) ? img((string) $d['image'], '100vw', ['eager' => true, 'alt' => '']) : '' ?>
-    <?php if ($vid): ?><video class="nv-hero__video" data-hero-video muted loop playsinline preload="none" disablepictureinpicture tabindex="-1" aria-hidden="true"<?= $poster ? ' poster="' . e(media_url($poster, 1600)) . '"' : '' ?>><source data-src="<?= e(media_url($vid)) ?>" type="<?= e((string) $vid['mime']) ?>"></video><?php endif; ?>
+    <?php if ($vid): ?><video class="nv-hero__video" data-hero-video muted loop playsinline preload="none" disablepictureinpicture tabindex="-1" aria-hidden="true"<?= $poster ? ' poster="' . e(media_url($poster, 1600)) . '"' : '' ?>><source data-src="<?= e(media_url($vid)) ?>" type="<?= e((string) $vid['mime']) ?>"></video><?php endif ?>
   </div>
   <div class="ncss-hero-content ncss-hero-content--<?= 'gradient' === $overlay ? 'transparent' : 'filled' ?>">
     <?= $textHtml() ?>
@@ -65,7 +69,7 @@ if ('fullbleed' === $v):
   <div class="ncss-split-container">
     <div class="ncss-split nv-hero nv-hero--split<?= '' !== $media ? ' nv-hero--media' : '' ?>">
       <div class="ncss-split-content nv-hero__text"><?= $textHtml() ?></div>
-      <?php if ('' !== $media): ?><div class="ncss-split-media"><?= $media ?></div><?php endif; ?>
+      <?php if ('' !== $media): ?><div class="ncss-split-media"><?= $media ?></div><?php endif ?>
     </div>
   </div>
 </div>

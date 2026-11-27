@@ -2,8 +2,9 @@
 /**
  * Downloads – einzelne Dateien oder alle Dateien einer Medienkategorie (Medienpool). PDFs auf Wunsch mit „Ansehen“.
  * Aus KLXM Studio (dort mit PDF.js-Viewer und Sammlungen).
- * @var \Klxm\Fluid\Block $b  @var array $d
+ * @var Block $b  @var array $d
  */
+use Klxm\Fluid\Block;
 use Redaxo\Core\MediaPool\Media;
 use Redaxo\Core\MediaPool\MediaCategory;
 
@@ -16,7 +17,9 @@ if (($d['source'] ?? 'manual') === 'collection' && '' !== (string) ($d['collecti
 } else {
     foreach ($d['files'] as $i => $f) {
         $m = !empty($f['file']) ? Media::get((string) $f['file']) : null;
-        if (!$m && !is_editing()) continue;
+        if (!$m && !is_editing()) {
+        continue;
+        }
         $rows[] = ['m' => $m, 'label' => trim((string) ($f['label'] ?? '')) ?: ($m ? ($m->title ?: $m->originalFileName) : '[Datei wählen]'),
             'note' => (string) ($f['note'] ?? ''), 'path' => "files.$i.label"];
     }
@@ -26,8 +29,10 @@ if (($d['source'] ?? 'manual') === 'collection' && '' !== (string) ($d['collecti
   <?= fluid_head($b) ?>
   <?php if ($rows): ?>
   <ul class="downloads" role="list">
-    <?php foreach ($rows as $row): $m = $row['m']; $type = $m ? strtoupper($m->getExtension()) : '–'; $pdf = $m && 'application/pdf' === $m->type;
-        $meta = $m ? $type . ' · ' . $m->getFormattedSize() : ''; ?>
+    <?php foreach ($rows as $row): $m = $row['m'];
+    $type = $m ? strtoupper($m->getExtension()) : '–';
+    $pdf = $m && 'application/pdf' === $m->type;
+        $meta = $m ? $type . ' · ' . $m->getFormattedSize() : '' ?>
     <li class="download">
       <span class="download__type" aria-hidden="true"><?= e($type) ?></span>
       <span class="download__main">
@@ -36,12 +41,12 @@ if (($d['source'] ?? 'manual') === 'collection' && '' !== (string) ($d['collecti
       </span>
       <?php if ($m): ?>
       <span class="download__actions">
-        <?php if ($pdf && !empty($d['show_viewer'])): ?><a class="download__view" href="<?= e($m->getUrl()) ?>" target="_blank" rel="noopener"><?= e(lt('Ansehen')) ?><span class="sr-only">: <?= e(strip_emphasis((string) $row['label'])) ?> <?= e(lt('(öffnet in neuem Tab)')) ?></span></a><?php endif; ?>
+        <?php if ($pdf && !empty($d['show_viewer'])): ?><a class="download__view" href="<?= e($m->getUrl()) ?>" target="_blank" rel="noopener"><?= e(lt('Ansehen')) ?><span class="sr-only">: <?= e(strip_emphasis((string) $row['label'])) ?> <?= e(lt('(öffnet in neuem Tab)')) ?></span></a><?php endif ?>
         <a class="download__dl" href="<?= e($m->getUrl()) ?>" download><?= icon('download-simple') ?><span class="sr-only"><?= e(lt('{name} herunterladen ({info})', ['name' => strip_emphasis((string) $row['label']), 'info' => $meta])) ?></span></a>
       </span>
-      <?php endif; ?>
+      <?php endif ?>
     </li>
-    <?php endforeach; ?>
+    <?php endforeach ?>
   </ul>
-  <?php elseif (is_editing()): ?><p class="empty-hint">Noch keine Dateien – in der Seitenleiste Dateien oder eine Medienkategorie wählen.</p><?php endif; ?>
+  <?php elseif (is_editing()): ?><p class="empty-hint">Noch keine Dateien – in der Seitenleiste Dateien oder eine Medienkategorie wählen.</p><?php endif ?>
 </div>

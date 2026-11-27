@@ -3,7 +3,14 @@
 namespace Klxm\Fluid\Kit\Fluid\Module;
 
 use Klxm\Fluid\Field\AsBlock;
-use Klxm\Fluid\Field\{Checkbox, Choice, ListTemplate, Number, Text, Textarea, YFormField, YFormTable};
+use Klxm\Fluid\Field\Checkbox;
+use Klxm\Fluid\Field\Choice;
+use Klxm\Fluid\Field\ListTemplate;
+use Klxm\Fluid\Field\Number;
+use Klxm\Fluid\Field\Text;
+use Klxm\Fluid\Field\Textarea;
+use Klxm\Fluid\Field\YFormField;
+use Klxm\Fluid\Field\YFormTable;
 use Klxm\Fluid\Kit\Fluid\FluidBlock;
 use Redaxo\Core\Content\AsModule;
 

@@ -10,6 +10,9 @@ use Redaxo\Core\MediaManager\MediaType;
 use Redaxo\Core\MediaManager\NegotiatesFormat;
 use Redaxo\Core\MediaManager\NegotiatesImageFormats;
 
+use function dirname;
+use function in_array;
+
 /**
  * Media-Manager-Typ „fluid_poster“: Vorschaubild für Videos. Bei einem Video holt ffmpeg ein typisches Standbild,
  * bei einem Bild wird nur verkleinert – so passt der Typ für automatische und gewählte Vorschaubilder.
@@ -30,9 +33,9 @@ final readonly class PosterType implements MediaType, NegotiatesFormat
 
     public function process(MediaContext $context): void
     {
-        if (\in_array($context->sourceFormat, self::VIDEO, true)) {
+        if (in_array($context->sourceFormat, self::VIDEO, true)) {
             $tmp = Path::addonCache('fluid', 'poster-' . bin2hex(random_bytes(6)) . '.jpg');
-            @mkdir(\dirname($tmp), 0775, true);
+            @mkdir(dirname($tmp), 0o775, true);
             try {
                 if (null === Ffmpeg::frame($context->sourcePath, $tmp, $this->maxSize)) {
                     throw new MediaNotFoundException('No video frame (ffmpeg missing or failed).');

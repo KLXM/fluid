@@ -3,10 +3,10 @@
 namespace Klxm\Fluid\Field;
 
 use Attribute;
-use Redaxo\Core\Form\Field\Choice as CoreChoice;
-use Redaxo\Core\Form\ChoiceProvider;
-use Redaxo\Core\Translation\Translatable;
 use Closure;
+use Redaxo\Core\Form\ChoiceProvider;
+use Redaxo\Core\Form\Field\Choice as CoreChoice;
+use Redaxo\Core\Translation\Translatable;
 use Redaxo\Core\View\Renderable;
 
 /**

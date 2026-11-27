@@ -8,6 +8,7 @@ use Redaxo\Core\Filesystem\Url;
 
 use function array_key_exists;
 use function in_array;
+use function is_array;
 use function is_file;
 use function Redaxo\Core\View\escape;
 
@@ -26,7 +27,9 @@ final class Design
     /** @var array<string, array<string, mixed>> */
     private static array $values = [];
 
-    public function __construct(private readonly Kit $kit) {}
+    public function __construct(
+        private readonly Kit $kit,
+    ) {}
 
     public static function for(Kit $kit): self
     {
@@ -85,7 +88,7 @@ final class Design
     {
         foreach ($this->kit->lineage() as $kit) {
             $v = FluidAddon::instance()->getConfig('design.' . $kit->key());
-            if (\is_array($v) && [] !== $v) {
+            if (is_array($v) && [] !== $v) {
                 return $v;
             }
         }

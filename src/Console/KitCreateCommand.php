@@ -3,6 +3,7 @@
 namespace Klxm\Fluid\Console;
 
 use Klxm\Fluid\Kit;
+use Redaxo\Core\Cache;
 use Redaxo\Core\Console\AbstractCommand;
 use Redaxo\Core\Filesystem\File;
 use Redaxo\Core\Filesystem\Path;
@@ -131,7 +132,7 @@ final class KitCreateCommand extends AbstractCommand
         }
 
         // Klassen neu einlesen (ClassDiscovery), damit das Kit sofort in der Auswahl steht
-        \Redaxo\Core\Cache::delete();
+        Cache::delete();
 
         $io->success('Kit „' . $label . '“ angelegt: ' . Path::relative($dir));
         $io->listing(array_merge([

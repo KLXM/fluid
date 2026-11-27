@@ -1,4 +1,7 @@
 <?php
+
+use Klxm\Fluid\Kit\Native\NcssUpdate;
+
 /*
  * NativeCSS im Kit „NativeCSS“ aktualisieren – im Repo von fluid, ohne REDAXO (gleiche Logik wie `fluid:kit:ncss-update`).
  *
@@ -13,7 +16,7 @@ if (isset($o['help']) || (isset($o['from']) === isset($o['tag']))) {
     fwrite(STDERR, "php tools/ncss-update.php --from=/pfad/zu/nativecss [--ref=HEAD] [--dry-run]\nphp tools/ncss-update.php --tag=v1.2.0 [--dry-run]\n");
     exit(isset($o['help']) ? 0 : 2);
 }
-$up = new Klxm\Fluid\Kit\Native\NcssUpdate(dirname(__DIR__) . '/kits/native/assets');
+$up = new NcssUpdate(dirname(__DIR__) . '/kits/native/assets');
 try {
     isset($o['from']) ? $up->fromDirectory((string) $o['from'], (string) ($o['ref'] ?? '')) : $up->fromGithub((string) $o['tag']);
     $plan = $up->plan();

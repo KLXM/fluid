@@ -7,6 +7,8 @@ use Klxm\Fluid\Kit;
 use Override;
 use Redaxo\Core\Filesystem\Url;
 
+use function dirname;
+
 /**
  * Kit „fluid“: breakpointlos, für viele Projektarten (aus KLXM Studio). Grund-Kit, von dem alle anderen erben.
  * Seine Assets liegen im AddOn unter assets/kits/fluid/ und werden mit dem AddOn veröffentlicht.

@@ -17,6 +17,7 @@ use function array_keys;
 use function array_values;
 use function is_array;
 use function is_int;
+use function is_scalar;
 
 /**
  * Interne Werte eines Blocks, die kein Feld im Formular sind: Darstellung (`variant`), Abschnitts-Optionen (`tunes`) und
@@ -82,7 +83,7 @@ final class Stored extends Field
             return $stored;
         }
 
-        return \is_scalar($stored) ? (string) $stored : '';
+        return is_scalar($stored) ? (string) $stored : '';
     }
 
     /**

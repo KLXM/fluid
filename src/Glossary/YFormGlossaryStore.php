@@ -3,11 +3,19 @@
 namespace Klxm\Fluid\Glossary;
 
 use Klxm\Fluid\ApiError;
+use Klxm\Fluid\BlockData;
+use Klxm\Fluid\Data\FluidBlocks;
 use Klxm\Fluid\Data\RecordBlocks;
 use Klxm\Fluid\Data\YFormBridge;
 use Klxm\Fluid\Editing;
 use Klxm\Fluid\Routing\Routes;
 use Redaxo\Core\Security\User;
+use Throwable;
+use Yakamara\YForm\Data\Query;
+use Yakamara\YForm\Table\Table;
+
+use function count;
+use function in_array;
 
 /**
  * Glossar aus der YForm-Tabelle rex_fluid_glossary (GlossaryTable) – Standard-Datenquelle von Glossary. Ohne YForm ist
@@ -20,7 +28,7 @@ final class YFormGlossaryStore implements GlossaryStore
     /** @var array<string, list<array<string, mixed>>> */
     private array $cache = [];
 
-    private function table(): ?\Yakamara\YForm\Table\Table
+    private function table(): ?Table
     {
         return YFormBridge::table(self::TABLE);
     }
@@ -41,12 +49,12 @@ final class YFormGlossaryStore implements GlossaryStore
             return [];
         }
         try {
-            $q = $t::query()->whereAny(static fn (\Yakamara\YForm\Data\Query $g) => $g->whereIn('lang', ['', $language])->whereNull('lang'))->orderBy('term', 'ASC')->limit(3000);
+            $q = $t::query()->whereAny(static fn (Query $g) => $g->whereIn('lang', ['', $language])->whereNull('lang'))->orderBy('term', 'ASC')->limit(3000);
             if (!$all) {
                 $q->where('online', true);
             }
             $rows = iterator_to_array($q->find(), false);
-        } catch (\Throwable) {
+        } catch (Throwable) {
             return [];   // Tabelle noch nicht angelegt (vor migrate)
         }
         $out = [];
@@ -66,7 +74,7 @@ final class YFormGlossaryStore implements GlossaryStore
                 'id' => (int) $r->id, 'key' => $slug, 'term' => $term,
                 'short' => Glossary::short((string) $r->get('short')),
                 'variants' => Glossary::splitVariants((string) $r->get('variants')),
-                'long' => '' !== trim(\Klxm\Fluid\BlockData::text($r->get('text'))),
+                'long' => '' !== trim(BlockData::text($r->get('text'))),
                 'online' => (bool) $r->get('online'),
                 'language' => (string) ($r->get('lang') ?? ''),
             ];
@@ -84,7 +92,7 @@ final class YFormGlossaryStore implements GlossaryStore
         }
         $f = $t->getField('text');
 
-        return $f instanceof \Klxm\Fluid\Data\FluidBlocks ? RecordBlocks::render($t, $r, $f, $articleId) : '';
+        return $f instanceof FluidBlocks ? RecordBlocks::render($t, $r, $f, $articleId) : '';
     }
 
     public function create(string $term, string $short, array $variants, bool $online, string $language): int
@@ -100,7 +108,7 @@ final class YFormGlossaryStore implements GlossaryStore
         }
         $r = $t::create(['term' => mb_substr($term, 0, 120), 'short' => $short, 'variants' => implode("\n", $variants), 'online' => $online, 'lang' => $language]);
         $errors = $r->validate();
-        if (\count($errors) > 0) {
+        if (count($errors) > 0) {
             throw new ApiError('Nicht gespeichert: ' . implode(' ', $errors->all()));
         }
         $r->save();
@@ -115,7 +123,7 @@ final class YFormGlossaryStore implements GlossaryStore
         $r = $t::query()->where('id', $id)->first() ?? throw new ApiError('Begriff nicht gefunden.');
         $list = Glossary::splitVariants((string) $r->get('variants'));
         $variant = trim(strip_tags($variant));
-        if ('' === $variant || \in_array($variant, $list, true) || $variant === (string) $r->get('term')) {
+        if ('' === $variant || in_array($variant, $list, true) || $variant === (string) $r->get('term')) {
             return;
         }
         $list[] = $variant;

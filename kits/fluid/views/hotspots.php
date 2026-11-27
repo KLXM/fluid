@@ -1,12 +1,16 @@
 <?php
+
+use Klxm\Fluid\Block;
+use Klxm\Fluid\Hotspots;
+
 /**
  * Interaktives Bild (Klxm\Fluid\Hotspots): Bild mit nummerierten Knöpfen und Hinweisfenstern (<button popovertarget>), Flächen als
  * SVG, darunter die Liste aller Markierungen (Telefon sichtbar, sonst für Screenreader). Lage ohne style-Attribute (CSP).
  * Beim Bearbeiten öffnen die Knöpfe nichts (das Skript lädt nicht) – Markierungen setzt der Editor in der Seitenleiste.
- * @var \Klxm\Fluid\Block $b  @var array $d
+ * @var Block $b  @var array $d
  */
 $file = (string) ($d['image'] ?? '');
-$html = \Klxm\Fluid\Hotspots::render($file, $d['hotspots'] ?? null, [
+$html = Hotspots::render($file, $d['hotspots'] ?? null, [
     'label' => str_replace('*', '', trim((string) ($d['title'] ?? ''))),
     'id' => $b->domId() . '-hs',
     'list' => (string) ($d['list'] ?? 'auto'),
@@ -22,5 +26,5 @@ if ('' === $html && !is_editing()) {
   <div class="cms-hs-wrap<?= 'text' === ($d['width'] ?? '') ? ' cms-hs-wrap--text' : '' ?>"><?= $html ?></div>
   <?php else: ?>
   <p class="empty-hint">Noch kein Bild – in der Seitenleiste ein Bild wählen und Markierungen setzen.</p>
-  <?php endif; ?>
+  <?php endif ?>
 </div>

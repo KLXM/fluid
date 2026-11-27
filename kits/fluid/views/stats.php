@@ -3,17 +3,17 @@
 $v = $b->variant() ?: 'row';
 $items = array_values((array) ($d['items'] ?? []));
 ?>
-<div class="wrap<?= $v === 'split' ? ' stats-split' : '' ?>">
+<div class="wrap<?= 'split' === $v ? ' stats-split' : '' ?>">
   <?= fluid_head($b) ?>
   <?php if ($items): ?>
   <dl class="grid stats stats--<?= e($v) ?>">
     <?php foreach ($items as $i => $it): ?>
-    <div class="stat<?= $v === 'cards' ? ' card' : '' ?>" data-reveal>
+    <div class="stat<?= 'cards' === $v ? ' card' : '' ?>" data-reveal>
       <dt class="stat__label"<?= $b->edit("items.$i.label") ?>><?= e($it['label']) ?></dt>
       <dd class="stat__value"<?= $b->edit("items.$i.value") ?>><?= e($it['value']) ?></dd>
-      <?php if (($it['text'] ?? '') !== ''): ?><dd class="stat__text"<?= $b->edit("items.$i.text") ?>><?= e($it['text']) ?></dd><?php endif; ?>
+      <?php if (($it['text'] ?? '') !== ''): ?><dd class="stat__text"<?= $b->edit("items.$i.text") ?>><?= e($it['text']) ?></dd><?php endif ?>
     </div>
-    <?php endforeach; ?>
+    <?php endforeach ?>
   </dl>
-  <?php elseif (is_editing()): ?><p class="empty-hint">Noch keine Kennzahlen – in der Seitenleiste hinzufügen.</p><?php endif; ?>
+  <?php elseif (is_editing()): ?><p class="empty-hint">Noch keine Kennzahlen – in der Seitenleiste hinzufügen.</p><?php endif ?>
 </div>

@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Prüft, dass Klassen auf Basis optionaler Pakete (YForm) ohne diese Pakete nicht geladen werden – ohne REDAXO.
  *

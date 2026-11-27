@@ -2,9 +2,16 @@
 
 namespace Project\Block;
 
-use Klxm\Fluid\InlineStyle;
+use DateTimeImmutable;
 use Klxm\Fluid\Field\AsBlock;
-use Klxm\Fluid\Field\{Checkbox, Choice, DatePicker, Link, MediaPicker, Text, Textarea};
+use Klxm\Fluid\Field\Checkbox;
+use Klxm\Fluid\Field\Choice;
+use Klxm\Fluid\Field\DatePicker;
+use Klxm\Fluid\Field\Link;
+use Klxm\Fluid\Field\MediaPicker;
+use Klxm\Fluid\Field\Text;
+use Klxm\Fluid\Field\Textarea;
+use Klxm\Fluid\InlineStyle;
 use Klxm\Fluid\Kit\Fluid\FluidBlock;
 use Override;
 use Redaxo\Core\Content\AsModule;
@@ -37,7 +44,7 @@ final class Hinweis extends FluidBlock
     public bool $strong = false;
 
     #[DatePicker('Gültig bis', width: 'half')]
-    public ?\DateTimeImmutable $until = null;
+    public ?DateTimeImmutable $until = null;
 
     #[Link('Mehr dazu', width: 'half')]
     public string $link = '';
@@ -58,10 +65,10 @@ final class Hinweis extends FluidBlock
             $html .= '<p class="muted">Gültig bis ' . escape($this->until->format('d.m.Y')) . '</p>';
         }
         if ($this->image) {
-            $html .= \img($this->image->fileName, '24rem');
+            $html .= img($this->image->fileName, '24rem');
         }
         if ('' !== trim($this->link)) {
-            $html .= '<p><a ' . \fluid_link_attrs($this->link) . '>Mehr dazu →</a></p>';
+            $html .= '<p><a ' . fluid_link_attrs($this->link) . '>Mehr dazu →</a></p>';
         }
 
         return $html . '</aside></div>';

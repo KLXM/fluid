@@ -9,7 +9,7 @@ use Redaxo\Core\Content\ArticleRevision;
 use Redaxo\Core\Content\Category;
 use Redaxo\Core\Content\CategoryHandler;
 use Redaxo\Core\Content\ContentHandler;
-use Redaxo\Core\Database\Sql;
+use Redaxo\Core\Filesystem\Url;
 
 /**
  * Seitenvorlagen (Modell aus KLXM Studio – Core\PageTemplates): Vorlagen sind normale Seiten in der Offline-Kategorie
@@ -45,7 +45,7 @@ final class PageTemplates
             return [];
         }
 
-        return array_values(array_map(static fn (Article $a) => ['id' => $a->id, 'name' => $a->name, 'url' => \Redaxo\Core\Filesystem\Url::article($a->id, $languageId, [Editing::PARAM => 1])],
+        return array_values(array_map(static fn (Article $a) => ['id' => $a->id, 'name' => $a->name, 'url' => Url::article($a->id, $languageId, [Editing::PARAM => 1])],
             array_filter($cat->getArticles(false), static fn (Article $a) => !$a->isStartArticle())));
     }
 

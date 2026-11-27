@@ -2,6 +2,7 @@
 
 namespace Klxm\Fluid;
 
+use Redaxo\Core\Cache;
 use Redaxo\Core\Content\ArticleSliceHistory;
 use Redaxo\Core\Database\Sql;
 use Redaxo\Core\ExtensionPoint\Extension;
@@ -14,6 +15,7 @@ use function array_keys;
 use function array_merge;
 use function array_unique;
 use function array_values;
+use function count;
 use function implode;
 use function in_array;
 use function is_array;
@@ -22,6 +24,9 @@ use function json_decode;
 use function json_encode;
 use function sprintf;
 use function str_contains;
+
+use const JSON_UNESCAPED_SLASHES;
+use const JSON_UNESCAPED_UNICODE;
 
 /**
  * Geänderte Standardwerte von Blockfeldern: Bestehende Blöcke behalten ihr Aussehen (Vorbild KLXM Studio,
@@ -64,7 +69,7 @@ final class DefaultChanges
     }
 
     /**
-     * Regeln der übergebenen (Standard: aller) Änderungen zusammengefasst: [typ => [feld => wert]]
+     * Regeln der übergebenen (Standard: aller) Änderungen zusammengefasst: [typ => [feld => wert]].
      *
      * @param list<string>|null $ids
      * @return array<string, array<string, mixed>>
@@ -194,7 +199,7 @@ final class DefaultChanges
         if ($modules) {
             foreach (['slices' => 'rex_article_slice', 'history' => ArticleSliceHistory::getTable()] as $what => $table) {
                 try {
-                    $rows = Sql::factory()->getArray('SELECT id, module, data FROM ' . $table . ' WHERE module IN (' . implode(',', array_fill(0, \count($modules), '?')) . ')', $modules);
+                    $rows = Sql::factory()->getArray('SELECT id, module, data FROM ' . $table . ' WHERE module IN (' . implode(',', array_fill(0, count($modules), '?')) . ')', $modules);
                 } catch (Throwable) {
                     continue;   // Tabelle fehlt (z. B. Historie noch nicht angelegt)
                 }
@@ -229,7 +234,7 @@ final class DefaultChanges
         if (!$dry) {
             FluidAddon::instance()->setConfig(self::CONFIG, array_values(array_unique(array_merge(self::done(), $ids))));
             if ($count['slices'] + $count['history'] + $count['records']) {
-                \Redaxo\Core\Cache::delete();   // Inhalte neu aufbauen
+                Cache::delete();   // Inhalte neu aufbauen
             }
         }
         $log[] = sprintf('Blöcke: bisheriges Aussehen festgehalten (%s) – %d Slice(s), %d Version(en), %d Datensatz/Datensätze%s',

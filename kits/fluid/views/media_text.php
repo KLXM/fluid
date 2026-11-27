@@ -1,32 +1,41 @@
 <?php
+
+use Klxm\Fluid\Block;
+
 /**
  * Text + Bild. auto: wechselt die Seite, wenn der vorige Block auch „Text + Bild“ (abwechselnd) war · right/left ·
  * split: randlos 50/50 (Switcher: nebeneinander, solange beide Hälften ≥ 22 rem breit sind) · overlap: Karte über großem Bild.
- * @var \Klxm\Fluid\Block $b  @var array $d
+ * @var Block $b  @var array $d
  */
 $v = $b->variant() ?: 'auto';
 // Darstellungen anderer Kits (z. B. „Morphing“ im Kit NativeCSS) nach einem Kit-Wechsel: wie „Bild rechts“
-if (!in_array($v, ['auto', 'right', 'left', 'split', 'overlap'], true)) $v = 'right';
+if (!in_array($v, ['auto', 'right', 'left', 'split', 'overlap'], true)) {
+$v = 'right';
+}
 $ratio = (string) ($d['ratio'] ?? '') ?: '4:3';
 $side = $v;
 // Abwechselnd („auto“, ebenso „split“): Position in einer Folge gleichartiger Blöcke zählen
 $n = 0;
-for ($p = $b->prev; $p && $p->type === 'media_text' && ($p->data['variant'] ?? 'auto') === $v; $p = $p->prev) $n++;
-if ($v === 'auto') $side = $n % 2 ? 'left' : 'right';
+for ($p = $b->prev; $p && 'media_text' === $p->type && ($p->data['variant'] ?? 'auto') === $v; $p = $p->prev) {
+++$n;
+}
+if ('auto' === $v) {
+$side = $n % 2 ? 'left' : 'right';
+}
 $list = fluid_lines($d['list'] ?? '');
 // Bild ausrichten: mitlaufen (Standard für neue Blöcke) · oben · mitte (bisher; bestehende Blöcke über DefaultChanges)
 $valign = in_array($d['valign'] ?? '', ['follow', 'top', 'center'], true) ? $d['valign'] : 'follow';
 $body = fluid_head($b, 'mt__head')
-    . ((trim(strip_tags((string) $d['text'])) !== '' || is_editing()) ? '<div class="prose"' . $b->edit('text', 'rich') . '>' . rich((string) $d['text']) . '</div>' : '')
+    . (('' !== trim(strip_tags((string) $d['text'])) || is_editing()) ? '<div class="prose"' . $b->edit('text', 'rich') . '>' . rich((string) $d['text']) . '</div>' : '')
     . fluid_checks($list)
     . fluid_buttons($b);
 ?>
-<?php if ($v === 'split'): ?>
-<div class="mt-split<?= $b->tune('height') === 'screen' ? ' mt-split--screen' : '' ?><?= $n % 2 ? ' mt-split--flip' : '' ?>">
-  <?= fluid_image($d['image'] ?? null, '(min-width: 900px) 50vw, 100vw', '', 'mt-split__media', ['eager' => $b->prev === null]) ?>
+<?php if ('split' === $v): ?>
+<div class="mt-split<?= 'screen' === $b->tune('height') ? ' mt-split--screen' : '' ?><?= $n % 2 ? ' mt-split--flip' : '' ?>">
+  <?= fluid_image($d['image'] ?? null, '(min-width: 900px) 50vw, 100vw', '', 'mt-split__media', ['eager' => null === $b->prev]) ?>
   <div class="mt-split__text"><div class="mt-split__inner"><?= $body ?></div></div>
 </div>
-<?php elseif ($v === 'overlap'): ?>
+<?php elseif ('overlap' === $v): ?>
 <div class="wrap mt-over">
   <?= fluid_image($d['image'] ?? null, '(min-width: 1280px) 1280px, 100vw', '16:9', 'mt-over__media') ?>
   <div class="mt-over__card"><?= $body ?></div>

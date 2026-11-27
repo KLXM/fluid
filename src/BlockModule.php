@@ -2,9 +2,9 @@
 
 namespace Klxm\Fluid;
 
-use Klxm\Fluid\Media\ImagePlaces;
 use Klxm\Fluid\Form\FieldForm;
 use Klxm\Fluid\Form\Stored;
+use Klxm\Fluid\Media\ImagePlaces;
 use Override;
 use Redaxo\Core\Content\ArticleContentEditor;
 use Redaxo\Core\Content\ArticleSlice;
@@ -23,8 +23,6 @@ use ReflectionClass;
 
 use function array_diff_key;
 use function array_filter;
-use function array_keys;
-use function count;
 use function in_array;
 use function is_a;
 use function is_array;
@@ -548,7 +546,10 @@ abstract class BlockModule extends Module
         $prev = null;
         // Vorgänger (z. B. „Text + Bild abwechselnd“) – nur wenige Ebenen, mehr braucht keine Ausgabe
         if ($depth < 6 && ($p = $this->slice->getPreviousSlice(!Editing::active())) && null !== self::classFor($p->moduleKey)) {
-            $prev = BlockModule::of($p)->block(null, null, $depth + 1);
+            // Module::of() of the core, not self::of(): self:: keeps the late static binding, so of() would expect
+            // the previous slice to be of this element's class (e.g. Video) and reject any other element
+            $previous = Module::of($p);
+            $prev = $previous instanceof self ? $previous->block(null, null, $depth + 1) : null;
         }
 
         return new Block(

@@ -1,7 +1,11 @@
 <?php
+
+use Klxm\Meta\Alt;
+use Redaxo\Core\MediaPool\Media;
+
 /**
  * Bildergalerie: grid (gleiches Format) · masonry (Spalten, Originalformat) · justified (bündige Zeilen). Lightbox über
- * js/media.js – ohne JavaScript führen die Bilder als Links zur großen Fassung. @var \Klxm\Fluid\Block $b  @var array $d
+ * js/media.js – ohne JavaScript führen die Bilder als Links zur großen Fassung. @var \Klxm\Fluid\Block $b  @var array $d.
  */
 $layout = in_array($b->variant(), ['grid', 'masonry', 'justified'], true) ? $b->variant() : 'grid';
 $cols = in_array((string) ($d['columns'] ?? ''), ['2', '3', '4', '5'], true) ? (string) $d['columns'] : '3';
@@ -10,7 +14,7 @@ $lightbox = !empty($d['lightbox']) && !is_editing();
 $items = [];
 foreach (array_values((array) ($d['images'] ?? [])) as $i => $it) {
     $file = (string) ($it['image'] ?? '');
-    if ('' !== $file && str_starts_with((string) \Redaxo\Core\MediaPool\Media::get($file)?->type, 'image/')) {
+    if ('' !== $file && str_starts_with((string) Media::get($file)?->type, 'image/')) {
         $items[] = ['file' => $file, 'caption' => trim((string) ($it['caption'] ?? '')), 'i' => $i];
     }
 }
@@ -41,8 +45,8 @@ $single = 1 === count($items) && 'grid' !== $singleSize;
     <a class="cms-gallery__link"<?= fluid_lightbox_link($it['file'], $it['caption']) ?>><?= $pic ?><span class="sr-only"><?= e(lt('Bild {n} vergrößern', ['n' => 1])) ?></span></a>
     <?php else: ?>
     <div class="cms-gallery__link"><?= $pic ?></div>
-    <?php endif; ?>
-    <?php if ('' !== $cap || (is_editing() && !empty($d['captions']))): ?><figcaption class="cms-gallery__cap"<?= $b->edit('images.' . $it['i'] . '.caption') ?>><?= e($cap) ?></figcaption><?php endif; ?>
+    <?php endif ?>
+    <?php if ('' !== $cap || (is_editing() && !empty($d['captions']))): ?><figcaption class="cms-gallery__cap"<?= $b->edit('images.' . $it['i'] . '.caption') ?>><?= e($cap) ?></figcaption><?php endif ?>
   </figure>
   <?= $lightbox ? fluid_lightbox() : '' ?>
   <?php elseif ($items): ?>
@@ -50,7 +54,7 @@ $single = 1 === count($items) && 'grid' !== $singleSize;
     <?php foreach ($items as $n => $it):
         $pic = img($it['file'], $sizes, 'grid' === $layout ? ['ratio' => $ratio] : []);
         $cap = !empty($d['captions']) ? $it['caption'] : '';
-        $alt = \Klxm\Meta\Alt::attribute($it['file']);
+        $alt = Alt::attribute($it['file']);
         $cls = 'cms-gallery__link' . ('grid' === $layout ? ' ' . $r : '');
     ?>
     <li class="cms-gallery__item<?= 'justified' === $layout ? ' ' . fluid_aspect_class($it['file']) : '' ?>">
@@ -59,14 +63,14 @@ $single = 1 === count($items) && 'grid' !== $singleSize;
         <a class="<?= e($cls) ?>"<?= fluid_lightbox_link($it['file'], $it['caption']) ?>><?= $pic ?><span class="sr-only"><?= e(lt('Bild {n} vergrößern', ['n' => $n + 1])) ?></span></a>
         <?php else: ?>
         <div class="<?= e($cls) ?>"><?= $pic ?></div>
-        <?php endif; ?>
-        <?php if ('' !== $cap || (is_editing() && !empty($d['captions']))): ?><figcaption class="cms-gallery__cap"<?= $b->edit('images.' . $it['i'] . '.caption') ?>><?= e($cap) ?></figcaption><?php endif; ?>
+        <?php endif ?>
+        <?php if ('' !== $cap || (is_editing() && !empty($d['captions']))): ?><figcaption class="cms-gallery__cap"<?= $b->edit('images.' . $it['i'] . '.caption') ?>><?= e($cap) ?></figcaption><?php endif ?>
       </figure>
     </li>
-    <?php endforeach; ?>
+    <?php endforeach ?>
   </ul>
   <?= $lightbox ? fluid_lightbox() : '' ?>
   <?php elseif (is_editing()): ?>
   <p class="empty-hint">Noch keine Bilder – in der Seitenleiste unter „Bilder“ hinzufügen.</p>
-  <?php endif; ?>
+  <?php endif ?>
 </div>

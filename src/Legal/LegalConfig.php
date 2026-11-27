@@ -11,9 +11,7 @@ namespace Klxm\Fluid\Legal;
  */
 final readonly class LegalConfig
 {
-    /**
-     * @param bool $dialog Datenschutzhinweise an Formularen im Dialog über der Seite öffnen (Eingaben bleiben erhalten)
-     */
+    /** @param bool $dialog Datenschutzhinweise an Formularen im Dialog über der Seite öffnen (Eingaben bleiben erhalten) */
     public function __construct(
         public bool $dialog = false,
     ) {}

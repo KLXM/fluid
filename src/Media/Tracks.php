@@ -2,8 +2,24 @@
 
 namespace Klxm\Fluid\Media;
 
+use Klxm\Fluid\Routing\Attribute\AsEndpoint;
+use Redaxo\Core\Core;
 use Redaxo\Core\Filesystem\Path;
+use Redaxo\Core\Language\Language;
 use Redaxo\Core\MediaPool\Media;
+
+use function array_slice;
+use function count;
+use function dirname;
+use function function_exists;
+use function in_array;
+use function sprintf;
+use function strlen;
+
+use const ENT_HTML5;
+use const ENT_QUOTES;
+use const PREG_SPLIT_DELIM_CAPTURE;
+use const PREG_SPLIT_NO_EMPTY;
 
 /**
  * Untertitel, Kapitel und Transkripte für Videos (Barrierefreiheit, WCAG 1.2.2/1.2.3) – Modell aus KLXM Studio (MediaTracks).
@@ -14,37 +30,37 @@ use Redaxo\Core\MediaPool\Media;
  */
 final class Tracks
 {
-    /** @internal Untertitel aus dem Medienpool unter /fluid-track/{datei} (geprüft als WebVTT) */
-    #[\Klxm\Fluid\Routing\Attribute\AsEndpoint(self::ROUTE . '*')]
-    public static function serve(string $path, string $rest): void
-    {
-        self::handle($rest);
-    }
-
     public const string ROUTE = '/fluid-track/';
     public const array EXT = ['vtt', 'srt'];
     public const array KINDS = ['subtitles' => 'Untertitel', 'captions' => 'Untertitel für Gehörlose (mit Geräuschen)', 'chapters' => 'Kapitel'];
     private const int MAX_BYTES = 2 * 1024 * 1024;
     private const int MAX_CUES = 5000;
 
+    /** @internal Untertitel aus dem Medienpool unter /fluid-track/{datei} (geprüft als WebVTT) */
+    #[AsEndpoint(self::ROUTE . '*')]
+    public static function serve(string $path, string $rest): void
+    {
+        self::handle($rest);
+    }
+
     public static function url(string $file): string
     {
         $m = Media::get($file);
 
-        return \Redaxo\Core\Core::getRequest()->getBasePath() . self::ROUTE . rawurlencode($file) . ($m ? '?v=' . $m->updateDate : '');
+        return Core::getRequest()->getBasePath() . self::ROUTE . rawurlencode($file) . ($m ? '?v=' . $m->updateDate : '');
     }
 
     /** Antwort für /fluid-track/{datei} (vom Router aufgerufen) */
     public static function handle(string $file): never
     {
         $m = Media::get(rawurldecode($file));
-        if (!$m || !\in_array(strtolower($m->getExtension()), self::EXT, true) || !is_file($src = Path::media($m->fileName))) {
+        if (!$m || !in_array(strtolower($m->getExtension()), self::EXT, true) || !is_file($src = Path::media($m->fileName))) {
             http_response_code(404);
             exit;
         }
         $cache = Path::addonCache('fluid', 'tracks/' . md5($m->fileName . '|' . filemtime($src)) . '.vtt');
         if (!is_file($cache)) {
-            @mkdir(\dirname($cache), 0775, true);
+            @mkdir(dirname($cache), 0o775, true);
             [$cues] = self::parse((string) file_get_contents($src));
             file_put_contents($cache, self::toVtt($cues));
         }
@@ -62,7 +78,7 @@ final class Tracks
     public static function cuesOf(string $file): array
     {
         $m = '' !== $file ? Media::get($file) : null;
-        if (!$m || !\in_array(strtolower($m->getExtension()), self::EXT, true) || !is_file($src = Path::media($m->fileName))) {
+        if (!$m || !in_array(strtolower($m->getExtension()), self::EXT, true) || !is_file($src = Path::media($m->fileName))) {
             return [];
         }
 
@@ -76,7 +92,7 @@ final class Tracks
      */
     public static function parse(string $raw): array
     {
-        if (\strlen($raw) > self::MAX_BYTES) {
+        if (strlen($raw) > self::MAX_BYTES) {
             return [[], 'Datei ist zu groß (max. 2 MB).'];
         }
         if (str_starts_with($raw, "\xEF\xBB\xBF")) {
@@ -114,8 +130,8 @@ final class Tracks
             if (!preg_match('~^' . $time . '\s*-->\s*' . $time . '(.*)$~', trim($lines[0]), $mm)) {
                 continue;
             }
-            $cues[] = ['start' => self::ms($mm[1], $mm[2], $mm[3], $mm[4]), 'end' => self::ms($mm[5], $mm[6], $mm[7], $mm[8]), 'text' => implode("\n", \array_slice($lines, 1)), 'settings' => $mm[9]];
-            if (\count($cues) > self::MAX_CUES) {
+            $cues[] = ['start' => self::ms($mm[1], $mm[2], $mm[3], $mm[4]), 'end' => self::ms($mm[5], $mm[6], $mm[7], $mm[8]), 'text' => implode("\n", array_slice($lines, 1)), 'settings' => $mm[9]];
+            if (count($cues) > self::MAX_CUES) {
                 return [[], 'Zu viele Einträge.'];
             }
         }
@@ -188,7 +204,7 @@ final class Tracks
         }
         $lines = array_values(array_filter(array_map(static fn ($l) => trim((string) preg_replace('~[ \t]+~u', ' ', $l)), explode("\n", $out)), static fn ($l) => '' !== $l));
 
-        return mb_substr(implode("\n", \array_slice($lines, 0, 4)), 0, 500);
+        return mb_substr(implode("\n", array_slice($lines, 0, 4)), 0, 500);
     }
 
     private static function cleanSettings(string $s): string
@@ -201,12 +217,12 @@ final class Tracks
             }
         }
 
-        return implode(' ', \array_slice($out, 0, 4));
+        return implode(' ', array_slice($out, 0, 4));
     }
 
     private static function stamp(int $ms): string
     {
-        return \sprintf('%02d:%02d:%02d.%03d', intdiv($ms, 3600000), intdiv($ms % 3600000, 60000), intdiv($ms % 60000, 1000), $ms % 1000);
+        return sprintf('%02d:%02d:%02d.%03d', intdiv($ms, 3600000), intdiv($ms % 3600000, 60000), intdiv($ms % 60000, 1000), $ms % 1000);
     }
 
     public static function toVtt(array $cues): string
@@ -258,14 +274,14 @@ final class Tracks
         }
         $names = ['de' => 'Deutsch', 'en' => 'English', 'fr' => 'Français', 'es' => 'Español', 'it' => 'Italiano', 'nl' => 'Nederlands', 'pl' => 'Polski',
             'tr' => 'Türkçe', 'ar' => 'العربية', 'ru' => 'Русский', 'uk' => 'Українська', 'pt' => 'Português', 'el' => 'Ελληνικά', 'sl' => 'Slovenščina'];
-        foreach (\Redaxo\Core\Language\Language::getAll() as $l) {
+        foreach (Language::getAll() as $l) {
             $names[$l->code] ??= $l->name;
         }
         $n = $names[strtolower(substr($lang, 0, 2))] ?? strtoupper($lang);
 
         return match ($kind) {
             'captions' => $n . ' (CC)',
-            'chapters' => $n . ' – ' . (\function_exists('lt') ? lt('Kapitel') : 'Kapitel'),
+            'chapters' => $n . ' – ' . (function_exists('lt') ? lt('Kapitel') : 'Kapitel'),
             default => $n,
         };
     }

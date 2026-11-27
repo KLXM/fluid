@@ -1,8 +1,11 @@
 <?php
+
+use Klxm\Fluid\Block;
+
 /**
  * Fragen & Antworten im Kit „NativeCSS“: natives details/summary in der Optik .ncss-disclosure (ohne JavaScript;
  * name= schließt die anderen Antworten der Liste). split: Kopf neben der Liste · stacked: Kopf darüber.
- * @var \Klxm\Fluid\Block $b  @var array $d
+ * @var Block $b  @var array $d
  */
 $v = 'stacked' === $b->variant() ? 'stacked' : 'split';
 ?>
@@ -14,7 +17,7 @@ $v = 'stacked' === $b->variant() ? 'stacked' : 'split';
       <summary><span<?= $b->edit("items.$i.q") ?>><?= e($it['q']) ?></span></summary>
       <div class="prose nv-faq__a"<?= $b->edit("items.$i.a", 'rich') ?>><?= rich($it['a']) ?></div>
     </details>
-    <?php endforeach; ?>
-    <?php if (!$d['items'] && is_editing()): ?><p class="empty-hint">Noch keine Fragen – in der Seitenleiste hinzufügen.</p><?php endif; ?>
+    <?php endforeach ?>
+    <?php if (!$d['items'] && is_editing()): ?><p class="empty-hint">Noch keine Fragen – in der Seitenleiste hinzufügen.</p><?php endif ?>
   </div>
 </div>

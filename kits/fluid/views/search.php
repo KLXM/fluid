@@ -1,8 +1,10 @@
 <?php
 /**
  * Suche (Klxm\Fluid\Search\Search, Loupe): Suchfeld und Treffer mit Textausschnitt. Ohne JavaScript (GET ?q=).
- * @var \Klxm\Fluid\Block $b  @var array $d
+ * @var Block $b  @var array $d
  */
+use Klxm\Fluid\Block;
+use Klxm\Fluid\Live;
 use Klxm\Fluid\Search\Search;
 use Redaxo\Core\Http\Request;
 use Redaxo\Core\Language\Language;
@@ -11,7 +13,7 @@ $q = trim(mb_substr(Request::get('q', 'string', ''), 0, 100));
 $res = '' !== $q ? Search::search($q, Language::getCurrentId(), (int) ($d['limit'] ?? 20)) : null;
 $id = $b->domId() . '-q';
 ?>
-<div class="wrap fsearch"<?= \Klxm\Fluid\Live::region($b) /* Treffer beim Tippen, ohne Seitenwechsel */ ?>>
+<div class="wrap fsearch"<?= Live::region($b) /* Treffer beim Tippen, ohne Seitenwechsel */ ?>>
   <?= fluid_head($b, '', null === $b->prev ? 'h1' : 'h2') /* erster Block der Seite: Hauptüberschrift */ ?>
   <form class="fsearch__form" role="search" method="get" data-live-nav action="#<?= e($b->domId()) ?>">
     <label class="sr-only" for="<?= e($id) ?>"><?= e(lt('Suchbegriff')) ?></label>
@@ -23,10 +25,10 @@ $id = $b->domId() . '-q';
   <?php if ($res['hits']): ?>
   <ol class="fsearch__list" role="list">
     <?php foreach ($res['hits'] as $h): ?>
-    <li class="fsearch__hit"><a class="fsearch__title" href="<?= e($h['url']) ?>"><?= $h['title'] ?></a><?php if ('' !== $h['excerpt']): ?><p class="fsearch__excerpt"><?= $h['excerpt'] ?></p><?php endif; ?></li>
-    <?php endforeach; ?>
+    <li class="fsearch__hit"><a class="fsearch__title" href="<?= e($h['url']) ?>"><?= $h['title'] ?></a><?php if ('' !== $h['excerpt']): ?><p class="fsearch__excerpt"><?= $h['excerpt'] ?></p><?php endif ?></li>
+    <?php endforeach ?>
   </ol>
-  <?php elseif ('' !== trim((string) ($d['empty_text'] ?? ''))): ?><p class="fsearch__empty"><?= e($d['empty_text']) ?></p><?php endif; ?>
-  <?php endif; ?>
+  <?php elseif ('' !== trim((string) ($d['empty_text'] ?? ''))): ?><p class="fsearch__empty"><?= e($d['empty_text']) ?></p><?php endif ?>
+  <?php endif ?>
 </div>
-<?= \Klxm\Fluid\Live::assets() ?>
+<?= Live::assets() ?>

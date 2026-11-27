@@ -3,8 +3,8 @@
 namespace Klxm\Fluid\Console;
 
 use Klxm\Fluid\BlockModule;
-use Redaxo\Core\Console\AbstractCommand;
 use Redaxo\Core\Cache;
+use Redaxo\Core\Console\AbstractCommand;
 use Redaxo\Core\Content\ArticleSlice;
 use Redaxo\Core\Content\ArticleSliceReference;
 use Redaxo\Core\Database\Column;

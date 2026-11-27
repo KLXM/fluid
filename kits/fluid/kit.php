@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Kit „fluid“ für klxm/fluid – übernommen aus KLXM Studio (MIT): breakpointlos, Container-Queries,
  * fließende Schrift- und Abstandsstufen. Die Blöcke stehen als Klassen mit Feld-Attributen in src/Module/,

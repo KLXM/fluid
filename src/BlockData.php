@@ -2,8 +2,18 @@
 
 namespace Klxm\Fluid;
 
+use function in_array;
 use function is_a;
+use function is_array;
+use function is_string;
 use function Redaxo\Core\View\escape;
+
+use const JSON_HEX_AMP;
+use const JSON_HEX_APOS;
+use const JSON_HEX_QUOT;
+use const JSON_HEX_TAG;
+use const JSON_UNESCAPED_SLASHES;
+use const JSON_UNESCAPED_UNICODE;
 
 /**
  * Blöcke als Daten – ohne Artikel und Slices, z. B. im YForm-Feld „Fluid-Blöcke“ (Data\FluidBlocks).
@@ -22,12 +32,12 @@ final class BlockData
      */
     public static function decode(mixed $value): array
     {
-        $list = \is_string($value) ? json_decode($value, true) : $value;
+        $list = is_string($value) ? json_decode($value, true) : $value;
         $out = [];
-        foreach (\is_array($list) ? $list : [] as $item) {
-            if (\is_array($item) && \is_string($item['module'] ?? null) && self::module($item['module'])) {
-                $row = ['module' => $item['module'], 'data' => \is_array($item['data'] ?? null) ? $item['data'] : [], 'tunes' => \is_array($item['tunes'] ?? null) ? $item['tunes'] : []];
-                if (\is_string($item['uid'] ?? null) && preg_match('~^[a-z0-9]{6,16}$~', $item['uid'])) {
+        foreach (is_array($list) ? $list : [] as $item) {
+            if (is_array($item) && is_string($item['module'] ?? null) && self::module($item['module'])) {
+                $row = ['module' => $item['module'], 'data' => is_array($item['data'] ?? null) ? $item['data'] : [], 'tunes' => is_array($item['tunes'] ?? null) ? $item['tunes'] : []];
+                if (is_string($item['uid'] ?? null) && preg_match('~^[a-z0-9]{6,16}$~', $item['uid'])) {
                     $row['uid'] = $item['uid'];
                 }
                 $out[] = $row;
@@ -78,7 +88,7 @@ final class BlockData
             if (is_a($m, LayoutBlock::class, true) || !$m::available()) {
                 continue;
             }
-            if (null !== $allowed && [] !== $allowed && !\in_array($m::type(), $allowed, true) && !\in_array($m::key(), $allowed, true)) {
+            if (null !== $allowed && [] !== $allowed && !in_array($m::type(), $allowed, true) && !in_array($m::key(), $allowed, true)) {
                 continue;
             }
             $out[$m::key()] = $m;

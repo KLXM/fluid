@@ -2,9 +2,16 @@
 
 namespace Klxm\Fluid\Data;
 
+use Klxm\Fluid\Routing\Router;
+use Redaxo\Core\Content\Article;
 use Redaxo\Core\ExtensionPoint\Extension;
 use Redaxo\Core\ExtensionPoint\ExtensionPoint;
 use Redaxo\Core\Http\Request;
+use Throwable;
+use Yakamara\YForm\Field\Text;
+
+use function array_slice;
+use function in_array;
 
 /**
  * Einträge im Menü (nach KLXM Studio, Core\Data\MenuEntries, MIT): Einträge einer YForm-Tabelle mit Detailseite erscheinen als
@@ -48,8 +55,8 @@ final class MenuEntries
         if (null === $t) {
             return [];
         }
-        $page = \Klxm\Fluid\Routing\Router::url($articleId, $languageId);
-        $here = \Redaxo\Core\Content\Article::getCurrentId() === $articleId ? Request::get(Detail::PARAM, 'int', 0) : 0;
+        $page = Router::url($articleId, $languageId);
+        $here = Article::getCurrentId() === $articleId ? Request::get(Detail::PARAM, 'int', 0) : 0;
         try {
             if (Knowledge::is($t)) {
                 $tree = Knowledge::tree($t, $cfg);
@@ -57,20 +64,20 @@ final class MenuEntries
                 $node = static function (array $n, int $depth) use (&$node, $tree, $m, $active, $here, $page): array {
                     $kids = [];
                     if ('two' === $m['mode'] && 0 === $depth) {
-                        foreach (\array_slice($n['children'], 0, $m['limit']) as $c) {
+                        foreach (array_slice($n['children'], 0, $m['limit']) as $c) {
                             $kids[] = $node($tree['nodes'][$c], 1);
                         }
                     }
 
                     return ['label' => ('' !== $n['number'] ? $n['number'] . ' ' : '') . $n['title'], 'href' => Detail::url($page, $n['title'], $n['id']),
-                        'current' => $n['id'] === $here, 'active' => \in_array($n['id'], $active, true), 'children' => $kids, 'entry' => $n['id']];
+                        'current' => $n['id'] === $here, 'active' => in_array($n['id'], $active, true), 'children' => $kids, 'entry' => $n['id']];
                 };
                 $out = [];
-                foreach (\array_slice($tree['roots'], 0, $m['limit']) as $id) {
+                foreach (array_slice($tree['roots'], 0, $m['limit']) as $id) {
                     $out[] = $node($tree['nodes'][$id], 0);
                 }
             } else {
-                $titleF = YFormBridge::field($t, (string) ($cfg['title_field'] ?? ''), [\Yakamara\YForm\Field\Text::class]);
+                $titleF = YFormBridge::field($t, (string) ($cfg['title_field'] ?? ''), [Text::class]);
                 $rows = YFormBridge::rows($t, ['filter' => YFormBridge::field($t, (string) ($cfg['filter_field'] ?? '')), 'value' => trim((string) ($cfg['filter_value'] ?? '')),
                     'sort' => YFormBridge::field($t, (string) ($cfg['sort_field'] ?? '')), 'dir' => (string) ($cfg['sort_dir'] ?? 'asc'), 'limit' => $m['limit'], 'language' => $languageId]);
                 $out = [];
@@ -80,7 +87,7 @@ final class MenuEntries
                         'active' => (int) $r->id === $here, 'children' => [], 'entry' => (int) $r->id];
                 }
             }
-        } catch (\Throwable) {
+        } catch (Throwable) {
             return [];
         }
 
@@ -124,7 +131,7 @@ final class MenuEntries
         if (null === $t || !Knowledge::is($t)) {
             return [];
         }
-        $page = \Klxm\Fluid\Routing\Router::url($articleId, $languageId);
+        $page = Router::url($articleId, $languageId);
         $tree = Knowledge::tree($t, $cfg);
 
         return array_map(static fn (array $n) => [$n['title'], Detail::url($page, $n['title'], $n['id'])], Knowledge::ancestors($tree, $entry));

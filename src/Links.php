@@ -4,7 +4,16 @@ namespace Klxm\Fluid;
 
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\Category;
+use Redaxo\Core\Core;
+use Redaxo\Core\Filesystem\Url;
+use Redaxo\Core\Http\Request;
 use Redaxo\Core\Language\Language;
+
+use const ENT_QUOTES;
+use const JSON_HEX_AMP;
+use const JSON_HEX_TAG;
+use const JSON_UNESCAPED_SLASHES;
+use const JSON_UNESCAPED_UNICODE;
 
 /**
  * Artikel der Struktur für die Linkauswahl der Formatierungsleiste (`<script type="application/json" id="blocks-links">`).
@@ -47,13 +56,13 @@ final class Links
     {
         $languageId ??= Language::getCurrentId();
         // aktuelle Seite (Website: angezeigter Artikel, Backend: bearbeiteter Artikel) – für die Sprungmarken
-        $article = \Redaxo\Core\Core::isBackend() ? \Redaxo\Core\Http\Request::get('article_id', 'int', 0) : Article::getCurrentId();
-        $api = \Redaxo\Core\Core::isBackend()
-            ? \Redaxo\Core\Filesystem\Url::backendController(LinkApi::getUrlParams())
-            : \Redaxo\Core\Filesystem\Url::frontendController(LinkApi::getUrlParams());
+        $article = Core::isBackend() ? Request::get('article_id', 'int', 0) : Article::getCurrentId();
+        $api = Core::isBackend()
+            ? Url::backendController(LinkApi::getUrlParams())
+            : Url::frontendController(LinkApi::getUrlParams());
 
         return '<script type="application/json" id="blocks-links" data-language="' . $languageId . '" data-article="' . $article . '"'
-            . ' data-api="' . htmlspecialchars($api, ENT_QUOTES) . '" data-media="' . htmlspecialchars(\Redaxo\Core\Filesystem\Url::media(), ENT_QUOTES) . '">'
+            . ' data-api="' . htmlspecialchars($api, ENT_QUOTES) . '" data-media="' . htmlspecialchars(Url::media(), ENT_QUOTES) . '">'
             . json_encode(self::all($languageId), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) . '</script>';
     }
 }

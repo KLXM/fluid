@@ -2,6 +2,13 @@
 
 namespace Klxm\Fluid\Media;
 
+use function function_exists;
+use function is_resource;
+use function is_string;
+use function sprintf;
+
+use const PATH_SEPARATOR;
+
 /**
  * ffmpeg/ffprobe aufrufen (Vorschaubilder von Videos). Ohne ffmpeg bleibt alles wirkungslos – Videos zeigen dann das
  * gewählte Vorschaubild oder keines.
@@ -21,10 +28,10 @@ final class Ffmpeg
             return self::$bins[$name];
         }
         $env = getenv(strtoupper($name) . '_BIN') ?: ($_SERVER[strtoupper($name) . '_BIN'] ?? '');
-        if (\is_string($env) && '' !== $env) {
+        if (is_string($env) && '' !== $env) {
             return self::$bins[$name] = is_executable($env) ? $env : '';
         }
-        if (!\function_exists('proc_open')) {
+        if (!function_exists('proc_open')) {
             return self::$bins[$name] = '';
         }
         foreach ([...explode(PATH_SEPARATOR, (string) getenv('PATH')), ...self::DIRS] as $dir) {
@@ -51,7 +58,7 @@ final class Ffmpeg
     public static function run(array $argv, int $timeout = 15): array
     {
         $p = @proc_open($argv, [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes);
-        if (!\is_resource($p)) {
+        if (!is_resource($p)) {
             return ['code' => -1, 'out' => ''];
         }
         stream_set_blocking($pipes[1], false);
@@ -102,7 +109,7 @@ final class Ffmpeg
         }
         $d = self::duration($video);
         $at = $d > 0 ? min(10.0, max(1.0, $d * 0.1), max(0.0, $d - 0.5)) : 1.0;
-        $r = self::run([self::bin('ffmpeg'), '-nostdin', '-v', 'error', '-y', '-ss', \sprintf('%.2F', $at), '-i', $video,
+        $r = self::run([self::bin('ffmpeg'), '-nostdin', '-v', 'error', '-y', '-ss', sprintf('%.2F', $at), '-i', $video,
             '-vf', 'thumbnail=24,scale=\'min(' . $maxWidth . ',iw)\':-2', '-frames:v', '1', '-q:v', '3', $target], 20);
         if (0 !== $r['code'] || !is_file($target) || 0 === filesize($target)) {
             // sehr kurze Videos: erstes Bild

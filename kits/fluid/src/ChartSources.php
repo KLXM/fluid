@@ -10,6 +10,9 @@ use Redaxo\Core\Language\Language;
 use ReflectionClass;
 use Throwable;
 
+use function count;
+use function is_string;
+
 /**
  * Datenquellen des Kits für den Block „Diagramm“ – zugleich Beispiel für #[AsChartSource]:
  * eine statische Methode, die labels und series liefert. Die Werte kommen bei jedem Aufruf frisch.
@@ -33,7 +36,7 @@ final class ChartSources
             }
             $labels[] = self::label($key);
             $data[] = (int) $row['n'];
-            if (8 === \count($labels)) {
+            if (8 === count($labels)) {
                 break;
             }
         }
@@ -46,10 +49,10 @@ final class ChartSources
     {
         try {
             $class = Module::getClass($key);
-            $attr = null !== $class ? (new ReflectionClass($class))->getAttributes(AsModule::class)[0] ?? null : null;
+            $attr = null !== $class ? new ReflectionClass($class)->getAttributes(AsModule::class)[0] ?? null : null;
             $name = $attr?->newInstance()->name;
 
-            return null !== $name ? (\is_string($name) ? $name : $name->translate()) : $key;
+            return null !== $name ? (is_string($name) ? $name : $name->translate()) : $key;
         } catch (Throwable) {
             return $key;
         }

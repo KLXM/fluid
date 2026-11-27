@@ -17,6 +17,8 @@ use Yakamara\YForm\Form\Layout\Cell;
 use Yakamara\YForm\Form\Layout\Layout;
 use Yakamara\YForm\Validation\Errors;
 
+use const FILTER_VALIDATE_EMAIL;
+
 /** Demo-Formular „Anfrage“: speichert in AnfrageTable, Benachrichtigung an die E-Mail aus „Website“ */
 #[AsForm('anfrage', label: 'Anfrage (Beispiel)', module: true)]
 final class AnfrageForm extends FormDefinition

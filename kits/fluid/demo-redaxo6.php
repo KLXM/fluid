@@ -1,4 +1,8 @@
 <?php
+
+use Klxm\FluidDemo\FluidVersion;
+use Redaxo\Core\Filesystem\Path;
+
 /*
  * Demo-Inhalte „REDAXO 6“ für das Kit fluid – `php bin/console fluid:demo --set=redaxo6 --replace`.
  * Stand: REDAXO 6 in Entwicklung (redaxo/core, Branch 6.x). Nur Aussagen, die sich im Code des Branches nachprüfen lassen.
@@ -71,152 +75,152 @@ $yform = [
 // Codebeispiele der Seiten unter „REDAXO 6“ (geprüft gegen redaxo/core 6.x und YForm 6.x)
 $code = [
     'create' => <<<'CODE'
-composer create-project redaxo/project:6.x-dev mein-projekt
-cd mein-projekt
-CODE,
+        composer create-project redaxo/project:6.x-dev mein-projekt
+        cd mein-projekt
+        CODE,
     'env' => <<<'CODE'
-# .env.local – nur auf diesem Rechner, nicht im Repository
-DATABASE_URL=mysql://redaxo:geheim@127.0.0.1:3306/redaxo
-REX_MODE=dev
-REX_BASE_URL=https://mein-projekt.test/
-CODE,
+        # .env.local – nur auf diesem Rechner, nicht im Repository
+        DATABASE_URL=mysql://redaxo:geheim@127.0.0.1:3306/redaxo
+        REX_MODE=dev
+        REX_BASE_URL=https://mein-projekt.test/
+        CODE,
     'setup' => <<<'CODE'
-php bin/console setup     # Einrichtung samt Admin-Konto
-php bin/console migrate   # nach jedem Update: Datenbank auf den Stand bringen
-CODE,
+        php bin/console setup     # Einrichtung samt Admin-Konto
+        php bin/console migrate   # nach jedem Update: Datenbank auf den Stand bringen
+        CODE,
     'tree' => <<<'CODE'
-bin/console               Konsole
-public/                   Wurzel des Webservers
-public/index.php          Frontend
-public/redaxo/index.php   Backend
-src/                      Dein Code: Project.php, Module, Templates …
-var/                      Cache, Daten, Logs
-CODE,
+        bin/console               Konsole
+        public/                   Wurzel des Webservers
+        public/index.php          Frontend
+        public/redaxo/index.php   Backend
+        src/                      Dein Code: Project.php, Module, Templates …
+        var/                      Cache, Daten, Logs
+        CODE,
     'umblock' => <<<'CODE'
-// Beim Übernehmen der Inhalte aus REDAXO 5: MBlock-Wert (JSON in REX_VALUE[1]) → Collection
-$old = json_decode((string) $row['value1'], true) ?: [];    // [{"titel": "…", "bild": "a.jpg", "link": "12"}, …]
-$map = ['titel' => 'title', 'bild' => 'image', 'link' => 'link'];   // Feld im MBlock-Formular → Schlüssel in Slide
+        // Beim Übernehmen der Inhalte aus REDAXO 5: MBlock-Wert (JSON in REX_VALUE[1]) → Collection
+        $old = json_decode((string) $row['value1'], true) ?: [];    // [{"titel": "…", "bild": "a.jpg", "link": "12"}, …]
+        $map = ['titel' => 'title', 'bild' => 'image', 'link' => 'link'];   // Feld im MBlock-Formular → Schlüssel in Slide
 
-$slides = [];
-foreach ($old as $item) {
-    $entry = [];
-    foreach ($map as $from => $to) {
-        $entry[$to] = $item[$from] ?? '';                  // Bild = Dateiname, Link = Artikel-ID – wie im Core
-    }
-    $slides[] = $entry;
-}
+        $slides = [];
+        foreach ($old as $item) {
+            $entry = [];
+            foreach ($map as $from => $to) {
+                $entry[$to] = $item[$from] ?? '';                  // Bild = Dateiname, Link = Artikel-ID – wie im Core
+            }
+            $slides[] = $entry;
+        }
 
-ContentHandler::addSlice($articleId, $languageId, 1, 'slider', [
-    'headline' => (string) $row['value2'],
-    'slides' => $slides,                                  // Liste der Einträge, Werte je Feldschlüssel
-]);
-CODE,
+        ContentHandler::addSlice($articleId, $languageId, 1, 'slider', [
+            'headline' => (string) $row['value2'],
+            'slides' => $slides,                                  // Liste der Einträge, Werte je Feldschlüssel
+        ]);
+        CODE,
     'mcollection' => <<<'CODE'
-<?php
+        <?php
 
-namespace Project\Module;
+        namespace Project\Module;
 
-use Redaxo\Core\Content\AsModule;
-use Redaxo\Core\Content\Module;
-use Redaxo\Core\Form\Field\Collection;
-use Redaxo\Core\Form\Field\Text;
+        use Redaxo\Core\Content\AsModule;
+        use Redaxo\Core\Content\Module;
+        use Redaxo\Core\Form\Field\Collection;
+        use Redaxo\Core\Form\Field\Text;
 
-use function Redaxo\Core\View\escape;
+        use function Redaxo\Core\View\escape;
 
-#[AsModule('slider', 'Slider')]
-final class SliderModule extends Module
-{
-    #[Text('Überschrift')]
-    public string $headline = '';
+        #[AsModule('slider', 'Slider')]
+        final class SliderModule extends Module
+        {
+            #[Text('Überschrift')]
+            public string $headline = '';
 
-    /** @var list<Slide> */
-    #[Collection('Slides', item: Slide::class, min: 1, max: 8)]
-    public array $slides = [];
+            /** @var list<Slide> */
+            #[Collection('Slides', item: Slide::class, min: 1, max: 8)]
+            public array $slides = [];
 
-    public function output(): string
-    {
-        $html = '<div class="slider">';
-        foreach ($this->slides as $slide) {
-            $html .= '<figure>'
-                . ($slide->image ? '<img src="' . escape($slide->image->getUrl()) . '" alt="">' : '')
-                . '<figcaption>' . escape($slide->title) . '</figcaption></figure>';
+            public function output(): string
+            {
+                $html = '<div class="slider">';
+                foreach ($this->slides as $slide) {
+                    $html .= '<figure>'
+                        . ($slide->image ? '<img src="' . escape($slide->image->getUrl()) . '" alt="">' : '')
+                        . '<figcaption>' . escape($slide->title) . '</figcaption></figure>';
+                }
+
+                return $html . '</div>';
+            }
         }
-
-        return $html . '</div>';
-    }
-}
-CODE,
+        CODE,
     'mslide' => <<<'CODE'
-<?php
+        <?php
 
-namespace Project\Module;
+        namespace Project\Module;
 
-use Redaxo\Core\Content\Article;
-use Redaxo\Core\Form\Field\ArticlePicker;
-use Redaxo\Core\Form\Field\MediaPicker;
-use Redaxo\Core\Form\Field\Text;
-use Redaxo\Core\MediaPool\Media;
+        use Redaxo\Core\Content\Article;
+        use Redaxo\Core\Form\Field\ArticlePicker;
+        use Redaxo\Core\Form\Field\MediaPicker;
+        use Redaxo\Core\Form\Field\Text;
+        use Redaxo\Core\MediaPool\Media;
 
-/** Ein Eintrag der Wiederholgruppe – eine kleine Klasse mit eigenen Feldern */
-final class Slide
-{
-    #[Text('Titel', required: true, maxLength: 80)]
-    public string $title = '';
+        /** Ein Eintrag der Wiederholgruppe – eine kleine Klasse mit eigenen Feldern */
+        final class Slide
+        {
+            #[Text('Titel', required: true, maxLength: 80)]
+            public string $title = '';
 
-    #[MediaPicker('Bild', types: ['jpg', 'png', 'webp'], preview: true)]
-    public ?Media $image = null;
+            #[MediaPicker('Bild', types: ['jpg', 'png', 'webp'], preview: true)]
+            public ?Media $image = null;
 
-    #[ArticlePicker('Link (optional)')]
-    public ?Article $link = null;
-}
-CODE,
+            #[ArticlePicker('Link (optional)')]
+            public ?Article $link = null;
+        }
+        CODE,
     'module' => <<<'CODE'
-<?php
+        <?php
 
-namespace Project\Module;
+        namespace Project\Module;
 
-use Redaxo\Core\Content\Article;
-use Redaxo\Core\Content\AsModule;
-use Redaxo\Core\Content\Module;
-use Redaxo\Core\Form\Field\ArticlePicker;
-use Redaxo\Core\Form\Field\MediaPicker;
-use Redaxo\Core\Form\Field\Text;
-use Redaxo\Core\Form\Field\Textarea;
-use Redaxo\Core\MediaPool\Media;
+        use Redaxo\Core\Content\Article;
+        use Redaxo\Core\Content\AsModule;
+        use Redaxo\Core\Content\Module;
+        use Redaxo\Core\Form\Field\ArticlePicker;
+        use Redaxo\Core\Form\Field\MediaPicker;
+        use Redaxo\Core\Form\Field\Text;
+        use Redaxo\Core\Form\Field\Textarea;
+        use Redaxo\Core\MediaPool\Media;
 
-use function Redaxo\Core\View\escape;
+        use function Redaxo\Core\View\escape;
 
-#[AsModule('teaser', 'Teaser')]
-final class TeaserModule extends Module
-{
-    #[Text('Überschrift', required: true, maxLength: 120)]
-    public string $headline = '';
+        #[AsModule('teaser', 'Teaser')]
+        final class TeaserModule extends Module
+        {
+            #[Text('Überschrift', required: true, maxLength: 120)]
+            public string $headline = '';
 
-    #[Textarea('Text', rows: 4)]
-    public string $text = '';
+            #[Textarea('Text', rows: 4)]
+            public string $text = '';
 
-    #[MediaPicker('Bild', types: ['jpg', 'png', 'webp'])]
-    public ?Media $image = null;
+            #[MediaPicker('Bild', types: ['jpg', 'png', 'webp'])]
+            public ?Media $image = null;
 
-    #[ArticlePicker('Weiterlesen auf')]
-    public ?Article $link = null;
+            #[ArticlePicker('Weiterlesen auf')]
+            public ?Article $link = null;
 
-    public function output(): string
-    {
-        $html = '<article class="teaser">';
-        if ($this->image) {
-            $html .= '<img src="' . escape($this->image->getUrl()) . '" alt="">';
+            public function output(): string
+            {
+                $html = '<article class="teaser">';
+                if ($this->image) {
+                    $html .= '<img src="' . escape($this->image->getUrl()) . '" alt="">';
+                }
+                $html .= '<h2>' . escape($this->headline) . '</h2>';
+                $html .= '<p>' . nl2br(escape($this->text)) . '</p>';
+                if ($this->link) {
+                    $html .= '<a href="' . escape($this->link->getUrl()) . '">Weiterlesen</a>';
+                }
+
+                return $html . '</article>';
+            }
         }
-        $html .= '<h2>' . escape($this->headline) . '</h2>';
-        $html .= '<p>' . nl2br(escape($this->text)) . '</p>';
-        if ($this->link) {
-            $html .= '<a href="' . escape($this->link->getUrl()) . '">Weiterlesen</a>';
-        }
-
-        return $html . '</article>';
-    }
-}
-CODE,
+        CODE,
     // gewöhnliches Modul: die Datei, die auch im Projekt liegt (examples/module)
     'nmodule' => (string) file_get_contents(__DIR__ . '/../../examples/module/HinweisModule.php'),
     // derselbe Hinweis als Block: die Datei, die auch im Projekt liegt
@@ -224,630 +228,630 @@ CODE,
     // Adressen (Routing): die Datei, die auch im Projekt liegt (examples/routing)
     'rnews' => (string) file_get_contents(__DIR__ . '/../../examples/routing/NewsRoutes.php'),
     'udeploy' => <<<'CODE'
-# Sicherung der Datenbank – Verbindungsdaten liefert die Konsole
-mariadb-dump --single-transaction $(php bin/console db:connection-options | tr '\n' ' ') | gzip > backup.sql.gz
+        # Sicherung der Datenbank – Verbindungsdaten liefert die Konsole
+        mariadb-dump --single-transaction $(php bin/console db:connection-options | tr '\n' ' ') | gzip > backup.sql.gz
 
-# neuen Stand holen (git pull, Paket entpacken …), dann:
-composer install --no-dev --optimize-autoloader
-php bin/console cache:clear
-php bin/console migrate            # Tabellen von Core, AddOns und Projekt angleichen
-php bin/console migrate:cleanup    # Daten entfernter AddOns löschen (nach dem Umschalten)
-CODE,
+        # neuen Stand holen (git pull, Paket entpacken …), dann:
+        composer install --no-dev --optimize-autoloader
+        php bin/console cache:clear
+        php bin/console migrate            # Tabellen von Core, AddOns und Projekt angleichen
+        php bin/console migrate:cleanup    # Daten entfernter AddOns löschen (nach dem Umschalten)
+        CODE,
     'rconfig' => <<<'CODE'
-use Klxm\Fluid\Routing\Router;
-use Klxm\Fluid\Routing\RoutingConfig;
-use Klxm\Fluid\Routing\Seo\Head;
-use Klxm\Fluid\Routing\Seo\HeadConfig;
-use Klxm\Fluid\Routing\Seo\HeadTag;
-use Klxm\Fluid\Routing\UrlFormat;
+        use Klxm\Fluid\Routing\Router;
+        use Klxm\Fluid\Routing\RoutingConfig;
+        use Klxm\Fluid\Routing\Seo\Head;
+        use Klxm\Fluid\Routing\Seo\HeadConfig;
+        use Klxm\Fluid\Routing\Seo\HeadTag;
+        use Klxm\Fluid\Routing\UrlFormat;
 
-public function configure(): void
-{
-    // Endung der Adressen: none() · slash() · html() · mixed() · suffix('.htm')
-    // jede andere Schreibweise leitet per 301 auf diese um; im Code gesetzt, zeigt „Website → Adressen“ sie nur an
-    Router::$config = new RoutingConfig(format: UrlFormat::mixed());
+        public function configure(): void
+        {
+            // Endung der Adressen: none() · slash() · html() · mixed() · suffix('.htm')
+            // jede andere Schreibweise leitet per 301 auf diese um; im Code gesetzt, zeigt „Website → Adressen“ sie nur an
+            Router::$config = new RoutingConfig(format: UrlFormat::mixed());
 
-    // eigene Tags auf jeder Seite (gleicher Schlüssel ersetzt eine Angabe des Routings)
-    Head::$config = new HeadConfig(tags: [
-        HeadTag::meta('theme-color', '#1f7a4d'),
-        HeadTag::link('preconnect', 'https://cdn.example.org'),
-    ]);
-}
-CODE,
-    'rshow' => <<<'CODE'
-// Adresse eines Eintrags (aktuelle Sprache bzw. eine andere)
-$url = Router::urlFor('news', $id);
-$en = Router::urlFor('news', $id, 2);
-
-// nach dem Speichern eines Datensatzes: Adressen neu berechnen
-// (geänderte Adressen bekommen automatisch eine 301-Weiterleitung)
-Routes::rebuildSource('news');
-CODE,
-    'rrebuild' => <<<'CODE'
-php bin/console routing:rebuild                  # Seiten und alle Quellen
-php bin/console routing:rebuild --source=news    # nur eine Quelle
-CODE,
-    'rcode' => <<<'CODE'
-#[AsRouteSource('events', label: 'Termine')]
-final class EventRoutes extends RouteSource
-{
-    /** alle Einträge – je Sprache einer */
-    public function entries(): iterable
-    {
-        foreach (Event::upcoming() as $e) {
-            yield new RouteEntry('events', (string) $e->id, $e->languageId, articleId: 7,
-                slug: $e->date->format('Y') . '/' . $e->title,      // /termine/2026/sommerfest
-                params: ['event' => $e->id], modified: $e->updated);
+            // eigene Tags auf jeder Seite (gleicher Schlüssel ersetzt eine Angabe des Routings)
+            Head::$config = new HeadConfig(tags: [
+                HeadTag::meta('theme-color', '#1f7a4d'),
+                HeadTag::link('preconnect', 'https://cdn.example.org'),
+            ]);
         }
-    }
+        CODE,
+    'rshow' => <<<'CODE'
+        // Adresse eines Eintrags (aktuelle Sprache bzw. eine andere)
+        $url = Router::urlFor('news', $id);
+        $en = Router::urlFor('news', $id, 2);
 
-    /** Angaben für den Seitenkopf: Titel, Text, Bild, schema.org */
-    public function meta(RouteEntry $entry): ?PageMeta
-    {
-        $e = Event::get((int) $entry->id);
+        // nach dem Speichern eines Datensatzes: Adressen neu berechnen
+        // (geänderte Adressen bekommen automatisch eine 301-Weiterleitung)
+        Routes::rebuildSource('news');
+        CODE,
+    'rrebuild' => <<<'CODE'
+        php bin/console routing:rebuild                  # Seiten und alle Quellen
+        php bin/console routing:rebuild --source=news    # nur eine Quelle
+        CODE,
+    'rcode' => <<<'CODE'
+        #[AsRouteSource('events', label: 'Termine')]
+        final class EventRoutes extends RouteSource
+        {
+            /** alle Einträge – je Sprache einer */
+            public function entries(): iterable
+            {
+                foreach (Event::upcoming() as $e) {
+                    yield new RouteEntry('events', (string) $e->id, $e->languageId, articleId: 7,
+                        slug: $e->date->format('Y') . '/' . $e->title,      // /termine/2026/sommerfest
+                        params: ['event' => $e->id], modified: $e->updated);
+                }
+            }
 
-        return new PageMeta(title: $e->title, description: $e->teaser, image: $e->image, type: 'article',
-            jsonLd: [['@type' => 'Event', 'name' => $e->title, 'startDate' => $e->date->format('c')]]);
-    }
-}
-CODE,
+            /** Angaben für den Seitenkopf: Titel, Text, Bild, schema.org */
+            public function meta(RouteEntry $entry): ?PageMeta
+            {
+                $e = Event::get((int) $entry->id);
+
+                return new PageMeta(title: $e->title, description: $e->teaser, image: $e->image, type: 'article',
+                    jsonLd: [['@type' => 'Event', 'name' => $e->title, 'startDate' => $e->date->format('c')]]);
+            }
+        }
+        CODE,
     'chartRender' => <<<'CODE'
-use Klxm\Fluid\Chart\Chart;
+        use Klxm\Fluid\Chart\Chart;
 
-echo Chart::render([
-    'type' => 'line',                              // line | area | bar | hbar | pie | donut
-    'labels' => ['Jan', 'Feb', 'Mär', 'Apr'],
-    'series' => [['name' => 'Anfragen', 'data' => [12, 19, 15, 24]]],
-    'description' => 'Anfragen je Monat, höchster Wert im April',
-    'format' => 'number', 'unit' => '', 'height' => 320,
-], ['table' => false]);   // true = Tabelle aufgeklappt, 'none' = ohne
-CODE,
+        echo Chart::render([
+            'type' => 'line',                              // line | area | bar | hbar | pie | donut
+            'labels' => ['Jan', 'Feb', 'Mär', 'Apr'],
+            'series' => [['name' => 'Anfragen', 'data' => [12, 19, 15, 24]]],
+            'description' => 'Anfragen je Monat, höchster Wert im April',
+            'format' => 'number', 'unit' => '', 'height' => 320,
+        ], ['table' => false]);   // true = Tabelle aufgeklappt, 'none' = ohne
+        CODE,
     'chartSource' => (string) file_get_contents(__DIR__ . '/src/ChartSources.php'),
     'chartEngine' => <<<'CODE'
-use Klxm\Fluid\Chart\Attribute\AsChartEngine;
-use Klxm\Fluid\Chart\ChartEngine;
+        use Klxm\Fluid\Chart\Attribute\AsChartEngine;
+        use Klxm\Fluid\Chart\ChartEngine;
 
-#[AsChartEngine('apex')]
-final class ApexEngine implements ChartEngine
-{
-    public function url(): string
-    {
-        return '/assets/project/charts-apex.mjs';
-    }
-}
-
-// src/Project.php – in configure()
-Chart::$config = new ChartConfig(engine: 'apex');
-CODE,
-    'chartJs' => <<<'CODE'
-// assets/project/charts-apex.mjs – die einzige Datei, die die Bibliothek kennt
-export function render(el, spec, theme) {
-  // spec: type, labels, series[{name, data}], format, unit, stacked, height, locale
-  // theme: colors[], ink, muted, grid, bg, font, dark (aus den CSS-Variablen der Seite)
-  const chart = draw(el, spec, theme);
-  return {
-    update: (t) => chart.restyle(t),   // Hell/Dunkel gewechselt
-    resize: () => chart.resize(),
-    dispose: () => chart.destroy(),
-    image: () => chart.png(),          // optional: Bild für den Druck
-  };
-}
-CODE,
-    'rshort' => <<<'CODE'
-use Klxm\Fluid\Routing\ExtensionPoint\RedirectMatched;
-use Klxm\Fluid\Routing\ExtensionPoint\ShortlinkPath;
-use Klxm\Fluid\Routing\Shortlinks;
-use Redaxo\Core\ExtensionPoint\AsExtension;
-
-final class Campaigns
-{
-    // alle Kurzlinks unter /go/… – aus „sommerfest“ wird /go/sommerfest
-    #[AsExtension]
-    public static function prefix(ShortlinkPath $ep): string
-    {
-        return '/go' . $ep->subject;
-    }
-
-    // Klicks über Kurzlinks in der Statistik erkennen
-    #[AsExtension]
-    public static function campaign(RedirectMatched $ep): ?string
-    {
-        if (Shortlinks::ORIGIN !== $ep->rule['origin']) {
-            return null;   // null = Ziel bleibt
+        #[AsChartEngine('apex')]
+        final class ApexEngine implements ChartEngine
+        {
+            public function url(): string
+            {
+                return '/assets/project/charts-apex.mjs';
+            }
         }
 
-        return $ep->subject . (str_contains($ep->subject, '?') ? '&' : '?') . 'utm_source=kurzlink';
-    }
-}
-CODE,
+        // src/Project.php – in configure()
+        Chart::$config = new ChartConfig(engine: 'apex');
+        CODE,
+    'chartJs' => <<<'CODE'
+        // assets/project/charts-apex.mjs – die einzige Datei, die die Bibliothek kennt
+        export function render(el, spec, theme) {
+          // spec: type, labels, series[{name, data}], format, unit, stacked, height, locale
+          // theme: colors[], ink, muted, grid, bg, font, dark (aus den CSS-Variablen der Seite)
+          const chart = draw(el, spec, theme);
+          return {
+            update: (t) => chart.restyle(t),   // Hell/Dunkel gewechselt
+            resize: () => chart.resize(),
+            dispose: () => chart.destroy(),
+            image: () => chart.png(),          // optional: Bild für den Druck
+          };
+        }
+        CODE,
+    'rshort' => <<<'CODE'
+        use Klxm\Fluid\Routing\ExtensionPoint\RedirectMatched;
+        use Klxm\Fluid\Routing\ExtensionPoint\ShortlinkPath;
+        use Klxm\Fluid\Routing\Shortlinks;
+        use Redaxo\Core\ExtensionPoint\AsExtension;
+
+        final class Campaigns
+        {
+            // alle Kurzlinks unter /go/… – aus „sommerfest“ wird /go/sommerfest
+            #[AsExtension]
+            public static function prefix(ShortlinkPath $ep): string
+            {
+                return '/go' . $ep->subject;
+            }
+
+            // Klicks über Kurzlinks in der Statistik erkennen
+            #[AsExtension]
+            public static function campaign(RedirectMatched $ep): ?string
+            {
+                if (Shortlinks::ORIGIN !== $ep->rule['origin']) {
+                    return null;   // null = Ziel bleibt
+                }
+
+                return $ep->subject . (str_contains($ep->subject, '?') ? '&' : '?') . 'utm_source=kurzlink';
+            }
+        }
+        CODE,
     'rendpoint' => <<<'CODE'
-final class Calendar
-{
-    // eigene Adresse vor den Seiten
-    #[AsEndpoint('/termine.ics')]
-    public static function ics(): void
-    {
-        Router::respond(self::build(), 'text/calendar; charset=utf-8');
-    }
+        final class Calendar
+        {
+            // eigene Adresse vor den Seiten
+            #[AsEndpoint('/termine.ics')]
+            public static function ics(): void
+            {
+                Router::respond(self::build(), 'text/calendar; charset=utf-8');
+            }
 
-    // eigener Tag im Seitenkopf jeder Seite
-    #[AsExtension]
-    public static function head(PageMetaResolved $ep): PageMeta
-    {
-        return $ep->subject->add(HeadTag::link('alternate', Router::absolute('/termine.ics'),
-            ['type' => 'text/calendar', 'title' => 'Termine']));
-    }
-}
-CODE,
+            // eigener Tag im Seitenkopf jeder Seite
+            #[AsExtension]
+            public static function head(PageMetaResolved $ep): PageMeta
+            {
+                return $ep->subject->add(HeadTag::link('alternate', Router::absolute('/termine.ics'),
+                    ['type' => 'text/calendar', 'title' => 'Termine']));
+            }
+        }
+        CODE,
     'nmodule_input' => <<<'CODE'
-public function input(Form $form): string
-{
-    // eigener Aufbau – fluid zeigt dafür das Formular des Cores in der Seitenleiste
-    return '<p class="rex-field-note">Hinweis über den Feldern</p>' . $form->rest();
-}
-CODE,
+        public function input(Form $form): string
+        {
+            // eigener Aufbau – fluid zeigt dafür das Formular des Cores in der Seitenleiste
+            return '<p class="rex-field-note">Hinweis über den Feldern</p>' . $form->rest();
+        }
+        CODE,
     'template' => <<<'CODE'
-<?php
+        <?php
 
-namespace Project\Template;
+        namespace Project\Template;
 
-use Override;
-use Project\Module\TeaserModule;
-use Redaxo\Core\Content\ArticleContent;
-use Redaxo\Core\Content\AsTemplate;
-use Redaxo\Core\Content\ContentSection;
-use Redaxo\Core\Content\Template;
-use Redaxo\Core\View\HasView;
+        use Override;
+        use Project\Module\TeaserModule;
+        use Redaxo\Core\Content\ArticleContent;
+        use Redaxo\Core\Content\AsTemplate;
+        use Redaxo\Core\Content\ContentSection;
+        use Redaxo\Core\Content\Template;
+        use Redaxo\Core\View\HasView;
 
-#[AsTemplate('page', 'Seite')]
-final class PageTemplate extends Template
-{
-    use HasView;
+        #[AsTemplate('page', 'Seite')]
+        final class PageTemplate extends Template
+        {
+            use HasView;
 
-    #[Override]
-    public function getContentSections(): array
-    {
-        return [new ContentSection(1, 'Inhalt'), new ContentSection(2, 'Seitenleiste')];
-    }
+            #[Override]
+            public function getContentSections(): array
+            {
+                return [new ContentSection(1, 'Inhalt'), new ContentSection(2, 'Seitenleiste')];
+            }
 
-    #[Override]
-    public function isModuleAllowed(ContentSection $section, string $module): bool
-    {
-        // In der Seitenleiste nur Teaser
-        return 2 !== $section->id || TeaserModule::class === $module;
-    }
+            #[Override]
+            public function isModuleAllowed(ContentSection $section, string $module): bool
+            {
+                // In der Seitenleiste nur Teaser
+                return 2 !== $section->id || TeaserModule::class === $module;
+            }
 
-    #[Override]
-    public function render(ArticleContent $content): string
-    {
-        return $this->renderView($content);   // PageTemplate.view.php daneben
-    }
-}
-CODE,
+            #[Override]
+            public function render(ArticleContent $content): string
+            {
+                return $this->renderView($content);   // PageTemplate.view.php daneben
+            }
+        }
+        CODE,
     'view' => <<<'CODE'
-<?php
+        <?php
 
-use Redaxo\Core\Content\ArticleContent;
+        use Redaxo\Core\Content\ArticleContent;
 
-use function Redaxo\Core\View\escape;
+        use function Redaxo\Core\View\escape;
 
-return static function (ArticleContent $content): void { ?>
-    <!DOCTYPE html>
-    <html lang="de">
-    <head>
-        <meta charset="utf-8">
-        <title><?= escape($content->article->name) ?></title>
-    </head>
-    <body>
-        <main><?= $content->renderContent(1) ?></main>
-        <aside><?= $content->renderContent(2) ?></aside>
-    </body>
-    </html>
-<?php };
-CODE,
+        return static function (ArticleContent $content): void { ?>
+            <!DOCTYPE html>
+            <html lang="de">
+            <head>
+                <meta charset="utf-8">
+                <title><?= escape($content->article->name) ?></title>
+            </head>
+            <body>
+                <main><?= $content->renderContent(1) ?></main>
+                <aside><?= $content->renderContent(2) ?></aside>
+            </body>
+            </html>
+        <?php };
+        CODE,
     'kithead' => <<<'CODE'
-<?php
+        <?php
 
-use Klxm\Fluid\KitHead;
-use Redaxo\Core\Content\ArticleContent;
+        use Klxm\Fluid\KitHead;
+        use Redaxo\Core\Content\ArticleContent;
 
-return static function (ArticleContent $content): void { ?>
-    <!DOCTYPE html>
-    <html lang="de" <?= KitHead::htmlAttributes() ?>>
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <?= KitHead::render() ?>
-    </head>
-    <body>
-        <main id="main"><?= $content->renderContent(1) ?></main>
-        <aside><?= $content->renderContent(2) ?></aside>
-    </body>
-    </html>
-<?php };
-CODE,
+        return static function (ArticleContent $content): void { ?>
+            <!DOCTYPE html>
+            <html lang="de" <?= KitHead::htmlAttributes() ?>>
+            <head>
+                <meta charset="utf-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1">
+                <?= KitHead::render() ?>
+            </head>
+            <body>
+                <main id="main"><?= $content->renderContent(1) ?></main>
+                <aside><?= $content->renderContent(2) ?></aside>
+            </body>
+            </html>
+        <?php };
+        CODE,
     'project' => <<<'CODE'
-<?php
+        <?php
 
-namespace Project;
+        namespace Project;
 
-use Override;
-use Project\Template\PageTemplate;
-use Redaxo\Core\AbstractProject;
-use Redaxo\Core\Content\Template;
+        use Override;
+        use Project\Template\PageTemplate;
+        use Redaxo\Core\AbstractProject;
+        use Redaxo\Core\Content\Template;
 
-final class Project extends AbstractProject
-{
-    #[Override]
-    public function boot(): void
-    {
-        Template::setDefault(PageTemplate::class);   // Template für neue Artikel
-    }
-}
-CODE,
+        final class Project extends AbstractProject
+        {
+            #[Override]
+            public function boot(): void
+            {
+                Template::setDefault(PageTemplate::class);   // Template für neue Artikel
+            }
+        }
+        CODE,
     'yrequire' => <<<'CODE'
-composer config repositories.yform '{"type": "vcs", "url": "https://github.com/yakamara/yform", "no-api": true}'
-composer require yakamara/yform:6.x-dev@dev
-php bin/console migrate
-CODE,
+        composer config repositories.yform '{"type": "vcs", "url": "https://github.com/yakamara/yform", "no-api": true}'
+        composer require yakamara/yform:6.x-dev@dev
+        php bin/console migrate
+        CODE,
     'ytable' => <<<'CODE'
-<?php
+        <?php
 
-namespace Project\YForm;
+        namespace Project\YForm;
 
-use Yakamara\YForm\Attribute\AsTable;
-use Yakamara\YForm\Field\Checkbox;
-use Yakamara\YForm\Field\Date;
-use Yakamara\YForm\Field\Media;
-use Yakamara\YForm\Field\Text;
-use Yakamara\YForm\Field\Textarea;
-use Yakamara\YForm\Table\ListConfig;
-use Yakamara\YForm\Table\Table;
+        use Yakamara\YForm\Attribute\AsTable;
+        use Yakamara\YForm\Field\Checkbox;
+        use Yakamara\YForm\Field\Date;
+        use Yakamara\YForm\Field\Media;
+        use Yakamara\YForm\Field\Text;
+        use Yakamara\YForm\Field\Textarea;
+        use Yakamara\YForm\Table\ListConfig;
+        use Yakamara\YForm\Table\Table;
 
-#[AsTable('rex_yf_event', label: 'Termine', icon: 'fa-calendar')]
-final class EventTable extends Table
-{
-    public function fields(): iterable
-    {
-        yield Text::new('title')->label('Titel')->required()->maxLength(191)->filterable();
-        yield Date::new('date')->label('Datum')->required()->filterable();
-        yield Textarea::new('text')->label('Beschreibung');
-        yield Media::new('image')->label('Bild')->types('jpg', 'png', 'webp');
-        yield Checkbox::new('online')->label('Online')->default(true)->filterable();
-    }
+        #[AsTable('rex_yf_event', label: 'Termine', icon: 'fa-calendar')]
+        final class EventTable extends Table
+        {
+            public function fields(): iterable
+            {
+                yield Text::new('title')->label('Titel')->required()->maxLength(191)->filterable();
+                yield Date::new('date')->label('Datum')->required()->filterable();
+                yield Textarea::new('text')->label('Beschreibung');
+                yield Media::new('image')->label('Bild')->types('jpg', 'png', 'webp');
+                yield Checkbox::new('online')->label('Online')->default(true)->filterable();
+            }
 
-    public function list(ListConfig $list): ListConfig
-    {
-        return $list->columns('id', 'title', 'date', 'online')->sortBy('date', 'asc');
-    }
-}
-CODE,
+            public function list(ListConfig $list): ListConfig
+            {
+                return $list->columns('id', 'title', 'date', 'online')->sortBy('date', 'asc');
+            }
+        }
+        CODE,
     'yquery' => <<<'CODE'
-<?php
+        <?php
 
-use Project\YForm\EventTable;
+        use Project\YForm\EventTable;
 
-use function Redaxo\Core\View\escape;
+        use function Redaxo\Core\View\escape;
 
-$events = EventTable::query()
-    ->where('online', 1)
-    ->where('date', '>=', date('Y-m-d'))
-    ->orderBy('date')
-    ->limit(5)
-    ->find();
+        $events = EventTable::query()
+            ->where('online', 1)
+            ->where('date', '>=', date('Y-m-d'))
+            ->orderBy('date')
+            ->limit(5)
+            ->find();
 
-foreach ($events as $event) {
-    echo '<h3>' . escape($event->get('title')) . '</h3>';
-    echo '<p>' . $event->get('date')->format('d.m.Y') . '</p>';
-}
-CODE,
+        foreach ($events as $event) {
+            echo '<h3>' . escape($event->get('title')) . '</h3>';
+            echo '<p>' . $event->get('date')->format('d.m.Y') . '</p>';
+        }
+        CODE,
     'nav' => <<<'CODE'
-<?php
+        <?php
 
-use Klxm\NavigationArray\Component\NavigationBreadcrumb;
-use Klxm\NavigationArray\Navigation;
-use Klxm\NavigationArray\NavigationItem;
+        use Klxm\NavigationArray\Component\NavigationBreadcrumb;
+        use Klxm\NavigationArray\Navigation;
+        use Klxm\NavigationArray\NavigationItem;
 
-use function Redaxo\Core\View\escape;
+        use function Redaxo\Core\View\escape;
 
-$nav = new Navigation(depth: 1, exclude: [12]);   // erste Ebene und eine darunter, ohne Kategorie 12
+        $nav = new Navigation(depth: 1, exclude: [12]);   // erste Ebene und eine darunter, ohne Kategorie 12
 
-// walk(): je Eintrag Markup, $children() rendert die nächste Ebene genauso
-echo '<nav><ul>' . $nav->walk(static fn (NavigationItem $item, Closure $children): string => '<li' . ($item->active ? ' class="active"' : '') . '>'
-    . '<a href="' . escape($item->url) . '"' . ($item->current ? ' aria-current="page"' : '') . '>' . escape($item->name) . '</a>'
-    . ($item->hasChildren() ? '<ul>' . $children() . '</ul>' : '')
-    . '</li>') . '</ul></nav>';
+        // walk(): je Eintrag Markup, $children() rendert die nächste Ebene genauso
+        echo '<nav><ul>' . $nav->walk(static fn (NavigationItem $item, Closure $children): string => '<li' . ($item->active ? ' class="active"' : '') . '>'
+            . '<a href="' . escape($item->url) . '"' . ($item->current ? ' aria-current="page"' : '') . '>' . escape($item->name) . '</a>'
+            . ($item->hasChildren() ? '<ul>' . $children() . '</ul>' : '')
+            . '</li>') . '</ul></nav>';
 
-// Brotkrumen als Komponente, mit strukturierten Daten (Schema.org BreadcrumbList)
-echo new NavigationBreadcrumb($nav, label: 'Sie sind hier', jsonLd: true)->render();
-CODE,
+        // Brotkrumen als Komponente, mit strukturierten Daten (Schema.org BreadcrumbList)
+        echo new NavigationBreadcrumb($nav, label: 'Sie sind hier', jsonLd: true)->render();
+        CODE,
     'navInstall' => <<<'CODE'
-composer config repositories.navigation_array '{"type": "vcs", "url": "https://github.com/KLXM/navigation_array", "no-api": true}'
-composer require klxm/navigation_array:1.x-dev
-php bin/console migrate
-CODE,
+        composer config repositories.navigation_array '{"type": "vcs", "url": "https://github.com/KLXM/navigation_array", "no-api": true}'
+        composer require klxm/navigation_array:1.x-dev
+        php bin/console migrate
+        CODE,
     'frequire' => <<<'CODE'
-composer config repositories.yform '{"type": "vcs", "url": "https://github.com/yakamara/yform", "no-api": true}'
-composer config repositories.navigation_array '{"type": "vcs", "url": "https://github.com/KLXM/navigation_array", "no-api": true}'
-composer config repositories.fluid '{"type": "vcs", "url": "https://github.com/KLXM/fluid", "no-api": true}'
-composer require yakamara/yform:6.x-dev@dev klxm/fluid:*@dev
-php bin/console migrate
-CODE,
+        composer config repositories.yform '{"type": "vcs", "url": "https://github.com/yakamara/yform", "no-api": true}'
+        composer config repositories.navigation_array '{"type": "vcs", "url": "https://github.com/KLXM/navigation_array", "no-api": true}'
+        composer config repositories.fluid '{"type": "vcs", "url": "https://github.com/KLXM/fluid", "no-api": true}'
+        composer require yakamara/yform:6.x-dev@dev klxm/fluid:*@dev
+        php bin/console migrate
+        CODE,
     'fdemo' => <<<'CODE'
-# Demo-Inhalte mit Bildern und Design „REDAXO · Blau“ (nur in einer leeren Installation)
-php bin/console fluid:demo --set=redaxo6 --media --design=redaxo
-CODE,
+        # Demo-Inhalte mit Bildern und Design „REDAXO · Blau“ (nur in einer leeren Installation)
+        php bin/console fluid:demo --set=redaxo6 --media --design=redaxo
+        CODE,
     // eigener Block: die Datei, die auch im Projekt liegt (examples/block)
     'fblock' => (string) file_get_contents(__DIR__ . '/../../examples/block/Teaser.php'),
     'beModule' => <<<'CODE'
-<?php
+        <?php
 
-namespace Project\Module;
+        namespace Project\Module;
 
-use Override;
-use Redaxo\Core\Content\AsModule;
-use Redaxo\Core\Content\Module;
-use Redaxo\Core\Form\Field\Choice;
-use Redaxo\Core\Form\Field\Text;
-use Redaxo\Core\Form\Form;
-use Redaxo\Core\View\Component\Breakpoint;
-use Redaxo\Core\View\Component\Grid;
-use Redaxo\Core\View\Component\GridColumn;
-use Redaxo\Core\View\Component\GridColumnRule;
+        use Override;
+        use Redaxo\Core\Content\AsModule;
+        use Redaxo\Core\Content\Module;
+        use Redaxo\Core\Form\Field\Choice;
+        use Redaxo\Core\Form\Field\Text;
+        use Redaxo\Core\Form\Form;
+        use Redaxo\Core\View\Component\Breakpoint;
+        use Redaxo\Core\View\Component\Grid;
+        use Redaxo\Core\View\Component\GridColumn;
+        use Redaxo\Core\View\Component\GridColumnRule;
 
-use function Redaxo\Core\View\escape;
+        use function Redaxo\Core\View\escape;
 
-#[AsModule('hero', 'Einstieg')]
-final class HeroModule extends Module
-{
-    #[Text('Überschrift', required: true)]
-    public string $headline = '';
+        #[AsModule('hero', 'Einstieg')]
+        final class HeroModule extends Module
+        {
+            #[Text('Überschrift', required: true)]
+            public string $headline = '';
 
-    #[Text('Unterzeile')]
-    public string $subline = '';
+            #[Text('Unterzeile')]
+            public string $subline = '';
 
-    #[Choice('Hintergrund', ['light' => 'hell', 'dark' => 'dunkel'])]
-    public string $background = 'light';
+            #[Choice('Hintergrund', ['light' => 'hell', 'dark' => 'dunkel'])]
+            public string $background = 'light';
 
-    // Eigene Anordnung: Überschrift und Unterzeile ab mittlerer Breite nebeneinander, der Rest darunter
-    #[Override]
-    public function input(Form $form): string
-    {
-        $half = [new GridColumnRule(Breakpoint::Md, width: 6)];
+            // Eigene Anordnung: Überschrift und Unterzeile ab mittlerer Breite nebeneinander, der Rest darunter
+            #[Override]
+            public function input(Form $form): string
+            {
+                $half = [new GridColumnRule(Breakpoint::Md, width: 6)];
 
-        return new Grid([
-            new GridColumn($form->row('headline'), $half),
-            new GridColumn($form->row('subline'), $half),
-        ])->render() . $form->rest();
-    }
+                return new Grid([
+                    new GridColumn($form->row('headline'), $half),
+                    new GridColumn($form->row('subline'), $half),
+                ])->render() . $form->rest();
+            }
 
-    public function output(): string
-    {
-        return '<header class="hero hero--' . escape($this->background) . '"><h1>' . escape($this->headline) . '</h1><p>' . escape($this->subline) . '</p></header>';
-    }
-}
-CODE,
+            public function output(): string
+            {
+                return '<header class="hero hero--' . escape($this->background) . '"><h1>' . escape($this->headline) . '</h1><p>' . escape($this->subline) . '</p></header>';
+            }
+        }
+        CODE,
     'beMarkup' => <<<'CODE'
-<div class="rex-field">
-    <label class="rex-field-label" for="teaser-title">
-        Überschrift <span class="rex-field-required" aria-hidden="true">*</span>
-    </label>
-    <div class="rex-field-control">
-        <input class="rex-input" type="text" id="teaser-title" name="title" required>
-        <p class="rex-field-note">Kurz und knapp.</p>
-    </div>
-</div>
-
-<div class="rex-field">
-    <label class="rex-field-label" for="teaser-url">Link</label>
-    <div class="rex-field-control">
-        <div class="rex-input-group">
-            <span class="rex-input-group-text">https://</span>
-            <input class="rex-input" type="text" id="teaser-url" name="url">
+        <div class="rex-field">
+            <label class="rex-field-label" for="teaser-title">
+                Überschrift <span class="rex-field-required" aria-hidden="true">*</span>
+            </label>
+            <div class="rex-field-control">
+                <input class="rex-input" type="text" id="teaser-title" name="title" required>
+                <p class="rex-field-note">Kurz und knapp.</p>
+            </div>
         </div>
-    </div>
-</div>
 
-<div class="rex-check">
-    <label><input type="checkbox" name="menu" value="1"> Im Menü zeigen</label>
-</div>
+        <div class="rex-field">
+            <label class="rex-field-label" for="teaser-url">Link</label>
+            <div class="rex-field-control">
+                <div class="rex-input-group">
+                    <span class="rex-input-group-text">https://</span>
+                    <input class="rex-input" type="text" id="teaser-url" name="url">
+                </div>
+            </div>
+        </div>
 
-<button type="submit" class="rex-button" data-variant="primary">Speichern</button>
-<button type="submit" class="rex-button" data-variant="danger" data-confirm="Wirklich löschen?">Löschen</button>
-CODE,
+        <div class="rex-check">
+            <label><input type="checkbox" name="menu" value="1"> Im Menü zeigen</label>
+        </div>
+
+        <button type="submit" class="rex-button" data-variant="primary">Speichern</button>
+        <button type="submit" class="rex-button" data-variant="danger" data-confirm="Wirklich löschen?">Löschen</button>
+        CODE,
     'beSection' => <<<'CODE'
-use Redaxo\Core\View\Component\Section;
-use Redaxo\Core\View\Html;
+        use Redaxo\Core\View\Component\Section;
+        use Redaxo\Core\View\Html;
 
-// Kasten mit Titel, Inhalt mit Abstand (body) oder ohne (content, z. B. eine Tabelle)
-echo new Section(title: 'Einstellungen', body: Html::raw($formHtml))->render();
-echo new Section(title: 'Einträge', content: Html::raw('<table class="rex-table" data-hover>…</table>'))->render();
-CODE,
+        // Kasten mit Titel, Inhalt mit Abstand (body) oder ohne (content, z. B. eine Tabelle)
+        echo new Section(title: 'Einstellungen', body: Html::raw($formHtml))->render();
+        echo new Section(title: 'Einträge', content: Html::raw('<table class="rex-table" data-hover>…</table>'))->render();
+        CODE,
     'beCss' => <<<'CODE'
-/* Eigene Komponente mit eigenem Präfix – Farben nur über die Tokens des Cores,
-   dann passt sie automatisch zu hell und dunkel */
-.project-preview {
-    padding: 15px;
-    border: 1px solid var(--rex-color-border);
-    background: var(--rex-color-surface-muted);
-    color: var(--rex-color-text);
-}
+        /* Eigene Komponente mit eigenem Präfix – Farben nur über die Tokens des Cores,
+           dann passt sie automatisch zu hell und dunkel */
+        .project-preview {
+            padding: 15px;
+            border: 1px solid var(--rex-color-border);
+            background: var(--rex-color-surface-muted);
+            color: var(--rex-color-text);
+        }
 
-.project-preview__hint {
-    color: var(--rex-color-text-muted);
-}
-CODE,
+        .project-preview__hint {
+            color: var(--rex-color-text-muted);
+        }
+        CODE,
     'beAssets' => <<<'CODE'
-<?php
+        <?php
 
-namespace Project;
+        namespace Project;
 
-use Override;
-use Redaxo\Core\AbstractProject;
-use Redaxo\Core\Core;
-use Redaxo\Core\View\Asset;
+        use Override;
+        use Redaxo\Core\AbstractProject;
+        use Redaxo\Core\Core;
+        use Redaxo\Core\View\Asset;
 
-final class Project extends AbstractProject
-{
-    #[Override]
-    public function boot(): void
-    {
-        // Eigene Stile und Skripte fürs Backend – als Dateien, nie inline (Content-Security-Policy)
-        if (Core::isBackend()) {
-            Asset::addCssFile('/assets/project/backend.css');
-            Asset::addJsFile('/assets/project/backend.js');
+        final class Project extends AbstractProject
+        {
+            #[Override]
+            public function boot(): void
+            {
+                // Eigene Stile und Skripte fürs Backend – als Dateien, nie inline (Content-Security-Policy)
+                if (Core::isBackend()) {
+                    Asset::addCssFile('/assets/project/backend.css');
+                    Asset::addJsFile('/assets/project/backend.js');
+                }
+            }
         }
-    }
-}
-CODE,
+        CODE,
     'beJs' => <<<'CODE'
-// Läuft für die Seite und für Markup, das später kommt (Overlays, neue Einträge einer Wiederholgruppe)
-const init = (root) => {
-    root.querySelectorAll('textarea[data-count]').forEach((field) => {
-        if (field.dataset.countReady) {
-            return;
-        }
-        field.dataset.countReady = '1';
-        const note = document.createElement('p');
-        note.className = 'rex-field-note';
-        const update = () => {
-            note.textContent = `${field.value.length} / ${field.dataset.count} Zeichen`;
+        // Läuft für die Seite und für Markup, das später kommt (Overlays, neue Einträge einer Wiederholgruppe)
+        const init = (root) => {
+            root.querySelectorAll('textarea[data-count]').forEach((field) => {
+                if (field.dataset.countReady) {
+                    return;
+                }
+                field.dataset.countReady = '1';
+                const note = document.createElement('p');
+                note.className = 'rex-field-note';
+                const update = () => {
+                    note.textContent = `${field.value.length} / ${field.dataset.count} Zeichen`;
+                };
+                field.after(note);
+                field.addEventListener('input', update);
+                update();
+            });
         };
-        field.after(note);
-        field.addEventListener('input', update);
-        update();
-    });
-};
 
-init(document);
-document.addEventListener('rex:ready', (event) => init(event.target));
-CODE,
+        init(document);
+        document.addEventListener('rex:ready', (event) => init(event.target));
+        CODE,
     'kitCreate' => <<<'CODE'
-php bin/console fluid:kit:create nature --label="Nature" --view=cta
+        php bin/console fluid:kit:create nature --label="Nature" --view=cta
 
-# legt an:
-#   src/Kit/Nature/NatureKit.php       Anmeldung des Kits
-#   src/Kit/Nature/kit.php             Definition – nur, was anders ist
-#   src/Kit/Nature/assets/css/kit.css  eigenes CSS
-#   src/Kit/Nature/views/cta.php       Kopie der View „Handlungsaufruf“ (--view)
-CODE,
+        # legt an:
+        #   src/Kit/Nature/NatureKit.php       Anmeldung des Kits
+        #   src/Kit/Nature/kit.php             Definition – nur, was anders ist
+        #   src/Kit/Nature/assets/css/kit.css  eigenes CSS
+        #   src/Kit/Nature/views/cta.php       Kopie der View „Handlungsaufruf“ (--view)
+        CODE,
     'kitClass' => <<<'CODE'
-<?php
+        <?php
 
-namespace Project\Kit\Nature;
+        namespace Project\Kit\Nature;
 
-use Klxm\Fluid\AsKit;
-use Klxm\Fluid\Kit;
+        use Klxm\Fluid\AsKit;
+        use Klxm\Fluid\Kit;
 
-/**
- * Kit „Nature“ – erbt von „Fluid“. Dateien in diesem Ordner ersetzen die des Eltern-Kits:
- * kit.php (Definition, z. B. Darstellungen für Blöcke), views/{typ}.php, template.view.php, functions.php, assets/.
- */
-#[AsKit('nature', 'Nature', parent: 'fluid')]
-final class NatureKit extends Kit {}
-CODE,
+        /**
+         * Kit „Nature“ – erbt von „Fluid“. Dateien in diesem Ordner ersetzen die des Eltern-Kits:
+         * kit.php (Definition, z. B. Darstellungen für Blöcke), views/{typ}.php, template.view.php, functions.php, assets/.
+         */
+        #[AsKit('nature', 'Nature', parent: 'fluid')]
+        final class NatureKit extends Kit {}
+        CODE,
     'kitDef' => <<<'CODE'
-<?php
+        <?php
 
-/*
- * Kit „Nature“: nur, was vom Eltern-Kit „fluid“ abweicht ($parent ist dessen Definition).
- */
+        /*
+         * Kit „Nature“: nur, was vom Eltern-Kit „fluid“ abweicht ($parent ist dessen Definition).
+         */
 
-return [
-    'label' => 'Nature',
-    // eigenes CSS für jede Seite – nach dem CSS von „fluid“
-    'css' => ['css/kit.css'],
-    // zusätzlicher Hintergrund für alle Blöcke (Klasse bg-sand)
-    'backgrounds' => ['sand' => 'Sand'],
-    // Handlungsaufruf: zusätzliche Variante „Mit Blatt“ – Felder und alles andere aus der Blockklasse
-    'blocks' => [
-        'cta' => ['variants' => ['leaf' => 'Mit Blatt']],
-    ],
-];
-CODE,
+        return [
+            'label' => 'Nature',
+            // eigenes CSS für jede Seite – nach dem CSS von „fluid“
+            'css' => ['css/kit.css'],
+            // zusätzlicher Hintergrund für alle Blöcke (Klasse bg-sand)
+            'backgrounds' => ['sand' => 'Sand'],
+            // Handlungsaufruf: zusätzliche Variante „Mit Blatt“ – Felder und alles andere aus der Blockklasse
+            'blocks' => [
+                'cta' => ['variants' => ['leaf' => 'Mit Blatt']],
+            ],
+        ];
+        CODE,
     'kitCss' => <<<'CODE'
-/* Hintergrund „Sand“: aus Akzent und Hintergrund gemischt – passt so zu hell und dunkel */
-.bg-sand {
-    --f-sec-bg: color-mix(in srgb, #c8a96a 22%, var(--f-bg));
-    --f-card: var(--f-bg);
-}
+        /* Hintergrund „Sand“: aus Akzent und Hintergrund gemischt – passt so zu hell und dunkel */
+        .bg-sand {
+            --f-sec-bg: color-mix(in srgb, #c8a96a 22%, var(--f-bg));
+            --f-card: var(--f-bg);
+        }
 
-/* Handlungsaufruf „Mit Blatt“ */
-.cta__leaf {
-    color: var(--f-a);
-    font-size: 2.5rem;
-}
-CODE,
+        /* Handlungsaufruf „Mit Blatt“ */
+        .cta__leaf {
+            color: var(--f-a);
+            font-size: 2.5rem;
+        }
+        CODE,
     'kitView' => <<<'CODE'
-<?php
-/** Handlungsaufruf im Kit „Nature“ – wie in „fluid“, dazu die Variante „Mit Blatt“ (Band mit Blatt). @var \Klxm\Fluid\Block $b  @var array $d */
-$leaf = 'leaf' === $b->variant();
-$v = $leaf ? 'band' : (in_array($b->variant(), ['band', 'box', 'split', 'big'], true) ? $b->variant() : 'band');
-$pic = $v === 'split' ? fluid_image($d['image'] ?? null, '(min-width: 1080px) 560px, 100vw', '4:3', 'cta__media') : '';
-?>
-<div class="wrap">
-  <div class="cta cta--<?= e($v) ?><?= $pic !== '' ? ' cta--media' : '' ?>">
-    <div class="cta__main">
-    <div class="cta__text">
-      <?php if ($leaf): ?><?= icon('leaf', ['class' => 'cta__leaf']) ?><?php endif; ?>
-      <?php if (trim((string) ($d['eyebrow'] ?? '')) !== ''): ?><p class="eyebrow"<?= $b->edit('eyebrow') ?>><?= e($d['eyebrow']) ?></p><?php endif; ?>
-      <h2 id="<?= e($b->titleId()) ?>" class="<?= $v === 'big' ? 'cta__big' : 'h2' ?> cta__title"<?= $b->edit('title') ?>><?= fluid_title((string) $d['title']) ?></h2>
-      <?php if ($d['text'] !== '' || is_editing()): ?><p class="cta__lead"<?= $b->edit('text') ?>><?= nl2br(e($d['text']), false) ?></p><?php endif; ?>
-    </div>
-    <?= fluid_buttons($b, 'cta__actions') ?>
-    </div>
-    <?= $pic ?>
-  </div>
-</div>
-CODE,
+        <?php
+        /** Handlungsaufruf im Kit „Nature“ – wie in „fluid“, dazu die Variante „Mit Blatt“ (Band mit Blatt). @var \Klxm\Fluid\Block $b  @var array $d */
+        $leaf = 'leaf' === $b->variant();
+        $v = $leaf ? 'band' : (in_array($b->variant(), ['band', 'box', 'split', 'big'], true) ? $b->variant() : 'band');
+        $pic = $v === 'split' ? fluid_image($d['image'] ?? null, '(min-width: 1080px) 560px, 100vw', '4:3', 'cta__media') : '';
+        ?>
+        <div class="wrap">
+          <div class="cta cta--<?= e($v) ?><?= $pic !== '' ? ' cta--media' : '' ?>">
+            <div class="cta__main">
+            <div class="cta__text">
+              <?php if ($leaf): ?><?= icon('leaf', ['class' => 'cta__leaf']) ?><?php endif; ?>
+              <?php if (trim((string) ($d['eyebrow'] ?? '')) !== ''): ?><p class="eyebrow"<?= $b->edit('eyebrow') ?>><?= e($d['eyebrow']) ?></p><?php endif; ?>
+              <h2 id="<?= e($b->titleId()) ?>" class="<?= $v === 'big' ? 'cta__big' : 'h2' ?> cta__title"<?= $b->edit('title') ?>><?= fluid_title((string) $d['title']) ?></h2>
+              <?php if ($d['text'] !== '' || is_editing()): ?><p class="cta__lead"<?= $b->edit('text') ?>><?= nl2br(e($d['text']), false) ?></p><?php endif; ?>
+            </div>
+            <?= fluid_buttons($b, 'cta__actions') ?>
+            </div>
+            <?= $pic ?>
+          </div>
+        </div>
+        CODE,
     'kitPackage' => <<<'CODE'
-{
-    "name": "acme/fluid-kit-nature",
-    "type": "redaxo-addon",
-    "require": { "klxm/fluid": "*@dev" },
-    "autoload": { "psr-4": { "Acme\\FluidKitNature\\": "src/" } },
-    "extra": { "redaxo": { "addon-class": "Acme\\FluidKitNature\\NatureAddon" } }
-}
-CODE,
+        {
+            "name": "acme/fluid-kit-nature",
+            "type": "redaxo-addon",
+            "require": { "klxm/fluid": "*@dev" },
+            "autoload": { "psr-4": { "Acme\\FluidKitNature\\": "src/" } },
+            "extra": { "redaxo": { "addon-class": "Acme\\FluidKitNature\\NatureAddon" } }
+        }
+        CODE,
     'kitAddon' => <<<'CODE'
-<?php
+        <?php
 
-namespace Acme\FluidKitNature;
+        namespace Acme\FluidKitNature;
 
-use Redaxo\Core\Addon\Addon;
+        use Redaxo\Core\Addon\Addon;
 
-// Leere AddOn-Klasse: damit REDAXO das Paket kennt und das Kit (src/NatureKit.php) findet
-final class NatureAddon extends Addon {}
-CODE,
+        // Leere AddOn-Klasse: damit REDAXO das Paket kennt und das Kit (src/NatureKit.php) findet
+        final class NatureAddon extends Addon {}
+        CODE,
     'veHtml' => <<<'CODE'
-use Klxm\VideoEditor\VideoEditor;
+        use Klxm\VideoEditor\VideoEditor;
 
-// fertiges <video>: Poster, Web-Fassungen je Bildschirm, Untertitel in der Sprache der Seite
-echo VideoEditor::html('kaetzchen.mp4', ['label' => 'Kätzchen spielt', 'captions' => true]);
+        // fertiges <video>: Poster, Web-Fassungen je Bildschirm, Untertitel in der Sprache der Seite
+        echo VideoEditor::html('kaetzchen.mp4', ['label' => 'Kätzchen spielt', 'captions' => true]);
 
-// stumm, in Schleife, ohne Bedienelemente – kleinste passende Fassung
-echo VideoEditor::html('kaetzchen.mp4', ['background' => true]);
+        // stumm, in Schleife, ohne Bedienelemente – kleinste passende Fassung
+        echo VideoEditor::html('kaetzchen.mp4', ['background' => true]);
 
-// nur fragen, wenn das AddOn da ist – fluid macht es genauso
-if (class_exists(VideoEditor::class)) {
-    $poster = VideoEditor::poster('kaetzchen.mp4');   // Media|null
-    $sources = VideoEditor::sources('kaetzchen.mp4'); // url, type, media
-    $tracks = VideoEditor::tracks('kaetzchen.mp4');   // url (text/vtt), lang, kind, label
-}
-CODE,
+        // nur fragen, wenn das AddOn da ist – fluid macht es genauso
+        if (class_exists(VideoEditor::class)) {
+            $poster = VideoEditor::poster('kaetzchen.mp4');   // Media|null
+            $sources = VideoEditor::sources('kaetzchen.mp4'); // url, type, media
+            $tracks = VideoEditor::tracks('kaetzchen.mp4');   // url (text/vtt), lang, kind, label
+        }
+        CODE,
     'veConsole' => <<<'CODE'
-# Fassungen anlegen – laufen nacheinander im Hintergrund
-php bin/console video:optimize kaetzchen.mp4 web480,web720,web1080,webm
+        # Fassungen anlegen – laufen nacheinander im Hintergrund
+        php bin/console video:optimize kaetzchen.mp4 web480,web720,web1080,webm
 
-# Standbild bei 4,6 Sekunden als Poster
-php bin/console video:poster kaetzchen.mp4 4.6
+        # Standbild bei 4,6 Sekunden als Poster
+        php bin/console video:poster kaetzchen.mp4 4.6
 
-# Untertitel aus VTT oder SRT übernehmen (gesäubert, als WebVTT verknüpft)
-php bin/console video:subtitles kaetzchen.mp4 untertitel-en.srt --lang=en --label=English
+        # Untertitel aus VTT oder SRT übernehmen (gesäubert, als WebVTT verknüpft)
+        php bin/console video:subtitles kaetzchen.mp4 untertitel-en.srt --lang=en --label=English
 
-# wartende Aufträge abarbeiten (sonst erledigt das der Cronjob)
-php bin/console video:work
-CODE,
+        # wartende Aufträge abarbeiten (sonst erledigt das der Cronjob)
+        php bin/console video:work
+        CODE,
 ];
 $c = static fn (string $key, string $file, string $lang): array => ['file' => $file, 'lang' => $lang, 'code' => $code[$key]];
 
@@ -863,7 +867,7 @@ return [
                 ['type' => 'hero', 'data' => [
                     'variant' => 'type',
                     // Release von fluid in der Dachzeile – der Platzhalter braucht das AddOn fluid_demo (sonst bliebe er roh stehen)
-                    'eyebrow' => class_exists(\Klxm\FluidDemo\FluidVersion::class) ? 'fluid {fluid-version} · REDAXO 6 in Entwicklung' : 'REDAXO 6 · in Entwicklung',
+                    'eyebrow' => class_exists(FluidVersion::class) ? 'fluid {fluid-version} · REDAXO 6 in Entwicklung' : 'REDAXO 6 · in Entwicklung',
                     'title' => 'REDAXO im Frontend, *einfach*.',
                     'text' => 'REDAXO 6 räumt unter der Haube auf: PHP 8.5, Composer, Module und Templates als PHP-Klassen. Das macht etwas möglich, das in REDAXO lange gefehlt hat – Seiten direkt auf der Website bearbeiten, mit echten Slices. REDAXO 6 ist noch in Entwicklung – es kann sich noch einiges ändern.',
                     'button_label' => 'Was sich ändert', 'button_link' => '/was-sich-aendert',
@@ -871,7 +875,7 @@ return [
                     'points' => "Seit 2004 · MIT-Lizenz\nModule als PHP-Klassen\nBearbeiten im Kontext",
                 ]],
                 // Trailer direkt unter dem Einstieg (nur wenn die Datei im Medienpool liegt – sie gehört nicht zum Kit: fluid:demo --media-dir=…)
-                ...(is_file(\Redaxo\Core\Filesystem\Path::media('fluid-trailer-redaxo6.mp4')) ? [
+                ...(is_file(Path::media('fluid-trailer-redaxo6.mp4')) ? [
                     ['type' => 'video', 'tunes' => ['background' => 'dark'], 'data' => ['variant' => 'cinema', 'eyebrow' => 'Trailer',
                         'title' => 'fluid in fünf Minuten', 'intro' => '', 'video_url' => '', 'video_file' => 'fluid-trailer-redaxo6.mp4', 'poster' => 'fluid-trailer-redaxo6.jpg',
                         'tracks' => [['file' => 'fluid-trailer-redaxo6.de.vtt', 'lang' => 'de', 'kind' => 'subtitles', 'label' => 'Deutsch']],
@@ -1767,14 +1771,14 @@ vollständig: Module, Templates, Schema'],
             'slug' => 'video', 'title' => 'Video', 'menu' => true, 'parent' => 'fluid',
             'blocks' => [
                 // Kätzchen von Pixabay – liegt nicht im Kit: fluid:demo --media-dir=… (ohne die Datei ein Einstieg ohne Video)
-                is_file(\Redaxo\Core\Filesystem\Path::media('kaetzchen.mp4'))
+                is_file(Path::media('kaetzchen.mp4'))
                     ? ['type' => 'hero', 'data' => ['variant' => 'fullbleed', 'eyebrow' => 'fluid · Video',
                         'title' => 'Videos, die *mitspielen*', 'text' => 'Hintergrundvideo, Player mit Untertiteln und Transkript, Fassungen für jeden Bildschirm – und ein Video-Editor im Medienpool, der schneidet, optimiert und Untertitel schreibt.',
                         'button_label' => 'Zum Video-Editor', 'button_link' => '#video-editor', 'button2_label' => '', 'button2_link' => '',
                         'points' => '', 'image' => null, 'video' => 'kaetzchen.mp4', 'overlay' => 'gradient']]
                     : ['type' => 'hero', 'tunes' => ['background' => 'muted'], 'data' => ['variant' => 'compact', 'eyebrow' => 'fluid · Video',
                         'title' => 'Videos, die *mitspielen*', 'text' => 'Hintergrundvideo, Player mit Untertiteln und Transkript, Fassungen für jeden Bildschirm – und ein Video-Editor im Medienpool.']],
-                ...(is_file(\Redaxo\Core\Filesystem\Path::media('kaetzchen.mp4')) ? [
+                ...(is_file(Path::media('kaetzchen.mp4')) ? [
                     ['type' => 'video', 'data' => ['variant' => 'text', 'eyebrow' => 'Block „Video & Audio“', 'title' => 'Ein Kätzchen, zwölf Sekunden',
                         'intro' => '', 'video_url' => '', 'video_file' => 'kaetzchen.mp4', 'poster' => null, 'tracks' => [],
                         'cc_on' => true, 'transcript' => true, 'ratio' => '16-9',

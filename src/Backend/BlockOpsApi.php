@@ -3,7 +3,6 @@
 namespace Klxm\Fluid\Backend;
 
 use Klxm\Fluid\ApiError;
-use Klxm\Fluid\BlockModule;
 use Klxm\Fluid\BlockOps;
 use Klxm\Fluid\FluidAddon;
 use Klxm\Fluid\Layout;
@@ -13,8 +12,10 @@ use Redaxo\Core\ApiFunction\Exception\ApiFunctionException;
 use Redaxo\Core\ApiFunction\Result;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\ArticleSlice;
+use Redaxo\Core\Content\Module;
 use Redaxo\Core\Content\StructurePermission;
 use Redaxo\Core\Core;
+use Redaxo\Core\Filesystem\Url;
 use Redaxo\Core\Http\Request;
 use Redaxo\Core\Http\Response;
 
@@ -48,7 +49,7 @@ final class BlockOpsApi extends ApiFunction
         }
         $sliceId = Request::request('slice_id', 'int');
         $slice = ArticleSlice::getArticleSliceById($sliceId, $article->languageId, FluidAddon::revision());
-        if (null === $slice || $slice->articleId !== $article->id || !\Redaxo\Core\Content\Module::exists($slice->moduleKey)) {
+        if (null === $slice || $slice->articleId !== $article->id || !Module::exists($slice->moduleKey)) {
             throw new ApiFunctionException('Block nicht gefunden.');
         }
         $op = Request::request('fluid_op', 'string');
@@ -95,7 +96,7 @@ final class BlockOpsApi extends ApiFunction
     /** Adresse für Aufrufe aus der Slice-Liste (mit CSRF-Token) */
     public static function url(Article $article, int $contentSectionId): string
     {
-        return \Redaxo\Core\Filesystem\Url::backendPage('content/edit', [
+        return Url::backendPage('content/edit', [
             'article_id' => $article->id, 'language' => $article->languageId, 'content_section_id' => $contentSectionId,
         ] + self::getUrlParams());
     }

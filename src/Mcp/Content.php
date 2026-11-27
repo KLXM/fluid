@@ -5,14 +5,19 @@ namespace Klxm\Fluid\Mcp;
 use Klxm\Fluid\Activity;
 use Klxm\Fluid\Api;
 use Klxm\Fluid\ApiError;
-use Klxm\Fluid\Blog\Blog;
 use Klxm\Fluid\BlockModule;
 use Klxm\Fluid\BlockOps;
+use Klxm\Fluid\Blog\Blog;
+use Klxm\Fluid\EditLock;
 use Klxm\Fluid\FluidAddon;
 use Klxm\Fluid\Form\FieldForm;
 use Klxm\Fluid\Layout;
+use Klxm\Fluid\LayoutBlock;
+use Klxm\Fluid\Lock;
 use Klxm\Fluid\PageTemplates;
+use Klxm\Fluid\Perm;
 use Klxm\Fluid\RichText;
+use Klxm\Fluid\Routing\Routes;
 use Klxm\Fluid\Structure;
 use Klxm\Fluid\Versions;
 use Redaxo\Core\Content\Article;
@@ -23,12 +28,19 @@ use Redaxo\Core\Content\ArticleSlice;
 use Redaxo\Core\Content\CategoryHandler;
 use Redaxo\Core\Content\ContentHandler;
 use Redaxo\Core\Content\Module;
+use Redaxo\Core\Content\StructurePermission;
+use Redaxo\Core\Core;
 use Redaxo\Core\Database\Sql;
 use Redaxo\Core\Language\Language;
 
+use function array_key_exists;
 use function in_array;
 use function is_array;
+use function is_int;
+use function is_scalar;
 use function is_string;
+
+use const PHP_URL_PATH;
 
 /**
  * Seiten und Blöcke für den MCP-Server – dieselben Wege wie der Editor auf der Website (Entwurf, Versionen, Aktivität).
@@ -36,16 +48,18 @@ use function is_string;
  */
 final class Content
 {
-    public function __construct(private readonly Access $access) {}
+    public function __construct(
+        private readonly Access $access,
+    ) {}
 
     /** Adressen absolut (Werkzeuge außerhalb der Website können mit /pfad nichts anfangen) */
     public static function abs(string $url): string
     {
-        if (str_starts_with($url, 'http') || !\Redaxo\Core\Core::hasRequest()) {
+        if (str_starts_with($url, 'http') || !Core::hasRequest()) {
             return $url;
         }
 
-        return \Redaxo\Core\Core::getRequest()->getSchemeAndHttpHost() . $url;
+        return Core::getRequest()->getSchemeAndHttpHost() . $url;
     }
 
     public function language(mixed $lang): int
@@ -68,7 +82,7 @@ final class Content
         $id = match (true) {
             is_int($ref), is_string($ref) && ctype_digit($ref) => (int) $ref,
             in_array($ref, [null, '', 'home', '/'], true) => Article::getSiteStartArticleId(),
-            default => \Klxm\Fluid\Routing\Routes::find(trim((string) parse_url((string) $ref, PHP_URL_PATH), '/'), $lang),
+            default => Routes::find(trim((string) parse_url((string) $ref, PHP_URL_PATH), '/'), $lang),
         };
         $a = null !== $id ? Article::get((int) $id, $lang) : null;
         if (null === $a || !$this->access->canReadPage($a)) {
@@ -166,7 +180,7 @@ final class Content
                 'label' => $m::label(),
                 'group' => (string) ($d['group'] ?? ''),
                 'help' => (string) ($d['help'] ?? ''),
-                'layout' => is_a($m, \Klxm\Fluid\LayoutBlock::class, true) ? true : null,
+                'layout' => is_a($m, LayoutBlock::class, true) ? true : null,
                 'variants' => $m::variants() ?: null,
                 'fields' => self::fieldSchema($m::fields()),
             ], static fn ($v) => null !== $v && '' !== $v);
@@ -221,7 +235,7 @@ final class Content
             throw new ApiError('Dieser Zugang darf die Seite „' . $a->name . '“ nicht ändern.');
         }
         // Bearbeitungssperre: Schlüssel ohne Person gelten als fremd
-        \Klxm\Fluid\EditLock::assert($a, $this->access->user->id ?? false);
+        EditLock::assert($a, $this->access->user->id ?? false);
     }
 
     private function slice(Article $a, int $id): ArticleSlice
@@ -316,9 +330,9 @@ final class Content
     }
 
     /** Gesperrte Blöcke (Klxm\Fluid\Lock) ändert auch der MCP-Server nur mit dem Recht „Blöcke gestalten und sperren“ */
-    private function unlocked(\Redaxo\Core\Content\ArticleSlice $s): void
+    private function unlocked(ArticleSlice $s): void
     {
-        if (\Klxm\Fluid\Lock::locked(BlockModule::tunesOf($s)) && (null === $this->access->user || !\Klxm\Fluid\Perm::can($this->access->user, \Klxm\Fluid\Perm::DESIGN_FULL))) {
+        if (Lock::locked(BlockModule::tunesOf($s)) && (null === $this->access->user || !Perm::can($this->access->user, Perm::DESIGN_FULL))) {
             throw new ApiError('Dieser Block ist gesperrt.');
         }
     }
@@ -407,7 +421,7 @@ final class Content
         }
         $parentId = $parent > 0 ? $parent : null;
         $perm = $this->access->user->getComplexPerm('structure');
-        if (!$this->access->user->admin && !($perm instanceof \Redaxo\Core\Content\StructurePermission && $perm->hasCategoryPerm($parentId))) {
+        if (!$this->access->user->admin && !($perm instanceof StructurePermission && $perm->hasCategoryPerm($parentId))) {
             throw new ApiError('Keine Berechtigung, hier eine Seite anzulegen.');
         }
         if (!$this->access->can($menu ? 'addCategory[]' : 'addArticle[]')) {

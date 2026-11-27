@@ -2,6 +2,7 @@
 
 namespace Klxm\Fluid\Picker;
 
+use Klxm\ImageEditor\ImageEditor;
 use Redaxo\Core\MediaManager\MediaManager;
 use Redaxo\Core\MediaPool\Media;
 use Redaxo\Core\MediaPool\MediaCategory;
@@ -78,8 +79,8 @@ final class MediaLibrary
     /** Vorschaubild; mit dem AddOn image_editor die bearbeitete Fassung */
     public static function thumb(string $file): string
     {
-        return class_exists(\Klxm\ImageEditor\ImageEditor::class)
-            ? \Klxm\ImageEditor\ImageEditor::url($file, 320)
+        return class_exists(ImageEditor::class)
+            ? ImageEditor::url($file, 320)
             : MediaManager::getUrl('rex_media_small', $file);
     }
 
@@ -113,7 +114,7 @@ final class MediaLibrary
 
     /**
      * Kategorien mit Rechten in der Reihenfolge des Medienpools; `parent`: nächste übergeordnete Kategorie mit Rechten
-     * (0 = oberste Ebene), damit die Navigation auch bei Rechten nur für Unterkategorien funktioniert
+     * (0 = oberste Ebene), damit die Navigation auch bei Rechten nur für Unterkategorien funktioniert.
      *
      * @return list<array{id: int, name: string, parent: int}>
      */

@@ -2,6 +2,7 @@
 
 namespace Klxm\Fluid;
 
+use Klxm\Meta\Alt;
 use Redaxo\Core\ExtensionPoint\Extension;
 use Redaxo\Core\ExtensionPoint\ExtensionPoint;
 use Redaxo\Core\MediaPool\Media;
@@ -28,12 +29,16 @@ use function number_format;
 use function preg_match;
 use function preg_replace;
 use function preg_split;
+use function Redaxo\Core\View\escape;
 use function round;
 use function rtrim;
 use function strip_tags;
 use function trim;
 
-use function Redaxo\Core\View\escape;
+use const ENT_HTML5;
+use const ENT_QUOTES;
+use const JSON_UNESCAPED_SLASHES;
+use const JSON_UNESCAPED_UNICODE;
 
 /**
  * Interaktives Bild: Markierungen (Hotspots) auf einem Bild des Medienpools – Grundlage für den Block „Interaktives Bild“
@@ -114,7 +119,7 @@ final class Hotspots
     }
 
     /**
-     * Eine Markierung bereinigen – null, wenn sie keine gültige Lage hat
+     * Eine Markierung bereinigen – null, wenn sie keine gültige Lage hat.
      *
      * @param array<array-key, mixed> $it
      * @return array<string, mixed>|null
@@ -171,7 +176,7 @@ final class Hotspots
     }
 
     /**
-     * Punkte einer Fläche: [[x, y], …], [{x, y}, …] oder Text „x,y x,y …“ (auch mit Semikolon/Zeilenumbruch getrennt)
+     * Punkte einer Fläche: [[x, y], …], [{x, y}, …] oder Text „x,y x,y …“ (auch mit Semikolon/Zeilenumbruch getrennt).
      *
      * @return list<array{0: float, 1: float}>
      */
@@ -208,7 +213,7 @@ final class Hotspots
     }
 
     /**
-     * Mittelpunkt einer Markierung (dort sitzt der Knopf mit der Nummer)
+     * Mittelpunkt einer Markierung (dort sitzt der Knopf mit der Nummer).
      *
      * @param array<string, mixed> $h
      * @return array{0: float, 1: float} in %
@@ -223,7 +228,7 @@ final class Hotspots
     }
 
     /**
-     * Schwerpunkt eines Vielecks (bei entarteten Flächen der Mittelwert der Punkte)
+     * Schwerpunkt eines Vielecks (bei entarteten Flächen der Mittelwert der Punkte).
      *
      * @param list<array{0: float, 1: float}> $pts
      * @return array{0: float, 1: float}
@@ -250,7 +255,7 @@ final class Hotspots
     // ================================================================= Formular (Feld „Markierungen“)
 
     /**
-     * Felder einer Zeile im Formular (Wiederholgruppe unter dem Marker-Editor, FieldForm)
+     * Felder einer Zeile im Formular (Wiederholgruppe unter dem Marker-Editor, FieldForm).
      *
      * @return list<array<string, mixed>>
      */
@@ -302,7 +307,7 @@ final class Hotspots
     }
 
     /**
-     * Format → Zeilen für das Formular (points als Text, x/y einer Fläche = Mittelpunkt)
+     * Format → Zeilen für das Formular (points als Text, x/y einer Fläche = Mittelpunkt).
      *
      * @return list<array<string, mixed>>
      */
@@ -380,7 +385,7 @@ final class Hotspots
             }
         }
         $label = trim((string) ($o['label'] ?? ''));
-        $alt = \Klxm\Meta\Alt::attribute($file);
+        $alt = Alt::attribute($file);
         $img = img($file, (string) ($o['sizes'] ?? '(min-width: 1280px) 1200px, 100vw'), ['class' => 'cms-hs__img'] + (isset($o['eager']) ? ['eager' => (bool) $o['eager']] : []));
 
         $pins = $areas = $list = '';
@@ -417,7 +422,7 @@ final class Hotspots
     }
 
     /**
-     * Titel und Inhalt eines Hinweisfensters (Text, Glossar, Link)
+     * Titel und Inhalt eines Hinweisfensters (Text, Glossar, Link).
      *
      * @param array<string, mixed> $h
      * @param array<string, array{term: string, short: string, url: string}> $terms

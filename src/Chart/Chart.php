@@ -6,13 +6,15 @@ use Klxm\Fluid\Chart\Attribute\AsChartEngine;
 use Klxm\Fluid\Chart\Attribute\AsChartSource;
 use Klxm\Fluid\FluidAddon;
 use Klxm\Fluid\Routing\Router;
-use Redaxo\Core\Language\Language;
 use Redaxo\Core\ClassDiscovery;
+use Redaxo\Core\Language\Language;
 use Throwable;
 
 use function array_map;
 use function array_slice;
 use function array_values;
+use function count;
+use function function_exists;
 use function in_array;
 use function is_array;
 use function is_numeric;
@@ -22,13 +24,18 @@ use function mb_substr;
 use function min;
 use function preg_match;
 use function preg_split;
+use function Redaxo\Core\View\escape;
 use function round;
+use function sprintf;
 use function str_contains;
 use function str_replace;
 use function strrpos;
 use function trim;
 
-use function Redaxo\Core\View\escape;
+use const JSON_HEX_AMP;
+use const JSON_HEX_TAG;
+use const JSON_UNESCAPED_SLASHES;
+use const JSON_UNESCAPED_UNICODE;
 
 /**
  * Diagramme mit austauschbarer Engine (aus KLXM Studio – Core\Charts).
@@ -327,7 +334,7 @@ final class Chart
     /** @param array<string, string|int> $vars */
     private static function t(string $text, array $vars = []): string
     {
-        if (\function_exists('lt')) {
+        if (function_exists('lt')) {
             return lt($text, $vars);
         }
         foreach ($vars as $k => $v) {

@@ -1,4 +1,8 @@
 <?php
+
+use Klxm\Fluid\Block;
+use Klxm\VideoEditor\VideoEditor;
+
 /**
  * Einstieg (H1) – sechs Varianten, alle intrinsisch (Flex-Umbruch bzw. Container-Query statt Breakpoints):
  * split (Text + Bild), centered (Bild darunter), fullbleed (Bild/Video vollflächig), cards (Bild mit gestapelten Karten),
@@ -7,7 +11,7 @@
  *   scale    Fließende Skala: Überschrift füllt ihre Spalte (cqi), Seitenspalte + Stufenleiste ab 48 rem Platz (css/hx-scale.css)
  *   collage  Collage: 1–5 Bilder (Bild + Feld „gallery“) im Raster mit schwebender Textkarte ab 52 rem (css/hx-collage.css)
  *   compare  Vorher/Nachher mit Regler (fluid_compare() in functions.php, Tastatur: Pfeile, Pos1/Ende) (css/hx-compare.css)
- * @var \Klxm\Fluid\Block $b  @var array $d
+ * @var Block $b  @var array $d
  */
 $v = $b->variant() ?: 'split';
 $ratio = (string) ($d['ratio'] ?? '') ?: '4:5';
@@ -15,52 +19,56 @@ $points = fluid_lines($d['points'] ?? '');
 $text = trim((string) $d['text']);
 $eager = ['eager' => true];
 
-$textHtml = function (string $class = '') use ($b, $d, $text, $points): string {
-    $h = '<div class="hero__text' . ($class !== '' ? ' ' . $class : '') . '">';
-    if (($d['eyebrow'] ?? '') !== '') $h .= '<p class="eyebrow"' . $b->edit('eyebrow') . '>' . e($d['eyebrow']) . '</p>';
+$textHtml = static function (string $class = '') use ($b, $d, $text, $points): string {
+    $h = '<div class="hero__text' . ('' !== $class ? ' ' . $class : '') . '">';
+    if (($d['eyebrow'] ?? '') !== '') {
+    $h .= '<p class="eyebrow"' . $b->edit('eyebrow') . '>' . e($d['eyebrow']) . '</p>';
+    }
     $h .= '<h1 id="' . e($b->titleId()) . '" class="h1 hero__title"' . $b->edit('title') . '>' . fluid_title((string) $d['title']) . '</h1>';
-    if ($text !== '' || is_editing()) $h .= '<p class="hero__lead"' . $b->edit('text') . '>' . nl2br(e($text), false) . '</p>';
+    if ('' !== $text || is_editing()) {
+    $h .= '<p class="hero__lead"' . $b->edit('text') . '>' . nl2br(e($text), false) . '</p>';
+    }
     $h .= fluid_buttons($b, 'hero__actions');
     $h .= fluid_checks($points, 'hero__points');
     return $h . '</div>';
 };
 
-if ($v === 'fullbleed'):
+if ('fullbleed' === $v):
     $vid = !empty($d['video']) ? media((string) $d['video']) : null;
     $vid = $vid && str_starts_with((string) $vid['mime'], 'video/') ? $vid : null;
     $overlay = in_array($d['overlay'] ?? '', ['strong', 'medium', 'gradient'], true) ? $d['overlay'] : 'strong';
     $poster = !empty($d['image']) ? media((string) $d['image']) : null;
     // AddOn video_editor (optional): kleinere Web-Fassung (720p/WebM) und dort gewähltes Poster
     $sources = $vid ? [['url' => media_url($vid), 'type' => (string) $vid['mime']]] : [];
-    if ($vid && class_exists(\Klxm\VideoEditor\VideoEditor::class)) {
-        $sources = \Klxm\VideoEditor\VideoEditor::sources((string) $d['video'], small: true) ?: $sources;
-        $vePoster = $poster ? null : \Klxm\VideoEditor\VideoEditor::poster((string) $d['video']);
+    if ($vid && class_exists(VideoEditor::class)) {
+        $sources = VideoEditor::sources((string) $d['video'], small: true) ?: $sources;
+        $vePoster = $poster ? null : VideoEditor::poster((string) $d['video']);
         $poster = $vePoster ? media($vePoster->fileName) : $poster;
     }
 ?>
 <div class="hero-bleed hero-bleed--<?= e($overlay) ?>"<?= $vid ? ' data-hero-video-box' : '' ?>>
   <div class="hero-bleed__media" aria-hidden="true">
     <?= !empty($d['image']) ? img((string) $d['image'], '100vw', ['eager' => true, 'alt' => '']) : '' ?>
-    <?php if ($vid): ?><video class="hero-bleed__video" data-hero-video muted loop playsinline preload="none" disablepictureinpicture tabindex="-1"<?= $poster ? ' poster="' . e(media_url($poster, 1600)) . '"' : '' ?>><?php foreach ($sources as $src): ?><source src="<?= e($src['url']) ?>" type="<?= e($src['type']) ?>"<?= ($src['media'] ?? '') !== '' ? ' media="' . e($src['media']) . '"' : '' ?>><?php endforeach; ?></video><?php endif; ?>
+    <?php if ($vid): ?><video class="hero-bleed__video" data-hero-video muted loop playsinline preload="none" disablepictureinpicture tabindex="-1"<?= $poster ? ' poster="' . e(media_url($poster, 1600)) . '"' : '' ?>><?php foreach ($sources as $src): ?><source src="<?= e($src['url']) ?>" type="<?= e($src['type']) ?>"<?= ($src['media'] ?? '') !== '' ? ' media="' . e($src['media']) . '"' : '' ?>><?php endforeach ?></video><?php endif ?>
   </div>
   <div class="wrap hero-bleed__inner">
     <?= $textHtml() ?>
     <?= $vid ? fluid_video_toggle('hero-bleed__pause', (string) ($d['video_toggle'] ?? 'icon')) : '' ?>
   </div>
 </div>
-<?php elseif ($v === 'type'): ?>
+<?php elseif ('type' === $v): ?>
 <div class="wrap hero-type">
-  <?php if (($d['eyebrow'] ?? '') !== ''): ?><p class="eyebrow"<?= $b->edit('eyebrow') ?>><?= e($d['eyebrow']) ?></p><?php endif; ?>
+  <?php if (($d['eyebrow'] ?? '') !== ''): ?><p class="eyebrow"<?= $b->edit('eyebrow') ?>><?= e($d['eyebrow']) ?></p><?php endif ?>
   <h1 id="<?= e($b->titleId()) ?>" class="hero-type__title"<?= $b->edit('title') ?>><?= fluid_title((string) $d['title']) ?></h1>
   <div class="hero-type__foot">
-    <?php if ($text !== '' || is_editing()): ?><p class="hero__lead"<?= $b->edit('text') ?>><?= nl2br(e($text), false) ?></p><?php endif; ?>
+    <?php if ('' !== $text || is_editing()): ?><p class="hero__lead"<?= $b->edit('text') ?>><?= nl2br(e($text), false) ?></p><?php endif ?>
     <?= fluid_buttons($b, 'hero__actions') ?>
   </div>
   <?= fluid_checks($points, 'hero__points') ?>
   <?= fluid_image($d['image'] ?? null, '(min-width: 1280px) 1280px, 100vw', '21:9' === $ratio ? '21:9' : '16:9', 'hero-type__media', $eager) ?>
 </div>
-<?php elseif ($v === 'cards'):
-    $cards = array_values(array_filter((array) ($d['cards'] ?? []), fn($c) => trim((string) ($c['title'] ?? '')) !== ''));
+<?php elseif ('cards' === $v):
+    $cards = array_values(array_filter((array) ($d['cards'] ?? []), static fn ($c) => '' !== trim((string) ($c['title'] ?? ''))));
 ?>
 <div class="wrap hero hero--split hero--cards">
   <?= $textHtml() ?>
@@ -70,16 +78,16 @@ if ($v === 'fullbleed'):
     <ul class="hero-cards__list" role="list">
       <?php foreach ($cards as $i => $c): ?>
       <li class="hero-card">
-        <?php if (!empty($c['icon'])): ?><span class="hero-card__ico"><?= icon((string) $c['icon']) ?></span><?php endif; ?>
+        <?php if (!empty($c['icon'])): ?><span class="hero-card__ico"><?= icon((string) $c['icon']) ?></span><?php endif ?>
         <span class="hero-card__body"><strong class="hero-card__title"<?= $b->edit("cards.$i.title") ?>><?= e($c['title']) ?></strong>
-        <?php if (trim((string) ($c['text'] ?? '')) !== ''): ?><span class="hero-card__text"<?= $b->edit("cards.$i.text") ?>><?= e($c['text']) ?></span><?php endif; ?></span>
+        <?php if ('' !== trim((string) ($c['text'] ?? ''))): ?><span class="hero-card__text"<?= $b->edit("cards.$i.text") ?>><?= e($c['text']) ?></span><?php endif ?></span>
       </li>
-      <?php endforeach; ?>
+      <?php endforeach ?>
     </ul>
-    <?php endif; ?>
+    <?php endif ?>
   </div>
 </div>
-<?php elseif ($v === 'scale'):
+<?php elseif ('scale' === $v):
     // Stufenleiste: „Wert: Bezeichnung“ → Kennzahl, sonst Schlagwort; Größen fallen von Stufe zu Stufe (t4 → t1)
     $steps = array_slice(fluid_pairs($d['scale_items'] ?? ''), 0, 4);
 ?>
@@ -87,49 +95,55 @@ if ($v === 'fullbleed'):
   <div class="hx-scale">
     <div class="hx-scale__head">
       <div class="hx-scale__top">
-        <?php if (($d['eyebrow'] ?? '') !== ''): ?><p class="eyebrow"<?= $b->edit('eyebrow') ?>><?= e($d['eyebrow']) ?></p><?php endif; ?>
+        <?php if (($d['eyebrow'] ?? '') !== ''): ?><p class="eyebrow"<?= $b->edit('eyebrow') ?>><?= e($d['eyebrow']) ?></p><?php endif ?>
         <span class="hx-scale__ruler" aria-hidden="true"></span>
       </div>
       <h1 id="<?= e($b->titleId()) ?>" class="h1 hx-scale__title"<?= $b->edit('title') ?>><?= fluid_title((string) $d['title']) ?></h1>
     </div>
     <div class="hx-scale__side">
-      <?php if ($text !== '' || is_editing()): ?><p class="hero__lead"<?= $b->edit('text') ?>><?= nl2br(e($text), false) ?></p><?php endif; ?>
+      <?php if ('' !== $text || is_editing()): ?><p class="hero__lead"<?= $b->edit('text') ?>><?= nl2br(e($text), false) ?></p><?php endif ?>
       <?= fluid_buttons($b, 'hero__actions') ?>
       <?= fluid_checks($points, 'hx-scale__points') ?>
     </div>
     <?php if ($steps): ?>
     <ul class="hx-scale__steps" role="list">
       <?php foreach ($steps as $s): ?>
-      <li class="hx-scale__step<?= $s['label'] === '' ? ' hx-scale__step--word' : '' ?>"><span class="hx-scale__val"><?= e($s['label'] !== '' ? $s['label'] : $s['value']) ?></span><?php if ($s['label'] !== ''): ?> <span class="hx-scale__lbl"><?= e($s['value']) ?></span><?php endif; ?></li>
-      <?php endforeach; ?>
+      <li class="hx-scale__step<?= '' === $s['label'] ? ' hx-scale__step--word' : '' ?>"><span class="hx-scale__val"><?= e('' !== $s['label'] ? $s['label'] : $s['value']) ?></span><?php if ('' !== $s['label']): ?> <span class="hx-scale__lbl"><?= e($s['value']) ?></span><?php endif ?></li>
+      <?php endforeach ?>
     </ul>
-    <?php endif; ?>
+    <?php endif ?>
   </div>
 </div>
-<?php elseif ($v === 'collage'):
+<?php elseif ('collage' === $v):
     // Bild + bis zu 4 weitere (Feld „gallery“) – Anordnung je Anzahl (Klasse hx-collage--nN)
     $tiles = [];
-    if (!empty($d['image'])) $tiles[] = ['id' => (string) $d['image'], 'caption' => '', 'edit' => ''];
+    if (!empty($d['image'])) {
+    $tiles[] = ['id' => (string) $d['image'], 'caption' => '', 'edit' => ''];
+    }
     foreach ((array) ($d['gallery'] ?? []) as $i => $g) {
-        if (is_array($g) && !empty($g['image'])) $tiles[] = ['id' => (string) $g['image'], 'caption' => trim((string) ($g['caption'] ?? '')), 'edit' => "gallery.$i.caption"];
+        if (is_array($g) && !empty($g['image'])) {
+        $tiles[] = ['id' => (string) $g['image'], 'caption' => trim((string) ($g['caption'] ?? '')), 'edit' => "gallery.$i.caption"];
+        }
     }
     $tiles = array_slice($tiles, 0, 5);
     $pics = [];
     foreach ($tiles as $k => $t) {
-        $pic = img($t['id'], $k === 0 ? '(min-width: 1080px) 520px, 100vw' : '(min-width: 1080px) 300px, 50vw', $k === 0 ? $eager : []);
-        if ($pic !== '') $pics[] = ['pic' => $pic] + $t;
+        $pic = img($t['id'], 0 === $k ? '(min-width: 1080px) 520px, 100vw' : '(min-width: 1080px) 300px, 50vw', 0 === $k ? $eager : []);
+        if ('' !== $pic) {
+        $pics[] = ['pic' => $pic] + $t;
+        }
     }
 ?>
 <div class="wrap hx-collage-wrap">
   <div class="hx-collage hx-collage--n<?= count($pics) ?>">
     <?= $textHtml('hx-collage__card') ?>
     <?php foreach ($pics as $k => $t): ?>
-    <figure class="hx-collage__tile hx-collage__tile--<?= $k + 1 ?>"><?= $t['pic'] ?><?php if ($t['caption'] !== ''): ?><figcaption class="hx-collage__cap"<?= $b->edit($t['edit']) ?>><?= e($t['caption']) ?></figcaption><?php endif; ?></figure>
-    <?php endforeach; ?>
-    <?php if (!$pics && is_editing()): ?><div class="frame frame--empty hx-collage__tile hx-collage__tile--1"><span><?= e(__('Bild')) ?> + <?= e(__('Weitere Bilder (2–4)')) ?></span></div><?php endif; ?>
+    <figure class="hx-collage__tile hx-collage__tile--<?= $k + 1 ?>"><?= $t['pic'] ?><?php if ('' !== $t['caption']): ?><figcaption class="hx-collage__cap"<?= $b->edit($t['edit']) ?>><?= e($t['caption']) ?></figcaption><?php endif ?></figure>
+    <?php endforeach ?>
+    <?php if (!$pics && is_editing()): ?><div class="frame frame--empty hx-collage__tile hx-collage__tile--1"><span><?= e(__('Bild')) ?> + <?= e(__('Weitere Bilder (2–4)')) ?></span></div><?php endif ?>
   </div>
 </div>
-<?php elseif ($v === 'compare'):
+<?php elseif ('compare' === $v):
     $cr = in_array($ratio, ['16:9', '3:2', '4:3', '1:1', '4:5', '3:4'], true) ? $ratio : '4:3';
 ?>
 <div class="wrap hero hx-compare">
@@ -139,10 +153,10 @@ if ($v === 'fullbleed'):
   </div>
 </div>
 <?php else:
-    $media = $v === 'compact' ? '' : fluid_image($d['image'] ?? null,
-        $v === 'centered' ? '(min-width: 1280px) 1280px, 100vw' : '(min-width: 1080px) 600px, 100vw', $v === 'centered' ? '16:9' : $ratio, 'hero__media', $eager);
+    $media = 'compact' === $v ? '' : fluid_image($d['image'] ?? null,
+        'centered' === $v ? '(min-width: 1280px) 1280px, 100vw' : '(min-width: 1080px) 600px, 100vw', 'centered' === $v ? '16:9' : $ratio, 'hero__media', $eager);
 ?>
-<div class="wrap hero hero--<?= e($v === 'centered' ? 'centered' : ($v === 'compact' ? 'compact' : 'split')) ?><?= $media !== '' ? ' hero--media' : '' ?>">
+<div class="wrap hero hero--<?= e('centered' === $v ? 'centered' : ('compact' === $v ? 'compact' : 'split')) ?><?= '' !== $media ? ' hero--media' : '' ?>">
   <?= $textHtml() ?>
   <?= $media ?>
 </div>

@@ -273,7 +273,7 @@ final class SiteAdmin
                 }
                 $h .= '<li class="site-list__item"><span class="site-list__main"><code>' . escape((string) $r['source']) . '</code> → ' . escape(410 === (int) $r['code'] ? 'gelöscht (410)' : $target)
                     . '<small>' . (int) $r['code'] . ' · ' . match ((string) $r['origin']) {
-                        'auto' => 'automatisch', Shortlinks::ORIGIN => I18n::msg('fluid_shortlink'), default => 'manuell'
+                        'auto' => 'automatisch', Shortlinks::ORIGIN => I18n::msg('fluid_shortlink'), default => 'manuell',
                     } . ' · ' . (int) $r['hits'] . ' Aufrufe' . (null !== $r['expires'] && strtotime((string) $r['expires']) < time() ? ' · ' . I18n::msg('fluid_shortlink_expired', date('d.m.Y', (int) strtotime((string) $r['expires']))) : '') . ('' !== (string) $r['note'] && 'auto' !== $r['origin'] ? ' · ' . escape((string) $r['note']) : '') . '</small></span>'
                     . '<button type="button" class="btn btn--icon" data-site-act="redirect_delete" data-id="' . (int) $r['id'] . '" data-confirm="Weiterleitung löschen?" aria-label="Löschen">✕</button></li>';
             }

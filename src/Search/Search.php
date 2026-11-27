@@ -4,8 +4,10 @@ namespace Klxm\Fluid\Search;
 
 use Klxm\Fluid\BlockModule;
 use Klxm\Fluid\FluidAddon;
+use Klxm\Fluid\LayoutBlock;
 use Klxm\Fluid\PageSettings;
 use Klxm\Fluid\PageTemplates;
+use Klxm\Fluid\Routing\ExtensionPoint\RoutesRebuilt;
 use Klxm\Fluid\Routing\Routes;
 use Loupe\Loupe\Configuration;
 use Loupe\Loupe\Loupe;
@@ -13,12 +15,20 @@ use Loupe\Loupe\LoupeFactory;
 use Loupe\Loupe\SearchParameters;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\ArticleRevision;
-use Redaxo\Core\Content\Module;
 use Redaxo\Core\Database\Sql;
+use Redaxo\Core\ExtensionPoint\Extension;
+use Redaxo\Core\ExtensionPoint\ExtensionPoint;
 use Redaxo\Core\Filesystem\Path;
 use Redaxo\Core\Language\Language;
 
+use function count;
+use function in_array;
+use function is_array;
+use function is_string;
 use function Redaxo\Core\View\escape;
+
+use const ENT_HTML5;
+use const ENT_QUOTES;
 
 /**
  * Website-Suche (Modell aus KLXM Studio – Core\Search mit Loupe): Stichwortsuche mit Tippfehler-Toleranz und Wortstämmen,
@@ -38,23 +48,24 @@ use function Redaxo\Core\View\escape;
  */
 final class Search
 {
-    /** Adressen neu berechnet (Struktur geändert) → Suchindex beim nächsten Suchen neu aufbauen */
-    public static function boot(): void
-    {
-        \Redaxo\Core\ExtensionPoint\Extension::register(\Klxm\Fluid\Routing\ExtensionPoint\RoutesRebuilt::class, static fn () => self::markDirty());
-    }
-
-    private const string DIRTY = 'search_dirty';
-    private const array HL = ["\u{E000}", "\u{E001}"];
     /** Einstellungen von Blöcken, die nicht (oder nur in Sonderfällen) sichtbar auf der Seite stehen – auch für Gäste ausgeblendet (fluid_demo) */
     public const array NO_FIELDS = ['placeholder', 'empty_text', 'filter_value', 'mail_to', 'mail_subject', 'confirm_subject', 'confirm_text',
         'form_name', 'success', 'lang', 'redirect'];
+
+    private const string DIRTY = 'search_dirty';
+    private const array HL = ["\u{E000}", "\u{E001}"];
+
+    /** Adressen neu berechnet (Struktur geändert) → Suchindex beim nächsten Suchen neu aufbauen */
+    public static function boot(): void
+    {
+        Extension::register(RoutesRebuilt::class, static fn () => self::markDirty());
+    }
 
     private static function loupe(int $languageId): Loupe
     {
         $dir = Path::addonData('fluid', 'search/' . $languageId);
         if (!is_dir($dir)) {
-            @mkdir($dir, 0775, true);
+            @mkdir($dir, 0o775, true);
         }
         $code = substr(Language::get($languageId)->code ?? 'de', 0, 2);
         $config = Configuration::create()
@@ -64,7 +75,7 @@ final class Search
             ->withMaxTotalHits(500)
             ->withMinTokenLengthForPrefixSearch(2);
 
-        return (new LoupeFactory())->create($dir, $config);
+        return new LoupeFactory()->create($dir, $config);
     }
 
     public static function markDirty(): void
@@ -83,7 +94,7 @@ final class Search
             foreach (array_chunk($docs, 200) as $chunk) {
                 $loupe->addDocuments($chunk);
             }
-            $n += \count($docs);
+            $n += count($docs);
         }
         FluidAddon::instance()->setConfig(self::DIRTY, false);
 
@@ -121,7 +132,7 @@ final class Search
                 $on = 1 === (int) $s['status'];
                 $stored = BlockModule::stored($s['data']);
                 if (0 === (int) ($stored['tunes']['col'] ?? 0)) {
-                    $layoutOn = $on && null !== $m && is_a($m, \Klxm\Fluid\LayoutBlock::class, true);
+                    $layoutOn = $on && null !== $m && is_a($m, LayoutBlock::class, true);
                 } elseif (!$layoutOn) {
                     continue;   // Spalten-Block eines Offline-Layouts (oder ohne Layout): nicht sichtbar
                 }
@@ -132,10 +143,10 @@ final class Search
             }
             $s = PageSettings::get($id, $languageId);
             // FLUID_SEARCH_DOCUMENT: Dokument ergänzen (z. B. Texte eigener Daten) oder mit null überspringen
-            $doc = \Redaxo\Core\ExtensionPoint\Extension::dispatch(new \Redaxo\Core\ExtensionPoint\ExtensionPoint('FLUID_SEARCH_DOCUMENT',
+            $doc = Extension::dispatch(new ExtensionPoint('FLUID_SEARCH_DOCUMENT',
                 ['id' => $id, 'title' => $s['title'] ?: $a->name, 'headings' => implode(' · ', array_unique($headings)), 'text' => trim($s['description'] . ' ' . implode(' ', $text))],
                 ['article' => $a]));
-            if (\is_array($doc)) {
+            if (is_array($doc)) {
                 $docs[] = $doc;
             }
         }
@@ -165,19 +176,19 @@ final class Search
     public static function collect(array $fields, array $data, array &$headings, array &$text): void
     {
         foreach ($fields as $f) {
-            if (false === ($f['search'] ?? true) || \in_array($f['name'] ?? '', self::NO_FIELDS, true)) {
+            if (false === ($f['search'] ?? true) || in_array($f['name'] ?? '', self::NO_FIELDS, true)) {
                 continue;
             }
             $v = $data[$f['name']] ?? null;
-            if ('repeater' === ($f['type'] ?? '') && \is_array($v)) {
+            if ('repeater' === ($f['type'] ?? '') && is_array($v)) {
                 foreach ($v as $item) {
-                    if (\is_array($item)) {
+                    if (is_array($item)) {
                         self::collect((array) ($f['fields'] ?? []), $item, $headings, $text);
                     }
                 }
                 continue;
             }
-            if (!\in_array($f['type'] ?? 'text', ['text', 'textarea', 'richtext'], true) || !\is_string($v)) {
+            if (!in_array($f['type'] ?? 'text', ['text', 'textarea', 'richtext'], true) || !is_string($v)) {
                 continue;
             }
             $plain = trim((string) preg_replace('~\s+~u', ' ', html_entity_decode(strip_tags(str_replace(['<br', '</p>', '</li>', '</h'], [' <br', ' </p>', ' </li>', ' </h'], (string) preg_replace('~\[#.*?#\]~s', '', $v))), ENT_QUOTES | ENT_HTML5, 'UTF-8')));
@@ -185,13 +196,11 @@ final class Search
             if ('' === $plain || preg_match('~^(https?://|redaxo://|#|\d+$)~', $plain)) {
                 continue;
             }
-            \in_array($f['name'], ['title', 'eyebrow', 'q', 'name', 'label'], true) ? $headings[] = $plain : $text[] = $plain;
+            in_array($f['name'], ['title', 'eyebrow', 'q', 'name', 'label'], true) ? $headings[] = $plain : $text[] = $plain;
         }
     }
 
-    /**
-     * @return array{total: int, hits: list<array{url: string, title: string, excerpt: string}>}
-     */
+    /** @return array{total: int, hits: list<array{url: string, title: string, excerpt: string}>} */
     public static function search(string $q, int $languageId, int $limit = 20): array
     {
         $q = trim(mb_substr($q, 0, 100));
@@ -207,7 +216,7 @@ final class Search
             ->withAttributesToRetrieve(['id', 'title', 'text'])
             ->withAttributesToHighlight(['title', 'text'], self::HL[0], self::HL[1])
             ->withAttributesToCrop(['text'], 160, '…', 1);
-        for ($try = 0; ; ++$try) {
+        for ($try = 0;; ++$try) {
             // erst alle Wörter verlangen, ohne Treffer genügt eines
             $res = $loupe->search($params->withMatchingStrategy('all'));
             if (0 === $res->getTotalHits() && str_contains($q, ' ')) {
@@ -229,7 +238,7 @@ final class Search
                 return ['total' => $res->getTotalHits(), 'hits' => $hits];
             }
             if ($try > 0) {
-                return ['total' => \count($hits), 'hits' => $hits];
+                return ['total' => count($hits), 'hits' => $hits];
             }
             self::rebuild();
             $loupe = self::loupe($languageId);

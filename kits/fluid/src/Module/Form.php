@@ -2,12 +2,18 @@
 
 namespace Klxm\Fluid\Kit\Fluid\Module;
 
-use Klxm\Fluid\Data\YFormBridge;
 use Klxm\Fluid\Field\AsBlock;
-use Klxm\Fluid\Field\{Checkbox, Choice, Collection, Link, Text, Textarea, YFormForm, YFormTable};
+use Klxm\Fluid\Field\Checkbox;
+use Klxm\Fluid\Field\Choice;
+use Klxm\Fluid\Field\Collection;
+use Klxm\Fluid\Field\Link;
+use Klxm\Fluid\Field\Text;
+use Klxm\Fluid\Field\Textarea;
+use Klxm\Fluid\Field\YFormForm;
+use Klxm\Fluid\Field\YFormTable;
 use Klxm\Fluid\Kit\Fluid\FluidBlock;
-use Redaxo\Core\Content\AsModule;
 use Klxm\Fluid\Kit\Fluid\Module\Item\FormField;
+use Redaxo\Core\Content\AsModule;
 
 #[AsModule('fluid.form', 'Formular')]
 #[AsBlock(

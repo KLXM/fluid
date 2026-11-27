@@ -18,6 +18,9 @@ use function in_array;
 use function is_array;
 use function Redaxo\Core\View\escape;
 
+use const JSON_PRETTY_PRINT;
+use const JSON_UNESCAPED_SLASHES;
+
 /**
  * Backend → AddOns → fluid → MCP: Server einschalten, öffentlichen Zugang festlegen, Zugangsschlüssel verwalten.
  * Alles ist standardmäßig aus; was öffentlich ist, entscheidet der Admin.

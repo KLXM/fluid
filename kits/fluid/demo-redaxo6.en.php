@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Englische Texte der Demo „REDAXO 6“ – deutsch → englisch, für `php bin/console fluid:demo --set=redaxo6 --lang=en`.
  * Schlüssel sind die deutschen Texte aus demo-redaxo6.php (ändert sich dort ein Text, hier mitziehen).

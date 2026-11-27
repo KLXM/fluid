@@ -3,8 +3,8 @@
 namespace Klxm\Fluid;
 
 use Klxm\Fluid\Data\Detail;
-use Klxm\Fluid\Routing\Routes;
 use Klxm\Fluid\Routing\Router;
+use Klxm\Fluid\Routing\Routes;
 use Klxm\Fluid\Routing\Sources;
 use Override;
 use Redaxo\Core\ApiFunction\ApiFunction;
@@ -22,6 +22,7 @@ use Throwable;
 
 use function array_any;
 use function array_slice;
+use function count;
 use function is_string;
 use function mb_stripos;
 use function mb_substr;
@@ -84,7 +85,7 @@ final class LinkApi extends ApiFunction
                     continue;
                 }
                 $out[] = ['ref' => 'detail://' . $pid . '/' . $eid, 'label' => (string) $title, 'meta' => $page->name, 'url' => Detail::url($pageUrl, (string) $title, (int) $eid)];
-                if (\count($out) >= 60) {
+                if (count($out) >= 60) {
                     return $out;
                 }
             }
@@ -110,7 +111,7 @@ final class LinkApi extends ApiFunction
                     'meta' => $source->label(),
                     'url' => Router::urlFor($source->key(), $entry->id, $language),
                 ];
-                if (\count($out) >= 60) {
+                if (count($out) >= 60) {
                     return $out;
                 }
             }

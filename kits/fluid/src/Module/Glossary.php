@@ -3,7 +3,9 @@
 namespace Klxm\Fluid\Kit\Fluid\Module;
 
 use Klxm\Fluid\Field\AsBlock;
-use Klxm\Fluid\Field\{Checkbox, Text, Textarea};
+use Klxm\Fluid\Field\Checkbox;
+use Klxm\Fluid\Field\Text;
+use Klxm\Fluid\Field\Textarea;
 use Klxm\Fluid\Kit\Fluid\FluidBlock;
 use Redaxo\Core\Content\AsModule;
 

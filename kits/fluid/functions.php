@@ -8,9 +8,28 @@
  */
 
 use Klxm\Fluid\Block;
+use Klxm\Fluid\Blog\Blog;
+use Klxm\Fluid\Blog\Post;
 use Klxm\Fluid\Editing;
+use Klxm\Fluid\InlineStyle;
+use Klxm\Fluid\Kit;
 use Klxm\Fluid\Kit\Fluid\FluidKit;
+use Klxm\Fluid\Legal\Legal;
+use Klxm\Fluid\Media\Ffmpeg;
+use Klxm\Fluid\Media\ImageFit;
+use Klxm\Fluid\Media\ImagePlace;
+use Klxm\Fluid\Media\ImagePlaces;
+use Klxm\Fluid\Media\Tracks;
+use Klxm\Fluid\RichText;
+use Klxm\Fluid\Settings;
+use Klxm\ImageEditor\ImageEditor;
+use Klxm\Meta\Alt;
+use Klxm\VideoEditor\VideoEditor;
 use Redaxo\Core\Content\Article;
+use Redaxo\Core\ExtensionPoint\Extension;
+use Redaxo\Core\ExtensionPoint\ExtensionPoint;
+use Redaxo\Core\Language\Language;
+use Redaxo\Core\MediaManager\MediaManager;
 use Redaxo\Core\MediaPool\Media;
 
 use function Redaxo\Core\View\escape;
@@ -29,11 +48,11 @@ if (!function_exists('e')) {
 function lt(string $text, array $vars = []): string
 {
     static $tables = [];
-    $code = \Redaxo\Core\Language\Language::getCurrent()->code;
+    $code = Language::getCurrent()->code;
     if ('de' !== $code) {
         if (!isset($tables[$code])) {
             $file = __DIR__ . '/lang/site/' . basename($code) . '.php';
-            $tables[$code] = (array) \Redaxo\Core\ExtensionPoint\Extension::dispatch(new \Redaxo\Core\ExtensionPoint\ExtensionPoint(
+            $tables[$code] = (array) Extension::dispatch(new ExtensionPoint(
                 'FLUID_SITE_TRANSLATIONS', is_file($file) ? (array) require $file : [], ['code' => $code]));
         }
         $text = $tables[$code][$text] ?? $text;
@@ -55,10 +74,12 @@ function is_editing(): bool
     return Editing::active();
 }
 
-/** Website-Einstellungen (Klxm\Fluid\Settings) – wie setting() in KLXM Studio */
+/**
+ * Website-Einstellungen (Klxm\Fluid\Settings) – wie setting() in KLXM Studio.
+ */
 function setting(string $key, mixed $default = null): mixed
 {
-    return \Klxm\Fluid\Settings::get($key, $default);
+    return Settings::get($key, $default);
 }
 
 function filled(mixed $v): bool
@@ -70,7 +91,7 @@ function filled(mixed $v): bool
 
 function fluid_name(bool $short = false): string
 {
-    return \Klxm\Fluid\Settings::name($short);
+    return Settings::name($short);
 }
 
 function fluid_phone(): string
@@ -78,7 +99,9 @@ function fluid_phone(): string
     return trim((string) setting('phone', ''));
 }
 
-/** tel:-Adresse aus einer Telefonnummer (+49 statt 0) oder null */
+/**
+ * tel:-Adresse aus einer Telefonnummer (+49 statt 0) oder null.
+ */
 function fluid_phone_href(): ?string
 {
     $p = preg_replace('~[^\d+]~', '', fluid_phone());
@@ -101,7 +124,9 @@ function fluid_email(): string
     return filter_var($m, FILTER_VALIDATE_EMAIL) ? $m : '';
 }
 
-/** Adresse als Zeilen: [Straße, PLZ Ort, Land] – nur befüllte Teile */
+/**
+ * Adresse als Zeilen: [Straße, PLZ Ort, Land] – nur befüllte Teile.
+ */
 function fluid_address_lines(): array
 {
     $city = trim(trim((string) setting('zip', '')) . ' ' . trim((string) setting('city', '')));
@@ -137,7 +162,9 @@ function fluid_weekday(int $dow, bool $short = false): string
     return $short ? mb_substr($l, 0, 2) : $l;
 }
 
-/** Öffnungszeiten Mo–So, aufeinanderfolgende Tage mit gleichen Zeiten zusammengefasst @return list<array{days: string, time: string}> */
+/**
+ * Öffnungszeiten Mo–So, aufeinanderfolgende Tage mit gleichen Zeiten zusammengefasst @return list<array{days: string, time: string}>.
+ */
 function fluid_hours(): array
 {
     $byDay = [];
@@ -197,10 +224,12 @@ function fluid_quick_contact(string $class = 'quick'): string
     return $h . '</ul>';
 }
 
-/** Impressum, Datenschutz, Barrierefreiheit (Website → Recht; Klxm\Fluid\Legal\Legal) @return list<array{label: string, href: string}> */
+/**
+ * Impressum, Datenschutz, Barrierefreiheit (Website → Recht; Klxm\Fluid\Legal\Legal) @return list<array{label: string, href: string}>.
+ */
 function fluid_legal_links(): array
 {
-    return \Klxm\Fluid\Legal\Legal::links();
+    return Legal::links();
 }
 
 function fluid_header_cta(): ?array
@@ -223,7 +252,9 @@ function fluid_footer_cta(): ?array
     return '' !== $label && '' !== $link ? ['label' => $label, 'link' => $link] : null;
 }
 
-/** Symbol aus den Phosphor-Sprites (MIT) des Kits */
+/**
+ * Symbol aus den Phosphor-Sprites (MIT) des Kits.
+ */
 function icon(?string $name, array $opt = []): string
 {
     $name = trim((string) $name);
@@ -242,7 +273,9 @@ function icon(?string $name, array $opt = []): string
         . '<use href="' . e(FluidKit::instance()->assetUrl('icons/' . $sprite . '.svg')) . '#i-' . e($name) . '"/></svg>';
 }
 
-/** Medium aus dem Medienpool (Dateiname) */
+/**
+ * Medium aus dem Medienpool (Dateiname).
+ */
 function media(?string $name): ?array
 {
     $m = $name ? Media::get($name) : null;
@@ -269,23 +302,23 @@ function img(?string $name, string $sizes = '100vw', array $opt = []): string
     if (!$m) {
         return '';
     }
-    $alt = \Klxm\Meta\Alt::attribute($m, $opt['alt'] ?? null);
+    $alt = Alt::attribute($m, $opt['alt'] ?? null);
     // ohne Angabe: erstes Bild im ersten Block der Seite sofort und mit Vorrang (Einstieg), sonst lazy
-    $eager = \array_key_exists('eager', $opt) ? !empty($opt['eager']) : \Klxm\Fluid\Block::firstImage();
-    $editor = class_exists(\Klxm\ImageEditor\ImageEditor::class) ? \Klxm\ImageEditor\ImageEditor::class : null;
+    $eager = array_key_exists('eager', $opt) ? !empty($opt['eager']) : Block::firstImage();
+    $editor = class_exists(ImageEditor::class) ? ImageEditor::class : null;
     $editable = $editor && null === $editor::editable($m);
     // Einstellung an dieser Stelle (Effekt, Darstellung, Ausschnitt – je Einbindung im Block)
-    $at = \Klxm\Fluid\Media\ImagePlaces::take($m->fileName);
+    $at = ImagePlaces::take($m->fileName);
     $place = $at['place'] ?? null;
     $frameRatio = (string) ($opt['ratio'] ?? '');
     // Bildformat (16:9 …): Ausschnitt je Format aus image_editor – eigener Ausschnitt oder automatisch um den Fokuspunkt.
     // Nicht bei „Einpassen“ (contain): dann zeigt der Rahmen das ganze Bild.
     $ratio = $frameRatio;
-    if (!$editable || !\defined($editor . '::RATIOS') || !\in_array($ratio, $editor::RATIOS, true) || str_contains($editor::imgStyle($m->fileName), 'contain')) {
+    if (!$editable || !defined($editor . '::RATIOS') || !in_array($ratio, $editor::RATIOS, true) || str_contains($editor::imgStyle($m->fileName), 'contain')) {
         $ratio = '';
     }
     // eigener Ausschnitt oder andere Darstellung an dieser Stelle: das ganze Bild laden, nicht den Zuschnitt des Formats
-    if (null !== $place && ($place->hasCrop() || \Klxm\Fluid\Media\ImageFit::Cover !== $place->fit)) {
+    if (null !== $place && ($place->hasCrop() || ImageFit::Cover !== $place->fit)) {
         $ratio = '';
     }
     if ($editable) {
@@ -309,21 +342,25 @@ function img(?string $name, string $sizes = '100vw', array $opt = []): string
     $style = $editable ? $editor::imgStyle($m->fileName) : '';
     if (null !== $place) {
         // small blurred version (image_editor); without it there is no blurred background
-        $blur = \Klxm\Fluid\Media\ImagePlace::BACKGROUND_BLUR === $place->background && $editable && method_exists($editor, 'backdropUrl') ? (string) $editor::backdropUrl($m->fileName) : '';
+        $blur = ImagePlace::BACKGROUND_BLUR === $place->background && $editable && method_exists($editor, 'backdropUrl') ? (string) $editor::backdropUrl($m->fileName) : '';
         $style = trim($style . ';' . $place->declarations($blur), ';');
     }
 
     return '<img src="' . e($src) . '"' . $srcset . ' alt="' . e($alt) . '"' . $wh . ($eager ? ' fetchpriority="high"' : ' loading="lazy"') . ' decoding="async"'
-        . \Klxm\Fluid\InlineStyle::attr($style, (string) ($opt['class'] ?? '')) . $ie . '>';   // Fokuspunkt als Klasse (CSP: keine style-Attribute)
+        . InlineStyle::attr($style, (string) ($opt['class'] ?? '')) . $ie . '>';   // Fokuspunkt als Klasse (CSP: keine style-Attribute)
 }
 
-/** Rich Text sicher ausgeben (Klassenvertrag der Formatierungsleiste, RichText) */
+/**
+ * Rich Text sicher ausgeben (Klassenvertrag der Formatierungsleiste, RichText).
+ */
 function rich(?string $html): string
 {
-    return \Klxm\Fluid\RichText::html($html);
+    return RichText::html($html);
 }
 
-/** Link-Wert eines Feldes → Adresse: redaxo://12, page:12, 12, https://…, #anker, tel:, mailto: */
+/**
+ * Link-Wert eines Feldes → Adresse: redaxo://12, page:12, 12, https://…, #anker, tel:, mailto:
+ */
 function link_href(?string $link): string
 {
     $l = trim((string) $link);
@@ -394,7 +431,7 @@ function fluid_buttons(Block $b, string $class = '', array $data = [], string $p
 
 function fluid_lines(?string $text): array
 {
-    return array_values(array_filter(array_map('trim', preg_split('~\R~', (string) $text)), fn ($l) => '' !== $l));
+    return array_values(array_filter(array_map('trim', preg_split('~\R~', (string) $text)), static fn ($l) => '' !== $l));
 }
 
 function fluid_checks(array $lines, string $class = ''): string
@@ -469,8 +506,8 @@ function fluid_min(array $d, string $key = 'size'): string
 function fluid_image(?string $id, string $sizes, string $ratio, string $class = '', array $opt = []): string
 {
     // Originalgröße (am Medium oder an dieser Stelle): Rahmen ohne festes Seitenverhältnis
-    $place = $id ? \Klxm\Fluid\Media\ImagePlaces::peek($id) : null;
-    $fit = null !== $place ? $place->fit->value : ($id && class_exists(\Klxm\ImageEditor\ImageEditor::class) ? (\Klxm\ImageEditor\ImageEditor::stored($id)['fit'] ?? '') : '');
+    $place = $id ? ImagePlaces::peek($id) : null;
+    $fit = null !== $place ? $place->fit->value : ($id && class_exists(ImageEditor::class) ? (ImageEditor::stored($id)['fit'] ?? '') : '');
     if ('original' === $fit) {
         $ratio = '';
     }
@@ -531,7 +568,9 @@ function fluid_reading_time(string $html): int
     return max(1, (int) round(str_word_count(strip_tags($html), 0, 'äöüÄÖÜß') / 220));
 }
 
-/** „Wert: Bezeichnung“ je Zeile (Hero „Fließende Skala“) */
+/**
+ * „Wert: Bezeichnung“ je Zeile (Hero „Fließende Skala“).
+ */
 function fluid_pairs(mixed $s): array
 {
     return array_map(static function (string $l): array {
@@ -553,7 +592,7 @@ function fluid_pairs(mixed $s): array
 function fluid_video_toggle(string $class = '', string $mode = 'icon'): string
 {
     $mode = 'text' === $mode ? 'text' : 'icon';
-    \Klxm\Fluid\Kit::active()->markUsed('@videotoggle');
+    Kit::active()->markUsed('@videotoggle');
     $pause = lt('Hintergrundvideo anhalten');
     $play = lt('Hintergrundvideo abspielen');
 
@@ -592,15 +631,17 @@ function fluid_compare(array $d, string $sizes, string $ratio, string $class): s
 function fluid_alt_hint(?string $file): string
 {
     $file = trim((string) $file);
-    if (!is_editing() || '' === $file || !class_exists(\Klxm\Meta\Alt::class) || !Media::get($file)
-        || null !== \Klxm\Meta\Alt::of($file) || \Klxm\Meta\Alt::isDecorative($file)) {
+    if (!is_editing() || '' === $file || !class_exists(Alt::class) || !Media::get($file)
+        || null !== Alt::of($file) || Alt::isDecorative($file)) {
         return '';
     }
 
     return '<p class="empty-hint">' . e('Alternativtext fehlt für „' . $file . '“ – im Medienpool beschreiben, was zu sehen ist.') . '</p>';
 }
 
-/** Hinweis nur beim Bearbeiten: eigene Videodatei ohne Untertitel (Videos mit Sprache brauchen sie) */
+/**
+ * Hinweis nur beim Bearbeiten: eigene Videodatei ohne Untertitel (Videos mit Sprache brauchen sie).
+ */
 function fluid_caption_hint(array $d): string
 {
     if (!is_editing() || '' === trim((string) ($d['video_file'] ?? ''))) {
@@ -624,7 +665,7 @@ function fluid_caption_hint(array $d): string
  * @param list<string> $cats Kategorien je Eintrag (Index wie die Einträge)
  * @return array{bar: string, item: list<string>} Leiste und data-category je Eintrag
  */
-function fluid_filter(\Klxm\Fluid\Block $b, array $cats): array
+function fluid_filter(Block $b, array $cats): array
 {
     $names = [];
     $item = [];
@@ -644,7 +685,7 @@ function fluid_filter(\Klxm\Fluid\Block $b, array $cats): array
     if (count($names) < 2 || is_editing()) {
         return ['bar' => '', 'item' => []];
     }
-    \Klxm\Fluid\Kit::active()->markUsed('@filter');
+    Kit::active()->markUsed('@filter');
     $id = $b->domId() . '-f';
     $bar = '<fieldset class="ncss-filter-bar"><legend>' . e(lt('Filtern nach Kategorie')) . '</legend>'
         . '<input type="radio" name="' . e($id) . '" id="' . e($id) . '-0" value="" checked><label for="' . e($id) . '-0">' . e(lt('Alle')) . '</label>';
@@ -655,16 +696,20 @@ function fluid_filter(\Klxm\Fluid\Block $b, array $cats): array
     return ['bar' => $bar . '</fieldset>', 'item' => $item];
 }
 
-/** Text ohne *Betonung*-Sternchen (Attribute, Screenreader) */
+/**
+ * Text ohne *Betonung*-Sternchen (Attribute, Screenreader).
+ */
 function strip_emphasis(string $text): string
 {
     return (string) preg_replace('~\*([^*]+)\*~u', '$1', $text);
 }
 
-/** Datenschutzerklärung (Website → Recht, sonst Seite „Datenschutz“ der obersten Ebene) – oder '' */
+/**
+ * Datenschutzerklärung (Website → Recht, sonst Seite „Datenschutz“ der obersten Ebene) – oder ''.
+ */
 function privacy_url(): string
 {
-    return \Klxm\Fluid\Legal\Legal::url('privacy');
+    return Legal::url('privacy');
 }
 
 /**
@@ -674,7 +719,7 @@ function privacy_url(): string
  */
 /**
  * Video: eigene Datei (mit Vorschaubild, Untertiteln, Transkript) oder YouTube/Vimeo mit Zwei-Klick-Lösung.
- * $tracks: [['file' => 'film.de.vtt', 'lang' => 'de', 'kind' => 'subtitles', 'label' => ''], …]
+ * $tracks: [['file' => 'film.de.vtt', 'lang' => 'de', 'kind' => 'subtitles', 'label' => ''], …].
  */
 function fluid_video_embed(string $url, string $file, string $poster, string $ratio, string $label, array $tracks = [], bool $ccOn = false, bool $transcript = false): string
 {
@@ -711,22 +756,24 @@ function fluid_video_embed(string $url, string $file, string $poster, string $ra
         . '<span>' . e(lt('{provider}-Video laden', ['provider' => $v['label']])) . '<span class="sr-only">: ' . e($title) . '</span></span></button></div></div>';
 }
 
-/** Eigene Videodatei: Vorschaubild (gewählt oder Standbild per ffmpeg), Untertitel-Spuren, Transkript */
+/**
+ * Eigene Videodatei: Vorschaubild (gewählt oder Standbild per ffmpeg), Untertitel-Spuren, Transkript.
+ */
 function fluid_video_file(Media $video, string $poster, string $ratio, string $label, array $tracks, bool $ccOn, bool $transcript): string
 {
-    $mm = \Redaxo\Core\MediaManager\MediaManager::class;
+    $mm = MediaManager::class;
     // AddOn video_editor (optional): dort gewähltes Poster und Web-Fassungen (WebM, 480p/720p/1080p je nach Bildschirm) – ohne es das Original
-    $ve = class_exists(\Klxm\VideoEditor\VideoEditor::class);
-    $p = '' !== $poster ? Media::get($poster) : ($ve ? \Klxm\VideoEditor\VideoEditor::poster($video->fileName) : null);
-    $posterUrl = $p ? $mm::getUrl('fluid_poster', $p) : (\Klxm\Fluid\Media\Ffmpeg::available() ? $mm::getUrl('fluid_poster', $video) : '');
-    $sources = $ve ? \Klxm\VideoEditor\VideoEditor::sources($video->fileName) : [];
+    $ve = class_exists(VideoEditor::class);
+    $p = '' !== $poster ? Media::get($poster) : ($ve ? VideoEditor::poster($video->fileName) : null);
+    $posterUrl = $p ? $mm::getUrl('fluid_poster', $p) : (Ffmpeg::available() ? $mm::getUrl('fluid_poster', $video) : '');
+    $sources = $ve ? VideoEditor::sources($video->fileName) : [];
     $sources = $sources ?: [['url' => $video->getUrl(), 'type' => (string) $video->type]];
     // Untertitel aus dem Video-Editor, wenn im Block keine gewählt sind
     if ($ve && [] === $tracks) {
         $tracks = array_map(static fn (array $t) => ['file' => $t['file'], 'lang' => $t['lang'], 'kind' => $t['kind'], 'label' => $t['label']],
-            \Klxm\VideoEditor\VideoEditor::tracks($video->fileName));
+            VideoEditor::tracks($video->fileName));
     }
-    $lang = \Redaxo\Core\Language\Language::getCurrent()->code;
+    $lang = Language::getCurrent()->code;
     $out = '';
     $first = null;
     $on = false;
@@ -742,8 +789,8 @@ function fluid_video_file(Media $video, string $poster, string $ratio, string $l
         if ('chapters' !== $kind && (null === $first || $code === $lang && $first['lang'] !== $lang)) {
             $first = ['file' => $f, 'lang' => $code];
         }
-        $out .= '<track kind="' . e($kind) . '" src="' . e(\Klxm\Fluid\Media\Tracks::url($f)) . '" srclang="' . e($code) . '" label="'
-            . e(\Klxm\Fluid\Media\Tracks::label($kind, $code, (string) ($t['label'] ?? ''))) . '"' . ($default ? ' default' : '') . '>';
+        $out .= '<track kind="' . e($kind) . '" src="' . e(Tracks::url($f)) . '" srclang="' . e($code) . '" label="'
+            . e(Tracks::label($kind, $code, (string) ($t['label'] ?? ''))) . '"' . ($default ? ' default' : '') . '>';
     }
     // Untertitel von derselben Adresse (crossorigin nötig, sobald Medien von einer anderen Domain kommen)
     $h = '<div class="vembed r-' . e($ratio) . '"><video controls preload="none" playsinline' . ('' !== $posterUrl ? ' poster="' . e($posterUrl) . '"' : '')
@@ -751,7 +798,7 @@ function fluid_video_file(Media $video, string $poster, string $ratio, string $l
         . implode('', array_map(static fn (array $src) => '<source src="' . e($src['url']) . '" type="' . e($src['type']) . '"'
             . (($src['media'] ?? '') !== '' ? ' media="' . e($src['media']) . '"' : '') . '>', $sources)) . $out . '</video></div>';
     if ($transcript && $first) {
-        $paras = \Klxm\Fluid\Media\Tracks::transcript(\Klxm\Fluid\Media\Tracks::cuesOf($first['file']));
+        $paras = Tracks::transcript(Tracks::cuesOf($first['file']));
         if ($paras) {
             $h .= '<details class="vtranscript"><summary>' . e(lt('Text zum Video')) . '</summary><div class="vtranscript__body" lang="' . e($first['lang']) . '">'
                 . implode('', array_map(static fn ($t) => '<p>' . e($t) . '</p>', $paras)) . '</div></details>';
@@ -778,18 +825,20 @@ function fluid_audio_tracks(array $items): array
         $ch = trim((string) ($it['chapters'] ?? ''));
         $title = trim((string) ($it['title'] ?? ''));
         $out[] = ['url' => media_url($m), 'mime' => $m['mime'], 'title' => '' !== $title ? $title : ((string) $m['title'] ?: (string) $m['file']),
-            'artist' => trim((string) ($it['artist'] ?? '')), 'chapters' => '' !== $ch && Media::get($ch) ? \Klxm\Fluid\Media\Tracks::url($ch) : ''];
+            'artist' => trim((string) ($it['artist'] ?? '')), 'chapters' => '' !== $ch && Media::get($ch) ? Tracks::url($ch) : ''];
     }
 
     return $out;
 }
 
-/** Datum in der Sprache der Seite, z. B. „13. Oktober 2026“ / „October 13, 2026“ */
-function fluid_date(\DateTimeInterface $d): string
+/**
+ * Datum in der Sprache der Seite, z. B. „13. Oktober 2026“ / „October 13, 2026“.
+ */
+function fluid_date(DateTimeInterface $d): string
 {
-    $code = \Redaxo\Core\Language\Language::getCurrent()->code;
-    if (class_exists(\IntlDateFormatter::class)) {
-        $f = new \IntlDateFormatter($code, \IntlDateFormatter::LONG, \IntlDateFormatter::NONE);
+    $code = Language::getCurrent()->code;
+    if (class_exists(IntlDateFormatter::class)) {
+        $f = new IntlDateFormatter($code, IntlDateFormatter::LONG, IntlDateFormatter::NONE);
         $s = $f->format($d);
         if (is_string($s)) {
             return $s;
@@ -799,8 +848,10 @@ function fluid_date(\DateTimeInterface $d): string
     return $d->format('de' === substr($code, 0, 2) ? 'd.m.Y' : 'Y-m-d');
 }
 
-/** Zeile „Datum · Autor“ eines Beitrags */
-function fluid_post_meta(\Klxm\Fluid\Blog\Post $p, bool $author = true): string
+/**
+ * Zeile „Datum · Autor“ eines Beitrags.
+ */
+function fluid_post_meta(Post $p, bool $author = true): string
 {
     $h = '<time datetime="' . e($p->date->format('Y-m-d')) . '">' . e(fluid_date($p->date)) . '</time>';
     if ($author && '' !== $p->author) {
@@ -810,18 +861,20 @@ function fluid_post_meta(\Klxm\Fluid\Blog\Post $p, bool $author = true): string
     return $h;
 }
 
-/** Kopf einer Beitragsseite (Template): Zurück zur Übersicht, Titel, Datum, Autor, Schlagworte, Bild */
+/**
+ * Kopf einer Beitragsseite (Template): Zurück zur Übersicht, Titel, Datum, Autor, Schlagworte, Bild.
+ */
 function fluid_post_header(Article $a): string
 {
-    $blog = \Klxm\Fluid\Blog\Blog::blogOf($a);
-    $p = $blog ? \Klxm\Fluid\Blog\Post::get($a->id, $a->languageId) : null;
+    $blog = Blog::blogOf($a);
+    $p = $blog ? Post::get($a->id, $a->languageId) : null;
     if (!$p) {
         return '';
     }
     $over = Article::get($blog, $a->languageId);
     $tags = '';
     foreach ($p->tags as $t) {
-        $tags .= '<li><a href="' . e(($over?->getUrl() ?? '') . '?tag=' . rawurlencode(\Klxm\Fluid\Blog\Blog::tagSlug($t))) . '">' . e($t) . '</a></li>';
+        $tags .= '<li><a href="' . e(($over?->getUrl() ?? '') . '?tag=' . rawurlencode(Blog::tagSlug($t))) . '">' . e($t) . '</a></li>';
     }
     $img = '' !== $p->image ? '<div class="post-head__img ratio-16-9">' . img($p->image, '(min-width: 1280px) 1200px, 100vw', ['eager' => true]) . '</div>' : '';
 
@@ -833,14 +886,16 @@ function fluid_post_header(Article $a): string
         . $img . '</div></header>';
 }
 
-/** Fuß einer Beitragsseite (Template): älterer / neuerer Beitrag */
+/**
+ * Fuß einer Beitragsseite (Template): älterer / neuerer Beitrag.
+ */
 function fluid_post_footer(Article $a): string
 {
-    [$older, $newer] = \Klxm\Fluid\Blog\Blog::neighbors($a);
+    [$older, $newer] = Blog::neighbors($a);
     if (!$older && !$newer) {
         return '';
     }
-    $l = static fn (?\Klxm\Fluid\Blog\Post $p, string $label, string $cls) => $p
+    $l = static fn (?Post $p, string $label, string $cls) => $p
         ? '<a class="post-nav__link ' . $cls . '" href="' . e($p->url) . '"><span class="post-nav__label">' . e(lt($label)) . '</span><span class="post-nav__title">' . e($p->article->name) . '</span></a>'
         : '<span></span>';
 
@@ -856,9 +911,9 @@ function fluid_post_footer(Article $a): string
  */
 function fluid_nav_sheet(array $menu): string
 {
-    $cur = fn(array $m) => !empty($m['current']) ? ' aria-current="page"' : '';
+    $cur = static fn (array $m) => !empty($m['current']) ? ' aria-current="page"' : '';
     $chev = icon('caret-down', ['class' => 'mnav__chev']);
-    $level = function (array $items, int $depth) use (&$level, $cur, $chev): string {
+    $level = static function (array $items, int $depth) use (&$level, $cur, $chev): string {
         $h = '<ul class="mnav__list mnav__list--' . $depth . '" role="list">';
         foreach ($items as $m) {
             if (empty($m['children'])) {
@@ -887,7 +942,7 @@ function fluid_lightbox_link(string $file, string $caption): string
     if (!$m) {
         return '';
     }
-    $editor = class_exists(\Klxm\ImageEditor\ImageEditor::class) ? \Klxm\ImageEditor\ImageEditor::class : null;
+    $editor = class_exists(ImageEditor::class) ? ImageEditor::class : null;
     $editable = $editor && null === $editor::editable($m);
 
     return ' href="' . e($editable ? $editor::url($m->fileName, 1920) : $m->getUrl()) . '"'
@@ -904,7 +959,9 @@ function fluid_aspect_class(string $file): string
     return 'ar-' . ($w && $h ? max(5, min(24, (int) round($w / $h * 10))) : 13);
 }
 
-/** Lightbox-Dialog einmal je Seite (js/media.js befüllt ihn) – nicht im Bearbeiten-Modus */
+/**
+ * Lightbox-Dialog einmal je Seite (js/media.js befüllt ihn) – nicht im Bearbeiten-Modus.
+ */
 function fluid_lightbox(): string
 {
     static $done = false;

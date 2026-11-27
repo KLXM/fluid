@@ -8,17 +8,19 @@ use Redaxo\Core\Content\ArticleSlice;
 use Redaxo\Core\Content\ContentHandler;
 use Redaxo\Core\Content\Module;
 use Redaxo\Core\Content\ModulePermission;
+use Redaxo\Core\Content\StructurePermission;
 use Redaxo\Core\Content\Template;
 use Redaxo\Core\Database\Sql;
 use Redaxo\Core\Security\User;
 
 use function array_map;
 use function array_merge;
-use function array_search;
 use function array_splice;
 use function count;
 use function in_array;
 use function is_array;
+use function is_object;
+use function is_string;
 
 /**
  * Blöcke ziehen, verdoppeln, kopieren und einfügen (wie in KLXM Studio). Ein Layout zählt mit seinen Spalten-Blöcken
@@ -266,7 +268,7 @@ final class BlockOps
         }
         $article = Article::get($source->articleId, $source->languageId);
         $perm = $user->getComplexPerm('structure');
-        if (null === $article || (!$user->admin && !($perm instanceof \Redaxo\Core\Content\StructurePermission && $perm->hasCategoryPerm($article->categoryId)))) {
+        if (null === $article || (!$user->admin && !($perm instanceof StructurePermission && $perm->hasCategoryPerm($article->categoryId)))) {
             throw new ApiError('Eingefügt – das Original lässt sich ohne Recht auf seine Seite nicht entfernen.');
         }
         if (null !== BlockModule::classFor($source->moduleKey) && '' !== Lock::reason($user, $source)) {
@@ -285,9 +287,9 @@ final class BlockOps
     public static function clipValues(array $it): array
     {
         // aus payload() direkt (Verdoppeln) stehen Objekte darin, aus dem Browser (JSON) Arrays
-        $array = static fn (mixed $v): array => \is_object($v) ? (array) json_decode((string) json_encode($v), true) : (is_array($v) ? $v : []);
-        $values = $it['values'] ?? BlockModule::decode(\is_string($it['value1'] ?? null) ? $it['value1'] : null);
-        $tunes = $it['tunes'] ?? BlockModule::decode(\is_string($it['value2'] ?? null) ? $it['value2'] : null);
+        $array = static fn (mixed $v): array => is_object($v) ? (array) json_decode((string) json_encode($v), true) : (is_array($v) ? $v : []);
+        $values = $it['values'] ?? BlockModule::decode(is_string($it['value1'] ?? null) ? $it['value1'] : null);
+        $tunes = $it['tunes'] ?? BlockModule::decode(is_string($it['value2'] ?? null) ? $it['value2'] : null);
 
         return [$array($values), $array($tunes)];
     }

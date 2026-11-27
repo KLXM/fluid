@@ -1,11 +1,12 @@
 <?php
+
 /*
  * Demo-Inhalte des Kits „fluid“ (aus KLXM Studio, frei erfunden, als Demo gekennzeichnet) – `php bin/console fluid:demo`.
  */
 
-$workday = fn(string $tag) => ['tag' => $tag, 'von' => '09:00', 'bis' => '17:00', 'pause_von' => '', 'pause_bis' => '', 'notiz' => ''];
+$workday = static fn (string $tag) => ['tag' => $tag, 'von' => '09:00', 'bis' => '17:00', 'pause_von' => '', 'pause_bis' => '', 'notiz' => ''];
 
-$hero = fn(string $title, string $text, string $eyebrow = '') => [
+$hero = static fn (string $title, string $text, string $eyebrow = '') => [
     'type' => 'hero', 'tunes' => ['background' => 'muted'],
     'data' => ['variant' => 'compact', 'eyebrow' => $eyebrow, 'title' => $title, 'text' => $text],
 ];
@@ -48,7 +49,6 @@ return [
         'default_meta_description' => 'Demo-Website des fiktiven Studio Beispiel: ein breakpointloses Kit für Unternehmen, Praxen, Vereine, Gastronomie und Kultur.',
         'schema_type' => 'Organization',
     ],
-
 
     'page_refs' => [
         'imprint_page' => 'impressum',
@@ -178,8 +178,7 @@ return [
             'slug' => 'impressum', 'title' => 'Impressum', 'menu' => false,
             'blocks' => [
                 $hero('Impressum', ''),
-                ['type' => 'richtext', 'data' => ['variant' => 'standard', 'title' => '', 'text' =>
-                    '<p><strong>Hinweis für die Betreiber dieser Website:</strong> Bitte ersetzen Sie diesen Platzhalter durch Ihr vollständiges Impressum (Anbieterkennzeichnung, z. B. nach § 5 DDG) und lassen Sie es im Zweifel rechtlich prüfen.</p>'
+                ['type' => 'richtext', 'data' => ['variant' => 'standard', 'title' => '', 'text' => '<p><strong>Hinweis für die Betreiber dieser Website:</strong> Bitte ersetzen Sie diesen Platzhalter durch Ihr vollständiges Impressum (Anbieterkennzeichnung, z. B. nach § 5 DDG) und lassen Sie es im Zweifel rechtlich prüfen.</p>'
                     . '<h3>Angaben zum Anbieter</h3><p>[Name bzw. Firma]<br>[Straße und Hausnummer]<br>[PLZ Ort]</p>'
                     . '<h3>Vertreten durch</h3><p>[Vertretungsberechtigte Person]</p>'
                     . '<h3>Kontakt</h3><p>[Telefon]<br>[E-Mail-Adresse]</p>'
@@ -191,8 +190,7 @@ return [
             'slug' => 'datenschutz', 'title' => 'Datenschutz', 'menu' => false,
             'blocks' => [
                 $hero('Datenschutzerklärung', ''),
-                ['type' => 'richtext', 'data' => ['variant' => 'standard', 'title' => '', 'text' =>
-                    '<p><strong>Hinweis für die Betreiber dieser Website:</strong> Bitte fügen Sie hier Ihre vollständige Datenschutzerklärung ein. Sie muss zu Ihrer tatsächlichen Nutzung passen (z. B. Hosting, E-Mail, eingebundene Dienste) und sollte rechtlich geprüft werden.</p>'
+                ['type' => 'richtext', 'data' => ['variant' => 'standard', 'title' => '', 'text' => '<p><strong>Hinweis für die Betreiber dieser Website:</strong> Bitte fügen Sie hier Ihre vollständige Datenschutzerklärung ein. Sie muss zu Ihrer tatsächlichen Nutzung passen (z. B. Hosting, E-Mail, eingebundene Dienste) und sollte rechtlich geprüft werden.</p>'
                     . '<h3>Verantwortliche Stelle</h3><p>[Name bzw. Firma, Anschrift, E-Mail-Adresse]</p>'
                     . '<h3>Technische Hinweise zu dieser Website</h3><p>Die Website setzt für Besucher keine Cookies, lädt Schriften vom eigenen Server und bindet keine Analyse- oder Tracking-Dienste ein. Karten werden über den eigenen Server geladen; Videos von YouTube oder Vimeo erst nach einem Klick. Die Einstellung „Videos künftig direkt laden“ wird nur im eigenen Browser gespeichert (lokaler Speicher, kein Cookie). [Bitte prüfen und an Ihre Nutzung anpassen.]</p>'
                     . '<h3>Ihre Rechte</h3><p>[Auskunft, Berichtigung, Löschung, Einschränkung, Datenübertragbarkeit, Widerspruch, Beschwerde bei einer Aufsichtsbehörde]</p>']],

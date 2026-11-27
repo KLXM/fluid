@@ -4,13 +4,21 @@ namespace Klxm\Fluid\Maps;
 
 use Klxm\Fluid\Editing;
 use Klxm\Fluid\FluidAddon;
+use Klxm\Fluid\Routing\Router;
 use Klxm\Fluid\Settings;
+use Redaxo\Core\ExtensionPoint\Extension;
+use Redaxo\Core\ExtensionPoint\ExtensionPoint;
 
+use function array_slice;
+use function function_exists;
 use function is_array;
 use function is_numeric;
 use function is_string;
-
 use function Redaxo\Core\View\escape;
+
+use const JSON_UNESCAPED_SLASHES;
+use const JSON_UNESCAPED_UNICODE;
+use const M_PI;
 
 /**
  * Karten mit MapLibre GL und OpenFreeMap – vollständig über den eigenen Proxy (aus KLXM Studio – Core\Maps):
@@ -22,10 +30,17 @@ use function Redaxo\Core\View\escape;
  */
 final class Maps
 {
+    public const array STYLES = ['liberty' => 'Liberty (farbig, detailreich)', 'bright' => 'Bright (hell, klassisch)', 'positron' => 'Positron (dezent, grau)', 'dark' => 'Dark (dunkel)', 'fiord' => 'Fiord (dunkelblau)'];
+    public const array HEIGHTS = ['s' => 'Niedrig', 'm' => 'Mittel', 'l' => 'Hoch'];
+    private const int FREE_ZOOM = 8;
+    private const float RADIUS_KM = 25.0;
+
+    private static bool $assets = false;
+
     /** Geo-Koordinaten der Website in den schema.org-Knoten der Organisation (Startseite) */
     public static function boot(): void
     {
-        \Redaxo\Core\ExtensionPoint\Extension::register('FLUID_STRUCTURED_DATA', static function (\Redaxo\Core\ExtensionPoint\ExtensionPoint $ep): array {
+        Extension::register('FLUID_STRUCTURED_DATA', static function (ExtensionPoint $ep): array {
             $data = (array) $ep->subject;
             $geo = self::siteLocation();
             foreach ((array) ($data['@graph'] ?? []) as $i => $node) {
@@ -38,17 +53,10 @@ final class Maps
         });
     }
 
-    public const array STYLES = ['liberty' => 'Liberty (farbig, detailreich)', 'bright' => 'Bright (hell, klassisch)', 'positron' => 'Positron (dezent, grau)', 'dark' => 'Dark (dunkel)', 'fiord' => 'Fiord (dunkelblau)'];
-    public const array HEIGHTS = ['s' => 'Niedrig', 'm' => 'Mittel', 'l' => 'Hoch'];
-    private const int FREE_ZOOM = 8;
-    private const float RADIUS_KM = 25.0;
-
-    private static bool $assets = false;
-
     /** Text in der Sprache der Seite (lt() des Kits, sonst Deutsch) */
     private static function t(string $text, array $vars = []): string
     {
-        return \function_exists('lt') ? lt($text, $vars) : strtr($text, array_combine(array_map(static fn ($k) => '{' . $k . '}', array_keys($vars)), array_values($vars)) ?: []);
+        return function_exists('lt') ? lt($text, $vars) : strtr($text, array_combine(array_map(static fn ($k) => '{' . $k . '}', array_keys($vars)), array_values($vars)) ?: []);
     }
 
     public static function registerProxy(): void
@@ -174,9 +182,7 @@ final class Maps
         return Proxy::url('ofm', 'styles/' . $style);
     }
 
-    /**
-     * @param array{point?: mixed, zoom?: int, label?: string, address?: string, height?: string, style?: string, route?: bool, click?: bool, class?: string} $o
-     */
+    /** @param array{point?: mixed, zoom?: int, label?: string, address?: string, height?: string, style?: string, route?: bool, click?: bool, class?: string} $o */
     public static function render(array $o = []): string
     {
         $p = self::parse($o['point'] ?? null) ?? self::siteLocation();
@@ -231,7 +237,7 @@ final class Maps
 
     private static function abs(string $url): string
     {
-        return \Klxm\Fluid\Routing\Router::base() . '/' . ltrim((string) preg_replace('~^\./~', '', $url), '/');
+        return Router::base() . '/' . ltrim((string) preg_replace('~^\./~', '', $url), '/');
     }
 
     /** @return array{google: string, apple: string, osm: string} */

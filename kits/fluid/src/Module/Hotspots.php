@@ -3,7 +3,11 @@
 namespace Klxm\Fluid\Kit\Fluid\Module;
 
 use Klxm\Fluid\Field\AsBlock;
-use Klxm\Fluid\Field\{Choice, Hotspots as HotspotsField, MediaPicker, Text, Textarea};
+use Klxm\Fluid\Field\Choice;
+use Klxm\Fluid\Field\Hotspots as HotspotsField;
+use Klxm\Fluid\Field\MediaPicker;
+use Klxm\Fluid\Field\Text;
+use Klxm\Fluid\Field\Textarea;
 use Klxm\Fluid\Kit\Fluid\FluidBlock;
 use Redaxo\Core\Content\AsModule;
 use Redaxo\Core\MediaPool\Media;

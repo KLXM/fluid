@@ -2,7 +2,17 @@
 
 namespace Klxm\Fluid;
 
+use InvalidArgumentException;
 use Redaxo\Core\Filesystem\Path;
+
+use function count;
+use function dirname;
+use function is_array;
+
+use const JSON_UNESCAPED_SLASHES;
+use const JSON_UNESCAPED_UNICODE;
+use const LOCK_EX;
+use const LOCK_UN;
 
 /**
  * Präsenz der Redaktion: wer arbeitet gerade wo – aus KLXM Studio (Core\Presence, MIT), unverändert bis auf die Ablage.
@@ -33,16 +43,18 @@ final class Presence
         $now ??= time();
         $k = self::key($who);
         $new = false;
-        self::edit(function (array $all) use ($k, $who, $meta, $now, &$new): array {
+        self::edit(static function (array $all) use ($k, $who, $meta, $now, &$new): array {
             $cur = $all[$k] ?? null;
-            $new = $cur === null;
-            $all[$k] = array_intersect_key($who, array_flip(self::KEYS)) + array_map(fn($v) => mb_substr((string) $v, 0, 300), $meta)
+            $new = null === $cur;
+            $all[$k] = array_intersect_key($who, array_flip(self::KEYS)) + array_map(static fn ($v) => mb_substr((string) $v, 0, 300), $meta)
                 + ['since' => (int) ($cur['since'] ?? $now), 'at' => $now];
             $all[$k]['since'] = (int) ($cur['since'] ?? $now);
             $all[$k]['at'] = $now;
             return $all;
         }, $now);
-        if ($new) Live::touch('presence:' . $who['site']);
+        if ($new) {
+            Live::touch('presence:' . $who['site']);
+        }
         return $new;
     }
 
@@ -65,12 +77,14 @@ final class Presence
     {
         $k = self::key($who);
         $gone = false;
-        self::edit(function (array $all) use ($k, &$gone): array {
+        self::edit(static function (array $all) use ($k, &$gone): array {
             $gone = isset($all[$k]);
             unset($all[$k]);
             return $all;
         });
-        if ($gone) Live::touch('presence:' . $who['site']);
+        if ($gone) {
+            Live::touch('presence:' . $who['site']);
+        }
     }
 
     /**
@@ -83,18 +97,28 @@ final class Presence
         $now ??= time();
         $out = [];
         foreach (self::read() as $e) {
-            if ((int) ($e['at'] ?? 0) < $now - self::TTL) continue;
-            foreach ($filter as $fk => $fv) if ((string) ($e[$fk] ?? '') !== (string) $fv) continue 2;
+            if ((int) ($e['at'] ?? 0) < $now - self::TTL) {
+                continue;
+            }
+            foreach ($filter as $fk => $fv) {
+                if ((string) ($e[$fk] ?? '') !== (string) $fv) {
+                    continue 2;
+                }
+            }
             $out[] = $e;
         }
-        usort($out, fn($a, $b) => (int) $b['at'] <=> (int) $a['at']);
+        usort($out, static fn ($a, $b) => (int) $b['at'] <=> (int) $a['at']);
         return $out;
     }
 
     public static function key(array $who): string
     {
-        foreach (self::KEYS as $k) if (!isset($who[$k]) || (string) $who[$k] === '') throw new \InvalidArgumentException("Presence: Schlüssel „{$k}“ fehlt.");
-        return implode('|', array_map(fn($k) => str_replace('|', '/', (string) $who[$k]), self::KEYS));
+        foreach (self::KEYS as $k) {
+            if (!isset($who[$k]) || '' === (string) $who[$k]) {
+                throw new InvalidArgumentException("Presence: Schlüssel „{$k}“ fehlt.");
+            }
+        }
+        return implode('|', array_map(static fn ($k) => str_replace('|', '/', (string) $who[$k]), self::KEYS));
     }
 
     private static function read(): array
@@ -109,14 +133,18 @@ final class Presence
     {
         $now ??= time();
         $f = self::file();
-        if (!is_dir(dirname($f))) @mkdir(dirname($f), 0o775, true);
+        if (!is_dir(dirname($f))) {
+            @mkdir(dirname($f), 0o775, true);
+        }
         $h = @fopen($f, 'c+');
-        if (!$h) return;
+        if (!$h) {
+            return;
+        }
         try {
             flock($h, LOCK_EX);
             $raw = stream_get_contents($h);
             $all = $raw ? (json_decode($raw, true) ?: []) : [];
-            $all = array_filter($all, fn($e) => is_array($e) && (int) ($e['at'] ?? 0) >= $now - self::TTL);
+            $all = array_filter($all, static fn ($e) => is_array($e) && (int) ($e['at'] ?? 0) >= $now - self::TTL);
             $all = $fn($all);
             ftruncate($h, 0);
             rewind($h);
@@ -133,9 +161,13 @@ final class Presence
     /** @return array{ok: int, fails: list<string>} */
     public static function selftest(): array
     {
-        $ok = 0; $fails = [];
-        $eq = function (string $what, mixed $got, mixed $want) use (&$ok, &$fails): void {
-            if ($got === $want) { $ok++; return; }
+        $ok = 0;
+        $fails = [];
+        $eq = static function (string $what, mixed $got, mixed $want) use (&$ok, &$fails): void {
+            if ($got === $want) {
+                ++$ok;
+                return;
+            }
             $fails[] = $what . ': erwartet ' . var_export($want, true) . ', erhalten ' . var_export($got, true);
         };
         $site = 'selftest-' . bin2hex(random_bytes(3));
@@ -152,7 +184,14 @@ final class Presence
         self::leave($b);
         $eq('Abmelden entfernt', count(self::list(['site' => $site], $now)), 1);
         self::leave($a);
-        $eq('fehlender Schlüssel wird abgewiesen', (function () { try { self::key(['site' => 'x']); return false; } catch (\InvalidArgumentException) { return true; } })(), true);
+        $eq('fehlender Schlüssel wird abgewiesen', (static function () {
+            try {
+                self::key(['site' => 'x']);
+                return false;
+            } catch (InvalidArgumentException) {
+                return true;
+            }
+        })(), true);
         $eq('Schlüssel ohne Trennzeichen-Missbrauch', self::key(['site' => 'a|b', 'type' => 't', 'id' => '1', 'user' => 'u']), 'a/b|t|1|u');
         return ['ok' => $ok, 'fails' => $fails];
     }

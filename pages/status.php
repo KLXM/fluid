@@ -1,3 +1,5 @@
 <?php
 
-echo Klxm\Fluid\Backend\StatusPage::run();
+use Klxm\Fluid\Backend\StatusPage;
+
+echo StatusPage::run();

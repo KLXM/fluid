@@ -9,6 +9,10 @@ use Redaxo\Core\Security\BackendLogin;
 
 use function Redaxo\Core\View\escape;
 
+use const JSON_HEX_AMP;
+use const JSON_HEX_TAG;
+use const JSON_UNESCAPED_SLASHES;
+
 /**
  * Medien- und Seitenauswahl für die Website – das Gegenstück zu `rex.pick()` im Backend, für jedes AddOn nutzbar.
  *

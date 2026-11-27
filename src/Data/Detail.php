@@ -2,16 +2,21 @@
 
 namespace Klxm\Fluid\Data;
 
-use Klxm\Fluid\Routing\Sitemap;
-use Klxm\Fluid\Routing\Router;
 use Klxm\Fluid\BlockModule;
 use Klxm\Fluid\Routing\RouteMatch;
+use Klxm\Fluid\Routing\Router;
 use Klxm\Fluid\Routing\Routes;
 use Klxm\Fluid\Routing\Seo\PageMeta;
-use Redaxo\Core\Language\Language;
+use Klxm\Fluid\Routing\Sitemap;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\ArticleRevision;
 use Redaxo\Core\Database\Sql;
+use Redaxo\Core\Language\Language;
+use Yakamara\YForm\Field\Media;
+use Yakamara\YForm\Field\Text;
+use Yakamara\YForm\Field\Textarea;
+
+use function array_key_exists;
 
 /**
  * Detailansicht der Datenliste mit schöner Adresse: /{seite}/{titel}-{id} statt ?eintrag={id}.
@@ -21,6 +26,8 @@ use Redaxo\Core\Database\Sql;
  */
 final class Detail
 {
+    public const string PARAM = 'eintrag';
+
     /**
      * Beim Routing anmelden: Detailansicht /seite/titel-ID (falscher Titel-Teil → 301), alter Link ?eintrag=ID → 301,
      * Detailseiten in der sitemap.xml.
@@ -67,14 +74,12 @@ final class Detail
         });
     }
 
-    public const string PARAM = 'eintrag';
-
     /** Einstellungen der ersten Datenliste mit Detailansicht auf einer Seite (Live-Fassung) */
     public static function config(int $articleId, int $languageId): ?array
     {
         static $cache = [];
         $key = $articleId . '/' . $languageId;
-        if (!\array_key_exists($key, $cache)) {
+        if (!array_key_exists($key, $cache)) {
             $cache[$key] = null;
             $rows = Sql::factory()->getArray("SELECT module, data FROM rex_article_slice WHERE article_id = ? AND language_id = ? AND revision = ? AND status = 1 AND module LIKE '%.datalist' ORDER BY priority",
                 [$articleId, $languageId, ArticleRevision::LIVE]);
@@ -119,8 +124,8 @@ final class Detail
         if (!$t || !$row) {
             return new PageMeta(title: $title);
         }
-        $textF = YFormBridge::field($t, (string) ($config['text_field'] ?? ''), [\Yakamara\YForm\Field\Textarea::class]);
-        $imageF = YFormBridge::field($t, (string) ($config['image_field'] ?? ''), [\Yakamara\YForm\Field\Media::class]);
+        $textF = YFormBridge::field($t, (string) ($config['text_field'] ?? ''), [Textarea::class]);
+        $imageF = YFormBridge::field($t, (string) ($config['image_field'] ?? ''), [Media::class]);
         $text = $textF ? trim((string) preg_replace('~\s+~u', ' ', html_entity_decode(strip_tags(YFormBridge::text($row, $textF))))) : '';
 
         return new PageMeta(
@@ -149,7 +154,7 @@ final class Detail
         if (!$t) {
             return [];
         }
-        $f = YFormBridge::field($t, (string) ($config['title_field'] ?? ''), [\Yakamara\YForm\Field\Text::class]);
+        $f = YFormBridge::field($t, (string) ($config['title_field'] ?? ''), [Text::class]);
         $rows = YFormBridge::rows($t, ['filter' => YFormBridge::field($t, (string) ($config['filter_field'] ?? '')), 'value' => trim((string) ($config['filter_value'] ?? '')), 'limit' => $limit, 'language' => $config['_language'] ?? null]);
 
         return array_map(static fn ($r) => [(int) $r->id, $f ? YFormBridge::text($r, $f) : ''], $rows);
@@ -162,7 +167,7 @@ final class Detail
         if (!$t) {
             return null;
         }
-        $f = YFormBridge::field($t, (string) ($config['title_field'] ?? ''), [\Yakamara\YForm\Field\Text::class]);
+        $f = YFormBridge::field($t, (string) ($config['title_field'] ?? ''), [Text::class]);
         $row = YFormBridge::row($t, $id, YFormBridge::field($t, (string) ($config['filter_field'] ?? '')), trim((string) ($config['filter_value'] ?? '')), $config['_language'] ?? null);
 
         return $row ? ($f ? YFormBridge::text($row, $f) : '') : null;

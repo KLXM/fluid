@@ -2,16 +2,23 @@
 
 namespace Klxm\Fluid\Data;
 
+use DateTimeInterface;
 use Klxm\Fluid\Editing;
 use Redaxo\Core\Addon\Addon;
 use Redaxo\Core\Filesystem\Url;
+use Redaxo\Core\Language\Language;
+use Yakamara\YForm\Data\Query;
 use Yakamara\YForm\Data\Record;
 use Yakamara\YForm\Field\Checkbox;
 use Yakamara\YForm\Field\CreatedAt;
 use Yakamara\YForm\Field\CreatedBy;
+use Yakamara\YForm\Field\Date;
+use Yakamara\YForm\Field\DateTime;
+use Yakamara\YForm\Field\Decimal;
 use Yakamara\YForm\Field\Email;
 use Yakamara\YForm\Field\Field;
 use Yakamara\YForm\Field\Hidden;
+use Yakamara\YForm\Field\Integer;
 use Yakamara\YForm\Field\Markup;
 use Yakamara\YForm\Field\Media;
 use Yakamara\YForm\Field\Password;
@@ -21,6 +28,7 @@ use Yakamara\YForm\Field\UpdatedAt;
 use Yakamara\YForm\Field\UpdatedBy;
 use Yakamara\YForm\Field\Url as UrlField;
 use Yakamara\YForm\Field\Uuid;
+use Yakamara\YForm\Form\Action\SaveRecord;
 use Yakamara\YForm\Form\Definition\FormDefinition;
 use Yakamara\YForm\Form\Definition\Forms;
 use Yakamara\YForm\Form\Theme\Theme;
@@ -29,7 +37,9 @@ use Yakamara\YForm\Table\Table;
 use Yakamara\YForm\Table\Tables;
 
 use function in_array;
+use function is_scalar;
 use function Redaxo\Core\View\escape;
+use function strlen;
 
 /**
  * Anbindung an YForm für REDAXO 6 (yakamara/yform, Neubau: Tabellen und Formulare sind Klassen im Projekt).
@@ -82,7 +92,7 @@ final class YFormBridge
     /** Feldtypen des eigenen Formulars (Block „Formular“) */
     public static function builderTypes(): array
     {
-        return class_exists(\Yakamara\YForm\Form\Definition\FormDefinition::class) ? BuiltForm::TYPES : ['text' => 'Textzeile'];
+        return class_exists(FormDefinition::class) ? BuiltForm::TYPES : ['text' => 'Textzeile'];
     }
 
     /** Theme mit den Klassen der öffentlichen Formulare des Kits (css/dataform.css, .dff) */
@@ -104,7 +114,7 @@ final class YFormBridge
     {
         $out = [];
         foreach ($form->actions() as $action) {
-            if ($action instanceof \Yakamara\YForm\Form\Action\SaveRecord && ($t = Tables::find($action->table))) {
+            if ($action instanceof SaveRecord && ($t = Tables::find($action->table))) {
                 $out[] = $t->definition->name;
             }
         }
@@ -150,8 +160,8 @@ final class YFormBridge
     public static function field(Table $table, string $choice, array $types = []): ?Field
     {
         $prefix = $table->definition->name . '.';
-        if (str_starts_with($choice, $prefix) && $table->hasField(substr($choice, \strlen($prefix)))) {
-            return $table->getField(substr($choice, \strlen($prefix)));
+        if (str_starts_with($choice, $prefix) && $table->hasField(substr($choice, strlen($prefix)))) {
+            return $table->getField(substr($choice, strlen($prefix)));
         }
         foreach ($types as $type) {
             foreach ($table->getFields() as $f) {
@@ -196,9 +206,7 @@ final class YFormBridge
         return array_values(iterator_to_array($q->find()));
     }
 
-    /**
-     * Wie rows(), aber seitenweise (YForm Query::paginate): ['rows' => …, 'total' => …, 'page' => …, 'pages' => …]
-     */
+    /** Wie rows(), aber seitenweise (YForm Query::paginate): ['rows' => …, 'total' => …, 'page' => …, 'pages' => …] */
     public static function page(Table $table, array $o, int $page, int $perPage): array
     {
         $q = self::inLanguage($table, $table::query(), $o['language'] ?? null);
@@ -228,16 +236,16 @@ final class YFormBridge
      * Mit Feld „Sprache“ (FluidLanguage): nur Einträge der Sprache (Standard: aktuelle) und solche ohne Sprache.
      * Beim Auflösen von Adressen ist die aktuelle Sprache noch nicht gesetzt – dort die Sprache der Seite übergeben.
      */
-    public static function inLanguage(Table $table, \Yakamara\YForm\Data\Query $q, ?int $languageId = null): \Yakamara\YForm\Data\Query
+    public static function inLanguage(Table $table, Query $q, ?int $languageId = null): Query
     {
         foreach ($table->getFields() as $f) {
             if ($f instanceof FluidLanguage) {
-                $lang = null !== $languageId ? \Redaxo\Core\Language\Language::get($languageId) : null;
+                $lang = null !== $languageId ? Language::get($languageId) : null;
 
-                $code = ($lang ?? \Redaxo\Core\Language\Language::getCurrent())->code;
+                $code = ($lang ?? Language::getCurrent())->code;
 
                 // „alle Sprachen“ steht als '' oder NULL (Maske von YForm) in der Spalte
-                return $q->whereAny(static fn (\Yakamara\YForm\Data\Query $g) => $g->whereIn($f->name, ['', $code])->whereNull($f->name));
+                return $q->whereAny(static fn (Query $g) => $g->whereIn($f->name, ['', $code])->whereNull($f->name));
             }
         }
 
@@ -287,8 +295,8 @@ final class YFormBridge
     public static function sortType(?Field $f): string
     {
         return match (true) {
-            $f instanceof \Yakamara\YForm\Field\Integer, $f instanceof \Yakamara\YForm\Field\Decimal => 'number',
-            $f instanceof \Yakamara\YForm\Field\Date => 'date',
+            $f instanceof Integer, $f instanceof Decimal => 'number',
+            $f instanceof Date => 'date',
             default => '',
         };
     }
@@ -297,8 +305,8 @@ final class YFormBridge
     public static function sortValue(Record $record, Field $f): string
     {
         $v = $record->get($f->name);
-        if ($v instanceof \DateTimeInterface) {
-            return $f instanceof \Yakamara\YForm\Field\DateTime ? $v->format('Y-m-d\\TH:i:sP') : $v->format('Y-m-d');
+        if ($v instanceof DateTimeInterface) {
+            return $f instanceof DateTime ? $v->format('Y-m-d\\TH:i:sP') : $v->format('Y-m-d');
         }
         $v = is_scalar($v) ? trim((string) $v) : '';
 

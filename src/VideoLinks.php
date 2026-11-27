@@ -12,6 +12,7 @@ use function parse_url;
 use function preg_match;
 use function preg_replace_callback;
 use function preg_split;
+use function Redaxo\Core\View\escape;
 use function str_contains;
 use function strlen;
 use function strripos;
@@ -19,7 +20,10 @@ use function strtolower;
 use function substr;
 use function trim;
 
-use function Redaxo\Core\View\escape;
+use const ENT_HTML5;
+use const ENT_QUOTES;
+use const FILTER_VALIDATE_BOOL;
+use const PREG_SPLIT_DELIM_CAPTURE;
 
 /**
  * Video-Links in der Lightbox (Vorbild KLXM Studio, Core\VideoLinks): Links auf YouTube- und Vimeo-Videos – Buttons der Blöcke,

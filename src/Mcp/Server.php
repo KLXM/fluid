@@ -2,16 +2,28 @@
 
 namespace Klxm\Fluid\Mcp;
 
+use DomainException;
 use Klxm\Fluid\ApiError;
 use Klxm\Fluid\Editing;
 use Klxm\Fluid\FluidAddon;
+use Klxm\Fluid\Routing\Attribute\AsEndpoint;
 use Redaxo\Core\Core;
+use Redaxo\Core\Exception\UserMessageException;
 use Redaxo\Core\Filesystem\Url;
+use Redaxo\Core\Log\Logger;
 use stdClass;
 use Throwable;
 
+use function array_key_exists;
+use function function_exists;
 use function in_array;
 use function is_array;
+
+use const JSON_PRETTY_PRINT;
+use const JSON_UNESCAPED_SLASHES;
+use const JSON_UNESCAPED_UNICODE;
+use const LOCK_EX;
+use const PHP_URL_HOST;
 
 /**
  * MCP-Server (Model Context Protocol) über „Streamable HTTP“ – zustandslos, JSON-Antworten (wie KLXM Studio).
@@ -22,13 +34,6 @@ use function is_array;
  */
 final class Server
 {
-    /** @internal Endpunkt /fluid-mcp bzw. ?fluid_mcp=1 */
-    #[\Klxm\Fluid\Routing\Attribute\AsEndpoint('/' . self::PATH, early: true, param: self::PARAM)]
-    public static function serve(): void
-    {
-        self::handle();
-    }
-
     public const string PATH = 'fluid-mcp';
     public const string PARAM = 'fluid_mcp';
 
@@ -43,6 +48,13 @@ final class Server
 
     private Tools $tools;
 
+    /** @internal Endpunkt /fluid-mcp bzw. ?fluid_mcp=1 */
+    #[AsEndpoint('/' . self::PATH, early: true, param: self::PARAM)]
+    public static function serve(): void
+    {
+        self::handle();
+    }
+
     public static function url(): string
     {
         return Url::absoluteBase(self::PATH);
@@ -50,7 +62,7 @@ final class Server
 
     public static function handle(): never
     {
-        (new self())->run();
+        new self()->run();
         exit;
     }
 
@@ -134,14 +146,14 @@ final class Server
                 'resources/list' => ['resources' => []],
                 'resources/templates/list' => ['resourceTemplates' => []],
                 'prompts/list' => ['prompts' => []],
-                default => throw new \DomainException('Methode „' . $method . '“ nicht gefunden', -32601),
+                default => throw new DomainException('Methode „' . $method . '“ nicht gefunden', -32601),
             };
 
             return $notification ? null : ['jsonrpc' => '2.0', 'id' => $id, 'result' => $result];
-        } catch (\DomainException $e) {
+        } catch (DomainException $e) {
             return ['jsonrpc' => '2.0', 'id' => $id, 'error' => ['code' => $e->getCode() ?: -32602, 'message' => $e->getMessage()]];
         } catch (Throwable $e) {
-            \Redaxo\Core\Log\Logger::logException($e);
+            Logger::logException($e);
 
             return ['jsonrpc' => '2.0', 'id' => $id, 'error' => ['code' => -32603, 'message' => 'Interner Fehler']];
         }
@@ -185,11 +197,11 @@ final class Server
                 !$this->access->write => ' (dieser Zugang darf nur lesen)',
                 default => '',
             };
-            throw new \DomainException('Unbekanntes Werkzeug „' . $name . '“' . $why, -32602);
+            throw new DomainException('Unbekanntes Werkzeug „' . $name . '“' . $why, -32602);
         }
         try {
             $result = ($tools[$name]['run'])(is_array($p['arguments'] ?? null) ? $p['arguments'] : []);
-        } catch (ApiError|\Redaxo\Core\Exception\UserMessageException $e) {
+        } catch (ApiError|UserMessageException $e) {
             return ['content' => [['type' => 'text', 'text' => $e->getMessage()]], 'isError' => true];
         }
 

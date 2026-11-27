@@ -9,6 +9,8 @@ use Symfony\Component\Console\Attribute\Option;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
+use function count;
+
 /**
  * Geänderte Standardwerte von Blockfeldern in gespeicherte Blöcke schreiben (Klxm\Fluid\DefaultChanges). Läuft auch bei
  * `console migrate`; hier zum Nachsehen (--dry-run) oder für Projekte, die migrate nicht ausführen.
@@ -22,7 +24,7 @@ final class UpgradeDefaultsCommand extends AbstractCommand
     ): int {
         $pending = DefaultChanges::pending();
         if (!$pending) {
-            $io->success('Keine offenen Änderungen (' . \count(DefaultChanges::changes()) . ' erledigt).');
+            $io->success('Keine offenen Änderungen (' . count(DefaultChanges::changes()) . ' erledigt).');
 
             return Command::SUCCESS;
         }

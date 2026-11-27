@@ -2,16 +2,24 @@
 
 namespace Klxm\Fluid\Mcp;
 
+use Klxm\Fluid\Activity;
 use Klxm\Fluid\ApiError;
+use Klxm\Fluid\BlockData;
 use Klxm\Fluid\Blog\Blog;
+use Klxm\Fluid\Data\FluidBlocks;
 use Klxm\Fluid\Data\YFormBridge;
 use Klxm\Fluid\Search\Search;
 use Klxm\Fluid\Settings;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Core;
+use Redaxo\Core\Filesystem\Url;
 use Redaxo\Core\Language\Language;
+use ReflectionClass;
+use Yakamara\YForm\Data\Record;
+use Yakamara\YForm\Table\Table;
 use Yakamara\YForm\Validation\ValidationException;
 
+use function array_key_exists;
 use function is_array;
 
 /**
@@ -22,8 +30,9 @@ final class Tools
 {
     private readonly Content $content;
 
-    public function __construct(private readonly Access $access)
-    {
+    public function __construct(
+        private readonly Access $access,
+    ) {
         $this->content = new Content($access);
     }
 
@@ -56,11 +65,11 @@ final class Tools
             $schema([]), $ro, false, true, fn () => $this->overview());
 
         $add('list_pages', 'Seitenbaum', 'Alle Seiten als Baum (Menüpunkte mit Unterseiten)' . ($public ? ', nur veröffentlichte.' : ' – auch offline Seiten.'),
-            $schema(['lang' => $lang]), $ro, false, (bool) $cfg['public_pages'], fn (array $a) => ['pages' => $c->tree($c->language($a['lang'] ?? null))]);
+            $schema(['lang' => $lang]), $ro, false, (bool) $cfg['public_pages'], static fn (array $a) => ['pages' => $c->tree($c->language($a['lang'] ?? null))]);
 
         $add('get_page', 'Seite lesen', 'Seite mit allen Blöcken (Typ, Felder als JSON). ' . ($public ? 'Veröffentlichte Fassung.' : 'Standard: Entwurf – version „live“ zeigt die veröffentlichte Fassung.'),
             $schema(['page' => $page, 'lang' => $lang] + ($public ? [] : ['version' => ['type' => 'string', 'enum' => ['draft', 'live'], 'description' => 'draft (Standard) oder live']]), ['page']),
-            $ro, false, (bool) $cfg['public_pages'], function (array $a) use ($c) {
+            $ro, false, (bool) $cfg['public_pages'], static function (array $a) use ($c) {
                 $art = $c->article($a['page'] ?? null, $c->language($a['lang'] ?? null));
 
                 return $c->pageInfo($art) + ['blocks' => $c->blocks($art, 'live' === ($a['version'] ?? 'draft'))];
@@ -68,7 +77,7 @@ final class Tools
 
         $add('search', 'Suche', 'Volltextsuche über die veröffentlichten Seiten (wie die Suche der Website).',
             $schema(['query' => $str('Suchbegriff'), 'lang' => $lang, 'limit' => $int('Höchstens so viele Treffer (Standard 10, max. 50)')], ['query']),
-            $ro, false, (bool) $cfg['public_search'], function (array $a) use ($c) {
+            $ro, false, (bool) $cfg['public_search'], static function (array $a) use ($c) {
                 $res = Search::search((string) ($a['query'] ?? ''), $c->language($a['lang'] ?? null), (int) ($a['limit'] ?? 10));
                 foreach ($res['hits'] as &$h) {
                     $h['url'] = Content::abs($h['url']);
@@ -86,7 +95,7 @@ final class Tools
             $ro, false, (bool) $cfg['public_blog'], fn (array $a) => $this->posts((int) ($a['blog'] ?? 0), $c->language($a['lang'] ?? null), (int) ($a['limit'] ?? 20)));
 
         $add('list_block_types', 'Blocktypen', 'Blocktypen mit ihren Feldern (Name, Typ, Pflicht, Auswahlwerte). Vor add_block/update_block lesen.',
-            $schema(['type' => $str('Nur diesen Blocktyp')]), $ro, false, false, fn (array $a) => ['block_types' => $c->blockTypes(isset($a['type']) ? (string) $a['type'] : null)]);
+            $schema(['type' => $str('Nur diesen Blocktyp')]), $ro, false, false, static fn (array $a) => ['block_types' => $c->blockTypes(isset($a['type']) ? (string) $a['type'] : null)]);
 
         if (YFormBridge::available() && [] !== $this->access->tables()) {
             $tableProp = ['type' => 'string', 'enum' => $this->access->tables(), 'description' => 'Tabelle'];
@@ -103,7 +112,7 @@ final class Tools
 
         $add('update_block', 'Block ändern', 'Felder eines Blocks ändern (im Entwurf). data = nur die zu ändernden Felder; replace=true ersetzt alle Felder.',
             $schema(['page' => $page, 'block' => $int('ID des Blocks (aus get_page)'), 'data' => $obj('Feldname → Wert'), 'replace' => $bool('Alle Felder ersetzen statt zusammenführen'), 'lang' => $lang], ['page', 'block', 'data']),
-            $rw, true, false, function (array $a) use ($c) {
+            $rw, true, false, static function (array $a) use ($c) {
                 $art = $c->article($a['page'] ?? null, $c->language($a['lang'] ?? null));
 
                 return $c->updateBlock($art, (int) ($a['block'] ?? 0), is_array($a['data'] ?? null) ? $a['data'] : [], (bool) ($a['replace'] ?? false));
@@ -111,7 +120,7 @@ final class Tools
 
         $add('add_block', 'Block einfügen', 'Neuen Block einfügen (im Entwurf). after = Block-ID, hinter dem er steht (0 = ganz oben, weglassen = ans Ende).',
             $schema(['page' => $page, 'type' => $str('Blocktyp (Schlüssel aus list_block_types)'), 'data' => $obj('Feldname → Wert'), 'after' => $int('Block-ID; 0 = oben'), 'lang' => $lang], ['page', 'type']),
-            $rw, true, false, function (array $a) use ($c) {
+            $rw, true, false, static function (array $a) use ($c) {
                 $art = $c->article($a['page'] ?? null, $c->language($a['lang'] ?? null));
 
                 return $c->addBlock($art, (string) ($a['type'] ?? ''), is_array($a['data'] ?? null) ? $a['data'] : [], isset($a['after']) ? (int) $a['after'] : -1);
@@ -119,7 +128,7 @@ final class Tools
 
         $add('move_block', 'Block verschieben', 'Abschnitt vor einen anderen Block setzen (before = Block-ID, 0 = ans Ende). Blöcke in Layout-Spalten nicht.',
             $schema(['page' => $page, 'block' => $int('ID des Blocks'), 'before' => $int('vor diesen Block; 0 = ans Ende'), 'lang' => $lang], ['page', 'block', 'before']),
-            $rw, true, false, function (array $a) use ($c) {
+            $rw, true, false, static function (array $a) use ($c) {
                 $art = $c->article($a['page'] ?? null, $c->language($a['lang'] ?? null));
 
                 return $c->moveBlock($art, (int) ($a['block'] ?? 0), (int) ($a['before'] ?? 0));
@@ -127,7 +136,7 @@ final class Tools
 
         $add('set_block_online', 'Block ein-/ausschalten', 'Block online oder offline schalten (im Entwurf).',
             $schema(['page' => $page, 'block' => $int('ID des Blocks'), 'online' => $bool('true = online'), 'lang' => $lang], ['page', 'block', 'online']),
-            $rw, true, false, function (array $a) use ($c) {
+            $rw, true, false, static function (array $a) use ($c) {
                 $art = $c->article($a['page'] ?? null, $c->language($a['lang'] ?? null));
 
                 return $c->setOnline($art, (int) ($a['block'] ?? 0), (bool) ($a['online'] ?? true));
@@ -135,7 +144,7 @@ final class Tools
 
         $add('delete_block', 'Block löschen', 'Block löschen (im Entwurf; ein Layout samt seinen Spalten). Der Stand davor bleibt als Version.',
             $schema(['page' => $page, 'block' => $int('ID des Blocks'), 'confirm' => $bool('Muss true sein'), 'lang' => $lang], ['page', 'block', 'confirm']),
-            $del, true, false, function (array $a) use ($c) {
+            $del, true, false, static function (array $a) use ($c) {
                 if (true !== ($a['confirm'] ?? false)) {
                     throw new ApiError('Zum Löschen confirm: true setzen.');
                 }
@@ -146,11 +155,11 @@ final class Tools
 
         $add('create_page', 'Seite anlegen', 'Neue Seite (offline). parent = ID eines Menüpunkts (0 = oberste Ebene); menu=true legt einen Menüpunkt an. In einem Blog = neuer Beitrag.',
             $schema(['name' => $str('Titel'), 'parent' => $int('Menüpunkt (Kategorie-ID), 0 = oberste Ebene'), 'menu' => $bool('Als Menüpunkt'), 'template' => $int('ID einer Seitenvorlage (optional)'), 'lang' => $lang], ['name']),
-            $rw, true, false, fn (array $a) => $c->createPage((string) ($a['name'] ?? ''), (int) ($a['parent'] ?? 0), (bool) ($a['menu'] ?? false), $c->language($a['lang'] ?? null), (int) ($a['template'] ?? 0)));
+            $rw, true, false, static fn (array $a) => $c->createPage((string) ($a['name'] ?? ''), (int) ($a['parent'] ?? 0), (bool) ($a['menu'] ?? false), $c->language($a['lang'] ?? null), (int) ($a['template'] ?? 0)));
 
         if ($this->access->publish) {
             $add('publish_page', 'Seite veröffentlichen', 'Entwurf einer Seite veröffentlichen (live). Vorher mit dem Menschen abstimmen.',
-                $schema(['page' => $page, 'lang' => $lang], ['page']), $rw, true, false, function (array $a) use ($c) {
+                $schema(['page' => $page, 'lang' => $lang], ['page']), $rw, true, false, static function (array $a) use ($c) {
                     return $c->publish($c->article($a['page'] ?? null, $c->language($a['lang'] ?? null)));
                 });
         }
@@ -175,7 +184,7 @@ final class Tools
 
         return array_filter([
             'name' => (string) (Settings::get('org_name') ?: Core::getProject()->instanceName),
-            'url' => \Redaxo\Core\Filesystem\Url::absoluteBase(),
+            'url' => Url::absoluteBase(),
             'home' => Article::getSiteStartArticleId(),
             'languages' => $langs,
             'blogs' => $blogs,
@@ -208,7 +217,7 @@ final class Tools
         return ['blog' => $blog, 'total' => $res['total'], 'posts' => $out];
     }
 
-    private function table(string $name, string $need): \Yakamara\YForm\Table\Table
+    private function table(string $name, string $need): Table
     {
         $mode = $this->access->table($name);
         if (null === $mode || ('write' === $need && 'write' !== $mode)) {
@@ -219,12 +228,12 @@ final class Tools
     }
 
     /** @return array<string, mixed> */
-    private function record(\Yakamara\YForm\Table\Table $table, \Yakamara\YForm\Data\Record $r): array
+    private function record(Table $table, Record $r): array
     {
         $out = ['id' => (int) $r->get('id'), 'label' => $table->recordLabel($r)];
         foreach (YFormBridge::detailFields($table, true) as $f) {
-            if ($f instanceof \Klxm\Fluid\Data\FluidBlocks) {
-                $out[$f->name] = \Klxm\Fluid\BlockData::text($r->get($f->name));
+            if ($f instanceof FluidBlocks) {
+                $out[$f->name] = BlockData::text($r->get($f->name));
                 continue;
             }
             $out[$f->name] = YFormBridge::text($r, $f);
@@ -239,7 +248,7 @@ final class Tools
         $table = $this->table($name, 'read');
         $res = YFormBridge::page($table, [], max(1, $page), max(1, min(100, $perPage)));
 
-        return ['table' => $name, 'label' => $table->label(), 'fields' => array_map(static fn ($f) => ['name' => $f->name, 'label' => $f->translatedLabel(), 'type' => (new \ReflectionClass($f))->getShortName()], YFormBridge::detailFields($table, true)),
+        return ['table' => $name, 'label' => $table->label(), 'fields' => array_map(static fn ($f) => ['name' => $f->name, 'label' => $f->translatedLabel(), 'type' => new ReflectionClass($f)->getShortName()], YFormBridge::detailFields($table, true)),
             'total' => $res['total'], 'page' => $res['page'], 'pages' => $res['pages'], 'entries' => array_map(fn ($r) => $this->record($table, $r), $res['rows'])];
     }
 
@@ -275,7 +284,7 @@ final class Tools
         } catch (ValidationException $e) {
             throw new ApiError('Eingaben nicht gültig: ' . implode(' ', $e->errors->all()));
         }
-        \Klxm\Fluid\Activity::log('save', null, $table->label() . ' #' . $r->get('id') . ' (MCP)');
+        Activity::log('save', null, $table->label() . ' #' . $r->get('id') . ' (MCP)');
 
         return ['table' => $name, 'id' => (int) $r->get('id'), 'created' => 0 === $id, 'fields' => $known];
     }

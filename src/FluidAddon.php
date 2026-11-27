@@ -2,30 +2,34 @@
 
 namespace Klxm\Fluid;
 
+use Klxm\NavigationArray\ExtensionPoint\NavigationStart;
 use Override;
 use Redaxo\Core\Addon\Addon;
 use Redaxo\Core\Addon\OwnedSchema;
-use Redaxo\Core\Content\Article;
-use Redaxo\Core\Content\ArticleContent;
+use Redaxo\Core\Backend\Controller;
+use Redaxo\Core\Backend\MainPage;
+use Redaxo\Core\Backend\Page;
 use Redaxo\Core\Content\ArticleRevision;
-use Redaxo\Core\Content\ArticleSlice;
+use Redaxo\Core\Content\ArticleSliceHistory;
 use Redaxo\Core\Content\ExtensionPoint\ArticleContentRendering;
 use Redaxo\Core\Content\ExtensionPoint\ArticleContentUpdated;
 use Redaxo\Core\Content\ExtensionPoint\ArticleSlicesQuery;
 use Redaxo\Core\Content\ExtensionPoint\ContentPageBeforeSlices;
 use Redaxo\Core\Content\ExtensionPoint\SliceDeleting;
 use Redaxo\Core\Content\ExtensionPoint\SliceOutput;
+use Redaxo\Core\Content\Module;
 use Redaxo\Core\Content\Template;
 use Redaxo\Core\Core;
 use Redaxo\Core\Database\Column;
-use Redaxo\Core\Database\Table;
+use Redaxo\Core\Database\Index;
 use Redaxo\Core\Database\Sql;
+use Redaxo\Core\Database\Table;
 use Redaxo\Core\ExtensionPoint\Extension;
 use Redaxo\Core\ExtensionPoint\ExtensionLevel;
 use Redaxo\Core\ExtensionPoint\ExtensionPoint;
 use Redaxo\Core\Filesystem\Url;
 use Redaxo\Core\Http\Request;
-use Redaxo\Core\Util\Type;
+use Redaxo\Core\MediaPool\MediaPool;
 use Redaxo\Core\View\Asset;
 
 final class FluidAddon extends Addon
@@ -62,7 +66,7 @@ final class FluidAddon extends Addon
             ->ensureColumn(new Column('created', 'datetime', true))
             ->ensureColumn(new Column('last_used', 'datetime', true))
             ->ensureColumn(new Column('client', 'varchar(120)', true))
-            ->ensureIndex(new \Redaxo\Core\Database\Index('token_hash', ['token_hash'], \Redaxo\Core\Database\Index::UNIQUE))
+            ->ensureIndex(new Index('token_hash', ['token_hash'], Index::UNIQUE))
             ->ensure();
 
         // Schöne Adressen, Einträge der Quellen, Domains, Weiterleitungen (Routing\*)
@@ -85,7 +89,7 @@ final class FluidAddon extends Addon
             ->ensure();
         // Listen-Vorlagen der Datenliste (Data\ListTemplates)
         Data\ListTemplates::install();
-        \Redaxo\Core\Content\ArticleSliceHistory::checkTables();
+        ArticleSliceHistory::checkTables();
         // Assets der Kits aus Projekt und Composer-Paketen nach assets/fluid-kits/ (das Kit fluid bringt der Core mit)
         Kit::publishAll();
         // Geänderte Standardwerte von Blockfeldern: bestehende Blöcke behalten ihr Aussehen (einmal je Änderung)
@@ -109,12 +113,12 @@ final class FluidAddon extends Addon
     #[Override]
     public function getPages(): iterable
     {
-        $main = new \Redaxo\Core\Backend\MainPage('addons', 'fluid', 'fluid');
+        $main = new MainPage('addons', 'fluid', 'fluid');
         $main->setIcon('rex-icon fa-pen-to-square');
         $main->setRequiredPermissions('admin');
-        $main->addSubpage(new \Redaxo\Core\Backend\Page('status', 'Status'));
-        $main->addSubpage(new \Redaxo\Core\Backend\Page('mcp', 'MCP'));
-        $main->addSubpage(new \Redaxo\Core\Backend\Page('help', 'Hilfe'));
+        $main->addSubpage(new Page('status', 'Status'));
+        $main->addSubpage(new Page('mcp', 'MCP'));
+        $main->addSubpage(new Page('help', 'Hilfe'));
         if (!Core::getUser()?->admin) {
             $main->setHidden();
         }
@@ -131,7 +135,7 @@ final class FluidAddon extends Addon
         Perm::register();
         Lock::boot();
         // navigation_array: Start der Website (Navigation ohne start) = Unterseiten einer Landing-Domain mit eigenem Seitenbaum
-        Extension::register(\Klxm\NavigationArray\ExtensionPoint\NavigationStart::class, static function (\Klxm\NavigationArray\ExtensionPoint\NavigationStart $ep): mixed {
+        Extension::register(NavigationStart::class, static function (NavigationStart $ep): mixed {
             $landing = Routing\Router::landing();
 
             return $landing && $landing->subtree && null !== $landing->articleId ? $landing->articleId : $ep->subject;
@@ -148,7 +152,7 @@ final class FluidAddon extends Addon
         if (Core::isBackend() && (str_starts_with($page, 'yform') || 'content/edit' === $page)
             && (Request::get('fluid_frame', 'bool') || 'iframe' === Core::getRequest()->headers->get('Sec-Fetch-Dest'))) {
             Extension::register('PAGE_CHECKED', static function (): void {
-                \Redaxo\Core\Backend\Controller::getCurrentPageObject()?->setPopup(true);
+                Controller::getCurrentPageObject()?->setPopup(true);
             });
             Asset::addCssFile($this->getAssetsUrl('frame.css'));
         }
@@ -183,7 +187,7 @@ final class FluidAddon extends Addon
 
         // Schöne Adressen (ArticleUrl, Strukturänderungen; im Frontend: Adresse → Seite)
         // Untertitel: PHP erkennt .srt als application/x-subrip, die Liste des Cores erwartet nur text/plain
-        $mime = &\Redaxo\Core\MediaPool\MediaPool::$allowedMimeTypes;
+        $mime = &MediaPool::$allowedMimeTypes;
         if ($mime) {
             $mime['srt'] = array_values(array_unique([...($mime['srt'] ?? []), 'text/plain', 'application/x-subrip', 'application/x-srt']));
             $mime['vtt'] = array_values(array_unique([...($mime['vtt'] ?? []), 'text/vtt', 'text/plain']));
@@ -296,7 +300,7 @@ final class FluidAddon extends Addon
             if (!Editing::active() || Editing::isGuest() || null !== BlockModule::classFor($ep->slice->moduleKey)) {
                 return $html;
             }
-            $class = \Redaxo\Core\Content\Module::getClass($ep->slice->moduleKey);
+            $class = Module::getClass($ep->slice->moduleKey);
             $label = null !== $class ? (string) $class::name() : $ep->slice->moduleKey;
 
             return '<div class="fluid-mod" data-fluid-slice="' . $ep->slice->id . '" data-section="' . $ep->slice->contentSectionId . '" data-label="' . \Redaxo\Core\View\escape($label) . '">' . $html . '</div>';

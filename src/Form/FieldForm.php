@@ -2,8 +2,19 @@
 
 namespace Klxm\Fluid\Form;
 
-use Klxm\Fluid\Data\YFormBridge;
+use Klxm\Fluid\Backend\SliceGrid;
 use Klxm\Fluid\BlockModule;
+use Klxm\Fluid\Blog\Blog;
+use Klxm\Fluid\Data\ListTemplates;
+use Klxm\Fluid\Data\YFormBridge;
+use Klxm\Fluid\Editing;
+use Klxm\Fluid\FluidAddon;
+use Klxm\Fluid\Hotspots;
+use Klxm\Fluid\Lock;
+use Klxm\Fluid\Perm;
+use Redaxo\Core\Core;
+use Redaxo\Core\Filesystem\Url;
+use Redaxo\Core\MediaPool\MediaCategory;
 
 use function array_key_exists;
 use function array_values;
@@ -11,7 +22,11 @@ use function count;
 use function implode;
 use function in_array;
 use function is_array;
+use function is_string;
 use function Redaxo\Core\View\escape;
+
+use const JSON_UNESCAPED_SLASHES;
+use const JSON_UNESCAPED_UNICODE;
 
 /**
  * Formular aus dem Feldschema eines Blocks (Format der Studio-Kits).
@@ -71,22 +86,22 @@ final class FieldForm
 
         // Abschnitts-Optionen – Gestaltung nur mit Recht (Perm::DESIGN, Sperre Perm::DESIGN_FULL); ohne Recht bleiben die Werte
         // als versteckte Felder erhalten (das Formular des Cores im Backend speichert alle Abschnitts-Optionen neu)
-        $user = \Klxm\Fluid\Editing::user() ?? \Redaxo\Core\Core::getUser();
-        $design = null !== $user && \Klxm\Fluid\Perm::can($user, \Klxm\Fluid\Perm::DESIGN);
-        $designFull = null !== $user && \Klxm\Fluid\Perm::can($user, \Klxm\Fluid\Perm::DESIGN_FULL);
+        $user = Editing::user() ?? Core::getUser();
+        $design = null !== $user && Perm::can($user, Perm::DESIGN);
+        $designFull = null !== $user && Perm::can($user, Perm::DESIGN_FULL);
         $hidden = static fn (string $k) => isset($tunes[$k]) && '' !== (string) $tunes[$k] && false !== $tunes[$k]
             ? '<input type="hidden" name="' . escape($p2 . '[' . $k . ']') . '" value="' . escape(true === $tunes[$k] ? '1' : (string) $tunes[$k]) . '">' : '';
-        $locked = \Klxm\Fluid\Lock::locked($tunes);
+        $locked = Lock::locked($tunes);
         if (!$designFull && $locked) {
-            $h .= $hidden(\Klxm\Fluid\Lock::TUNE);
+            $h .= $hidden(Lock::TUNE);
         }
         if (!$design) {
-            foreach (\Klxm\Fluid\Lock::DESIGN_TUNES as $k) {
+            foreach (Lock::DESIGN_TUNES as $k) {
                 $h .= $hidden($k);
             }
             if ($module::nestable()) {
                 $cols = ['' => 'Nicht in einem Layout', '1' => 'Spalte 1', '2' => 'Spalte 2', '3' => 'Spalte 3', '4' => 'Spalte 4'];
-                $col = (string) ($tunes['col'] ?? (\Klxm\Fluid\Backend\SliceGrid::requestedCol() ?? ''));
+                $col = (string) ($tunes['col'] ?? (SliceGrid::requestedCol() ?? ''));
                 $h .= '<div class="blocks-form__grid">' . self::row('Spalte im Layout', self::select($p2 . '[col]', $cols, $col), '', false) . '</div>';
             }
 
@@ -95,8 +110,8 @@ final class FieldForm
         $bgs = $module::kit()->backgrounds();
         $h .= '<details class="blocks-form__tunes"' . ($locked ? ' open' : '') . '><summary>Abschnitt</summary><div class="blocks-form__grid">';
         if ($designFull && $lockable) {
-            $h .= '<div class="blocks-form__field"><input type="hidden" name="' . escape($p2 . '[' . \Klxm\Fluid\Lock::TUNE . ']') . '" value="0"><div class="rex-check"><label class="blocks-form__check"><input type="checkbox" name="'
-                . escape($p2 . '[' . \Klxm\Fluid\Lock::TUNE . ']') . '" value="1"' . ($locked ? ' checked' : '') . '> Block sperren</label></div>'
+            $h .= '<div class="blocks-form__field"><input type="hidden" name="' . escape($p2 . '[' . Lock::TUNE . ']') . '" value="0"><div class="rex-check"><label class="blocks-form__check"><input type="checkbox" name="'
+                . escape($p2 . '[' . Lock::TUNE . ']') . '" value="1"' . ($locked ? ' checked' : '') . '> Block sperren</label></div>'
                 . '<p class="rex-field-note">Gesperrte Blöcke bleiben sichtbar und lassen sich verschieben. Ändern, ausblenden oder löschen dürfen sie nur Personen mit dem Recht „Blöcke gestalten und sperren“.</p></div>';
         }
         $h .= self::row('Hintergrund', self::select($p2 . '[background]', ['' => 'Standard'] + $bgs, (string) ($tunes['background'] ?? '')), 'In einer Layout-Spalte: ein anderer Hintergrund als das Layout macht den Block zur Karte.', true);
@@ -112,7 +127,7 @@ final class FieldForm
         if ($module::nestable()) {
             $cols = ['' => 'Nicht in einem Layout', '1' => 'Spalte 1', '2' => 'Spalte 2', '3' => 'Spalte 3', '4' => 'Spalte 4'];
             // neuer Block über „Block in Spalte n“ im Backend: Spalte vorgewählt
-            $col = (string) ($tunes['col'] ?? (\Klxm\Fluid\Backend\SliceGrid::requestedCol() ?? ''));
+            $col = (string) ($tunes['col'] ?? (SliceGrid::requestedCol() ?? ''));
             $h .= self::row('Spalte im Layout', self::select($p2 . '[col]', $cols, $col),
                 'Wirkt, wenn der Block direkt hinter einem Block „Layout (Spalten)“ steht (oder hinter weiteren Blöcken dieses Layouts).', false);
         }
@@ -182,7 +197,7 @@ final class FieldForm
                 : '<p class="rex-field-note">' . (YFormBridge::available() ? 'Noch keine Tabelle – im Projekt eine Klasse mit #[AsTable] anlegen (siehe YForm-README).' : 'Dafür wird das AddOn YForm benötigt.') . '</p>',
             'yform_field' => self::yformField($name, (string) $value, $id),
             // Blog (Kategorie mit „Blog / News“ in den Seiteneinstellungen); leer = alle Blogs
-            'blog' => [] !== ($bl = \Klxm\Fluid\Blog\Blog::all())
+            'blog' => [] !== ($bl = Blog::all())
                 ? self::select($name, ['' => 'Alle Blogs'] + $bl, (string) $value, ['id' => $id], false)
                 : '<p class="rex-field-note">Noch kein Blog – bei einer Menüseite in den Seiteneinstellungen „Blog / News“ anhaken.</p>',
             // Formular aus YForm (#[AsForm]-Klasse im Projekt)
@@ -202,7 +217,7 @@ final class FieldForm
             'hotspots' => self::hotspots($f, $value, $name, $backend, $byProp),
             // Listen-Vorlage (Data\ListTemplates): Kacheln mit Vorschau, Verwaltung in der Seitenleiste
             'listtemplate' => null !== self::$module
-                ? \Klxm\Fluid\Data\ListTemplates::renderInput(self::$module, $name, (string) $value, (string) (self::$data['table'] ?? ''), $label, $help, $backend)
+                ? ListTemplates::renderInput(self::$module, $name, (string) $value, (string) (self::$data['table'] ?? ''), $label, $help, $backend)
                 : '<input type="hidden" name="' . $n . '" value="' . escape((string) $value) . '">',
             default => '<input class="rex-input" type="text" id="' . $id . '" name="' . $n . '" value="' . escape((string) $value) . '"' . $req . $max . $ph . '>',
         };
@@ -306,13 +321,13 @@ final class FieldForm
      */
     private static function hotspots(array $f, mixed $value, string $name, bool $backend, bool $byProp): string
     {
-        $addon = \Klxm\Fluid\FluidAddon::instance();
+        $addon = FluidAddon::instance();
         $img = (string) ($f['image_field'] ?? 'image');
         $base = (string) preg_replace('~\[[^\[\]]*\]$~', '', $name);
-        $cfg = ['image' => '' !== $img ? $base . '[' . $img . ']' : '', 'max' => \Klxm\Fluid\Hotspots::MAX, 'editors' => \Klxm\Fluid\Hotspots::editors(),
-            'css' => $addon->getAssetsUrl('hotspots-field.css'), 'src' => \Redaxo\Core\Filesystem\Url::media('__FILE__')];
-        $rep = ['name' => $f['name'], 'type' => 'repeater', 'item_label' => 'Markierung', 'title_field' => 'title', 'max_items' => \Klxm\Fluid\Hotspots::MAX,
-            'fields' => \Klxm\Fluid\Hotspots::subFields()];
+        $cfg = ['image' => '' !== $img ? $base . '[' . $img . ']' : '', 'max' => Hotspots::MAX, 'editors' => Hotspots::editors(),
+            'css' => $addon->getAssetsUrl('hotspots-field.css'), 'src' => Url::media('__FILE__')];
+        $rep = ['name' => $f['name'], 'type' => 'repeater', 'item_label' => 'Markierung', 'title_field' => 'title', 'max_items' => Hotspots::MAX,
+            'fields' => Hotspots::subFields()];
         $hint = 'hs-' . self::nameId($name) . '-h';
 
         return '<div class="hs-field" data-hotspots="' . escape((string) json_encode($cfg, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)) . '">'
@@ -321,7 +336,7 @@ final class FieldForm
             . '<div class="hs-ed__bar" data-hs-bar hidden></div>'
             . '<div class="hs-ed__stage" data-hs-stage aria-describedby="' . escape($hint) . '"><p class="hs-ed__empty">Zuerst ein Bild wählen.</p></div>'
             . '<p class="hs-ed__live" aria-live="polite" data-hs-live></p></div>'
-            . self::repeater($rep, \Klxm\Fluid\Hotspots::toForm($value), $name, $backend, $byProp)
+            . self::repeater($rep, Hotspots::toForm($value), $name, $backend, $byProp)
             . '</div>';
     }
 
@@ -381,7 +396,7 @@ final class FieldForm
                 $walk($c->getChildren(), $depth + 1);
             }
         };
-        $walk(\Redaxo\Core\MediaPool\MediaCategory::getRootCategories(), 0);
+        $walk(MediaCategory::getRootCategories(), 0);
 
         return $out;
     }
@@ -416,7 +431,7 @@ final class FieldForm
             $v = $data[$name];
             $data[$name] = match ((string) ($f['type'] ?? 'text')) {
                 'repeater' => is_array($v) ? array_values(array_map(static fn ($it) => self::normalize((array) ($f['fields'] ?? []), is_array($it) ? $it : []), $v)) : [],
-                'hotspots' => \Klxm\Fluid\Hotspots::fromForm($v),
+                'hotspots' => Hotspots::fromForm($v),
                 'article' => is_string($v) && preg_match('~^(?:redaxo://)?(\d+)$~', $v, $m) ? (int) $m[1] : ('' === $v ? null : $v),
                 'number' => is_numeric($v) ? $v + 0 : null,
                 'bool' => in_array($v, [true, 1, '1', 'on'], true),
@@ -441,7 +456,7 @@ final class FieldForm
             $name = (string) $f['name'];
             $type = (string) ($f['type'] ?? 'text');
             if ('hotspots' === $type) {
-                $data[$name] = \Klxm\Fluid\Hotspots::normalize($data[$name] ?? null);
+                $data[$name] = Hotspots::normalize($data[$name] ?? null);
                 continue;
             }
             if ('repeater' === $type) {
