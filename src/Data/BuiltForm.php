@@ -2,6 +2,7 @@
 
 namespace Klxm\Fluid\Data;
 
+use DateTimeImmutable;
 use Klxm\Fluid\Mail\Mail;
 use Klxm\Fluid\Routing\Router;
 use Klxm\Fluid\Routing\Routes;
@@ -16,12 +17,25 @@ use Yakamara\YForm\Form\Action\Submission;
 use Yakamara\YForm\Form\Definition\FormDefinition;
 use Yakamara\YForm\Form\Layout\Layout;
 use Yakamara\YForm\Form\Layout\Tab;
+use Yakamara\YForm\Validation\Rule\Length;
 
+use function array_column;
+use function array_filter;
+use function array_map;
+use function array_merge;
+use function array_values;
 use function count;
 use function function_exists;
 use function in_array;
 use function is_array;
+use function is_numeric;
+use function ltrim;
+use function preg_match;
+use function preg_split;
 use function Redaxo\Core\View\escape;
+use function str_replace;
+use function strtolower;
+use function strtotime;
 
 use const JSON_PRETTY_PRINT;
 use const JSON_UNESCAPED_UNICODE;
@@ -39,15 +53,26 @@ if (!class_exists(FormDefinition::class)) {
  * as steps with „Weiter/Zurück“, server validation errors open the right step (Form::activeTab).
  *
  * Field types: text, email, tel, url, textarea, number, date, select, radio, checkboxes, checkbox (consent),
- * info (notice text), step (new step with title).
+ * file (YForm upload field), info (notice text), step (new step with title).
+ *
+ * „Mindestens/Höchstens“ become YForm rules: length for text types, value bounds for numbers and dates (dates also
+ * relative, like `today` or `+1 year`). Uploaded files go to the team mail as attachments; a target table with an
+ * upload field of the same name stores them, the inbox only lists their names (YForm removes unsaved uploads after a day).
  */
 final class BuiltForm extends FormDefinition
 {
     public const array TYPES = [
         'text' => 'Textzeile', 'email' => 'E-Mail', 'tel' => 'Telefon', 'url' => 'Internetadresse', 'textarea' => 'Mehrzeiliger Text',
         'number' => 'Zahl', 'decimal' => 'Kommazahl', 'date' => 'Datum', 'time' => 'Uhrzeit', 'datetime' => 'Datum und Uhrzeit', 'select' => 'Auswahlliste', 'radio' => 'Auswahl (eine)', 'checkboxes' => 'Auswahl (mehrere)',
-        'checkbox' => 'Häkchen (z. B. Zustimmung)', 'info' => 'Hinweistext (kein Eingabefeld)', 'step' => '— Neuer Schritt —',
+        'file' => 'Datei hochladen', 'checkbox' => 'Häkchen (z. B. Zustimmung)', 'info' => 'Hinweistext (kein Eingabefeld)', 'step' => '— Neuer Schritt —',
     ];
+
+    /** File types for uploads if the editor names none */
+    public const array FILE_TYPES = ['pdf', 'jpg', 'jpeg', 'png', 'webp', 'heic', 'docx', 'xlsx', 'odt', 'ods', 'txt'];
+
+    /** Never accepted, even if an editor lists them (could run on a server or in a browser) */
+    private const array BLOCKED_TYPES = ['php', 'phtml', 'phar', 'php3', 'php4', 'php5', 'php7', 'php8', 'pht', 'cgi', 'pl', 'py', 'sh', 'exe', 'bat',
+        'cmd', 'com', 'js', 'mjs', 'html', 'htm', 'xhtml', 'svg', 'svgz', 'shtml', 'htaccess', 'jar', 'msi'];
 
     /** @var array<string, mixed> */
     private array $cfg = [];
@@ -118,6 +143,8 @@ final class BuiltForm extends FormDefinition
                 'radio' => Field\Choice::new($name)->options($options)->expanded(),
                 'checkboxes' => Field\Choice::new($name)->options($options)->expanded()->multiple(),
                 'checkbox' => Field\Checkbox::new($name),
+                'file' => Field\Upload::new($name)->types(...self::fileTypes((string) ($it['file_types'] ?? '')))
+                    ->maxSize(isset(YFormBridge::UPLOAD_SIZES[$it['max_size'] ?? '']) ? (string) $it['max_size'] : '5M'),
                 'info' => Field\Markup::new($name)->html('<p>' . nl2br(htmlspecialchars($label), false) . '</p>'),
                 default => Field\Text::new($name)->maxLength(500),
             };
@@ -126,6 +153,7 @@ final class BuiltForm extends FormDefinition
                 continue;
             }
             $field->label($label ?: $name)->required($req);
+            self::bounds($field, trim((string) ($it['min'] ?? '')), trim((string) ($it['max'] ?? '')));
             if ('' !== $help) {
                 $field->notice($help);
             }
@@ -190,7 +218,9 @@ final class BuiltForm extends FormDefinition
         if (in_array($mode, ['mail', 'save_mail'], true) && '' !== ($to = trim((string) ($this->cfg['mail_to'] ?? '')))) {
             $subject = trim((string) ($this->cfg['mail_subject'] ?? '')) ?: 'Neue Nachricht: ' . ($this->definition->label ?? 'Formular');
             $pageUrl = $this->article ? Router::absolute($this->article->getUrl()) : '';
+            $files = array_column(array_filter($this->items(), static fn (array $it): bool => 'file' === $it['type']), 'name');
             yield new SafeMail(new SendMail(to: array_map('trim', explode(',', $to)), subject: $subject, html: true, replyTo: $email ? '{' . $email . '}' : null,
+                attachments: static fn (Submission $s): array => array_merge([], ...array_map($s->files(...), $files)),
                 body: fn (Submission $s) => Mail::layout($s->interpolate($subject), $this->summaryHtml($s)
                     . ('' !== $pageUrl ? '<p style="margin:20px 0 0;font-size:14px;color:#6b7280">Gesendet über <a href="' . escape($pageUrl) . '">' . escape((string) $this->article?->name) . '</a></p>' : ''))),
                 SafeMail::TEAM, $saved);
@@ -225,6 +255,49 @@ final class BuiltForm extends FormDefinition
         }
 
         return $msg;
+    }
+
+    /**
+     * Allowed extensions from the editor's list („pdf, jpg“), without blocked ones; empty list = FILE_TYPES.
+     *
+     * @return list<string>
+     */
+    public static function fileTypes(string $list): array
+    {
+        $types = [];
+        foreach (preg_split('~[\s,;]+~', strtolower($list)) ?: [] as $type) {
+            $type = ltrim($type, '.');
+            if (preg_match('~^[a-z0-9]{1,8}$~', $type) && !in_array($type, self::BLOCKED_TYPES, true)) {
+                $types[$type] = $type;
+            }
+        }
+
+        return $types ? array_values($types) : self::FILE_TYPES;
+    }
+
+    /** „Mindestens/Höchstens“ of the block as YForm rules – values that do not fit the field type are ignored */
+    private static function bounds(Field\Field $field, string $min, string $max): void
+    {
+        if ('' === $min && '' === $max) {
+            return;
+        }
+        $int = static fn (string $v): ?int => preg_match('~^-?\d+$~', $v) ? (int) $v : null;
+        $num = static fn (string $v): ?string => is_numeric($v = str_replace(',', '.', $v)) ? $v : null;
+        // as a date object: YForm writes strings unchanged into the min/max attributes of the input („today“ is no valid value there)
+        $date = static fn (string $v): ?DateTimeImmutable => '' !== $v && false !== strtotime($v) ? new DateTimeImmutable($v) : null;
+        if ($field instanceof Field\Integer) {
+            $field->min($int($min))->max($int($max));
+        } elseif ($field instanceof Field\Decimal) {
+            $field->min($num($min))->max($num($max));
+        } elseif ($field instanceof Field\Date) {
+            $field->min($date($min))->max($date($max));
+        } elseif ($field instanceof Field\Text || $field instanceof Field\Textarea) {
+            $lo = $int($min);
+            $hi = $int($max);
+            if ((null !== $lo && $lo > 0) || (null !== $hi && $hi > 0)) {
+                $field->rule(new Length(null !== $lo && $lo > 0 ? $lo : null, null !== $hi && $hi > 0 ? $hi : null));
+            }
+        }
     }
 
     /** First email field (reply address, confirmation) */

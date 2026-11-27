@@ -132,6 +132,13 @@ final class Datalist extends FluidBlock
     )]
     public string $visitorFilter = '';
 
+    #[Checkbox(
+        'Suchfeld für Besucher',
+        width: 'half',
+        note: 'Sucht in allen Textfeldern der Tabelle – auch über alle Seiten beim Blättern. tee* beginnt mit, "tee" genau, !tee schließt aus.',
+    )]
+    public bool $visitorSearch = false;
+
     #[Number(
         'Höchstens bzw. je Seite (0 = alle)',
         width: 'half',

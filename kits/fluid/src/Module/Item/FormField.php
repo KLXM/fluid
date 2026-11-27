@@ -52,6 +52,37 @@ final class FormField
     public string $help = '';
 
     #[Text(
+        'Mindestens (optional)',
+        note: 'Text: Zeichen, Zahl: Wert, Datum: z. B. 2026-01-01 oder today',
+        maxLength: 20,
+        width: 'half',
+    )]
+    public string $min = '';
+
+    #[Text(
+        'Höchstens (optional)',
+        note: 'Text: Zeichen, Zahl: Wert, Datum: z. B. +1 year',
+        maxLength: 20,
+        width: 'half',
+    )]
+    public string $max = '';
+
+    #[Text(
+        'Datei: erlaubte Typen',
+        maxLength: 80,
+        width: 'half',
+        placeholder: 'pdf, jpg, png, docx …',
+    )]
+    public string $fileTypes = '';
+
+    #[Choice(
+        'Datei: höchstens',
+        choices: YFormBridge::UPLOAD_SIZES,
+        width: 'half',
+    )]
+    public string $maxSize = '5M';
+
+    #[Text(
         'Feldname (optional, für eine YForm-Tabelle)',
         maxLength: 40,
         placeholder: 'automatisch aus der Bezeichnung',

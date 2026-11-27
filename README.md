@@ -88,8 +88,8 @@ fluid läuft auch ohne.
 - **Mehrsprachig:** Sprachwahl in der Leiste, Inhalte einer Sprache übernehmen und übersetzen, Sprachwahl für Besucher
 - **Blog / News** mit Schlagworten, RSS und „Neuer Beitrag“ direkt in der Übersicht
 - **Formulare** zum Zusammenklicken – auch mehrstufig, speichern und/oder per E-Mail (im Stil der Website), mit Bestätigung (YForm);
-  ein Mailfehler verwirft keine Eingabe
-- **Daten aus YForm** als Karten oder Liste mit eigener Adresse je Eintrag – und Blöcke auch in Datensätzen; Termine mit
+  Prüfregeln (Länge, Zahlen- und Datumsbereich) und Datei-Upload als Mailanhang; ein Mailfehler verwirft keine Eingabe
+- **Daten aus YForm** als Karten oder Liste mit eigener Adresse je Eintrag, auf Wunsch mit Suchfeld für Besucher (YForm-Suche) – und Blöcke auch in Datensätzen; Termine mit
   „In den Kalender“ (.ics) in der Detailansicht; **Listen-Vorlagen**: Darstellungen je Tabelle speichern und per Kachel wählen
 - **Einträge im Menü:** Datensätze mit Detailseite als Unterpunkte ihrer Übersicht (eine oder zwei Ebenen)
 - **Glossar:** Fachbegriffe automatisch erklären (Hinweisfenster beim ersten Vorkommen, Standard aus), Übersicht A–Z mit

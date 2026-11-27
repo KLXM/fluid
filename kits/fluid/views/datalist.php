@@ -112,8 +112,10 @@ if ($row):
 endif;
 
 // ------------------------------------------------------------------ Liste
+// visitor search (?suche=…): YForm's text search over the text fields of the table, server-side
+$search = !empty($d['visitor_search']) ? mb_substr(trim(Request::get('suche', 'string', '')), 0, 100) : '';
 $opt = [
-    'filter' => $filterF, 'value' => $filterV,
+    'filter' => $filterF, 'value' => $filterV, 'search' => $search,
     'sort' => YFormBridge::field($t, (string) ($d['sort_field'] ?? '')), 'dir' => (string) ($d['sort_dir'] ?? 'asc'),
     'limit' => (int) ($d['limit'] ?? 0),
 ];
@@ -133,12 +135,22 @@ $reload = $pg && $pg['pages'] > 1 ? Live::region($b) : '';
 ?>
 <div class="wrap dl dl--<?= e($layout) ?>"<?= $reload ?>>
   <?= fluid_head($b, 'dl-head') ?>
+  <?php if (!empty($d['visitor_search'])): $sid = $b->domId() . '-q' ?>
+  <form class="dl-tools" role="search" method="get" action="<?= e($here) ?>#<?= e($b->domId()) ?>">
+    <label class="dl-search__label" for="<?= e($sid) ?>"><?= e(lt('Einträge durchsuchen')) ?></label>
+    <div class="dl-search__row">
+      <input class="dl-search__input" id="<?= e($sid) ?>" type="search" name="suche" value="<?= e($search) ?>" maxlength="100" autocomplete="off">
+      <button class="dl-search__btn" type="submit"><?= e(lt('Suchen')) ?></button>
+    </div>
+    <?php if ('' !== $search): ?><p class="dl-count" role="status"><?= e(lt('{n} Treffer für „{q}“', ['n' => $pg ? $pg['total'] : count(is_array($rows) ? $rows : iterator_to_array($rows, false)), 'q' => $search])) ?> · <a href="<?= e($here) ?>#<?= e($b->domId()) ?>"><?= e(lt('Alle zeigen')) ?></a></p><?php endif ?>
+  </form>
+  <?php endif ?>
   <?php if ('toc' === $layout && $rows): // Inhaltsverzeichnis: Kapitelbaum (Wissen) bzw. nummerierte Liste?>
   <?php Kit::active()->markUsed('@knowledge') ?>
   <?= Knowledge::is($t) ? Knowledge::toc($b, $d, $t, $here)
       : '<div class="kn-toc"><ol class="kn-toc__list" role="list">' . implode('', array_map(static fn ($r, $i) => '<li class="kn-toc__item kn-toc__item--0">' . ($detailOn ? '<a href="' . e($href($r)) . '">' : '<span class="kn-toc__a">') . '<span class="kn-toc__n">' . ($i + 1) . '</span><span class="kn-toc__t">' . e($title($r)) . '</span>' . ($detailOn ? '</a>' : '</span>') . '</li>', $rows, array_keys($rows))) . '</ol></div>' ?>
   <?php elseif (!$rows): ?>
-  <p class="dl-empty"><?= e(trim((string) ($d['empty_text'] ?? '')) ?: lt('Zurzeit gibt es hier keine Einträge.')) ?></p>
+  <p class="dl-empty"><?= e('' !== $search ? lt('Keine Einträge zu „{q}“.', ['q' => $search]) : (trim((string) ($d['empty_text'] ?? '')) ?: lt('Zurzeit gibt es hier keine Einträge.'))) ?></p>
   <?php elseif ('table' === $layout): ?>
   <?php Kit::active()->markUsed('@table');
   if (!empty($d['table_sort']) && !is_editing()) {
@@ -188,7 +200,7 @@ $reload = $pg && $pg['pages'] > 1 ? Live::region($b) : '';
   </ul>
   <?php if ('' !== $flt['bar']): ?></ncss-filter><?php endif ?>
   <?php endif ?>
-  <?php if ($pg && $pg['pages'] > 1): $pq = static fn (int $n) => $here . ($n > 1 ? (str_contains($here, '?') ? '&' : '?') . 'seite=' . $n : '') . '#' . $b->domId() ?>
+  <?php if ($pg && $pg['pages'] > 1): $pq = static fn (int $n) => $here . (($p = http_build_query(array_filter(['suche' => $search, 'seite' => $n > 1 ? $n : null], static fn ($v) => null !== $v && '' !== $v))) ? (str_contains($here, '?') ? '&' : '?') . $p : '') . '#' . $b->domId() ?>
   <nav class="posts-pager" aria-label="<?= e(lt('Blättern')) ?>">
     <?php if ($pg['page'] > 1): ?><a href="<?= e($pq($pg['page'] - 1)) ?>" data-live-nav rel="prev">← <?= e(lt('Zurück')) ?></a><?php else: ?><span></span><?php endif ?>
     <span class="posts-pager__n" data-live-count><?= e(lt('Seite {n} von {total}', ['n' => $pg['page'], 'total' => $pg['pages']])) ?></span>

@@ -451,18 +451,28 @@ Extension::register('FLUID_SETTINGS_SCHEMA', static function (ExtensionPoint $ep
 
 fluid arbeitet mit den Mitteln von YForm 6 – Tabellen und Formulare sind Klassen im Projekt (`#[AsTable]`, `#[AsForm]`):
 
-- **Formular-Baukasten** (Block „Formular“, ohne gewählte Klasse): Die Redaktion stellt Felder auf der Website zusammen
-  (Textzeile, E-Mail, Telefon, Auswahl, Häkchen, Datum, Hinweistext …), teilt das Formular mit „— Neuer Schritt —“ in
+- **Eigenes Formular** (Block „Formular“, ohne gewählte Klasse): Die Redaktion stellt Felder auf der Website zusammen
+  (Textzeile, E-Mail, Telefon, Auswahl, Häkchen, Datum, Datei, Hinweistext …), teilt das Formular mit „— Neuer Schritt —“ in
   Schritte und wählt, was nach dem Absenden passiert: speichern, per E-Mail senden oder beides, Bestätigung an den
   Absender, Text oder Weiterleitung. Technisch eine YForm-`FormDefinition` (`Data\BuiltForm`), deren Felder aus dem Block
   kommen – Prüfung, CSRF, Honigtopf und Aktionen (`SaveRecord`, `SendMail`, `Redirect`) laufen über YForm, ebenso der EP
   `YFORM_FORM_SUBMITTED`. Schritte = Reiter des YForm-Layouts (`js/formsteps.js`, ohne JavaScript alle untereinander).
   Gespeichert wird in die YForm-Tabelle **„Formular-Eingänge“** (`rex_fluid_form_entry`, Klasse in fluid, Postfach
   „Anfragen“) oder in eine eigene YForm-Tabelle (Felder mit gleichem Feldnamen).
+  „Mindestens/Höchstens“ je Feld werden YForm-Regeln: `Length` für Textfelder, `min()`/`max()` für Zahlen und Datum
+  (auch relativ: `today`, `+1 year`; Datumswähler des Browsers begrenzt mit). Die Art „Datei hochladen“ ist YForms
+  `Field\Upload` mit `types()` (Liste der Redaktion, ohne ausführbare Typen wie `php`, `js`, `svg`; leer = `BuiltForm::FILE_TYPES`)
+  und `maxSize()`. Die Dateien gehen als Anhang an die Mail ans Team (`Submission::files()`); eine eigene Tabelle mit
+  Upload-Feld gleichen Namens speichert sie, „Formular-Eingänge“ nennen nur den Dateinamen – YForm löscht ungespeicherte
+  Uploads nach einem Tag.
 - **Block „Formular“** mit Klasse und Formular im **Block „Kontakt“**: Die Redaktion wählt ein Formular. Prüfung, CSRF, Honigtopf
   und Aktionen (`SaveRecord`, `SendMail`, `ShowMessage` …) kommen aus der Formular-Klasse; fluid gibt es im Stil des Kits aus.
 - **Block „Datenliste“**: eine Tabelle als Karten, Liste oder Tabelle mit Detailansicht (`?eintrag=ID`), Filter und
   Sortierung; „Bearbeiten“ öffnet die Maske von YForm.
+  „Suchfeld für Besucher“ sucht serverseitig in allen Textfeldern der Tabelle (`?suche=…`, auch beim Blättern) – mit der
+  Syntax der YForm-Suche (`Search\TextFilter`): `tee` enthält, `tee*` beginnt mit, `"tee"` genau, `!tee` schließt aus.
+  Ein Treffer in einem Feld reicht (`whereAny`), ein Ausschluss gilt für alle (`whereAll`); für eigene Abfragen
+  `YFormBridge::search($query, $table, $term)`.
 - **Postfach „Anfragen“**: Einträge der Tabellen, in die die Formulare der Website speichern; Status neu/erledigt.
 - **Kurzmeldungen, Presse, Termine**: Datenliste mit Sortierung (z. B. Datum absteigend), Blättern („Höchstens“ = je Seite,
   über YForms `paginate()`) und Detailansicht mit eigener Adresse `/seite/titel-ID` – Titel, Beschreibung, Bild und

@@ -54,6 +54,13 @@
   (`/en/alt` → `/neu` statt `/en/new`). Neue Regeln speichern die Sprache (`redaxo://ID@Sprache`), bestehende nehmen die Sprache der
   aufgerufenen Adresse – ohne Migration.
 - Demo „REDAXO 6“: Die Dachzeile der Startseite zeigt mit dem AddOn fluid_demo die aktuelle Version von fluid (`{fluid-version}`).
+- **Datenliste: Suchfeld für Besucher** (Häkchen am Block): sucht serverseitig in allen Textfeldern der Tabelle, auch über
+  alle Seiten beim Blättern – mit dem Suchfilter von YForm (`tee*` beginnt mit, `"tee"` genau, `!tee` schließt aus).
+  Neu `YFormBridge::search()`. Demo: Seite „Daten“.
+- **Eigenes Formular: Datei hochladen und Prüfregeln.** Neue Art „Datei hochladen“ (YForm-Upload, erlaubte Typen und
+  Größe je Feld, ausführbare Typen nie erlaubt) – Dateien gehen als Anhang an die Mail ans Team. „Mindestens/Höchstens“ je
+  Feld: Zeichen bei Text, Wert bei Zahlen, Datum auch relativ (`today`, `+1 year`), der Datumswähler begrenzt mit.
+  Demo: Seite „Anmeldung“.
 
 ## 1.0.0-beta.12 – 2026-11-27
 

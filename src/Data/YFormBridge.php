@@ -33,6 +33,7 @@ use Yakamara\YForm\Form\Definition\FormDefinition;
 use Yakamara\YForm\Form\Definition\Forms;
 use Yakamara\YForm\Form\Theme\Theme;
 use Yakamara\YForm\Permission\Access;
+use Yakamara\YForm\Search\TextFilter;
 use Yakamara\YForm\Table\Table;
 use Yakamara\YForm\Table\Tables;
 
@@ -51,6 +52,9 @@ use function strlen;
  */
 final class YFormBridge
 {
+    /** Choices for the largest upload in the form assistant (BuiltForm) */
+    public const array UPLOAD_SIZES = ['1M' => '1 MB', '2M' => '2 MB', '5M' => '5 MB', '10M' => '10 MB', '20M' => '20 MB'];
+
     public static function available(): bool
     {
         return class_exists(Tables::class) && Addon::exists('yform');   // REDAXO 6: installiert = aktiv
@@ -192,7 +196,7 @@ final class YFormBridge
      */
     public static function rows(Table $table, array $o): array
     {
-        $q = self::inLanguage($table, $table::query(), $o['language'] ?? null);
+        $q = self::search(self::inLanguage($table, $table::query(), $o['language'] ?? null), $table, (string) ($o['search'] ?? ''));
         if (($f = $o['filter'] ?? null) && '' !== ($o['value'] ?? '')) {
             $q->where($f->name, $f instanceof Checkbox ? (bool) $o['value'] : $o['value']);
         }
@@ -206,10 +210,35 @@ final class YFormBridge
         return array_values(iterator_to_array($q->find()));
     }
 
+    /**
+     * Visitor search over the text fields of a table, with the syntax of YForm's detailed search (TextFilter): `tee`
+     * contains, `tee*` starts with, `"tee"` exactly, `!tee` excludes. A hit in any text field counts; an exclusion
+     * must hold for all of them.
+     */
+    public static function search(Query $q, Table $table, string $term): Query
+    {
+        $term = trim($term);
+        $fields = array_values(array_filter($table->getFields(), self::isText(...)));
+        if ('' === $term || !$fields) {
+            return $q;
+        }
+        $apply = static function (Query $group) use ($fields, $term): void {
+            foreach ($fields as $field) {
+                $filter = new TextFilter($field);
+                $value = $filter->parse($term);
+                if (null !== $value) {
+                    $filter->apply($group, $value);
+                }
+            }
+        };
+
+        return str_starts_with($term, '!') ? $q->whereAll($apply) : $q->whereAny($apply);
+    }
+
     /** Wie rows(), aber seitenweise (YForm Query::paginate): ['rows' => …, 'total' => …, 'page' => …, 'pages' => …] */
     public static function page(Table $table, array $o, int $page, int $perPage): array
     {
-        $q = self::inLanguage($table, $table::query(), $o['language'] ?? null);
+        $q = self::search(self::inLanguage($table, $table::query(), $o['language'] ?? null), $table, (string) ($o['search'] ?? ''));
         if (($f = $o['filter'] ?? null) && '' !== ($o['value'] ?? '')) {
             $q->where($f->name, $f instanceof Checkbox ? (bool) $o['value'] : $o['value']);
         }
