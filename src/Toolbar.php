@@ -24,6 +24,7 @@ use Redaxo\Core\Http\Request;
 use Redaxo\Core\Language\Language;
 use Redaxo\Core\Security\CsrfToken;
 use Redaxo\Core\Security\User;
+use Redaxo\Core\Translation\I18n;
 
 use function count;
 use function is_array;
@@ -113,6 +114,9 @@ final class Toolbar
             // Design: admins save; guests (e.g. demo) only preview in their own browser – the API rejects saving
             'design' => $user->admin || $guest ? self::designSchema($article) : null,
             'designSave' => $user->admin && !$guest,
+            // Language of the interface and the texts of the editor script (lang files, keys fluid_js_*)
+            'locale' => I18n::getLocale(),
+            't' => Locale::scriptTexts(),
             // „SEO & KI“: hints for this page and the whole website (klxm/routes Advice)
             'seo' => true,
             // Several domains (klxm/routes): switch to another one – logged in there on demand (Sso)

@@ -136,6 +136,8 @@ final class FluidAddon extends Addon
     {
         // Category „Seitenvorlagen“: cannot be deleted while fluid is installed
         PageTemplatesGuard::boot();
+        // Language of the interface on the website: the editor's (profile), guests the page's
+        Locale::boot();
         // Design permissions (role → options) and locked blocks in the backend
         Perm::register();
         Lock::boot();

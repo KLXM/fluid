@@ -13,6 +13,10 @@
   const cfgEl = document.getElementById('blocks-editor-config');
   if (!cfgEl) return;
   const cfg = JSON.parse(cfgEl.textContent);
+  // Texts of the interface in the editor's language (lang files of fluid, keys fluid_js_*): t('key', arg0, arg1 …)
+  const t = (key, ...args) => String(cfg.t?.[key] ?? key).replace(/\{(\d+)\}/g, (_, i) => String(args[+i] ?? ''));
+  // TipTap speaks the editor's language too, not the page's
+  document.documentElement.dataset.rexTiptapLang = String(cfg.locale || 'de').slice(0, 2);
   // Action permissions of the core (roles → options); allowed if not specified
   const may = (k) => cfg.can?.[k] !== false;
   const unamp = (u) => String(u).replace(/&amp;/g, '&');
