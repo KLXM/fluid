@@ -17,6 +17,8 @@ use function Redaxo\Core\View\escape;
  *     final class Layout extends LayoutBlock { public static function kit(): Kit { return Kit::active(); } }
  *
  * Fields: here. Output: Layout::render(). CSS: css/layout.css of the kit (mapping 'layout' in kit.php → assets).
+ *
+ * @internal
  */
 abstract class LayoutBlock extends BlockModule
 {

@@ -33,6 +33,8 @@ use function trim;
  *  - `?rex-api-call=fluid_links&kind=records&q=…`  records with their own address: data lists with detail view
  *    (ref detail://page/id) and route sources (ref route://source/id)
  *  - `?rex-api-call=fluid_links&kind=anchors&article=ID`  anchors of the blocks of a page → #anchor
+ *
+ * @internal
  */
 #[AsApiFunction('fluid_links')]
 final class LinkApi extends ApiFunction

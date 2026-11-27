@@ -28,6 +28,8 @@ use const JSON_UNESCAPED_UNICODE;
  *  - Glossary: marking (first occurrence, not in links, buttons, headings, data-glossary="off", idempotent), spellings,
  *    short text.
  *  - Knowledge: chapter tree (numbers, custom numbers, reading order, loops, missing parent chapters), previous/next, sections.
+ *
+ * @internal
  */
 final class FeatureSelfTest
 {

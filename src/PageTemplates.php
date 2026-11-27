@@ -16,6 +16,8 @@ use Redaxo\Core\Filesystem\Url;
  * „Seitenvorlagen“ – invisible to visitors (offline: no menu, no sitemap, 404), edited in the normal block editor.
  * When creating a page, editors choose „Leere Seite“, „Kopie dieser Seite“ or a template and get a copy of the
  * blocks (from the template's working version – i.e. as it was last edited).
+ *
+ * @internal
  */
 final class PageTemplates
 {

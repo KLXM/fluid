@@ -40,6 +40,8 @@ use const PHP_URL_PATH;
  *  - Page (permission for its category): opens it in edit mode.
  *  - Record (edit permission for the YForm table): opens YForm's form in the overlay; the page stays open and
  *    re-renders the block after saving. With Ctrl/⌘ or without script: the form in the backend.
+ *
+ * @internal
  */
 final class TargetEdit
 {

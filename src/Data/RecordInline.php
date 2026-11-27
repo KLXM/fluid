@@ -48,6 +48,8 @@ use const PHP_URL_PATH;
  * uploads and the field „Fluid-Blöcke“ are left to the YForm form in the overlay („Eintrag bearbeiten“) or the blocks.
  *
  * Records have no draft: changes are saved immediately, as with the blocks of a record.
+ *
+ * @internal
  */
 final class RecordInline
 {

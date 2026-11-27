@@ -5,6 +5,8 @@ namespace Klxm\Fluid\Field;
 /**
  * Field with fluid's additions (width, displays, placeholder … or its own field type). The core's fields work the same
  * in blocks – only without these additions.
+ *
+ * @internal
  */
 interface FluidField
 {

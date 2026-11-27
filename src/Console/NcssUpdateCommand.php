@@ -18,6 +18,8 @@ use function count;
  * release/tag (--tag) – shows beforehand what changes. For working on fluid: in the installed project the kit lives
  * under vendor/ (Composer overwrites it on the next update), so write into fluid's working copy with --target or
  * use `php tools/ncss-update.php` in fluid's repo.
+ *
+ * @internal
  */
 #[AsCommand(name: 'fluid:kit:ncss-update', description: 'Aktualisiert NativeCSS im Kit „NativeCSS“ aus einer Arbeitskopie (--from) oder von GitHub (--tag)')]
 final class NcssUpdateCommand extends AbstractCommand

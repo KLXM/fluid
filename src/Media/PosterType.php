@@ -19,6 +19,8 @@ use function in_array;
  * Output at most 1600 px wide, AVIF/WebP depending on the browser; the media manager stores the result.
  *
  *     MediaManager::getUrl('fluid_poster', 'film.mp4')
+ *
+ * @internal
  */
 #[AsMediaType('fluid_poster', maxSize: 1600)]
 final readonly class PosterType implements MediaType, NegotiatesFormat

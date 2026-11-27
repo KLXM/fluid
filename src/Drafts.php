@@ -11,6 +11,8 @@ use Redaxo\Core\Security\User;
 /**
  * Drafts overview (model from KLXM Studio – Core\Review\Drafts): pages whose working version differs from the live state
  * (blocks, order, content or status). Compared by checksum per version – one query for all pages.
+ *
+ * @internal
  */
 final class Drafts
 {

@@ -26,6 +26,8 @@ use function strlen;
  *  - Video links (VideoLinks): detection, off = unchanged, on = marking and script, exception per link field.
  *  - Events (Data\Ics): calendar file all-day and with time, escaping, folding.
  *  - Scrollytelling: plain text stays plain text, subheadings below the section title.
+ *
+ * @internal
  */
 final class BlockSelfTest
 {

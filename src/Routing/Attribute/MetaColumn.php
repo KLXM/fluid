@@ -7,6 +7,8 @@ use Klxm\Fluid\Routing\RouteSource;
 /**
  * Column of a table with a role (slug, title …). An editor (e.g. fluid on the website) can offer editable columns
  * – {@see RouteSource::editable()}.
+ *
+ * @internal
  */
 abstract readonly class MetaColumn
 {

@@ -20,6 +20,8 @@ use function in_array;
  *
  * Menu items (categories) come before pages without menu entry (articles) on each level – both groups have their own
  * order in REDAXO. Permissions: structure permission of the respective category (admins may do everything).
+ *
+ * @internal
  */
 final class Structure
 {

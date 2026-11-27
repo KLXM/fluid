@@ -48,6 +48,8 @@ use function strip_tags;
  *
  * When a column block is edited or created, assets/slice-grid.js opens the form in a dialog above the
  * grid; without the script the columns are stacked (form at full width).
+ *
+ * @internal
  */
 final class SliceGrid
 {

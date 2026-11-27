@@ -13,6 +13,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use function count;
 use function sprintf;
 
+/** @internal */
 #[AsCommand(name: 'routing:rebuild', description: 'Berechnet die Adressen der Seiten und Quellen neu (Cache inklusive)')]
 final class RoutesRebuildCommand extends AbstractCommand
 {

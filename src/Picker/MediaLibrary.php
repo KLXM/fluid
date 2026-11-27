@@ -17,6 +17,8 @@ use function in_array;
 /**
  * Media picker on the website (FrontendPicker): browse and upload categories and files of the media pool.
  * The media pool's permissions apply; in the backend the core's media pool handles this (rex.pick).
+ *
+ * @internal
  */
 final class MediaLibrary
 {

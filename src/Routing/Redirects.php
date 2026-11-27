@@ -44,6 +44,8 @@ use const PHP_URL_PATH;
  *  - Exact source before wildcard, longest prefix wins. The request's query is kept. No chains, no loops.
  *  - redaxo://ID follows renamed and moved pages automatically; changed paths create „alter Pfad → redaxo://ID“.
  *  - 404 log: the last MAX_404 distinct paths with count – no IP, no referrer.
+ *
+ * @internal
  */
 final class Redirects
 {

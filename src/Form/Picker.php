@@ -20,6 +20,8 @@ use function Redaxo\Core\View\escape;
  * selection in the editor (Media\Library, Links).
  *
  * Link fields store `redaxo://ID` (article) or an address (https://…, mailto:, tel:, #anchor).
+ *
+ * @internal
  */
 final class Picker
 {

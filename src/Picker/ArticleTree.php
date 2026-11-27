@@ -10,6 +10,8 @@ use Redaxo\Core\Security\User;
 /**
  * Page picker on the website (FrontendPicker): categories and articles of the structure, like the core's linkmap.
  * Without the permission `linkmap[all_categories]` the user sees only their mount points (as the top level).
+ *
+ * @internal
  */
 final class ArticleTree
 {

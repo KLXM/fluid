@@ -14,6 +14,8 @@ use function count;
 /**
  * Writes changed defaults of block fields into stored blocks (Klxm\Fluid\DefaultChanges). Also runs on
  * `console migrate`; here for checking (--dry-run) or for projects that don't run migrate.
+ *
+ * @internal
  */
 #[AsCommand(name: 'fluid:upgrade:defaults', description: 'Bestehende Blöcke behalten ihr Aussehen, wenn sich Standardwerte von Blockfeldern ändern (läuft auch bei migrate)')]
 final class UpgradeDefaultsCommand extends AbstractCommand

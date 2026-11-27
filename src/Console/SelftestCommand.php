@@ -15,6 +15,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use function count;
 use function sprintf;
 
+/** @internal */
 #[AsCommand(name: 'fluid:selftest', description: 'Prüft Live-Aktualisierung, Präsenz der Redaktion, Bearbeitungssperre, Blöcke (Views, Standardwerte, Video-Schalter …), Rechte und Listen-Vorlagen')]
 final class SelftestCommand extends AbstractCommand
 {

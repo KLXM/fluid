@@ -20,6 +20,8 @@ use function in_array;
 /**
  * Glossary from the YForm table rex_fluid_glossary (GlossaryTable) – Glossary's default data source. Without YForm
  * the glossary is simply not available.
+ *
+ * @internal
  */
 final class YFormGlossaryStore implements GlossaryStore
 {

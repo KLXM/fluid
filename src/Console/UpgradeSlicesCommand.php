@@ -35,6 +35,8 @@ use function str_starts_with;
  *
  * Also: blocks in the former fluid format `{values: {…}, tunes: {…}}` → core storage (each field under its
  * key, plus `tunes`) – so the core fills the block properties itself.
+ *
+ * @internal
  */
 #[AsCommand(name: 'fluid:upgrade:slices', description: 'Übernimmt Blöcke älterer REDAXO-6-Datenbanken in die Spalte data (vor oder nach migrate)')]
 final class UpgradeSlicesCommand extends AbstractCommand

@@ -31,6 +31,8 @@ use function json_decode;
  *  - fluid_op=duplicate  copy right after the block (in columns: in the same column)
  *  - fluid_op=paste      clipboard content (POST clip) after the block; with POST cut the original is deleted
  *                        afterwards (cut = paste first, then remove – nothing is lost)
+ *
+ * @internal
  */
 #[AsApiFunction('fluid_block_ops')]
 final class BlockOpsApi extends ApiFunction

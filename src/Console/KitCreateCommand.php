@@ -22,6 +22,8 @@ use function is_file;
  *
  * The new kit initially brings only its own stylesheet; everything else comes from the parent kit. With
  * --view=hero,cards and --template single files of the parent kit are copied for customising.
+ *
+ * @internal
  */
 #[AsCommand(name: 'fluid:kit:create', description: 'Legt ein eigenes Kit im Projekt an, das von einem Kit erbt (Standard: fluid)')]
 final class KitCreateCommand extends AbstractCommand

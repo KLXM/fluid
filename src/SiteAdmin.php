@@ -28,6 +28,8 @@ use function Redaxo\Core\View\escape;
  * Sidebar „Website“ on the website (admins only): tabs of the website settings (Settings::schema),
  * domains (main address, further domains, landing domains) and redirects with 404 log.
  * Each action responds with the tab's HTML – the editor only replaces the content of the sidebar.
+ *
+ * @internal
  */
 final class SiteAdmin
 {

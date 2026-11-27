@@ -22,6 +22,8 @@ use function Redaxo\Core\View\escape;
  * First steps: as long as there is no start page, the website shows this page instead of an error.
  * Admins (with backend login) create an empty start page or the example pages here, visitors see
  * „Diese Website wird gerade eingerichtet“ (503).
+ *
+ * @internal
  */
 final class Welcome
 {

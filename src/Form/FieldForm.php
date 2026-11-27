@@ -42,6 +42,8 @@ use const JSON_UNESCAPED_UNICODE;
  * Field names: `{prefix}[1][field]` for the fields, `{prefix}[2][option]` for the section options. In the backend
  * (BlockModule::input()) like the core `slice[field]` and `slice[tunes][option]` – the core form reads them into the
  * module's properties.
+ *
+ * @internal
  */
 final class FieldForm
 {

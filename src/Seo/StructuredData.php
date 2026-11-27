@@ -29,6 +29,8 @@ use const ENT_QUOTES;
  *  - Blocks declare their data in the kit: 'jsonld' => ['type' => 'faq', 'items' => 'items', 'question' => 'q', 'answer' => 'a']
  *    or a function fn(Block $b): ?array. Collected during rendering (not in edit mode).
  *  - Components add further nodes (blog, geo coordinates …) via the extension point FLUID_STRUCTURED_DATA.
+ *
+ * @internal
  */
 final class StructuredData
 {

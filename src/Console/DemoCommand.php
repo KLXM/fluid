@@ -50,6 +50,8 @@ use const PATHINFO_FILENAME;
 /**
  * Creates the demo pages of a kit (start article + categories for the menu + blocks).
  * Block types the kit does not offer (yet) are skipped.
+ *
+ * @internal
  */
 #[AsCommand(name: 'fluid:demo', description: 'Legt Demo-Seiten des Kits „fluid“ an (--set=fluid|redaxo6, --replace ersetzt alle Inhalte – nur Testinstallationen)')]
 final class DemoCommand extends AbstractCommand

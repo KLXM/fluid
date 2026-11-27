@@ -20,6 +20,8 @@ use function is_array;
 /**
  * YForm field „Fluid-Blöcke“ in the form: load a block's form (action=form) and convert the input into block data
  * (action=parse) – the same fields as on the website (FieldForm). Only with a backend session and module permission.
+ *
+ * @internal
  */
 #[AsApiFunction('fluid_blocks')]
 final class BlocksApi extends ApiFunction

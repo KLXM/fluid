@@ -34,6 +34,8 @@ use const JSON_UNESCAPED_UNICODE;
  * Bar and editor for logged-in editors – inserted via OUTPUT_FILTER, only when a backend user
  * with permission on the article is logged in. Visitors get no additional markup.
  * UI: assets/editor/editor.js (Shadow DOM, no collision with the website's CSS).
+ *
+ * @internal
  */
 final class Toolbar
 {

@@ -17,6 +17,8 @@ use function sprintf;
  * Inquiry inbox (model from KLXM Studio – inquiries): entries of the tables the website forms save
  * into (blocks „Formular“/„Kontakt“ → #[AsForm] class → action SaveRecord). Status new/done in rex_fluid_inbox –
  * the YForm tables stay unchanged. Visible only with permission „Tabellen ansehen“, deleting with „bearbeiten“ (YForm).
+ *
+ * @internal
  */
 final class Inbox
 {

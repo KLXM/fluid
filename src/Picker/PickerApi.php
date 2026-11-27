@@ -17,6 +17,8 @@ use Throwable;
 /**
  * Endpoint of the FrontendPicker: `?rex-api-call=fluid_picker&_csrf_token=…` (POST: action=media|media_upload|articles).
  * Callable on the website (published), but only with a backend session; media pool or structure permissions apply.
+ *
+ * @internal
  */
 #[AsApiFunction('fluid_picker')]
 final class PickerApi extends ApiFunction

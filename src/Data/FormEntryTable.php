@@ -17,6 +17,8 @@ if (!class_exists(Table::class)) {
 /**
  * Submissions of the forms editors assemble themselves in the block „Formular“ (BuiltForm) – a YForm table
  * like any other: in the backend under YForm, on the website in the inbox „Anfragen“. `console migrate` creates it.
+ *
+ * @internal
  */
 #[AsTable('rex_fluid_form_entry', label: 'Formular-Eingänge', icon: 'fa-inbox')]
 final class FormEntryTable extends Table

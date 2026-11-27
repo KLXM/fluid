@@ -9,6 +9,8 @@ use Redaxo\Core\ExtensionPoint\Extension;
  * Protect the category „Seitenvorlagen“: not deletable while fluid is installed (the protection hangs on this
  * extension point – without fluid it is an ordinary category). Who sees it in the backend is governed by the core's
  * structure permission; on the website (page tree, search, drafts) fluid hides it, it is managed in the dialog „Vorlagen …“.
+ *
+ * @internal
  */
 final class PageTemplatesGuard
 {

@@ -14,6 +14,8 @@ use const PATH_SEPARATOR;
  * chosen poster image or none.
  *
  * Path: environment variable FFMPEG_BIN or FFPROBE_BIN (e.g. in .env), otherwise search in PATH and common folders.
+ *
+ * @internal
  */
 final class Ffmpeg
 {
