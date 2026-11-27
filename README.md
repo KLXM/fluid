@@ -52,7 +52,10 @@ fluid läuft auch ohne.
 **Für Redakteure** – alles auf der Website, über eine Leiste oben:
 
 - **Texte direkt auf der Seite** ändern – formatierter Text mit [TipTap](https://github.com/KLXM/tiptap) (kommt mit fluid,
-  eigenes Profil `tiptap.fluid` als Klasse); alle Felder eines Blocks in der Seitenleiste
+  eigenes Profil `tiptap.fluid` als Klasse): Klick in den Text, eine schlanke Leiste schwebt darüber, seltene Werkzeuge
+  hinter „⋯“; alle Felder eines Blocks in der Seitenleiste
+- **Textformate aus dem Kit:** Absatz- und Überschriftenstile, Farben, Listen und Links als Button – genau die, die das
+  Kit gestaltet, in seiner echten Optik. Alles andere verwirft der Editor, auch beim Einfügen aus Word
 - **Blöcke** einfügen, verschieben (ziehen oder ↑ ↓), verdoppeln, kopieren, online/offline – 30 Blöcke im Kit,
   vom Einstieg über Text + Bild, Zahlen, Fragen & Antworten, Preise und Karten bis zu Video & Audio, Vorher/Nachher und
   **Interaktives Bild** (Markierungen als Punkt, Kreis, Rechteck oder Fläche – im Bild setzen, ziehen, mit Pfeiltasten schieben)
@@ -112,7 +115,12 @@ fluid läuft auch ohne.
 **Für Besucher:** schnelle, barrierearme Seiten, Blättern, Filtern und Suchen ohne Seitenwechsel, schöne Adressen, Sitemap, strukturierte Daten, keine Cookies für Karten.
 
 **Für Entwickler:** Blöcke sind kleine PHP-Klassen mit Feld-Attributen (wie Module des Cores) und einer Ausgabe, Extension Points an allen wichtigen
-Stellen, YForm-Tabellen und -Formulare als Klassen – mehr in der [Entwickler-Referenz](docs/entwickler.md).
+Stellen, YForm-Tabellen und -Formulare als Klassen, Textformate als kurze Liste in der `kit.php` des Kits
+([Textformate im Kit](docs/entwickler.md#textformate-im-kit)) – mehr in der [Entwickler-Referenz](docs/entwickler.md).
+
+| Textformate im Kit „fluid“ | Listen und Buttons im Kit „NativeCSS“ |
+|---|---|
+| ![Blockformate mit großer Überschrift, Hinweis-Boxen und Dachzeile direkt auf der Seite](docs/bilder/text-formate.jpg) | ![Listenformate Punkte, Striche und Trennlinien von NativeCSS](docs/bilder/text-native.jpg) |
 
 | Formular in Schritten | Blöcke in einem YForm-Datensatz |
 |---|---|

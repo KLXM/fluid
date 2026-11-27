@@ -387,7 +387,21 @@ $code = [
             }
         }
         CODE,
+    'kitText' => <<<'CODE'
+        return [
+            'label' => 'Fluid (breakpointlos)',
+            // Textformate: Klasse => Bezeichnung (optional, sonst die des Eltern-Kits)
+            'text' => [
+                'paragraphs' => ['t-lead' => 'Hervorgehoben', 't-note' => 'Hinweis-Box'],
+                'headings' => ['h-display' => 'Groß (Blickfang)'],      // jede Überschrift
+                'colors' => ['c-accent' => 'Akzentfarbe', 'c-secondary' => 'Zweite Markenfarbe'],
+                'lists' => ['check' => ['label' => 'Häkchen-Liste', 'list' => 'ul']],
+                'links' => ['btn btn--primary' => 'Button'],
+            ],
+        ];
+        CODE,
     'tiptapProfile' => <<<'CODE'
+        use Klxm\Fluid\TextFormats;
         use Klxm\Tiptap\AsProfile;
         use Klxm\Tiptap\ProfileDefinition;
 
@@ -396,19 +410,15 @@ $code = [
         {
             public function config(): array
             {
-                return [
+                // Absatz-, Überschriften-, Farb-, Listen- und Linkformate aus dem Kit
+                return TextFormats::active()->profileConfig() + [
                     'toolbar' => [
                         ['heading', 'blockStyle'],
                         ['bold', 'italic', 'highlight', 'inlineStyle'],
                         ['link', 'unlink'],
                         ['bulletList', 'orderedList', 'listStyle', 'blockquote'],
                     ],
-                    'blockStyles' => [
-                        ['label' => 'Hervorgehoben', 'class' => 't-lead', 'element' => 'p'],
-                        ['label' => 'Hinweis-Box', 'class' => 't-note', 'element' => 'p'],
-                    ],
-                    'inlineStyles' => [['label' => 'Akzentfarbe', 'class' => 'c-accent']],
-                    'listStyles' => [['label' => 'Häkchen-Liste', 'class' => 'check', 'list' => 'ul']],
+                    'headings' => [2, 3, 4],
                 ];
             }
         }
@@ -2016,14 +2026,23 @@ vollständig: Module, Templates, Schema'],
                 ['type' => 'richtext', 'data' => ['variant' => 'article', 'eyebrow' => '', 'title' => '', 'intro' => '', 'measure' => 'normal', 'meta' => '', 'dropcap' => false, 'toc' => false, 'reveal' => 'off', 'scrollspy' => 'off',
                     'text' => '<p class="t-lead">Ein Editor für alles: fluid schreibt Texte jetzt mit <strong>TipTap</strong> – dem Editor, den REDAXO 6 auch im Backend, in YForm und in Modulen nutzt.</p><p>Bisher hatte fluid eine eigene Formatierungsleiste. Sie war gut, aber eben nur in fluid. Jetzt arbeitet überall derselbe Editor: wer ihn im Backend kennt, kennt ihn auf der Website – und umgekehrt. Alles, was TipTap kann, kann fluid ab sofort auch.</p>']],
                 ['type' => 'media_text', 'data' => ['variant' => 'right', 'eyebrow' => 'Direkt auf der Seite', 'title' => 'Schreiben, wo der Text steht',
-                    'text' => '<p>Ein Klick in einen Text, und TipTap startet genau an dieser Stelle. Die Werkzeugleiste schwebt darüber, Hinweis-Box, Dachzeile oder Akzentfarbe erscheinen sofort in der echten Gestaltung der Website – so, wie Besucher sie sehen.</p>',
+                    'text' => '<p>Ein Klick in einen Text, und TipTap startet genau an dieser Stelle. Die Werkzeugleiste schwebt darüber – schlank in einer Zeile, seltene Werkzeuge hinter „⋯“. Hinweis-Box, Dachzeile oder Akzentfarbe erscheinen sofort in der echten Gestaltung der Website – so, wie Besucher sie sehen.</p>',
                     'list' => "Schreibmarke genau dort, wo man klickt\nFormate in der echten Gestaltung des Kits\nSeiten und Dateien verlinken mit der Auswahl von fluid",
                     'image' => 'fluid-tiptap-seite.jpg', 'ratio' => '16:9', 'split' => 'media']],
+                ['type' => 'media_text', 'tunes' => ['background' => 'muted'], 'data' => ['variant' => 'left', 'eyebrow' => 'Formate aus dem Kit', 'title' => 'Auszeichnen, was das Kit gestaltet',
+                    'text' => '<p>Welche Formate es gibt, bringt das Kit mit: Absatz- und Überschriftenstile, Farben, Listen und Links als Button – jeweils in seiner echten Gestaltung. Was das Kit nicht kennt, verwirft der Editor, auch beim Einfügen aus Word oder von einer anderen Website.</p>',
+                    'list' => "Kit „fluid“: Hinweis-Boxen, Dachzeile, große Überschrift, Zweitfarbe, Buttons\nWechselt das Kit, wechseln die Formate mit\nKeine style-Attribute, nur Klassen des Kits",
+                    'image' => 'fluid-tiptap-formate.jpg', 'ratio' => '16:9', 'split' => 'media']],
+                ['type' => 'media_text', 'data' => ['variant' => 'right', 'eyebrow' => 'Für Kit-Entwickler', 'title' => 'Jedes Kit mit eigenen Formaten',
+                    'text' => '<p>Ein Kit legt seine Formate als kurze Liste in seine <code>kit.php</code> – Klasse und Bezeichnung, mehr nicht. Es erbt die des Eltern-Kits und ergänzt oder streicht einzelne. Das Kit „NativeCSS“ bringt so seine Listen mit Punkten, Strichen, Trennlinien und Schritten mit, dazu die eigenen Buttons.</p>',
+                    'list' => '', 'image' => 'fluid-tiptap-native.jpg', 'ratio' => '16:9', 'split' => 'media']],
+                ['type' => 'richtext', 'tunes' => ['background' => 'tint'], 'data' => ['variant' => 'standard', 'eyebrow' => '', 'title' => '', 'intro' => '', 'measure' => 'normal',
+                    'text' => '<h2 class="h-display">Probieren Sie es aus</h2><p class="t-lead">Dieser Text nutzt die Formate des Kits – in der Demo einfach hineinklicken und ändern.</p><p>Ein Wort in <span class="c-accent">Akzentfarbe</span> oder in der <span class="c-secondary">zweiten Markenfarbe</span>, eine Häkchen-Liste oder ein Link als Button:</p><ul class="check"><li>Formate im Menü „Blockformat“ und „Textformat“</li><li>Listenformat über das Listen-Menü</li><li>Linkformat in der Leiste unter dem Link</li></ul><p class="t-tip">Tipp: Wechseln Sie oben in der Demo das Kit – die Formate wechseln mit.</p><p><a class="btn btn--primary" href="https://github.com/KLXM/fluid">fluid auf GitHub</a> <a class="btn btn--secondary" href="https://github.com/KLXM/tiptap">TipTap auf GitHub</a></p>']],
                 ['type' => 'features', 'tunes' => ['background' => 'muted'], 'data' => ['variant' => 'cards', 'eyebrow' => 'Warum das sinnvoll ist', 'title' => 'Sechs gute Gründe', 'intro' => '', 'size' => 'm',
                     'items' => [
                         ['icon' => 'pencil-simple', 'title' => 'Ein Editor für alles', 'text' => 'Backend, YForm, Module und Website: überall derselbe TipTap. Einmal lernen, überall schreiben.', 'link_label' => '', 'link' => ''],
                         ['icon' => 'code', 'title' => 'Profile als PHP-Klassen', 'text' => 'Das Profil von fluid ist eine Klasse. Ein Projekt überschreibt es mit einer eigenen – versioniert im Git, ohne Abgleich der Datenbank zwischen Stage und Live.', 'link_label' => '', 'link' => ''],
-                        ['icon' => 'shield-check', 'title' => 'Sauberes HTML', 'text' => 'Formate sind CSS-Klassen, nie style-Attribute – die Content-Security-Policy bleibt streng. Der Server bereinigt jede Eingabe nach dem Profil.', 'link_label' => '', 'link' => ''],
+                        ['icon' => 'shield-check', 'title' => 'Sauberes HTML', 'text' => 'Formate sind CSS-Klassen, nie style-Attribute – die Content-Security-Policy bleibt streng. Der Editor kennt nur die Formate des Kits, der Server bereinigt jede Eingabe.', 'link_label' => '', 'link' => ''],
                         ['icon' => 'check-circle', 'title' => 'Nichts geht verloren', 'text' => 'Bestehende Texte bleiben, wie sie sind: Absatzstile, Farben, Häkchen-Listen, Anker an Überschriften und Links auf Seiten.', 'link_label' => '', 'link' => ''],
                         ['icon' => 'puzzle-piece', 'title' => 'Erweiterbar', 'text' => 'Plugins, eigene Link-Formate, eigene Seiten- und Medienauswahl – fluid nutzt genau die Schnittstellen, die jedes AddOn nutzen kann.', 'link_label' => '', 'link' => ''],
                         ['icon' => 'users-three', 'title' => 'Gut für alle', 'text' => 'Was fluid brauchte, steckt jetzt in TipTap selbst: Bearbeiten direkt auf der Seite, Shadow DOM, Auswahl auf der Website. Davon profitiert jedes REDAXO-6-Projekt.', 'link_label' => '', 'link' => ''],
@@ -2032,8 +2051,9 @@ vollständig: Module, Templates, Schema'],
                 ['type' => 'media_text', 'data' => ['variant' => 'left', 'eyebrow' => 'In der Seitenleiste', 'title' => 'Derselbe Editor für längere Texte',
                     'text' => '<p>Alle Felder eines Elements stehen in der Seitenleiste – formatierter Text mit der vollen Leiste von TipTap, samt Quelltext und Vollbild. Markdown einfügen wird zu Formatierung, Rechtsklick öffnet Menüs für Listen und Links.</p>',
                     'list' => '', 'image' => 'fluid-tiptap-seitenleiste.jpg', 'ratio' => '16:9', 'split' => 'media']],
-                ['type' => 'code', 'data' => ['eyebrow' => 'Für Entwickler', 'title' => 'Das Profil von fluid – eine Klasse', 'intro' => 'Eine Klasse mit #[AsProfile] im Projekt mit demselben Namen geht vor: so passt jede Website die Formate an.', 'note' => 'Mehr in der Entwickler-Referenz von fluid, Abschnitt „Text-Editor (TipTap)“.',
+                ['type' => 'code', 'data' => ['eyebrow' => 'Für Entwickler', 'title' => 'Formate im Kit, Profil als Klasse', 'intro' => 'Die Formate stehen als kurze Liste in der kit.php des Kits. Das Profil ist eine Klasse – eine gleichnamige im Projekt geht vor.', 'note' => 'Mehr in der Entwickler-Referenz von fluid, Abschnitte „Textformate im Kit“ und „Text-Editor (TipTap)“.',
                     'items' => [
+                        $c('kitText', 'kits/fluid/kit.php', 'php'),
                         $c('tiptapProfile', 'src/Tiptap/FluidProfile.php', 'php'),
                     ]]],
                 $cta,

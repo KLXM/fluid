@@ -9,6 +9,8 @@
   Kit fluid neu: Zweite Markenfarbe, Überschrift „Groß“, Links als Button; Kit NativeCSS: Listen Punkte/Striche/
   Trennlinien/Schritte, Buttons von NativeCSS, Farbverlauf für Überschriften. Nummerierte Listen behalten Zählart und
   Start (`ol type/start`). `RichText::P_CLASSES` und `RichText::COLORS` entfallen.
+- README und Demo-Beitrag „TipTap meets fluid“ mit neuen Bildern: einzeilige Leiste, Formate aus dem Kit (fluid und
+  NativeCSS), Textblock mit allen Formaten zum Ausprobieren. Fix: Link-Leiste blieb sichtbar (TipTap 1.0.0-beta.5).
 
 ## 1.0.0-beta.13 – 2026-11-27
 
