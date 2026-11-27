@@ -31,6 +31,7 @@ use Redaxo\Core\ExtensionPoint\ExtensionPoint;
 use Redaxo\Core\Language\Language;
 use Redaxo\Core\MediaManager\MediaManager;
 use Redaxo\Core\MediaPool\Media;
+use Redaxo\Core\Translation\I18n;
 
 use function Redaxo\Core\View\escape;
 
@@ -518,7 +519,7 @@ function fluid_image(?string $id, string $sizes, string $ratio, string $class = 
         return '<div class="' . e($cls) . '">' . $pic . '</div>';
     }
 
-    return is_editing() ? '<div class="' . e($cls) . ' frame--empty"><span>' . e('Bild' . ('' !== $ratio ? ' · ' . $ratio : '')) . '</span></div>' : '';
+    return is_editing() ? '<div class="' . e($cls) . ' frame--empty"><span>' . e(I18n::rawMsg('fluid_field_image') . ('' !== $ratio ? ' · ' . $ratio : '')) . '</span></div>' : '';
 }
 
 function fluid_title(string $text): string
@@ -636,7 +637,7 @@ function fluid_alt_hint(?string $file): string
         return '';
     }
 
-    return '<p class="empty-hint">' . e('Alternativtext fehlt für „' . $file . '“ – im Medienpool beschreiben, was zu sehen ist.') . '</p>';
+    return '<p class="empty-hint">' . e(I18n::rawMsg('fluid_kit_alt_hint', $file)) . '</p>';
 }
 
 /**
@@ -653,7 +654,7 @@ function fluid_caption_hint(array $d): string
         }
     }
 
-    return '<p class="empty-hint">Ohne Untertitel: Wird im Video gesprochen, bitte unter „Untertitel und Kapitel“ eine .vtt- oder .srt-Datei ergänzen.</p>';
+    return '<p class="empty-hint">' . e(I18n::rawMsg('fluid_kit_caption_hint')) . '</p>';
 }
 
 /**
@@ -738,7 +739,7 @@ function fluid_video_embed(string $url, string $file, string $poster, string $ra
             'src' => 'https://player.vimeo.com/video/' . $m[1] . '?autoplay=1&dnt=1', 'watch' => 'https://vimeo.com/' . $m[1]];
     }
     if (!$v) {
-        return is_editing() ? '<div class="vembed vembed--empty r-' . e($ratio) . '"><p>YouTube-/Vimeo-Link oder MP4-Datei in der Seitenleiste eintragen.</p></div>' : '';
+        return is_editing() ? '<div class="vembed vembed--empty r-' . e($ratio) . '"><p>' . I18n::msg('fluid_kit_video_empty') . '</p></div>' : '';
     }
     $title = '' !== $label ? $label : lt('Video');
     $privacy = privacy_url();

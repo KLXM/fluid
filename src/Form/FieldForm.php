@@ -17,6 +17,7 @@ use Klxm\Fluid\Tiptap\FluidProfile;
 use Redaxo\Core\Core;
 use Redaxo\Core\Filesystem\Url;
 use Redaxo\Core\MediaPool\MediaCategory;
+use Redaxo\Core\Translation\I18n;
 
 use function array_key_exists;
 use function array_values;
@@ -77,7 +78,7 @@ final class FieldForm
             $h .= '<p class="blocks-form__intro">' . escape($help) . '</p>';
         }
         if ($variants) {
-            $h .= self::row('Darstellung', self::select($p1 . '[variant]', $variants, $variant, ['data-blocks-variant' => '']), '', false, 'variant');
+            $h .= self::row(I18n::rawMsg('fluid_form_variant'), self::select($p1 . '[variant]', $variants, $variant, ['data-blocks-variant' => '']), '', false, 'variant');
         }
         $h .= self::fields($module::fields(), $data, $p1, $backend, $byProp);
         // Layout: keep dragged column widths (handle on the website) when saving the form
@@ -104,36 +105,36 @@ final class FieldForm
                 $h .= $hidden($k);
             }
             if ($module::nestable()) {
-                $cols = ['' => 'Nicht in einem Layout', '1' => 'Spalte 1', '2' => 'Spalte 2', '3' => 'Spalte 3', '4' => 'Spalte 4'];
+                $cols = ['' => I18n::rawMsg('fluid_form_col_none')] + array_combine(['1', '2', '3', '4'], array_map(static fn (int $c) => I18n::rawMsg('fluid_block_column', $c), [1, 2, 3, 4]));
                 $col = (string) ($tunes['col'] ?? (SliceGrid::requestedCol() ?? ''));
-                $h .= '<div class="blocks-form__grid">' . self::row('Spalte im Layout', self::select($p2 . '[col]', $cols, $col), '', false) . '</div>';
+                $h .= '<div class="blocks-form__grid">' . self::row(I18n::rawMsg('fluid_form_col'), self::select($p2 . '[col]', $cols, $col), '', false) . '</div>';
             }
 
             return $h . '</div>';
         }
         $bgs = $module::kit()->backgrounds();
-        $h .= '<details class="blocks-form__tunes"' . ($locked ? ' open' : '') . '><summary>Abschnitt</summary><div class="blocks-form__grid">';
+        $h .= '<details class="blocks-form__tunes"' . ($locked ? ' open' : '') . '><summary>' . I18n::msg('fluid_form_section') . '</summary><div class="blocks-form__grid">';
         if ($designFull && $lockable) {
             $h .= '<div class="blocks-form__field"><input type="hidden" name="' . escape($p2 . '[' . Lock::TUNE . ']') . '" value="0"><div class="rex-check"><label class="blocks-form__check"><input type="checkbox" name="'
-                . escape($p2 . '[' . Lock::TUNE . ']') . '" value="1"' . ($locked ? ' checked' : '') . '> Block sperren</label></div>'
-                . '<p class="rex-field-note">Gesperrte Blöcke bleiben sichtbar und lassen sich verschieben. Ändern, ausblenden oder löschen dürfen sie nur Personen mit dem Recht „Blöcke gestalten und sperren“.</p></div>';
+                . escape($p2 . '[' . Lock::TUNE . ']') . '" value="1"' . ($locked ? ' checked' : '') . '> ' . I18n::msg('fluid_form_lock') . '</label></div>'
+                . '<p class="rex-field-note">' . I18n::msg('fluid_form_lock_help') . '</p></div>';
         }
-        $h .= self::row('Hintergrund', self::select($p2 . '[background]', ['' => 'Standard'] + $bgs, (string) ($tunes['background'] ?? '')), 'In einer Layout-Spalte: ein anderer Hintergrund als das Layout macht den Block zur Karte.', true);
-        $h .= self::row('Sprungmarke (Anker)', '<input class="rex-input" type="text" name="' . escape($p2 . '[anchor]') . '" value="' . escape((string) ($tunes['anchor'] ?? '')) . '" pattern="[a-z0-9\-]*" placeholder="z. B. kontakt">', 'Nur Kleinbuchstaben, Ziffern und Bindestriche.', true);
-        $space = ['none' => 'Kein', 'small' => 'Klein', 'normal' => 'Normal', 'large' => 'Groß'];
-        $h .= self::row('Abstand oben', self::select($p2 . '[spaceTop]', $space, (string) ($tunes['spaceTop'] ?? 'normal')), '', true);
-        $h .= self::row('Abstand unten', self::select($p2 . '[spaceBottom]', $space, (string) ($tunes['spaceBottom'] ?? 'normal')), '', true);
+        $h .= self::row(I18n::rawMsg('fluid_form_background'), self::select($p2 . '[background]', ['' => I18n::rawMsg('fluid_form_default')] + $bgs, (string) ($tunes['background'] ?? '')), I18n::rawMsg('fluid_form_background_help'), true);
+        $h .= self::row(I18n::rawMsg('fluid_form_anchor'), '<input class="rex-input" type="text" name="' . escape($p2 . '[anchor]') . '" value="' . escape((string) ($tunes['anchor'] ?? '')) . '" pattern="[a-z0-9\-]*" placeholder="' . I18n::msg('fluid_form_anchor_placeholder') . '">', I18n::rawMsg('fluid_form_anchor_help'), true);
+        $space = ['none' => I18n::rawMsg('fluid_form_space_none'), 'small' => I18n::rawMsg('fluid_layout_gap_small'), 'normal' => I18n::rawMsg('fluid_layout_gap_normal'), 'large' => I18n::rawMsg('fluid_layout_gap_large')];
+        $h .= self::row(I18n::rawMsg('fluid_form_space_top'), self::select($p2 . '[spaceTop]', $space, (string) ($tunes['spaceTop'] ?? 'normal')), '', true);
+        $h .= self::row(I18n::rawMsg('fluid_form_space_bottom'), self::select($p2 . '[spaceBottom]', $space, (string) ($tunes['spaceBottom'] ?? 'normal')), '', true);
         // Reveal effect: only if the kit offers any (kit.php → 'reveal', e.g. kit „NativeCSS“)
         if ([] !== ($reveal = $module::kit()->revealOptions())) {
-            $h .= self::row('Einblend-Effekt', self::select($p2 . '[reveal]', ['' => 'Keiner'] + array_map(static fn (array $o) => (string) $o['label'], $reveal), (string) ($tunes['reveal'] ?? '')),
-                'Der Abschnitt erscheint beim Hereinscrollen. Sichtbar auf der veröffentlichten Seite, nicht beim Bearbeiten und nicht beim ersten Block. Wer „Bewegung reduzieren“ eingestellt hat, sieht ihn sofort.', false);
+            $h .= self::row(I18n::rawMsg('fluid_form_reveal'), self::select($p2 . '[reveal]', ['' => I18n::rawMsg('fluid_form_reveal_none')] + array_map(static fn (array $o) => (string) $o['label'], $reveal), (string) ($tunes['reveal'] ?? '')),
+                I18n::rawMsg('fluid_form_reveal_help'), false);
         }
         if ($module::nestable()) {
-            $cols = ['' => 'Nicht in einem Layout', '1' => 'Spalte 1', '2' => 'Spalte 2', '3' => 'Spalte 3', '4' => 'Spalte 4'];
+            $cols = ['' => I18n::rawMsg('fluid_form_col_none')] + array_combine(['1', '2', '3', '4'], array_map(static fn (int $c) => I18n::rawMsg('fluid_block_column', $c), [1, 2, 3, 4]));
             // new block via „Block in Spalte n“ in the backend: column preselected
             $col = (string) ($tunes['col'] ?? (SliceGrid::requestedCol() ?? ''));
-            $h .= self::row('Spalte im Layout', self::select($p2 . '[col]', $cols, $col),
-                'Wirkt, wenn der Block direkt hinter einem Block „Layout (Spalten)“ steht (oder hinter weiteren Blöcken dieses Layouts).', false);
+            $h .= self::row(I18n::rawMsg('fluid_form_col'), self::select($p2 . '[col]', $cols, $col),
+                I18n::rawMsg('fluid_form_col_help'), false);
         }
         $h .= '</div></details>';
 
@@ -198,21 +199,21 @@ final class FieldForm
             // Table from YForm (Table Manager) – form block, data list
             'yform_table' => [] !== ($t = YFormBridge::tables())
                 ? self::select($name, $t, (string) $value, ['id' => $id, 'data-yform-table' => ''], !$req)
-                : '<p class="rex-field-note">' . (YFormBridge::available() ? 'Noch keine Tabelle – im Projekt eine Klasse mit #[AsTable] anlegen (siehe YForm-README).' : 'Dafür wird das AddOn YForm benötigt.') . '</p>',
+                : '<p class="rex-field-note">' . I18n::msg(YFormBridge::available() ? 'fluid_form_no_table' : 'fluid_form_yform_required') . '</p>',
             'yform_field' => self::yformField($name, (string) $value, $id),
             // Blog (category with „Blog / News“ in the page settings); empty = all blogs
             'blog' => [] !== ($bl = Blog::all())
-                ? self::select($name, ['' => 'Alle Blogs'] + $bl, (string) $value, ['id' => $id], false)
-                : '<p class="rex-field-note">Noch kein Blog – bei einer Menüseite in den Seiteneinstellungen „Blog / News“ anhaken.</p>',
+                ? self::select($name, ['' => I18n::rawMsg('fluid_form_all_blogs')] + $bl, (string) $value, ['id' => $id], false)
+                : '<p class="rex-field-note">' . I18n::msg('fluid_form_no_blog') . '</p>',
             // Form from YForm (#[AsForm] class in the project)
             'yform_form' => [] !== ($fo = YFormBridge::forms())
                 ? self::select($name, $fo, (string) $value, ['id' => $id], !$req)
-                : '<p class="rex-field-note">' . (YFormBridge::available() ? 'Noch kein Formular – im Projekt eine Klasse mit #[AsForm] anlegen (siehe YForm-README).' : 'Dafür wird das AddOn YForm benötigt.') . '</p>',
+                : '<p class="rex-field-note">' . I18n::msg(YFormBridge::available() ? 'fluid_form_no_form' : 'fluid_form_yform_required') . '</p>',
             'time' => '<input class="rex-input" type="time" id="' . $id . '" name="' . $n . '" value="' . escape((string) $value) . '"' . $req . '>',
             'date' => '<input class="rex-input" type="date" id="' . $id . '" name="' . $n . '" value="' . escape((string) $value) . '"' . $req . '>',
             // Location „Breite, Länge“ with geocoding from the address fields (website settings)
             'geo' => '<div class="blocks-geo rex-input-group"><input class="rex-input" type="text" id="' . $id . '" name="' . $n . '" value="' . escape((string) $value) . '" placeholder="51.4512, 6.6263" pattern="^-?\\d{1,2}(\\.\\d+)?,\\s*-?\\d{1,3}(\\.\\d+)?$" data-geo>'
-                . '<span class="rex-input-group-actions"><button type="button" class="blocks-btn rex-button" data-variant="field" data-geocode>Aus Adresse ermitteln</button></span></div>',
+                . '<span class="rex-input-group-actions"><button type="button" class="blocks-btn rex-button" data-variant="field" data-geocode>' . I18n::msg('fluid_form_geocode') . '</button></span></div>',
             'url' => '<input class="rex-input" type="url" id="' . $id . '" name="' . $n . '" value="' . escape((string) $value) . '"' . $req . $ph . ' placeholder="https://…">',
             'link' => Picker::link(self::nameId($name), $name, (string) $value, $backend),
             'repeater' => self::repeater($f, is_array($value) ? $value : [], $name, $backend, $byProp),
@@ -249,7 +250,7 @@ final class FieldForm
     {
         /** @var list<array<string, mixed>> $sub */
         $sub = $f['fields'] ?? [];
-        $itemLabel = (string) ($f['item_label'] ?? 'Eintrag');
+        $itemLabel = (string) ($f['item_label'] ?? I18n::rawMsg('fluid_form_item'));
         $titleField = (string) ($f['title_field'] ?? ($sub[0]['name'] ?? ''));
         $maxItems = (int) ($f['max_items'] ?? 0);
 
@@ -285,9 +286,9 @@ final class FieldForm
                     . '<button type="button" class="fluid-rep-item__toggle' . ($open ? '' : ' collapsed') . '" data-toggle="collapse" data-target="#' . $id . '" aria-controls="' . $id . '" aria-expanded="' . ($open ? 'true' : 'false') . '">'
                     . '<span class="fluid-rep-item__title" ' . $titleAttr . '>' . $label . '</span></button>'
                     . '<div class="fluid-rep-item__tools"><div class="rex-button-group" data-size="xs">'
-                    . $tool('data-blocks-up', 'Nach oben', 'rex-icon-up', '↑', 'rex-button')
-                    . $tool('data-blocks-down', 'Nach unten', 'rex-icon-down', '↓', 'rex-button')
-                    . $tool('data-blocks-remove data-variant="danger"', 'Entfernen', 'rex-icon-delete', '✕', 'rex-button')
+                    . $tool('data-blocks-up', I18n::msg('fluid_form_up'), 'rex-icon-up', '↑', 'rex-button')
+                    . $tool('data-blocks-down', I18n::msg('fluid_form_down'), 'rex-icon-down', '↓', 'rex-button')
+                    . $tool('data-blocks-remove data-variant="danger"', I18n::msg('fluid_form_remove'), 'rex-icon-delete', '✕', 'rex-button')
                     . '</div></div></header>'
                     . '<div id="' . $id . '" class="collapse' . ($open ? ' in' : '') . '"><div class="fluid-rep-item__body">' . $fields . '</div></div>'
                     . '</section>';
@@ -296,9 +297,9 @@ final class FieldForm
             return '<details class="blocks-rep__item" data-blocks-item' . ('' === $title ? ' open' : '') . '>'
                 . '<summary><span class="blocks-rep__title" ' . $titleAttr . '>' . $label . '</span>'
                 . '<span class="blocks-rep__tools">'
-                . $tool('data-blocks-up', 'Nach oben', 'rex-icon-up', '↑')
-                . $tool('data-blocks-down', 'Nach unten', 'rex-icon-down', '↓')
-                . $tool('data-blocks-remove', 'Entfernen', 'rex-icon-delete', '✕', 'blocks-btn blocks-btn--danger')
+                . $tool('data-blocks-up', I18n::msg('fluid_form_up'), 'rex-icon-up', '↑')
+                . $tool('data-blocks-down', I18n::msg('fluid_form_down'), 'rex-icon-down', '↓')
+                . $tool('data-blocks-remove', I18n::msg('fluid_form_remove'), 'rex-icon-delete', '✕', 'blocks-btn blocks-btn--danger')
                 . '</span></summary>'
                 . '<div class="blocks-rep__body">' . $fields . '</div>'
                 . '</details>';
@@ -330,15 +331,15 @@ final class FieldForm
         $base = (string) preg_replace('~\[[^\[\]]*\]$~', '', $name);
         $cfg = ['image' => '' !== $img ? $base . '[' . $img . ']' : '', 'max' => Hotspots::MAX, 'editors' => Hotspots::editors(),
             'css' => $addon->getAssetsUrl('hotspots-field.css'), 'src' => Url::media('__FILE__')];
-        $rep = ['name' => $f['name'], 'type' => 'repeater', 'item_label' => 'Markierung', 'title_field' => 'title', 'max_items' => Hotspots::MAX,
+        $rep = ['name' => $f['name'], 'type' => 'repeater', 'item_label' => I18n::rawMsg('fluid_form_marker'), 'title_field' => 'title', 'max_items' => Hotspots::MAX,
             'fields' => Hotspots::subFields()];
         $hint = 'hs-' . self::nameId($name) . '-h';
 
         return '<div class="hs-field" data-hotspots="' . escape((string) json_encode($cfg, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)) . '">'
             . '<div class="hs-ed" data-hs-ed hidden>'
-            . '<p class="hs-ed__hint" id="' . escape($hint) . '">Ins Bild klicken setzt eine Markierung. Ziehen verschiebt sie; mit der Tastatur: Markierung wählen, Pfeiltasten (mit Umschalt in 5er-Schritten, mit Alt in 0,1er-Schritten), Entf löscht, Eingabe öffnet die Angaben.</p>'
+            . '<p class="hs-ed__hint" id="' . escape($hint) . '">' . I18n::msg('fluid_form_hotspots_hint') . '</p>'
             . '<div class="hs-ed__bar" data-hs-bar hidden></div>'
-            . '<div class="hs-ed__stage" data-hs-stage aria-describedby="' . escape($hint) . '"><p class="hs-ed__empty">Zuerst ein Bild wählen.</p></div>'
+            . '<div class="hs-ed__stage" data-hs-stage aria-describedby="' . escape($hint) . '"><p class="hs-ed__empty">' . I18n::msg('fluid_form_hotspots_empty') . '</p></div>'
             . '<p class="hs-ed__live" aria-live="polite" data-hs-live></p></div>'
             . self::repeater($rep, Hotspots::toForm($value), $name, $backend, $byProp)
             . '</div>';

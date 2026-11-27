@@ -21,21 +21,21 @@ use function count;
  *
  * @internal
  */
-#[AsCommand(name: 'fluid:kit:ncss-update', description: 'Aktualisiert NativeCSS im Kit „NativeCSS“ aus einer Arbeitskopie (--from) oder von GitHub (--tag)')]
+#[AsCommand(name: 'fluid:kit:ncss-update', description: 'Updates NativeCSS in the "NativeCSS" kit from a working copy (--from) or from GitHub (--tag)')]
 final class NcssUpdateCommand extends AbstractCommand
 {
     public function __invoke(
         SymfonyStyle $io,
-        #[Option(description: 'Arbeitskopie von NativeCSS (Ordner mit dist/)')] string $from = '',
-        #[Option(description: 'mit --from: nur diesen Git-Stand übernehmen (z. B. HEAD, v1.2.0) – ohne nicht committete Änderungen')] string $ref = '',
-        #[Option(description: 'Release, Tag oder Branch von github.com/skerbis/nativecss (statt --from)')] string $tag = '',
-        #[Option(description: 'Ordner assets des Kits (Standard: kits/native/assets dieses fluid)')] string $target = '',
-        #[Option(description: 'nur anzeigen, nichts schreiben')] bool $dryRun = false,
+        #[Option(description: 'Working copy of NativeCSS (folder with dist/)')] string $from = '',
+        #[Option(description: 'with --from: only take this Git revision (e.g. HEAD, v1.2.0) – without uncommitted changes')] string $ref = '',
+        #[Option(description: 'Release, tag or branch of github.com/skerbis/nativecss (instead of --from)')] string $tag = '',
+        #[Option(description: 'Assets folder of the kit (default: kits/native/assets of this fluid)')] string $target = '',
+        #[Option(description: 'only show, write nothing')] bool $dryRun = false,
     ): int {
         $target = '' !== $target ? rtrim($target, '/') : (Kit::get('native')?->path('assets') ?? '');
         $code = self::update($io, $from, $ref, $tag, $target, $dryRun);
         if (Command::SUCCESS === $code && !$dryRun && str_contains($target, '/vendor/')) {
-            $io->note('Geschrieben unter vendor/ – beim nächsten composer update ist es wieder weg. Für fluid selbst: --target=/pfad/zu/fluid/kits/native/assets');
+            $io->note('Written below vendor/ – the next composer update removes it again. For fluid itself: --target=/path/to/fluid/kits/native/assets');
         }
 
         return $code;
@@ -44,12 +44,12 @@ final class NcssUpdateCommand extends AbstractCommand
     private static function update(SymfonyStyle $io, string $from, string $ref, string $tag, string $target, bool $dryRun): int
     {
         if (('' === $from) === ('' === $tag)) {
-            $io->error('Bitte genau eine Quelle angeben: --from=/pfad/zu/nativecss oder --tag=v1.2.0');
+            $io->error('Please give exactly one source: --from=/path/to/nativecss or --tag=v1.2.0');
 
             return Command::INVALID;
         }
         if ('' === $target || !is_dir($target . '/ncss')) {
-            $io->error('Ziel nicht gefunden (Ordner assets des Kits „NativeCSS“ mit ncss/): ' . $target);
+            $io->error('Target not found (assets folder of the "NativeCSS" kit with ncss/): ' . $target);
 
             return Command::FAILURE;
         }
@@ -63,29 +63,29 @@ final class NcssUpdateCommand extends AbstractCommand
             return Command::FAILURE;
         }
         $info = $up->info();
-        $io->title('NativeCSS ' . $info['version'] . ('' !== $info['commit'] && $info['commit'] !== $info['version'] ? ' (' . $info['commit'] . ')' : '') . ' vom ' . $info['date']);
-        $io->text(['Quelle: ' . $info['source'], 'Ziel:   ' . $target . '/ncss']);
+        $io->title('NativeCSS ' . $info['version'] . ('' !== $info['commit'] && $info['commit'] !== $info['version'] ? ' (' . $info['commit'] . ')' : '') . ' of ' . $info['date']);
+        $io->text(['Source: ' . $info['source'], 'Target: ' . $target . '/ncss']);
         if ($info['dirty']) {
-            $io->warning('Die Arbeitskopie hat nicht committete Änderungen in dist/. Mit --ref=HEAD nur den committeten Stand übernehmen.');
+            $io->warning('The working copy has uncommitted changes in dist/. Use --ref=HEAD to take only the committed state.');
         }
-        $io->table(['', 'Dateien'], [
-            ['neu', (string) count($plan['added'])], ['geändert', (string) count($plan['changed'])],
-            ['entfernt', (string) count($plan['removed'])], ['unverändert', (string) $plan['unchanged']],
+        $io->table(['', 'Files'], [
+            ['new', (string) count($plan['added'])], ['changed', (string) count($plan['changed'])],
+            ['removed', (string) count($plan['removed'])], ['unchanged', (string) $plan['unchanged']],
         ]);
-        foreach (['added' => 'Neu', 'changed' => 'Geändert', 'removed' => 'Entfernt'] as $k => $label) {
+        foreach (['added' => 'New', 'changed' => 'Changed', 'removed' => 'Removed'] as $k => $label) {
             if ($plan[$k]) {
                 $io->section($label);
                 $io->listing($plan[$k]);
             }
         }
-        $io->text(count($plan['manifest']) . ' Dateien im Manifest css/ncss-base.css; bei Bedarf geladen: ' . implode(', ', array_map('basename', NcssUpdate::ON_DEMAND)) . '.');
+        $io->text(count($plan['manifest']) . ' files in the manifest css/ncss-base.css; loaded on demand: ' . implode(', ', array_map('basename', NcssUpdate::ON_DEMAND)) . '.');
         if ($dryRun) {
-            $io->note('Probelauf – nichts geschrieben.');
+            $io->note('Dry run – nothing written.');
 
             return Command::SUCCESS;
         }
         $up->apply();
-        $io->success('NativeCSS übernommen. Eigene Dateien des Kits (css/, views/, template) sind unverändert – bitte die Seiten im Kit „NativeCSS“ ansehen.');
+        $io->success('NativeCSS updated. The kit\'s own files (css/, views/, template) are unchanged – please check the pages in the "NativeCSS" kit.');
 
         return Command::SUCCESS;
     }

@@ -12,86 +12,87 @@ use Klxm\Fluid\Field\Textarea;
 use Klxm\Fluid\Kit\Fluid\FluidBlock;
 use Klxm\Fluid\Kit\Fluid\Module\Item\CardsItem;
 use Redaxo\Core\Content\AsModule;
+use Redaxo\Core\Translation\Translatable;
 
-#[AsModule('fluid.cards', 'Karten')]
+#[AsModule('fluid.cards', new Translatable('fluid_block_cards'))]
 #[AsBlock(
     icon: 'copy',
-    group: 'Inhalt',
-    help: 'Teaser mit Bild – klassisch, Text auf dem Bild, quer oder als wischbares Band (Reel). Karten stellen sich auf ihre eigene Breite ein.',
+    group: new Translatable('fluid_block_group_content'),
+    help: new Translatable('fluid_block_cards_help'),
     variants: [
-        'image' => 'Bild oben',
-        'overlay' => 'Text auf dem Bild',
-        'horizontal' => 'Quer (Bild links)',
-        'reel' => 'Wischbares Band (Reel)',
+        'image' => new Translatable('fluid_block_cards_variant_image'),
+        'overlay' => new Translatable('fluid_block_cards_variant_overlay'),
+        'horizontal' => new Translatable('fluid_block_cards_variant_horizontal'),
+        'reel' => new Translatable('fluid_block_cards_variant_reel'),
     ],
     nestable: ['image', 'horizontal', 'overlay'],
 )]
 final class Cards extends FluidBlock
 {
     #[Text(
-        'Dachzeile (optional)',
+        new Translatable('fluid_field_eyebrow'),
         maxLength: 60,
         width: 'half',
     )]
     public string $eyebrow = '';
 
     #[Text(
-        'Überschrift',
+        new Translatable('fluid_field_title'),
         maxLength: 110,
         width: 'half',
     )]
     public string $title = '';
 
     #[Textarea(
-        'Einleitung (optional)',
+        new Translatable('fluid_field_intro'),
         maxLength: 400,
         rows: 2,
     )]
     public string $intro = '';
 
     #[Choice(
-        'Breite je Eintrag (mindestens)',
+        new Translatable('fluid_field_size'),
         required: true,
-        choices: self::SIZES,
+        choices: self::sizes(...),
         width: 'half',
-        note: 'Wie viele Einträge nebeneinander passen, ergibt sich aus dem verfügbaren Platz – auf jedem Gerät.',
+        note: new Translatable('fluid_field_size_help'),
     )]
     public string $size = 'm';
 
     #[Choice(
-        'Bildformat',
+        new Translatable('fluid_field_ratio'),
         required: true,
-        choices: self::RATIOS,
+        choices: self::ratios(...),
         width: 'half',
     )]
     public string $ratio = '3:2';
 
     #[Collection(
-        'Karten',
+        new Translatable('fluid_block_cards'),
         item: CardsItem::class,
-        itemLabel: 'Karte',
+        itemLabel: new Translatable('fluid_block_cards_item'),
         titleField: 'title',
         max: 12,
     )]
     public array $items = [];
 
     #[Checkbox(
-        'Filter nach Kategorie anzeigen',
+        new Translatable('fluid_block_cards_filter'),
         width: 'half',
         variants: ['image', 'overlay', 'horizontal'],
-        note: 'Knöpfe über den Karten – je Karte unter „Kategorie“ eintragen (ab zwei verschiedenen).',
+        note: new Translatable('fluid_block_cards_filter_help'),
     )]
     public bool $filter = false;
 
     #[Text(
-        'Button unter den Karten (optional)',
+        new Translatable('fluid_block_cards_more_label'),
         maxLength: 32,
         width: 'half',
     )]
     public string $moreLabel = '';
 
     #[Link(
-        'Button-Link',
+        new Translatable('fluid_block_cards_more_link'),
         width: 'half',
     )]
     public string $moreLink = '';

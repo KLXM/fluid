@@ -2,6 +2,7 @@
 
 use Klxm\Fluid\Block;
 use Klxm\Fluid\InlineStyle;
+use Redaxo\Core\Translation\I18n;
 
 /**
  * Before/after in the kit „NativeCSS“ with <ncss-compare>: real slider (input range) over both images, without JavaScript a
@@ -29,5 +30,5 @@ $la = trim((string) ($d['label_after'] ?? '')) ?: lt('Nachher');
     <?php if ('' !== trim((string) $d['caption']) || is_editing()): ?><figcaption class="video__cap"<?= $b->edit('caption') ?>><?= fluid_title((string) $d['caption']) ?></figcaption><?php endif ?>
   </figure>
   <?= fluid_alt_hint($d['before'] ?? null) . fluid_alt_hint($d['after'] ?? null) ?>
-  <?php elseif (is_editing()): ?><p class="empty-hint">Noch keine Bilder – in der Seitenleiste „Bild vorher“ und „Bild nachher“ wählen.</p><?php endif ?>
+  <?php elseif (is_editing()): ?><p class="empty-hint"><?= I18n::msg('fluid_kit_empty_compare') ?></p><?php endif ?>
 </div>

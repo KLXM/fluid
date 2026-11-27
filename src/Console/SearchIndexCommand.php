@@ -9,12 +9,12 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 /** @internal */
-#[AsCommand(name: 'fluid:search-index', description: 'Baut den Suchindex der Website neu auf (Loupe, alle Sprachen)')]
+#[AsCommand(name: 'fluid:search-index', description: 'Rebuilds the website search index (Loupe, all languages)')]
 final class SearchIndexCommand extends AbstractCommand
 {
     public function __invoke(SymfonyStyle $io): int
     {
-        $io->success(Search::rebuild() . ' Seiten im Suchindex.');
+        $io->success(Search::rebuild() . ' pages in the search index.');
 
         return Command::SUCCESS;
     }

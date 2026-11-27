@@ -18,6 +18,7 @@ use Redaxo\Core\Core;
 use Redaxo\Core\Filesystem\Url;
 use Redaxo\Core\Http\Request;
 use Redaxo\Core\Http\Response;
+use Redaxo\Core\Translation\I18n;
 
 use function in_array;
 use function is_array;
@@ -42,17 +43,17 @@ final class BlockOpsApi extends ApiFunction
         $user = Core::requireUser();
         $article = Article::get(Request::request('article_id', 'int'), Request::request('language', 'int'));
         if (!$article instanceof Article) {
-            throw new ApiFunctionException('Seite nicht gefunden.');
+            throw new ApiFunctionException(I18n::rawMsg('fluid_backend_ops_page_not_found'));
         }
         $perm = $user->getComplexPerm('structure');
         if (!$user->admin && (!$user->getComplexPerm('language')->hasPerm($article->languageId)
             || !$perm instanceof StructurePermission || !$perm->hasCategoryPerm($article->categoryId))) {
-            throw new ApiFunctionException('Keine Berechtigung für diese Seite.');
+            throw new ApiFunctionException(I18n::rawMsg('fluid_backend_ops_no_permission'));
         }
         $sliceId = Request::request('slice_id', 'int');
         $slice = ArticleSlice::getArticleSliceById($sliceId, $article->languageId, FluidAddon::revision());
         if (null === $slice || $slice->articleId !== $article->id || !Module::exists($slice->moduleKey)) {
-            throw new ApiFunctionException('Block nicht gefunden.');
+            throw new ApiFunctionException(I18n::rawMsg('fluid_backend_ops_block_not_found'));
         }
         $op = Request::request('fluid_op', 'string');
 
@@ -65,34 +66,34 @@ final class BlockOpsApi extends ApiFunction
             if ('duplicate' === $op) {
                 BlockOps::insertAfter($article, $user, $slice->id, BlockOps::payload($article, $slice->id)['clip']);
 
-                return new Result(true, 'Block verdoppelt.');
+                return new Result(true, I18n::rawMsg('fluid_backend_ops_duplicated'));
             }
             if ('paste' === $op) {
                 $clip = json_decode(Request::post('clip', 'string', ''), true);
                 if (!is_array($clip)) {
-                    throw new ApiError('Die Zwischenablage ist leer.');
+                    throw new ApiError(I18n::rawMsg('fluid_backend_ops_clipboard_empty'));
                 }
                 $cut = json_decode(Request::post('cut', 'string', ''), true);
                 $cut = is_array($cut) ? $cut : [];
                 // cut: not after itself or into its own columns
                 $source = (int) ($cut['slice'] ?? 0);
                 if ($source > 0 && in_array($source, [$slice->id, Layout::parentOf($slice)?->id], true)) {
-                    throw new ApiError('Ein Block lässt sich nicht in sich selbst verschieben.');
+                    throw new ApiError(I18n::rawMsg('fluid_backend_ops_move_into_itself'));
                 }
                 $new = BlockOps::insertAfter($article, $user, $slice->id, $clip);
                 if ($source > 0) {
                     BlockOps::finishCut($user, $cut, $new);
 
-                    return new Result(true, 'Block verschoben.');
+                    return new Result(true, I18n::rawMsg('fluid_backend_ops_moved'));
                 }
 
-                return new Result(true, 'Block eingefügt.');
+                return new Result(true, I18n::rawMsg('fluid_backend_ops_pasted'));
             }
         } catch (ApiError $e) {
             throw new ApiFunctionException($e->getMessage());
         }
 
-        throw new ApiFunctionException('Unbekannte Aktion.');
+        throw new ApiFunctionException(I18n::rawMsg('fluid_backend_ops_unknown_action'));
     }
 
     /** Address for calls from the slice list (with CSRF token) */

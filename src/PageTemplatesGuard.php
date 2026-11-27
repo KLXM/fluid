@@ -4,6 +4,7 @@ namespace Klxm\Fluid;
 
 use Redaxo\Core\Content\ExtensionPoint\ArticleUsageCheck;
 use Redaxo\Core\ExtensionPoint\Extension;
+use Redaxo\Core\Translation\I18n;
 
 /**
  * Protect the category „Seitenvorlagen“: not deletable while fluid is installed (the protection hangs on this
@@ -18,7 +19,7 @@ final class PageTemplatesGuard
     {
         Extension::register(ArticleUsageCheck::class, static function (ArticleUsageCheck $ep): void {
             if (null !== PageTemplates::categoryId() && $ep->article->id === PageTemplates::categoryId()) {
-                $ep->usages->add('fluid', 'Seitenvorlagen der Website – lässt sich erst löschen, wenn fluid deinstalliert ist');
+                $ep->usages->add('fluid', I18n::rawMsg('fluid_templates_guard'));
             }
         });
     }

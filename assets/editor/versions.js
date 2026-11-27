@@ -36,9 +36,14 @@ const TEXTS = {
   askPage: 'Diesen Stand in den Entwurf holen? Live ändert sich erst mit „Veröffentlichen“. Der jetzige Entwurf bleibt als Version erhalten.',
   noWork: 'Wiederherstellen braucht die Arbeitsversion (REDAXO: System → Einstellungen).',
   isNow: 'Das ist der aktuelle Stand.', loading: 'Lade Vorschau …', failed: 'Wiederherstellen fehlgeschlagen.',
+  askEntry: 'Diesen Stand wiederherstellen? Die Felder des Eintrags werden sofort auf diesen Stand gesetzt; der jetzige Stand bleibt als Version erhalten.',
+  changes: 'Geändert: {list}', onlyChanges: 'Nur Änderungen', changed: 'geändert', empty: 'leer', noFields: 'Keine Felder.',
+  draft: 'Entwurf', published: 'Veröffentlicht', error: 'Fehler',
 };
 
-export async function open({ data: source, restore: restoreFn, css: cssUrl = '', select: startKey = '' } = {}) {
+export async function open({ data: source, restore: restoreFn, css: cssUrl = '', select: startKey = '', t = null } = {}) {
+  // Texts: t(key, ...args) from editor.js (lang keys fluid_js_versions_<snake_case>, placeholders {0}…), otherwise the German defaults above
+  const L = (k, p = {}) => t ? t('versions_' + k.replace(/[A-Z]/g, (c) => '_' + c.toLowerCase()), ...Object.values(p)) : fill(TEXTS[k] ?? k, p);
   if (!source || document.getElementById('cms-versions')) return;
   const opener = document.activeElement;
   const host = document.createElement('div');
@@ -73,12 +78,10 @@ export async function open({ data: source, restore: restoreFn, css: cssUrl = '',
   try {
     data = typeof source === 'function' ? await source() : source;
   } catch (e) {
-    vs.querySelector('[data-wait]').textContent = e.message || 'Fehler';
+    vs.querySelector('[data-wait]').textContent = e.message || L('error');
     vs.querySelector('[data-close]').focus();
     return;
   }
-  const T = TEXTS;
-  const L = (k, p) => fill(T[k] ?? k, p);   // Texts from the server (VersionsController::texts)
   const V = data.versions || [];
   const isEntry = data.kind === 'entry';
   let cur = V.length > 1 ? 1 : 0, busy = false, mobile = false;

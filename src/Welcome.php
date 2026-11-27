@@ -12,6 +12,7 @@ use Redaxo\Core\Http\Request;
 use Redaxo\Core\Http\Response;
 use Redaxo\Core\Language\Language;
 use Redaxo\Core\Security\CsrfToken;
+use Redaxo\Core\Translation\I18n;
 use RuntimeException;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
@@ -52,7 +53,7 @@ final class Welcome
         $msg = '';
         if ($admin && 'POST' === Core::getRequest()->getMethod()) {
             if (!CsrfToken::factory(self::CSRF)->isValid()) {
-                $msg = 'Sitzung abgelaufen – bitte noch einmal.';
+                $msg = I18n::rawMsg('fluid_welcome_session');
             } else {
                 try {
                     'demo' === Request::post('start', 'string', '') ? self::demo() : self::blank();
@@ -62,7 +63,7 @@ final class Welcome
                     header('Location: ' . Core::getRequest()->getBasePath() . '/?' . Editing::PARAM . '=1', true, 303);
                     exit;
                 } catch (Throwable $e) {
-                    $msg = 'Das hat nicht geklappt: ' . $e->getMessage();
+                    $msg = I18n::rawMsg('fluid_welcome_failed', $e->getMessage());
                 }
             }
         }
@@ -78,13 +79,12 @@ final class Welcome
         $name = escape(Settings::name() ?: 'REDAXO');
         $backend = escape(Url::backendController());
         $body = $admin
-            ? '<h1>Willkommen bei fluid</h1><p>Die Website hat noch keine Seiten. Wie möchten Sie anfangen?</p>'
+            ? '<h1>' . I18n::msg('fluid_welcome_title') . '</h1><p>' . I18n::msg('fluid_welcome_intro') . '</p>'
                 . ('' !== $msg ? '<p class="err">' . escape($msg) . '</p>' : '')
                 . '<form method="post">' . CsrfToken::factory(self::CSRF)->getHiddenField()
-                . '<button name="start" value="blank" class="primary">Leere Startseite anlegen</button>'
-                . '<button name="start" value="demo">Mit Beispielseiten starten</button></form>'
-                . '<p class="small">Beides öffnet danach den Bearbeiten-Modus. Die Beispielseiten (Start, Technik, Kontakt …) lassen sich später einzeln löschen. '
-                . 'Alternativ in der Konsole: <code>php bin/console fluid:demo --set=redaxo6</code></p>'
+                . '<button name="start" value="blank" class="primary">' . I18n::msg('fluid_welcome_blank') . '</button>'
+                . '<button name="start" value="demo">' . I18n::msg('fluid_welcome_demo') . '</button></form>'
+                . '<p class="small">' . I18n::msg('fluid_welcome_help') . '</p>'
             : '<h1>' . $name . '</h1><p>Diese Website wird gerade eingerichtet.</p>'
                 . '<p class="small"><a href="' . $backend . '">Anmelden</a></p>';
         echo '<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex">'
@@ -103,14 +103,14 @@ final class Welcome
     {
         Core::setConfig('article_work_version', true);
         // Template „fluid“ (FluidTemplate) – styled by the selected kit
-        $id = ArticleHandler::add(['category_id' => null, 'priority' => 1, 'name' => 'Startseite', 'template' => 'fluid'])->id;
+        $id = ArticleHandler::add(['category_id' => null, 'priority' => 1, 'name' => I18n::rawMsg('fluid_page_home'), 'template' => 'fluid'])->id;
         foreach (Language::getAll() as $l) {
             ArticleHandler::changeStatus($id, $l->id, 1);
         }
         Core::setConfig('start_article_id', $id);
         Core::setConfig('notfound_article_id', $id);
         Routes::rebuild();
-        Activity::log('page_add', $id, 'Startseite angelegt');
+        Activity::log('page_add', $id, I18n::rawMsg('fluid_welcome_log'));
     }
 
     private static function demo(): void
@@ -119,7 +119,7 @@ final class Welcome
         $cmd = new Console\DemoCommand();
         $code = $cmd->run(new ArrayInput(['--set' => 'redaxo6']), $out);
         if (0 !== $code) {
-            throw new RuntimeException(trim(strip_tags($out->fetch())) ?: 'Beispielseiten konnten nicht angelegt werden.');
+            throw new RuntimeException(trim(strip_tags($out->fetch())) ?: I18n::rawMsg('fluid_welcome_demo_failed'));
         }
         Routes::rebuild();
     }

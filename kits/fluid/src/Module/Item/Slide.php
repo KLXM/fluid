@@ -8,12 +8,13 @@ use Klxm\Fluid\Field\MediaPicker;
 use Klxm\Fluid\Field\Text;
 use Klxm\Fluid\Field\Textarea;
 use Redaxo\Core\MediaPool\Media;
+use Redaxo\Core\Translation\Translatable;
 
 /** Folie im Block „Slider“ */
 final class Slide
 {
     #[MediaPicker(
-        'Bild',
+        new Translatable('fluid_field_image'),
         required: true,
         types: ['jpg', 'jpeg', 'png', 'webp', 'avif'],
         preview: true,
@@ -21,46 +22,46 @@ final class Slide
     public ?Media $image = null;
 
     #[Text(
-        'Dachzeile (optional)',
+        new Translatable('fluid_field_eyebrow'),
         maxLength: 60,
         width: 'half',
     )]
     public string $eyebrow = '';
 
     #[Text(
-        'Titel (optional)',
+        new Translatable('fluid_block_slider_item_title'),
         maxLength: 90,
         width: 'half',
     )]
     public string $title = '';
 
     #[Textarea(
-        'Text (optional)',
+        new Translatable('fluid_field_text_optional'),
         maxLength: 300,
         rows: 2,
     )]
     public string $text = '';
 
     #[Text(
-        'Button – Beschriftung',
+        new Translatable('fluid_field_button_label'),
         maxLength: 32,
         width: 'half',
     )]
     public string $buttonLabel = '';
 
     #[Link(
-        'Button – Link',
+        new Translatable('fluid_field_button_link'),
         width: 'half',
     )]
     public string $buttonLink = '';
 
-    #[Choice('Textposition', required: true, width: 'half', choices: [
-        'bottom-left' => 'Unten links', 'bottom-center' => 'Unten mittig', 'center-left' => 'Mitte links', 'center' => 'Mitte', 'top-left' => 'Oben links',
+    #[Choice(new Translatable('fluid_block_slider_item_position'), required: true, width: 'half', choices: [
+        'bottom-left' => new Translatable('fluid_block_slider_item_position_bottom_left'), 'bottom-center' => new Translatable('fluid_block_slider_item_position_bottom_center'), 'center-left' => new Translatable('fluid_block_slider_item_position_center_left'), 'center' => new Translatable('fluid_block_slider_item_position_center'), 'top-left' => new Translatable('fluid_block_slider_item_position_top_left'),
     ])]
     public string $position = 'bottom-left';
 
-    #[Choice('Bild hinter dem Text', required: true, width: 'half', choices: [
-        'dark' => 'Abdunkeln (helle Schrift)', 'light' => 'Aufhellen (dunkle Schrift)', 'box' => 'Textkasten', 'none' => 'Unverändert',
+    #[Choice(new Translatable('fluid_block_slider_item_overlay'), required: true, width: 'half', choices: [
+        'dark' => new Translatable('fluid_block_slider_item_overlay_dark'), 'light' => new Translatable('fluid_block_slider_item_overlay_light'), 'box' => new Translatable('fluid_block_slider_item_overlay_box'), 'none' => new Translatable('fluid_block_slider_item_overlay_none'),
     ])]
     public string $overlay = 'dark';
 }

@@ -2,6 +2,7 @@
 
 use Klxm\Fluid\Block;
 use Klxm\VideoEditor\VideoEditor;
+use Redaxo\Core\Translation\I18n;
 
 /**
  * Intro (H1) – six variants, all intrinsic (flex wrapping or container queries instead of breakpoints):
@@ -140,7 +141,7 @@ if ('fullbleed' === $v):
     <?php foreach ($pics as $k => $t): ?>
     <figure class="hx-collage__tile hx-collage__tile--<?= $k + 1 ?>"><?= $t['pic'] ?><?php if ('' !== $t['caption']): ?><figcaption class="hx-collage__cap"<?= $b->edit($t['edit']) ?>><?= e($t['caption']) ?></figcaption><?php endif ?></figure>
     <?php endforeach ?>
-    <?php if (!$pics && is_editing()): ?><div class="frame frame--empty hx-collage__tile hx-collage__tile--1"><span><?= e(__('Bild')) ?> + <?= e(__('Weitere Bilder (2–4)')) ?></span></div><?php endif ?>
+    <?php if (!$pics && is_editing()): ?><div class="frame frame--empty hx-collage__tile hx-collage__tile--1"><span><?= e(I18n::rawMsg('fluid_field_image')) ?> + <?= e(I18n::rawMsg('fluid_kit_more_images')) ?></span></div><?php endif ?>
   </div>
 </div>
 <?php elseif ('compare' === $v):

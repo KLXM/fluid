@@ -4,6 +4,7 @@ namespace Klxm\Fluid\Field;
 
 use Attribute;
 use Redaxo\Core\Form\Field\Collection as CoreCollection;
+use Redaxo\Core\Translation\Translatable;
 use Redaxo\Core\View\Renderable;
 
 /**
@@ -17,7 +18,7 @@ use Redaxo\Core\View\Renderable;
 class Collection extends CoreCollection implements FluidField
 {
     /**
-     * @param string|null $itemLabel fluid: label of an entry („+ Karte“)
+     * @param string|Translatable|null $itemLabel fluid: label of an entry („+ Karte“)
      * @param string|null $titleField fluid: field (key) shown as the title of a collapsed entry
      * @param 'half'|null $width fluid: half width in the form
      * @param list<string>|null $variants fluid: only in these display variants of the block
@@ -31,7 +32,7 @@ class Collection extends CoreCollection implements FluidField
         ?string $key = null,
         ?int $min = null,
         ?int $max = null,
-        public readonly ?string $itemLabel = null,
+        public readonly string|Translatable|null $itemLabel = null,
         public readonly ?string $titleField = null,
         public readonly ?string $width = null,
         /** @var list<string>|null */
@@ -42,6 +43,6 @@ class Collection extends CoreCollection implements FluidField
 
     public function fluid(): array
     {
-        return array_filter(['width' => $this->width, 'variants' => $this->variants, 'item_label' => $this->itemLabel, 'title_field' => $this->titleField], static fn ($v) => null !== $v);
+        return array_filter(['width' => $this->width, 'variants' => $this->variants, 'item_label' => null !== $this->itemLabel ? Translatable::text($this->itemLabel) : null, 'title_field' => $this->titleField], static fn ($v) => null !== $v);
     }
 }

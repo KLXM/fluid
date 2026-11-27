@@ -10,6 +10,7 @@ use Klxm\Fluid\Data\YFormBridge;
 use Klxm\Fluid\Editing;
 use Klxm\Routes\Routes;
 use Redaxo\Core\Security\User;
+use Redaxo\Core\Translation\I18n;
 use Throwable;
 use Yakamara\YForm\Data\Query;
 use Yakamara\YForm\Table\Table;
@@ -99,19 +100,19 @@ final class YFormGlossaryStore implements GlossaryStore
 
     public function create(string $term, string $short, array $variants, bool $online, string $language): int
     {
-        $t = $this->table() ?? throw new ApiError('Das Glossar ist nicht eingerichtet (YForm fehlt bzw. console migrate).');
+        $t = $this->table() ?? throw new ApiError(I18n::rawMsg('fluid_glossary_not_setup_hint'));
         $term = trim(strip_tags($term));
         $short = trim(strip_tags($short));
         if ('' === $term || '' === $short) {
-            throw new ApiError('Bitte Begriff und Kurztext angeben.');
+            throw new ApiError(I18n::rawMsg('fluid_glossary_required'));
         }
         if (mb_strlen($short) > Glossary::SHORT_MAX) {
-            throw new ApiError('Der Kurztext ist zu lang (höchstens ' . Glossary::SHORT_MAX . ' Zeichen).');
+            throw new ApiError(I18n::rawMsg('fluid_glossary_short_too_long', Glossary::SHORT_MAX));
         }
         $r = $t::create(['term' => mb_substr($term, 0, 120), 'short' => $short, 'variants' => implode("\n", $variants), 'online' => $online, 'lang' => $language]);
         $errors = $r->validate();
         if (count($errors) > 0) {
-            throw new ApiError('Nicht gespeichert: ' . implode(' ', $errors->all()));
+            throw new ApiError(I18n::rawMsg('fluid_glossary_not_saved', implode(' ', $errors->all())));
         }
         $r->save();
         $this->cache = [];
@@ -121,8 +122,8 @@ final class YFormGlossaryStore implements GlossaryStore
 
     public function addVariant(int $id, string $variant): void
     {
-        $t = $this->table() ?? throw new ApiError('Das Glossar ist nicht eingerichtet.');
-        $r = $t::query()->where('id', $id)->first() ?? throw new ApiError('Begriff nicht gefunden.');
+        $t = $this->table() ?? throw new ApiError(I18n::rawMsg('fluid_glossary_not_setup'));
+        $r = $t::query()->where('id', $id)->first() ?? throw new ApiError(I18n::rawMsg('fluid_glossary_not_found'));
         $list = Glossary::splitVariants((string) $r->get('variants'));
         $variant = trim(strip_tags($variant));
         if ('' === $variant || in_array($variant, $list, true) || $variant === (string) $r->get('term')) {

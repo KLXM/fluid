@@ -16,19 +16,20 @@ use Klxm\Fluid\Kit\Fluid\Module\Item\AudioTrack;
 use Klxm\Fluid\Kit\Fluid\Module\Item\VideoTrack;
 use Redaxo\Core\Content\AsModule;
 use Redaxo\Core\MediaPool\Media;
+use Redaxo\Core\Translation\Translatable;
 
-#[AsModule('fluid.video', 'Video')]
+#[AsModule('fluid.video', new Translatable('fluid_block_video'))]
 #[AsBlock(
     icon: 'play-circle',
-    group: 'Medien',
-    label: 'Video & Audio',
-    help: 'Video: YouTube/Vimeo mit Zwei-Klick-Lösung (lädt erst nach Klick, ohne Cookies bis dahin) oder eigene Videodatei aus dem Medienpool – mit Vorschaubild, Untertiteln, Kapiteln und Transkript. Audio: Podcast, Interview oder Musik aus dem Medienpool, mehrere Dateien als Playlist.',
-    variants: ['wide' => 'Video breit', 'text' => 'Video mit Text daneben', 'cinema' => 'Video im Kino-Look (randlos, dunkel)', 'audio' => 'Audio (Podcast, Musik)'],
+    group: new Translatable('fluid_block_group_media'),
+    label: new Translatable('fluid_block_video_label'),
+    help: new Translatable('fluid_block_video_help'),
+    variants: ['wide' => new Translatable('fluid_block_video_variant_wide'), 'text' => new Translatable('fluid_block_video_variant_text'), 'cinema' => new Translatable('fluid_block_video_variant_cinema'), 'audio' => new Translatable('fluid_block_video_variant_audio')],
     variantHelp: [
-        'wide' => 'Das Video steht für sich – der Normalfall.',
-        'text' => 'Video neben einem erklärenden Text.',
-        'cinema' => 'Großer Auftritt: Film, Trailer, Imagevideo.',
-        'audio' => 'Eine oder mehrere Audiodateien (MP3, M4A …). Ab zwei Dateien entsteht eine Playlist mit Weiter und Zurück.',
+        'wide' => new Translatable('fluid_block_video_variant_wide_help'),
+        'text' => new Translatable('fluid_block_video_variant_text_help'),
+        'cinema' => new Translatable('fluid_block_video_variant_cinema_help'),
+        'audio' => new Translatable('fluid_block_video_variant_audio_help'),
     ],
     nestable: ['wide', 'audio'],
 )]
@@ -38,76 +39,76 @@ final class Video extends FluidBlock
     public const array VIDEO = ['wide', 'text', 'cinema'];
 
     #[Text(
-        'Dachzeile (optional)',
+        new Translatable('fluid_field_eyebrow'),
         maxLength: 60,
         width: 'half',
     )]
     public string $eyebrow = '';
 
     #[Text(
-        'Überschrift',
+        new Translatable('fluid_field_title'),
         maxLength: 110,
         width: 'half',
     )]
     public string $title = '';
 
     #[Textarea(
-        'Einleitung (optional)',
+        new Translatable('fluid_field_intro'),
         maxLength: 400,
         rows: 2,
     )]
     public string $intro = '';
 
     #[Url(
-        'YouTube- oder Vimeo-Link',
+        new Translatable('fluid_block_video_video_url'),
         width: 'half',
         variants: self::VIDEO,
     )]
     public string $videoUrl = '';
 
     #[MediaPicker(
-        'oder eigene Videodatei',
+        new Translatable('fluid_block_video_video_file'),
         types: ['mp4', 'm4v', 'webm', 'mov'],
         width: 'half',
-        note: 'Datei aus dem Medienpool (MP4 oder WebM).',
+        note: new Translatable('fluid_block_video_video_file_help'),
         variants: [...self::VIDEO, 'morph'],
     )]
     public ?Media $videoFile = null;
 
     #[MediaPicker(
-        'Eigenes Vorschaubild bzw. Cover (optional)',
+        new Translatable('fluid_block_video_poster'),
         width: 'half',
-        note: 'Ohne Auswahl zeigt eine eigene Videodatei automatisch ein Standbild aus dem Video. Bei Audio: quadratisches Cover.',
+        note: new Translatable('fluid_block_video_poster_help'),
         preview: true,
     )]
     public ?Media $poster = null;
 
     #[Collection(
-        'Untertitel und Kapitel (eigene Videodatei)',
+        new Translatable('fluid_block_video_tracks'),
         item: VideoTrack::class,
-        itemLabel: 'Spur',
+        itemLabel: new Translatable('fluid_block_video_tracks_item_label'),
         titleField: 'lang',
-        note: 'WebVTT- (.vtt) oder SubRip-Datei (.srt) aus dem Medienpool – Besucher schalten sie im Player ein. Videos mit Sprache brauchen Untertitel (Barrierefreiheit); aus ihnen entsteht auch das Transkript.',
+        note: new Translatable('fluid_block_video_tracks_help'),
         variants: self::VIDEO,
     )]
     public array $tracks = [];
 
     #[Checkbox(
-        'Untertitel in der Sprache der Seite gleich einschalten',
+        new Translatable('fluid_block_video_cc_on'),
         width: 'half',
         variants: self::VIDEO,
     )]
     public bool $ccOn = false;
 
     #[Checkbox(
-        'Transkript unter dem Video („Text zum Video“)',
+        new Translatable('fluid_block_video_transcript'),
         width: 'half',
         variants: self::VIDEO,
     )]
     public bool $transcript = false;
 
     #[Choice(
-        'Format',
+        new Translatable('fluid_block_video_ratio'),
         required: true,
         choices: ['16-9' => '16:9', '4-3' => '4:3', '21-9' => '21:9'],
         width: 'half',
@@ -117,31 +118,31 @@ final class Video extends FluidBlock
 
     /** @var list<AudioTrack> */
     #[Collection(
-        'Audiodateien',
+        new Translatable('fluid_block_video_audio'),
         item: AudioTrack::class,
-        itemLabel: 'Audiodatei',
+        itemLabel: new Translatable('fluid_block_video_audio_item_label'),
         titleField: 'title',
         max: 20,
         variants: ['audio'],
-        note: 'Die erste spielt zuerst. Ab zwei Dateien zeigt der Player eine Playlist. Jede Datei braucht einen verständlichen Titel – ihn liest der Player vor.',
+        note: new Translatable('fluid_block_video_audio_help'),
     )]
     public array $audio = [];
 
     #[RichText(
-        'Transkript (empfohlen)',
+        new Translatable('fluid_block_video_audio_transcript'),
         variants: ['audio'],
-        note: 'Der gesprochene Text zum Nachlesen – für Menschen, die nicht hören können, und für die Suche. Erscheint aufklappbar unter dem Player („Text zum Audio“).',
+        note: new Translatable('fluid_block_video_audio_transcript_help'),
     )]
     public string $audioTranscript = '';
 
     #[Text(
-        'Bildunterschrift (optional)',
+        new Translatable('fluid_field_caption_optional'),
         maxLength: 200,
     )]
     public string $caption = '';
 
     #[RichText(
-        'Text daneben',
+        new Translatable('fluid_block_video_text'),
         variants: ['text', 'morph'],
     )]
     public string $text = '';

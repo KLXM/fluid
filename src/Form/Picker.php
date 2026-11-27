@@ -10,6 +10,7 @@ use Redaxo\Core\Content\Category;
 use Redaxo\Core\Language\Language;
 use Redaxo\Core\MediaManager\MediaManager;
 use Redaxo\Core\MediaPool\Media;
+use Redaxo\Core\Translation\I18n;
 
 use function in_array;
 use function Redaxo\Core\View\escape;
@@ -46,7 +47,7 @@ final class Picker
             . ($ve ? ' data-ve-edit="' . escape($ve) . '"' : '') . '>'
             . '<div class="blocks-pick__row">'
             . '<span class="blocks-pick__thumb" data-blocks-pick-thumb' . ('' === $thumb ? ' hidden' : '') . '>' . $thumb . '</span>'
-            . self::group($backend, '<input class="rex-input" type="text" id="' . escape($id) . '" name="' . escape($name) . '" value="' . escape($value) . '" placeholder="Datei aus dem Medienpool">', 'Medien auswählen', 'rex-icon-open-mediapool', 'Auswählen', null !== $ie, null !== $ve)
+            . self::group($backend, '<input class="rex-input" type="text" id="' . escape($id) . '" name="' . escape($name) . '" value="' . escape($value) . '" placeholder="' . I18n::msg('fluid_picker_media_placeholder') . '">', I18n::rawMsg('fluid_picker_media_title'), 'rex-icon-open-mediapool', I18n::rawMsg('fluid_picker_media_btn'), null !== $ie, null !== $ve)
             . '</div></div>';
     }
 
@@ -57,7 +58,7 @@ final class Picker
 
         return '<div class="blocks-pick blocks-pick--link" data-blocks-pick="link" data-category="' . $category . '" data-language="' . Language::getCurrentId() . '">'
             . '<div class="blocks-pick__row">'
-            . self::group($backend, '<input class="rex-input" type="text" id="' . escape($id) . '" name="' . escape($name) . '" value="' . escape($value) . '" placeholder="Seite, https://…, E-Mail, tel: oder #anker">', 'Seite auswählen', 'rex-icon-open-linkmap', 'Seite wählen')
+            . self::group($backend, '<input class="rex-input" type="text" id="' . escape($id) . '" name="' . escape($name) . '" value="' . escape($value) . '" placeholder="' . I18n::msg('fluid_picker_link_placeholder') . '">', I18n::rawMsg('fluid_picker_link_title'), 'rex-icon-open-linkmap', I18n::rawMsg('fluid_picker_link_btn'))
             . '</div>'
             . '<span class="blocks-pick__name" data-blocks-pick-name>' . escape($art ? $art->name . ' [' . $art->id . ']' : '') . '</span>'
             . '</div>';
@@ -80,19 +81,19 @@ final class Picker
 
             return '<div class="blocks-pick__field"><div class="rex-input-group">' . $input . '<span class="rex-input-group-actions">'
                 . $btn('data-blocks-pick-open', $title, $icon)
-                . ($edit ? $btn('data-blocks-pick-edit', 'Bild bearbeiten (Zuschneiden, Drehen …)', 'fa-solid fa-crop-simple')
-                    . $btn('data-blocks-pick-adjust', 'Bild anpassen (Effekte, Fokuspunkt)', 'fa-solid fa-sliders') : '')
-                . ($video ? $btn('data-blocks-pick-video', 'Video bearbeiten (Optimieren, Poster …) – öffnet den Medienpool', 'fa-solid fa-film') : '')
-                . $btn('data-blocks-pick-clear', 'Entfernen', 'rex-icon-delete-media')
+                . ($edit ? $btn('data-blocks-pick-edit', I18n::rawMsg('fluid_picker_edit_title'), 'fa-solid fa-crop-simple')
+                    . $btn('data-blocks-pick-adjust', I18n::rawMsg('fluid_picker_adjust_title'), 'fa-solid fa-sliders') : '')
+                . ($video ? $btn('data-blocks-pick-video', I18n::rawMsg('fluid_picker_video_title'), 'fa-solid fa-film') : '')
+                . $btn('data-blocks-pick-clear', I18n::rawMsg('fluid_form_remove'), 'rex-icon-delete-media')
                 . '</span></div></div>';
         }
 
         return $input . '<span class="blocks-pick__btns">'
             . '<button type="button" class="blocks-btn" data-blocks-pick-open title="' . escape($title) . '">' . escape($label) . '</button>'
-            . ($edit ? '<button type="button" class="blocks-btn" data-blocks-pick-edit title="Bild bearbeiten (Zuschneiden, Drehen …)">Bearbeiten</button>'
-                . '<button type="button" class="blocks-btn" data-blocks-pick-adjust title="Bild anpassen (Effekte, Fokuspunkt)">Anpassen</button>' : '')
-            . ($video ? '<button type="button" class="blocks-btn" data-blocks-pick-video title="Video bearbeiten (Optimieren, Poster …) – öffnet den Medienpool">Video bearbeiten</button>' : '')
-            . '<button type="button" class="blocks-btn" data-blocks-pick-clear title="Entfernen" aria-label="Entfernen">✕</button>'
+            . ($edit ? '<button type="button" class="blocks-btn" data-blocks-pick-edit title="' . I18n::msg('fluid_picker_edit_title') . '">' . I18n::msg('fluid_picker_edit') . '</button>'
+                . '<button type="button" class="blocks-btn" data-blocks-pick-adjust title="' . I18n::msg('fluid_picker_adjust_title') . '">' . I18n::msg('fluid_picker_adjust') . '</button>' : '')
+            . ($video ? '<button type="button" class="blocks-btn" data-blocks-pick-video title="' . I18n::msg('fluid_picker_video_title') . '">' . I18n::msg('fluid_picker_video') . '</button>' : '')
+            . '<button type="button" class="blocks-btn" data-blocks-pick-clear title="' . I18n::msg('fluid_form_remove') . '" aria-label="' . I18n::msg('fluid_form_remove') . '">✕</button>'
             . '</span>';
     }
 }

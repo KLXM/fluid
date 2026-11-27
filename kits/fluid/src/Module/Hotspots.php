@@ -11,69 +11,70 @@ use Klxm\Fluid\Field\Textarea;
 use Klxm\Fluid\Kit\Fluid\FluidBlock;
 use Redaxo\Core\Content\AsModule;
 use Redaxo\Core\MediaPool\Media;
+use Redaxo\Core\Translation\Translatable;
 
 /**
  * Interactive image: image from the media pool with markers (point, circle, rectangle, area) – per marker a
  * tooltip with title, text, link and optionally a glossary term. Data format Klxm\Fluid\Hotspots (version 1, like
  * KLXM Studio). Output: views/hotspots.php, styles css/hotspots.css, script js/hotspots.js.
  */
-#[AsModule('fluid.hotspots', 'Interaktives Bild')]
+#[AsModule('fluid.hotspots', new Translatable('fluid_block_hotspots'))]
 #[AsBlock(
     icon: 'map-pin',
-    group: 'Medien',
-    help: 'Ein Bild aus dem Medienpool mit Markierungen: Punkte oder Flächen, die per Klick oder Tastatur ein Hinweisfenster öffnen. Auf dem Telefon stehen alle Markierungen zusätzlich als Liste unter dem Bild.',
+    group: new Translatable('fluid_block_group_media'),
+    help: new Translatable('fluid_block_hotspots_help'),
     nestable: true,
 )]
 final class Hotspots extends FluidBlock
 {
     #[Text(
-        'Dachzeile (optional)',
+        new Translatable('fluid_field_eyebrow'),
         maxLength: 60,
         width: 'half',
     )]
     public string $eyebrow = '';
 
     #[Text(
-        'Überschrift',
+        new Translatable('fluid_field_title'),
         maxLength: 110,
         width: 'half',
-        note: 'Benennt das Bild auch für Screenreader („Interaktives Bild: …“).',
+        note: new Translatable('fluid_block_hotspots_title_help'),
     )]
     public string $title = '';
 
     #[Textarea(
-        'Einleitung (optional)',
+        new Translatable('fluid_field_intro'),
         maxLength: 400,
         rows: 2,
     )]
     public string $intro = '';
 
     #[MediaPicker(
-        'Bild',
+        new Translatable('fluid_field_image'),
         preview: true,
-        note: 'Alt-Text im Medienpool pflegen. Auch Grafiken (SVG) sind möglich.',
+        note: new Translatable('fluid_block_hotspots_image_help'),
     )]
     public ?Media $image = null;
 
     #[HotspotsField(
-        'Markierungen',
+        new Translatable('fluid_block_hotspots_hotspots'),
         image: 'image',
     )]
     public array $hotspots = [];
 
     #[Choice(
-        'Liste der Markierungen unter dem Bild',
+        new Translatable('fluid_block_hotspots_list'),
         required: true,
-        choices: ['auto' => 'Auf schmalen Bildschirmen (Telefon)', 'always' => 'Immer'],
+        choices: ['auto' => new Translatable('fluid_block_hotspots_list_auto'), 'always' => new Translatable('fluid_block_hotspots_list_always')],
         width: 'half',
-        note: 'Die Liste (Nummer, Titel, Text) ist immer für Screenreader da; auf großen Bildschirmen zeigt sie sich bei Bedarf.',
+        note: new Translatable('fluid_block_hotspots_list_help'),
     )]
     public string $list = 'auto';
 
     #[Choice(
-        'Breite',
+        new Translatable('fluid_block_hotspots_width'),
         required: true,
-        choices: ['normal' => 'Inhaltsbreite', 'text' => 'Textbreite (wie Fließtext)'],
+        choices: ['normal' => new Translatable('fluid_block_hotspots_width_normal'), 'text' => new Translatable('fluid_block_hotspots_width_text')],
         width: 'half',
     )]
     public string $width = 'normal';

@@ -1,4 +1,7 @@
 <?php
+
+use Redaxo\Core\Translation\I18n;
+
 /** Key figures: row (large numbers, dividers) · cards · split (heading next to the numbers, sidebar pattern). @var \Klxm\Fluid\Block $b  @var array $d */
 $v = $b->variant() ?: 'row';
 $items = array_values((array) ($d['items'] ?? []));
@@ -15,5 +18,5 @@ $items = array_values((array) ($d['items'] ?? []));
     </div>
     <?php endforeach ?>
   </dl>
-  <?php elseif (is_editing()): ?><p class="empty-hint">Noch keine Kennzahlen – in der Seitenleiste hinzufügen.</p><?php endif ?>
+  <?php elseif (is_editing()): ?><p class="empty-hint"><?= I18n::msg('fluid_kit_empty_stats') ?></p><?php endif ?>
 </div>

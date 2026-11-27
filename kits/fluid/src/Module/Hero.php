@@ -13,136 +13,137 @@ use Klxm\Fluid\Kit\Fluid\FluidBlock;
 use Klxm\Fluid\Kit\Fluid\Module\Item\HeroCard;
 use Redaxo\Core\Content\AsModule;
 use Redaxo\Core\MediaPool\Media;
+use Redaxo\Core\Translation\Translatable;
 
-#[AsModule('fluid.hero', 'Einstieg (Hero)')]
+#[AsModule('fluid.hero', new Translatable('fluid_block_hero'))]
 #[AsBlock(
     icon: 'star',
-    group: 'Kopf',
-    help: 'Große Überschrift der Seite (H1). Pro Seite genau einmal verwenden – „Seitenkopf“ für Unterseiten. Alle Varianten ordnen sich nach verfügbarem Platz an.',
+    group: new Translatable('fluid_block_group_header'),
+    help: new Translatable('fluid_block_hero_help'),
     variants: [
-        'split' => 'Text und Bild nebeneinander',
-        'centered' => 'Zentriert, Bild darunter',
-        'fullbleed' => 'Vollflächiges Bild oder Video mit Abdunkelung',
-        'cards' => 'Mit gestapelten Karten',
-        'type' => 'Großer Schriftzug (typografisch)',
-        'compact' => 'Seitenkopf (ohne Bild)',
-        'scale' => 'Fließende Skala (Überschrift + Seitenspalte)',
+        'split' => new Translatable('fluid_block_hero_variant_split'),
+        'centered' => new Translatable('fluid_block_hero_variant_centered'),
+        'fullbleed' => new Translatable('fluid_block_hero_variant_fullbleed'),
+        'cards' => new Translatable('fluid_block_hero_variant_cards'),
+        'type' => new Translatable('fluid_block_hero_variant_type'),
+        'compact' => new Translatable('fluid_block_hero_variant_compact'),
+        'scale' => new Translatable('fluid_block_hero_variant_scale'),
     ],
     variantHelp: [
-        'split' => 'Startseite mit einem aussagekräftigen Bild – der Klassiker.',
-        'centered' => 'Kurze, starke Botschaft; Bild im Breitbild darunter.',
-        'fullbleed' => 'Stimmung zählt: Raum, Landschaft, Werkstatt – großes Bild oder kurzes stummes Video hinter dem Text.',
-        'cards' => 'Drei Stärken sollen sofort ins Auge fallen, z. B. Leistungen oder Versprechen.',
-        'type' => 'Ohne gutes Foto oder für eine klare Haltung: die Überschrift ist das Bild.',
-        'compact' => 'Unterseiten: Seitentitel mit kurzer Einleitung.',
-        'scale' => 'Typografischer Auftritt mit Fakten: große Überschrift, daneben Text und Buttons, darunter bis zu vier Kennzahlen oder Schlagworte. Passt sich dem eigenen Platz an – funktioniert auch in schmalen Spalten.',
+        'split' => new Translatable('fluid_block_hero_variant_split_help'),
+        'centered' => new Translatable('fluid_block_hero_variant_centered_help'),
+        'fullbleed' => new Translatable('fluid_block_hero_variant_fullbleed_help'),
+        'cards' => new Translatable('fluid_block_hero_variant_cards_help'),
+        'type' => new Translatable('fluid_block_hero_variant_type_help'),
+        'compact' => new Translatable('fluid_block_hero_variant_compact_help'),
+        'scale' => new Translatable('fluid_block_hero_variant_scale_help'),
     ],
 )]
 final class Hero extends FluidBlock
 {
     #[Text(
-        'Dachzeile (optional)',
+        new Translatable('fluid_field_eyebrow'),
         maxLength: 60,
     )]
     public string $eyebrow = '';
 
     #[Text(
-        'Überschrift (H1)',
+        new Translatable('fluid_block_hero_title'),
         required: true,
         maxLength: 110,
-        note: 'Ein Wort in *Sternchen* wird hervorgehoben (Akzentfarbe bzw. kursiv bei Serifen).',
+        note: new Translatable('fluid_block_hero_title_help'),
     )]
     public string $title = '';
 
     #[Textarea(
-        'Text',
+        new Translatable('fluid_field_text'),
         maxLength: 360,
         rows: 3,
     )]
     public string $text = '';
 
     #[Text(
-        'Button 1 – Beschriftung',
+        new Translatable('fluid_field_button1_label'),
         maxLength: 32,
         width: 'half',
     )]
     public string $buttonLabel = '';
 
     #[Link(
-        'Button 1 – Link',
+        new Translatable('fluid_field_button1_link'),
         width: 'half',
-        note: 'Seite, #anker, https://… – Sonderwerte „phone“ und „email“ nutzen „Website“.',
+        note: new Translatable('fluid_field_link_help'),
     )]
     public string $buttonLink = '';
 
     #[Text(
-        'Button 2 – Beschriftung',
+        new Translatable('fluid_field_button2_label'),
         maxLength: 32,
         width: 'half',
     )]
     public string $button2Label = '';
 
     #[Link(
-        'Button 2 – Link',
+        new Translatable('fluid_field_button2_link'),
         width: 'half',
     )]
     public string $button2Link = '';
 
     #[Textarea(
-        'Kurze Pluspunkte (eine pro Zeile, optional)',
+        new Translatable('fluid_block_hero_points'),
         rows: 3,
-        note: 'Erscheinen als Häkchen unter den Buttons, z. B. „Termine auch samstags“.',
+        note: new Translatable('fluid_block_hero_points_help'),
     )]
     public string $points = '';
 
     #[MediaPicker(
-        'Bild',
+        new Translatable('fluid_field_image'),
         width: 'half',
-        note: 'Min. 1600 px breit. Alt-Text in der Mediathek pflegen.',
+        note: new Translatable('fluid_block_hero_image_help'),
         preview: true,
     )]
     public ?Media $image = null;
 
     #[Choice(
-        'Bildformat',
+        new Translatable('fluid_field_ratio'),
         required: true,
-        choices: self::RATIOS,
+        choices: self::ratios(...),
         width: 'half',
-        note: 'Bei „Zentriert“ immer 16:9; bei „Vollflächig“ füllt das Bild den Abschnitt.',
+        note: new Translatable('fluid_block_hero_ratio_help'),
     )]
     public string $ratio = '4:5';
 
     #[MediaPicker(
-        'Hintergrundvideo (MP4, stumm, nur „Vollflächig“)',
+        new Translatable('fluid_block_hero_video'),
         width: 'half',
         variants: ['fullbleed'],
-        note: 'Kurz und klein (< 8 MB). Startet nur ohne „Bewegung reduzieren“ und hat eine Pause-Schaltfläche. Das Bild dient als Standbild.',
+        note: new Translatable('fluid_block_hero_video_help'),
     )]
     public ?Media $video = null;
 
     #[Choice(
-        'Abdunkelung (nur „Vollflächig“)',
+        new Translatable('fluid_block_hero_overlay'),
         required: true,
-        choices: ['strong' => 'Stark (empfohlen)', 'medium' => 'Mittel', 'gradient' => 'Verlauf von unten'],
+        choices: ['strong' => new Translatable('fluid_block_hero_overlay_strong'), 'medium' => new Translatable('fluid_size_m'), 'gradient' => new Translatable('fluid_block_hero_overlay_gradient')],
         width: 'half',
         variants: ['fullbleed'],
     )]
     public string $overlay = 'strong';
 
     #[Choice(
-        'Video-Schalter',
+        new Translatable('fluid_block_hero_video_toggle'),
         required: true,
-        choices: ['icon' => 'Symbol', 'text' => 'Symbol mit Text'],
+        choices: ['icon' => new Translatable('fluid_field_icon'), 'text' => new Translatable('fluid_block_hero_video_toggle_text')],
         width: 'half',
         variants: ['fullbleed'],
-        note: 'Runder Knopf unten rechts zum Anhalten und Abspielen. „Symbol mit Text“ zeigt zusätzlich „Hintergrundvideo anhalten“ bzw. „abspielen“.',
+        note: new Translatable('fluid_block_hero_video_toggle_help'),
     )]
     public string $videoToggle = 'icon';
 
     #[Collection(
-        'Karten (nur „Mit gestapelten Karten“)',
+        new Translatable('fluid_block_hero_cards'),
         item: HeroCard::class,
-        itemLabel: 'Karte',
+        itemLabel: new Translatable('fluid_block_hero_cards_item_label'),
         titleField: 'title',
         max: 3,
         variants: ['cards'],
@@ -150,10 +151,10 @@ final class Hero extends FluidBlock
     public array $cards = [];
 
     #[Textarea(
-        'Stufenleiste: Kennzahlen oder Schlagworte (eine pro Zeile, bis zu 4)',
+        new Translatable('fluid_block_hero_scale_items'),
         rows: 4,
         variants: ['scale'],
-        note: '„Wert: Bezeichnung“ ergibt eine Kennzahl, z. B. „24 h: Rückmeldung“; eine Zeile ohne Doppelpunkt ein Schlagwort. Jede Stufe ist eine Schriftstufe kleiner – wie die Typo-Skala. Nur belegbare Zahlen.',
+        note: new Translatable('fluid_block_hero_scale_items_help'),
     )]
     public string $scaleItems = '';
 }

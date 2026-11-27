@@ -9,27 +9,28 @@ use Klxm\Fluid\Field\Textarea;
 use Klxm\Fluid\Kit\Fluid\FluidBlock;
 use Klxm\Fluid\Kit\Fluid\Module\Item\FaqItem;
 use Redaxo\Core\Content\AsModule;
+use Redaxo\Core\Translation\Translatable;
 
-#[AsModule('fluid.faq', 'Fragen & Antworten')]
+#[AsModule('fluid.faq', new Translatable('fluid_block_faq'))]
 #[AsBlock(
     icon: 'question',
-    group: 'Inhalt',
-    help: 'Aufklappbare Fragen (ohne JavaScript). Suchmaschinen erhalten die Fragen als strukturierte Daten (FAQPage).',
-    variants: ['split' => 'Überschrift links, Fragen rechts', 'stacked' => 'Untereinander, zentriert'],
+    group: new Translatable('fluid_block_group_content'),
+    help: new Translatable('fluid_block_faq_help'),
+    variants: ['split' => new Translatable('fluid_block_faq_variant_split'), 'stacked' => new Translatable('fluid_block_faq_variant_stacked')],
     nestable: ['stacked'],
     jsonld: ['type' => 'faq', 'items' => 'items', 'question' => 'q', 'answer' => 'a'],
 )]
 final class Faq extends FluidBlock
 {
     #[Text(
-        'Dachzeile (optional)',
+        new Translatable('fluid_field_eyebrow'),
         maxLength: 60,
         width: 'half',
     )]
     public string $eyebrow = '';
 
     #[Text(
-        'Überschrift',
+        new Translatable('fluid_field_title'),
         required: true,
         maxLength: 110,
         width: 'half',
@@ -37,16 +38,16 @@ final class Faq extends FluidBlock
     public string $title = '';
 
     #[Textarea(
-        'Einleitung (optional)',
+        new Translatable('fluid_field_intro'),
         maxLength: 400,
         rows: 2,
     )]
     public string $intro = '';
 
     #[Collection(
-        'Fragen',
+        new Translatable('fluid_block_faq_items'),
         item: FaqItem::class,
-        itemLabel: 'Frage',
+        itemLabel: new Translatable('fluid_block_faq_item'),
         titleField: 'q',
     )]
     public array $items = [];

@@ -22,14 +22,14 @@ final class Tokens
 {
     public const string TABLE = 'rex_fluid_mcp_token';
 
-    public const array SCOPES = ['read' => 'Nur lesen', 'write' => 'Lesen und ändern'];
+    public const array SCOPES = ['read' => 'Read only', 'write' => 'Read and change'];
 
     /** @return array{id: int, token: string} */
     public static function create(string $name, string $scope, int $userId, bool $publish, ?string $expires): array
     {
         $token = 'fluid_' . bin2hex(random_bytes(24));
         $sql = Sql::factory()->setTable(self::TABLE)->setValues([
-            'name' => mb_substr(trim($name) ?: 'Zugang', 0, 120),
+            'name' => mb_substr(trim($name) ?: 'Access', 0, 120),
             'token_hash' => hash('sha256', $token),
             'prefix' => substr($token, 0, 12),
             'scope' => isset(self::SCOPES[$scope]) ? $scope : 'read',

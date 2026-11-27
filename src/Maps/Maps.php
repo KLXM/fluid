@@ -8,6 +8,7 @@ use Klxm\Fluid\Settings;
 use Klxm\Routes\Router;
 use Redaxo\Core\ExtensionPoint\Extension;
 use Redaxo\Core\ExtensionPoint\ExtensionPoint;
+use Redaxo\Core\Translation\I18n;
 
 use function array_slice;
 use function function_exists;
@@ -36,6 +37,19 @@ final class Maps
     private const float RADIUS_KM = 25.0;
 
     private static bool $assets = false;
+
+    /**
+     * Choices of the block in the editor's language (the constants above stay German for code that needs constant expressions).
+     *
+     * @param 'style'|'height' $kind
+     * @return array<string, string>
+     */
+    public static function choices(string $kind): array
+    {
+        $keys = array_keys('style' === $kind ? self::STYLES : self::HEIGHTS);
+
+        return array_combine($keys, array_map(static fn (string $k): string => I18n::rawMsg('fluid_maps_' . $kind . '_' . $k), $keys));
+    }
 
     /** Geo coordinates of the website in the organization's schema.org node (start page) */
     public static function boot(): void
@@ -188,7 +202,7 @@ final class Maps
         $p = self::parse($o['point'] ?? null) ?? self::siteLocation();
         if (!$p) {
             return Editing::active()
-                ? '<div class="cms-map cms-map--empty"><p>Für die Karte fehlt der Standort – Website → Kontakt & Zeiten → „Standort für die Karte“ (oder eigener Ort im Block).</p></div>'
+                ? '<div class="cms-map cms-map--empty"><p>' . I18n::msg('fluid_maps_no_location') . '</p></div>'
                 : '';
         }
         self::remember($p);

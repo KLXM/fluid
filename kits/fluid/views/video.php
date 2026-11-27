@@ -2,6 +2,7 @@
 
 use Klxm\Fluid\Block;
 use Redaxo\Core\Language\Language;
+use Redaxo\Core\Translation\I18n;
 
 /**
  * Video (YouTube/Vimeo with two-click solution, MP4 from the media pool): wide · text (text beside) · cinema (borderless, dark).
@@ -32,7 +33,7 @@ if ('audio' === $b->variant()):
     <?php endif ?>
     <?php if ('' !== trim((string) $d['caption']) || is_editing()): ?><figcaption class="video__cap"<?= $b->edit('caption') ?>><?= fluid_title((string) $d['caption']) ?></figcaption><?php endif ?>
   </figure>
-  <?php elseif (is_editing()): ?><p class="empty-hint">Noch keine Audiodatei – in der Seitenleiste hinzufügen.</p><?php endif ?>
+  <?php elseif (is_editing()): ?><p class="empty-hint"><?= I18n::msg('fluid_kit_empty_audio') ?></p><?php endif ?>
 </div>
 <?php return; endif;
 // "morph" (kit NativeCSS) after a kit switch: video with text beside

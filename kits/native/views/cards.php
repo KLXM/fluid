@@ -3,6 +3,7 @@
 use Klxm\Fluid\Block;
 use Klxm\Fluid\InlineStyle;
 use Klxm\Fluid\Kit;
+use Redaxo\Core\Translation\I18n;
 
 /**
  * Cards in the kit „NativeCSS“ (.ncss-card with border, radius, shadow; whole card clickable via .ncss-card-link):
@@ -58,5 +59,5 @@ $min = ['s' => '14rem', 'm' => '18rem', 'l' => '24rem'][$d['size'] ?? 'm'] ?? '1
   <?php if ('' !== trim((string) ($d['more_label'] ?? '')) && '' !== trim((string) ($d['more_link'] ?? ''))): ?>
   <p class="more-row"><a class="ncss-btn ncss-btn--secondary" <?= fluid_link_attrs($d['more_link']) ?>><span<?= $b->edit('more_label') ?>><?= e($d['more_label']) ?></span></a></p>
   <?php endif ?>
-  <?php elseif (is_editing()): ?><p class="empty-hint">Noch keine Karten – in der Seitenleiste hinzufügen.</p><?php endif ?>
+  <?php elseif (is_editing()): ?><p class="empty-hint"><?= I18n::msg('fluid_kit_empty_cards') ?></p><?php endif ?>
 </div>

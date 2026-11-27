@@ -70,7 +70,7 @@ final class Content
                     return $l->id;
                 }
             }
-            throw new ApiError('Unbekannte Sprache „' . $lang . '“.');
+            throw new ApiError('Unknown language "' . $lang . '".');
         }
 
         return Language::getStartId();
@@ -86,7 +86,7 @@ final class Content
         };
         $a = null !== $id ? Article::get((int) $id, $lang) : null;
         if (null === $a || !$this->access->canReadPage($a)) {
-            throw new ApiError('Seite nicht gefunden.');
+            throw new ApiError('Page not found.');
         }
 
         return $a;
@@ -213,10 +213,10 @@ final class Content
                 $item['options'] = $f['options'];
             }
             if ('richtext' === $item['type']) {
-                $item['format'] = 'HTML (p, h2–h4, ul/ol/li, a, strong, em) – keine Bilder';
+                $item['format'] = 'HTML (p, h2–h4, ul/ol/li, a, strong, em) – no images';
             }
             if ('media' === $item['type']) {
-                $item['format'] = 'Dateiname aus dem Medienpool';
+                $item['format'] = 'File name from the media pool';
             }
             if (isset($f['fields']) && is_array($f['fields'])) {
                 $item['fields'] = self::fieldSchema($f['fields']);
@@ -232,7 +232,7 @@ final class Content
     private function writable(Article $a): void
     {
         if (!$this->access->canWritePage($a)) {
-            throw new ApiError('Dieser Zugang darf die Seite „' . $a->name . '“ nicht ändern.');
+            throw new ApiError('This access may not change the page "' . $a->name . '".');
         }
         // Edit lock: keys without a person count as foreign
         EditLock::assert($a, $this->access->user->id ?? false);
@@ -242,7 +242,7 @@ final class Content
     {
         $s = ArticleSlice::getArticleSliceById($id, $a->languageId, FluidAddon::revision());
         if (null === $s || $s->articleId !== $a->id) {
-            throw new ApiError('Block ' . $id . ' gibt es auf dieser Seite nicht (IDs mit get_page holen).');
+            throw new ApiError('Block ' . $id . ' does not exist on this page (get IDs with get_page).');
         }
 
         return $s;
@@ -253,10 +253,10 @@ final class Content
     {
         $m = BlockModule::classFor($key);
         if (null === $m) {
-            throw new ApiError('Unbekannter Blocktyp „' . $key . '“ (siehe list_block_types).');
+            throw new ApiError('Unknown block type "' . $key . '" (see list_block_types).');
         }
         if (!$this->access->canModule($key)) {
-            throw new ApiError('Dieser Zugang darf den Block „' . $m::name() . '“ nicht bearbeiten.');
+            throw new ApiError('This access may not edit the block "' . $m::name() . '".');
         }
 
         return $m;
@@ -309,7 +309,7 @@ final class Content
         $old = BlockModule::valuesOf($s);
         $new = self::clean($m::fields(), $data);
         if ([] === $new) {
-            throw new ApiError('Keine bekannten Felder in „data“ (Felder des Blocktyps mit list_block_types).');
+            throw new ApiError('No known fields in "data" (fields of the block type via list_block_types).');
         }
         $new = FieldForm::normalize($m::fields(), $new);
         $merged = $replace ? FieldForm::withDefaults($m::fields(), $new, $m::variants()) + (isset($old['widths']) ? ['widths' => $old['widths']] : []) : array_replace($old, $new);
@@ -333,7 +333,7 @@ final class Content
     private function unlocked(ArticleSlice $s): void
     {
         if (Lock::locked(BlockModule::tunesOf($s)) && (null === $this->access->user || !Perm::can($this->access->user, Perm::DESIGN_FULL))) {
-            throw new ApiError('Dieser Block ist gesperrt.');
+            throw new ApiError('This block is locked.');
         }
     }
 
@@ -374,7 +374,7 @@ final class Content
     {
         $this->writable($a);
         if (!$this->access->can('moveSlice[]')) {
-            throw new ApiError('Dieser Zugang darf Blöcke nicht verschieben.');
+            throw new ApiError('This access may not move blocks.');
         }
         $this->slice($a, $id);
         BlockOps::reorder($a, $id, $before);
@@ -387,7 +387,7 @@ final class Content
     {
         $this->writable($a);
         if (!$this->access->can('publishSlice[]')) {
-            throw new ApiError('Dieser Zugang darf Blöcke nicht ein- und ausschalten.');
+            throw new ApiError('This access may not switch blocks on and off.');
         }
         $this->unlocked($this->slice($a, $id));
         ContentHandler::changeSliceStatus($id, $online ? 1 : 0);
@@ -399,10 +399,10 @@ final class Content
     {
         $this->writable($a);
         if (!$this->access->publish) {
-            throw new ApiError('Dieser Zugang darf nicht veröffentlichen – die Änderungen liegen im Entwurf; ein Mensch veröffentlicht sie auf der Website.');
+            throw new ApiError('This access may not publish – the changes are in the draft; a human publishes them on the website.');
         }
         if (!Versions::isWorkVersion()) {
-            return ['published' => true, 'note' => 'Ohne Arbeitsversion sind Änderungen sofort live.'];
+            return ['published' => true, 'note' => 'Without a work version, changes are live immediately.'];
         }
         Api::publish($a);
 
@@ -413,19 +413,19 @@ final class Content
     public function createPage(string $name, int $parent, bool $menu, int $lang, int $template = 0): array
     {
         if (!$this->access->write) {
-            throw new ApiError('Dieser Zugang darf nur lesen.');
+            throw new ApiError('This access is read only.');
         }
         $name = trim(mb_substr(strip_tags($name), 0, 190));
         if ('' === $name) {
-            throw new ApiError('Bitte einen Titel angeben.');
+            throw new ApiError('Please provide a title.');
         }
         $parentId = $parent > 0 ? $parent : null;
         $perm = $this->access->user->getComplexPerm('structure');
         if (!$this->access->user->admin && !($perm instanceof StructurePermission && $perm->hasCategoryPerm($parentId))) {
-            throw new ApiError('Keine Berechtigung, hier eine Seite anzulegen.');
+            throw new ApiError('No permission to create a page here.');
         }
         if (!$this->access->can($menu ? 'addCategory[]' : 'addArticle[]')) {
-            throw new ApiError('Dieser Zugang darf keine ' . ($menu ? 'Menüpunkte' : 'Seiten') . ' anlegen.');
+            throw new ApiError('This access may not create ' . ($menu ? 'menu items' : 'pages') . '.');
         }
         $start = Article::get(Article::getSiteStartArticleId(), $lang);
         $tpl = null !== $start ? (string) $start->templateKey : '';
@@ -443,7 +443,7 @@ final class Content
         }
         Activity::log('page_add', $id, $name . ' (MCP)');
 
-        return ['id' => $id, 'name' => $name, 'online' => false, 'note' => 'Seite ist offline angelegt; online schaltet ein Mensch (oder ein Zugang mit Veröffentlichen-Recht über die Seiteneinstellungen).'];
+        return ['id' => $id, 'name' => $name, 'online' => false, 'note' => 'Page was created offline; a human switches it online (or an access with publish permission via the page settings).'];
     }
 
     private function hasDraft(Article $a): bool

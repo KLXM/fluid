@@ -2,6 +2,7 @@
 
 use Klxm\Fluid\Block;
 use Klxm\Fluid\Kit;
+use Redaxo\Core\Translation\I18n;
 
 /**
  * Packages / comparison: cards (auto-fit grid, highlight) · table (comparison table – scrolls horizontally when space
@@ -48,7 +49,7 @@ $button = static function (array $it, int $i, string $class = '') use ($b): stri
     </div>
     <?php endforeach ?>
   </dl>
-  <?php elseif (is_editing()): ?><p class="empty-hint">Noch keine Einträge – in der Seitenleiste unter „Preisliste“ hinzufügen.</p><?php endif ?>
+  <?php elseif (is_editing()): ?><p class="empty-hint"><?= I18n::msg('fluid_kit_empty_pricing_list') ?></p><?php endif ?>
   <?php elseif ($items && 'table' === $v): ?>
   <?php Kit::active()->markUsed('@table') ?>
   <div class="cmp-wrap ncss-scroll-shadow tbl-shadow" role="region" tabindex="0" aria-labelledby="<?= e($b->titleId()) ?>">
@@ -93,6 +94,6 @@ $button = static function (array $it, int $i, string $class = '') use ($b): stri
     </li>
     <?php endforeach ?>
   </ul>
-  <?php elseif (is_editing()): ?><p class="empty-hint">Noch keine Pakete – in der Seitenleiste hinzufügen.</p><?php endif ?>
+  <?php elseif (is_editing()): ?><p class="empty-hint"><?= I18n::msg('fluid_kit_empty_pricing') ?></p><?php endif ?>
   <?php if ('' !== trim((string) ($d['note'] ?? ''))): ?><p class="plans__note"<?= $b->edit('note') ?>><?= fluid_title((string) $d['note']) ?></p><?php endif ?>
 </div>

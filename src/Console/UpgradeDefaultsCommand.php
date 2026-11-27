@@ -17,23 +17,23 @@ use function count;
  *
  * @internal
  */
-#[AsCommand(name: 'fluid:upgrade:defaults', description: 'Bestehende Blöcke behalten ihr Aussehen, wenn sich Standardwerte von Blockfeldern ändern (läuft auch bei migrate)')]
+#[AsCommand(name: 'fluid:upgrade:defaults', description: 'Existing blocks keep their look when defaults of block fields change (also runs on migrate)')]
 final class UpgradeDefaultsCommand extends AbstractCommand
 {
     public function __invoke(
         SymfonyStyle $io,
-        #[Option(description: 'Nur zählen, nichts schreiben')] bool $dryRun = false,
+        #[Option(description: 'Only count, write nothing')] bool $dryRun = false,
     ): int {
         $pending = DefaultChanges::pending();
         if (!$pending) {
-            $io->success('Keine offenen Änderungen (' . count(DefaultChanges::changes()) . ' erledigt).');
+            $io->success('No pending changes (' . count(DefaultChanges::changes()) . ' done).');
 
             return Command::SUCCESS;
         }
         foreach (DefaultChanges::run($dryRun) as $line) {
             $io->text($line);
         }
-        $io->success($dryRun ? 'Probelauf – nichts geschrieben.' : 'Fertig.');
+        $io->success($dryRun ? 'Dry run – nothing written.' : 'Done.');
 
         return Command::SUCCESS;
     }

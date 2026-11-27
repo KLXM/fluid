@@ -4,11 +4,15 @@ namespace Klxm\Fluid\Field;
 
 use Klxm\Fluid\Form\Stored;
 use Redaxo\Core\Form\Field as Core;
+use Redaxo\Core\Translation\Translatable;
+use Redaxo\Core\View\Renderable;
 use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionProperty;
 
 use function array_filter;
+use function array_map;
+use function is_array;
 use function preg_replace;
 use function strtolower;
 
@@ -32,13 +36,14 @@ final class BlockSchema
     {
         $ref = new ReflectionClass($class);
         $block = ($ref->getAttributes(AsBlock::class)[0] ?? null)?->newInstance() ?? new AsBlock();
-        $def = ['label' => $block->label ?? $name, 'icon' => $block->icon, 'group' => $block->group];
-        foreach (['help' => $block->help, 'requires' => $block->requires, 'background' => $block->background, 'jsonld' => $block->jsonld] as $k => $v) {
+        $def = ['label' => null !== $block->label ? Translatable::text($block->label) : $name, 'icon' => $block->icon, 'group' => Translatable::text($block->group)];
+        foreach (['help' => null !== $block->help ? Translatable::text($block->help) : null, 'requires' => $block->requires, 'background' => $block->background, 'jsonld' => $block->jsonld] as $k => $v) {
             if (null !== $v) {
                 $def[$k] = $v;
             }
         }
-        foreach (['variants' => $block->variants, 'variant_help' => $block->variantHelp, 'drags' => $block->drags] as $k => $v) {
+        $drags = array_map(static fn (array $d) => isset($d['label']) ? ['label' => self::text($d['label'])] + $d : $d, $block->drags);
+        foreach (['variants' => self::texts($block->variants), 'variant_help' => self::texts($block->variantHelp), 'drags' => $drags] as $k => $v) {
             if ([] !== $v) {
                 $def[$k] = $v;
             }
@@ -96,12 +101,12 @@ final class BlockSchema
     private static function field(Core\Field $f, ReflectionProperty $prop): array
     {
         // prop: name of the property – the core form expects the input under it (backend, sidebar for modules)
-        $s = ['name' => self::key($f, $prop->getName()), 'prop' => $prop->getName(), 'label' => (string) $f->label, 'type' => 'text'];
+        $s = ['name' => self::key($f, $prop->getName()), 'prop' => $prop->getName(), 'label' => self::text($f->label), 'type' => 'text'];
         if ($f->required) {
             $s['required'] = true;
         }
         if (null !== $f->note) {
-            $s['help'] = (string) $f->note;
+            $s['help'] = self::text($f->note);
         }
         $own = $f instanceof FluidField ? $f->fluid() : [];
         $s = isset($own['type']) ? $s : match (true) {
@@ -111,7 +116,7 @@ final class BlockSchema
             $f instanceof Core\Text => ['max' => $f->maxLength] + $s,
             $f instanceof Core\Number => ['type' => 'number', 'min' => $f->min, 'max_value' => $f->max, 'step' => $f->step] + $s,
             $f instanceof Core\Checkbox => ['type' => 'bool'] + $s,
-            $f instanceof Core\Choice => ['type' => 'select', 'options' => $f->choices(), 'multiple' => $f->multiple ?: null, 'placeholder' => null !== $f->placeholder ? (string) $f->placeholder : null] + $s,
+            $f instanceof Core\Choice => ['type' => 'select', 'options' => self::texts($f->choices()), 'multiple' => $f->multiple ?: null, 'placeholder' => null !== $f->placeholder ? Translatable::text($f->placeholder) : null] + $s,
             $f instanceof Core\DateTimePicker => ['type' => 'datetime'] + $s,
             $f instanceof Core\DatePicker => ['type' => 'date'] + $s,
             $f instanceof Core\TimePicker => ['type' => 'time'] + $s,
@@ -129,5 +134,30 @@ final class BlockSchema
         }
 
         return array_filter($s, static fn ($v) => null !== $v);
+    }
+
+    /** Plain text of a label: given directly, as translation key (Translatable) or as other renderable */
+    private static function text(string|Renderable $text): string
+    {
+        return match (true) {
+            $text instanceof Translatable => $text->translate(),
+            $text instanceof Renderable => (string) $text->render(),
+            default => $text,
+        };
+    }
+
+    /**
+     * Labels of a list (variants, choices – also grouped) as plain text.
+     *
+     * @param array<array-key, mixed> $labels
+     * @return array<array-key, mixed>
+     */
+    private static function texts(array $labels): array
+    {
+        return array_map(static fn ($l) => match (true) {
+            is_array($l) => self::texts($l),
+            $l instanceof Translatable => $l->translate(),
+            default => $l,
+        }, $labels);
     }
 }

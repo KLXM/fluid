@@ -47,13 +47,13 @@ final class SiteAdmin
             foreach (Settings::schema() as $k => $g) {
                 $tabs[$k] = $g['label'];
             }
-            $tabs += ['languages' => 'Sprachen', 'addresses' => I18n::rawMsg('fluid_addresses_tab')];
+            $tabs += ['languages' => I18n::rawMsg('fluid_site_tab_languages'), 'addresses' => I18n::rawMsg('fluid_addresses_tab')];
         }
         if (RoutesPerm::has($user, RoutesPerm::SITES) || null === $user) {
-            $tabs['domains'] = 'Websites & Domains';
+            $tabs['domains'] = I18n::rawMsg('fluid_site_tab_domains');
         }
         if (RoutesPerm::has($user, RoutesPerm::REDIRECTS) || null === $user) {
-            $tabs['redirects'] = 'Weiterleitungen';
+            $tabs['redirects'] = I18n::rawMsg('fluid_site_tab_redirects');
         }
 
         return $tabs;
@@ -67,7 +67,7 @@ final class SiteAdmin
             default => null,
         };
         if (null !== $need ? !RoutesPerm::has($user, $need) : !$user->admin) {
-            throw new ApiError('Dafür fehlt Ihnen das Recht.');
+            throw new ApiError(I18n::rawMsg('fluid_error_no_permission'));
         }
         $tab = Request::post('tab', 'string', 'base');
         $msg = '';
@@ -78,7 +78,7 @@ final class SiteAdmin
                     break;
                 }
                 Settings::save($tab, (array) Request::post('site', 'array', []), Request::post('lang', 'int', 0) ?: null);
-                $msg = 'Gespeichert.';
+                $msg = I18n::rawMsg('fluid_site_saved');
                 break;
             case 'site_delete':
                 try {
@@ -86,7 +86,7 @@ final class SiteAdmin
                 } catch (Throwable $e) {
                     throw new ApiError($e->getMessage());
                 }
-                $msg = 'Website entfernt.';
+                $msg = I18n::rawMsg('fluid_site_site_deleted');
                 $tab = 'domains';
                 break;
             case 'domain_save':
@@ -95,12 +95,13 @@ final class SiteAdmin
                 break;
             case 'domain_delete':
                 Sites::deleteDomain(Request::post('id', 'int', 0));
-                $msg = 'Domain entfernt.';
+                $msg = I18n::rawMsg('fluid_site_domain_deleted');
                 $tab = 'domains';
                 break;
             case 'redirect_test':
                 $hit = Redirects::explain(Request::post('address', 'string', ''), Request::post('site', 'string', Site::MAIN));
-                $msg = null === $hit ? 'Keine Weiterleitung greift – die Adresse ist eine Seite oder 404.' : 'Greift: ' . $hit['rule']['source'] . ' → ' . (410 === $hit['code'] ? 'gelöscht (410)' : $hit['location']) . ' (' . $hit['code'] . ('code' === ($hit['rule']['origin'] ?? '') ? ', aus dem Code' : '') . ')';
+                $msg = null === $hit ? I18n::rawMsg('fluid_site_redirect_test_none') : I18n::rawMsg('fluid_site_redirect_test_hit', (string) $hit['rule']['source'], 410 === $hit['code'] ? I18n::rawMsg('fluid_site_redirect_gone') : (string) $hit['location'],
+                    $hit['code'] . ('code' === ($hit['rule']['origin'] ?? '') ? ', ' . I18n::rawMsg('fluid_site_redirect_from_code') : ''));
                 $tab = 'redirects';
                 break;
             case 'addresses_save':
@@ -113,7 +114,7 @@ final class SiteAdmin
                 break;
             case 'redirect_delete':
                 Sql::factory()->setQuery('DELETE FROM ' . Redirects::TABLE . ' WHERE id = ?', [Request::post('id', 'int', 0)]);
-                $msg = 'Weiterleitung gelöscht.';
+                $msg = I18n::rawMsg('fluid_site_redirect_deleted');
                 $tab = 'redirects';
                 break;
             case 'language_save':
@@ -147,19 +148,19 @@ final class SiteAdmin
         $switch = '';
         $translatable = Settings::translatable($tab);
         if (count(Language::getAll()) > 1 && $translatable) {
-            $switch = '<nav class="site-lang" aria-label="Sprache der Texte">' . implode('', array_map(static fn (Language $l) => '<button type="button" data-site-lang="' . $l->id . '"'
+            $switch = '<nav class="site-lang" aria-label="' . I18n::msg('fluid_site_lang_switch') . '">' . implode('', array_map(static fn (Language $l) => '<button type="button" data-site-lang="' . $l->id . '"'
                 . ($l->id === $lang ? ' aria-current="true"' : '') . '>' . escape($l->name) . '</button>', Language::getAll())) . '</nav>';
             if ($lang !== Language::getStartId()) {
                 // translatable fields only; text of the start language as placeholder
-                $fields = array_map(static fn (array $f) => ['placeholder' => (string) ($values[$f['name']] ?? ''), 'help' => 'Leer = Text der Startsprache.'] + $f, $translatable);
+                $fields = array_map(static fn (array $f) => ['placeholder' => (string) ($values[$f['name']] ?? ''), 'help' => I18n::rawMsg('fluid_site_lang_empty_help')] + $f, $translatable);
                 $values = Settings::translations($lang);
-                $switch .= '<p class="site-intro">Texte für <b>' . escape(Language::get($lang)->name ?? '') . '</b>. Übrige Angaben (Adresse, Logo, Links …) gelten für alle Sprachen.</p>';
+                $switch .= '<p class="site-intro">' . I18n::msg('fluid_site_lang_intro', Language::get($lang)->name ?? '') . '</p>';
             }
         }
 
         return $switch . '<form data-site-form="site_save" data-tab="' . escape($tab) . '"><input type="hidden" name="lang" value="' . $lang . '">'
             . FieldForm::standalone($fields, $values, 'site')
-            . '<div class="site-actions"><button type="submit" class="btn btn--primary">Speichern</button></div></form>';
+            . '<div class="site-actions"><button type="submit" class="btn btn--primary">' . I18n::msg('fluid_site_save') . '</button></div></form>';
     }
 
     // ------------------------------------------------------------------ Languages (core LanguageHandler)
@@ -171,19 +172,17 @@ final class SiteAdmin
 
             return '<form class="site-card" data-site-form="language_save" data-tab="languages"><input type="hidden" name="id" value="' . $id . '">'
                 . '<div class="blocks-form__grid">'
-                . '<div class="blocks-form__field is-half"><label class="control-label">Kürzel</label><input class="form-control" name="code" value="' . escape($l->code ?? '') . '" placeholder="fr" required maxlength="10" pattern="[a-z]{2}(-[A-Za-z]{2})?"></div>'
-                . '<div class="blocks-form__field is-half"><label class="control-label">Name</label><input class="form-control" name="name" value="' . escape($l->name ?? '') . '" placeholder="Français" required maxlength="100"></div>'
-                . '<div class="blocks-form__field"><label class="blocks-form__check"><input type="checkbox" name="online" value="1"' . ($l?->isOnline() ? ' checked' : '') . '> Online – für Besucher sichtbar</label></div>'
-                . '</div><div class="site-actions"><button type="submit" class="btn btn--primary">' . ($id ? 'Speichern' : 'Sprache hinzufügen') . '</button></div></form>';
+                . '<div class="blocks-form__field is-half"><label class="control-label">' . I18n::msg('fluid_site_lang_code') . '</label><input class="form-control" name="code" value="' . escape($l->code ?? '') . '" placeholder="fr" required maxlength="10" pattern="[a-z]{2}(-[A-Za-z]{2})?"></div>'
+                . '<div class="blocks-form__field is-half"><label class="control-label">' . I18n::msg('fluid_site_name') . '</label><input class="form-control" name="name" value="' . escape($l->name ?? '') . '" placeholder="Français" required maxlength="100"></div>'
+                . '<div class="blocks-form__field"><label class="blocks-form__check"><input type="checkbox" name="online" value="1"' . ($l?->isOnline() ? ' checked' : '') . '> ' . I18n::msg('fluid_page_online') . '</label></div>'
+                . '</div><div class="site-actions"><button type="submit" class="btn btn--primary">' . ($id ? I18n::msg('fluid_site_save') : I18n::msg('fluid_site_lang_add')) . '</button></div></form>';
         };
-        $h = '<p class="site-intro">Jede Seite gibt es in jeder Sprache. Eine neue Sprache übernimmt Seitennamen und Struktur; die Inhalte übertragen Sie Seite für Seite '
-            . '(Sprache in der Leiste wählen → „Inhalt übernehmen“). Weitere Sprachen haben ein Präfix in der Adresse, z. B. <code>/en/…</code>. '
-            . 'Neue Sprachen sind zunächst offline. Löschen nur im Backend (System → Sprachen).</p>';
+        $h = '<p class="site-intro">' . I18n::msg('fluid_site_lang_help') . '</p>';
         foreach (Language::getAll() as $l) {
             $h .= $row($l);
         }
 
-        return $h . '<h3 class="site-h">Neue Sprache</h3>' . $row(null);
+        return $h . '<h3 class="site-h">' . I18n::msg('fluid_site_lang_new') . '</h3>' . $row(null);
     }
 
     private static function languageSave(): string
@@ -192,18 +191,18 @@ final class SiteAdmin
         $code = strtolower(trim(Request::post('code', 'string', '')));
         $name = trim(Request::post('name', 'string', ''));
         if (!preg_match('~^[a-z]{2}(-[a-z]{2})?$~', $code) || '' === $name) {
-            throw new ApiError('Bitte ein Kürzel wie „en“ und einen Namen angeben.');
+            throw new ApiError(I18n::rawMsg('fluid_site_lang_invalid'));
         }
         foreach (Language::getAll() as $l) {
             if ($l->code === $code && $l->id !== $id) {
-                throw new ApiError('Die Sprache „' . $code . '“ gibt es schon.');
+                throw new ApiError(I18n::rawMsg('fluid_site_lang_exists', $code));
             }
         }
         $online = Request::post('online', 'bool', false);
         if ($id) {
-            Language::get($id) ?? throw new ApiError('Sprache nicht gefunden.');
+            Language::get($id) ?? throw new ApiError(I18n::rawMsg('fluid_site_lang_not_found'));
             if (!$online && $id === Language::getStartId()) {
-                throw new ApiError('Die Startsprache bleibt online.');
+                throw new ApiError(I18n::rawMsg('fluid_site_lang_start_online'));
             }
             LanguageHandler::edit($id, ['code' => $code, 'name' => $name, 'status' => $online]);
         } else {
@@ -211,22 +210,19 @@ final class SiteAdmin
         }
         Routes::rebuild();
 
-        return $id ? 'Sprache gespeichert.' : 'Sprache „' . $name . '“ angelegt – Seitennamen sind übernommen, Seiten zunächst offline.';
+        return $id ? I18n::rawMsg('fluid_site_lang_saved') : I18n::rawMsg('fluid_site_lang_added', $name);
     }
 
     // ------------------------------------------------------------------ Websites & domains (klxm/routes)
 
     private static function domains(): string
     {
-        $h = '<p class="site-intro">Eine Installation kann mehrere <b>Websites</b> haben – jede mit Startpunkt im Seitenbaum, eigenen Sprachen, 404-Seite und Domains. '
-            . 'Je Website eine <b>Hauptdomain</b> (wahlweise je Sprache, z. B. <code>example.com</code> für Englisch ohne Präfix), <b>Varianten</b> ohne Weiterleitung '
-            . '(Stage, lokal – nie indexiert) und <b>Aliase</b>, die per 301 zur Hauptdomain leiten. Eine Website übernimmt ihre Seiten erst, wenn sie eine Domain hat. '
-            . 'Alle Domains müssen im Hosting auf diese Installation zeigen.</p>';
+        $h = '<p class="site-intro">' . I18n::msg('fluid_site_domains_help') . '</p>';
         foreach (Sites::all() as $site) {
             $h .= self::siteCard($site);
         }
 
-        return $h . '<h3 class="site-h">Neue Website</h3>' . self::siteCard(null);
+        return $h . '<h3 class="site-h">' . I18n::msg('fluid_site_site_new') . '</h3>' . self::siteCard(null);
     }
 
     private static function siteCard(?Site $site): string
@@ -242,33 +238,33 @@ final class SiteAdmin
             $langs .= '<label class="blocks-form__check"><input type="checkbox" name="languages[]" value="' . $l->id . '"' . ($on ? ' checked' : '') . $dis . '> ' . escape($l->name) . '</label> ';
         }
         $ai = '';
-        foreach (['allow' => 'Alle erlauben (beste Sichtbarkeit in KI-Antworten)', 'training' => 'KI-Training sperren, KI-Antworten erlauben', 'all' => 'Alle KI-Crawler sperren'] as $v => $l) {
-            $ai .= '<option value="' . $v . '"' . ($s->ai->value === $v ? ' selected' : '') . '>' . $l . '</option>';
+        foreach (['allow', 'training', 'all'] as $v) {
+            $ai .= '<option value="' . $v . '"' . ($s->ai->value === $v ? ' selected' : '') . '>' . I18n::msg('fluid_site_ai_' . $v) . '</option>';
         }
         $check = static fn (string $name, bool $on, string $label): string => '<label class="blocks-form__check"><input type="checkbox" name="' . $name . '" value="1"' . ($on ? ' checked' : '') . $dis . '> ' . $label . '</label>';
         $f = '<form class="site-card" data-site-form="site_save" data-tab="domains"><input type="hidden" name="key" value="' . escape($key) . '">'
             . '<div class="blocks-form__grid">'
-            . (null === $site ? '<div class="blocks-form__field is-half"><label class="control-label">Kennung</label><input class="form-control" name="new_key" required pattern="[a-z0-9][a-z0-9_-]{0,63}" placeholder="shop"></div>' : '')
-            . '<div class="blocks-form__field is-half"><label class="control-label">Name' . ($main ? ' (Haupt-Website)' : '') . '</label><input class="form-control" name="name" value="' . escape($site->name ?? '') . '" maxlength="191"' . $dis . '></div>'
-            . ($main ? '' : '<div class="blocks-form__field"><label class="control-label">Startpunkt im Seitenbaum</label>' . Picker::link('site_root_' . $key, 'root', null !== $site && $site->root ? 'redaxo://' . $site->root : '', false) . '</div>'
-                . '<div class="blocks-form__field">' . $check('single', $site->single ?? false, 'Nur diese Seite (Landing-Page, ohne Unterseiten)') . ' ' . $check('mirror', $site->mirror ?? false, 'Spiegel – Seiten bleiben kanonisch auf der Haupt-Website') . '</div>')
-            . '<div class="blocks-form__field"><label class="control-label">404-Seite</label>' . Picker::link('site_nf_' . $key, 'notfound', null !== $site?->notFound ? 'redaxo://' . $site->notFound : '', false) . '<p class="help-block">Leer = die des Systems.</p></div>'
-            . '<div class="blocks-form__field"><label class="control-label">Sprachen</label><div>' . $langs . '</div><p class="help-block">Die erste gewählte Sprache hat kein Präfix.</p></div>'
-            . '</div><details class="site-more"><summary>SEO &amp; KI</summary><div class="blocks-form__grid">'
-            . '<div class="blocks-form__field"><label class="control-label">Titel-Vorlage</label><input class="form-control" name="s[title]" value="' . escape($s->title) . '"' . $dis . '><p class="help-block">{title} {sep} {site} {parent} – der Zusatz entfällt, wenn der Titel länger als 60 Zeichen würde.</p></div>'
-            . '<div class="blocks-form__field"><label class="control-label">Kurzbeschreibung der Website</label><textarea class="form-control" name="s[description]" rows="2" maxlength="1000"' . $dis . '>' . escape($s->description) . '</textarea><p class="help-block">Für llms.txt und schema.org (WebSite).</p></div>'
-            . '<div class="blocks-form__field"><label class="control-label">KI-Crawler</label><select class="form-control" name="s[ai]"' . $dis . '>' . $ai . '</select></div>'
-            . '<div class="blocks-form__field">' . $check('s[llms]', $s->llms, '/llms.txt für KI-Assistenten') . ' ' . $check('s[llmsFull]', $s->llmsFull, '/llms-full.txt mit Text') . ' ' . $check('s[markdown]', $s->markdown, 'Markdown-Fassung jeder Seite (/seite.md)') . '</div>'
-            . '<div class="blocks-form__field">' . $check('s[locked]', $s->locked, 'Website für Suchmaschinen sperren (vor dem Start)') . ' ' . $check('s[previews]', $s->previews, 'Linkvorschau beim Teilen trotzdem erlauben') . '</div>'
-            . '<div class="blocks-form__field">' . $check('s[flat]', $s->flat, 'Alle Seiten auf einer Ebene (/seite statt /bereich/seite)') . '</div>'
-            . '<div class="blocks-form__field is-half"><label class="control-label">Kategorien überspringen</label><select class="form-control" name="s[skipCategories]"' . $dis . '>'
-            . '<option value="0"' . (0 === $s->skipCategories ? ' selected' : '') . '>nie</option><option value="1"' . (1 === $s->skipCategories ? ' selected' : '') . '>wenn ohne Inhalt</option><option value="2"' . (2 === $s->skipCategories ? ' selected' : '') . '>immer</option></select></div>'
-            . '<div class="blocks-form__field">' . $check('s[indexNow]', $s->indexNow, 'Änderungen an IndexNow melden (Bing, Yandex …)') . '</div>'
-            . '<div class="blocks-form__field"><label class="control-label">Eigene Zeilen in robots.txt</label><textarea class="form-control" name="s[robots]" rows="3"' . $dis . ' placeholder="Disallow: /intern/">' . escape($s->robots) . '</textarea></div>'
+            . (null === $site ? '<div class="blocks-form__field is-half"><label class="control-label">' . I18n::msg('fluid_site_key') . '</label><input class="form-control" name="new_key" required pattern="[a-z0-9][a-z0-9_-]{0,63}" placeholder="shop"></div>' : '')
+            . '<div class="blocks-form__field is-half"><label class="control-label">' . I18n::msg('fluid_site_name') . ($main ? ' (' . I18n::msg('fluid_site_main') . ')' : '') . '</label><input class="form-control" name="name" value="' . escape($site->name ?? '') . '" maxlength="191"' . $dis . '></div>'
+            . ($main ? '' : '<div class="blocks-form__field"><label class="control-label">' . I18n::msg('fluid_site_root') . '</label>' . Picker::link('site_root_' . $key, 'root', null !== $site && $site->root ? 'redaxo://' . $site->root : '', false) . '</div>'
+                . '<div class="blocks-form__field">' . $check('single', $site->single ?? false, I18n::msg('fluid_site_single')) . ' ' . $check('mirror', $site->mirror ?? false, I18n::msg('fluid_site_mirror')) . '</div>')
+            . '<div class="blocks-form__field"><label class="control-label">' . I18n::msg('fluid_site_notfound') . '</label>' . Picker::link('site_nf_' . $key, 'notfound', null !== $site?->notFound ? 'redaxo://' . $site->notFound : '', false) . '<p class="help-block">' . I18n::msg('fluid_site_notfound_help') . '</p></div>'
+            . '<div class="blocks-form__field"><label class="control-label">' . I18n::msg('fluid_site_tab_languages') . '</label><div>' . $langs . '</div><p class="help-block">' . I18n::msg('fluid_site_languages_help') . '</p></div>'
+            . '</div><details class="site-more"><summary>' . I18n::msg('fluid_site_seo_ai') . '</summary><div class="blocks-form__grid">'
+            . '<div class="blocks-form__field"><label class="control-label">' . I18n::msg('fluid_site_title_template') . '</label><input class="form-control" name="s[title]" value="' . escape($s->title) . '"' . $dis . '><p class="help-block">' . I18n::msg('fluid_site_title_template_help') . '</p></div>'
+            . '<div class="blocks-form__field"><label class="control-label">' . I18n::msg('fluid_site_description') . '</label><textarea class="form-control" name="s[description]" rows="2" maxlength="1000"' . $dis . '>' . escape($s->description) . '</textarea><p class="help-block">' . I18n::msg('fluid_site_description_help') . '</p></div>'
+            . '<div class="blocks-form__field"><label class="control-label">' . I18n::msg('fluid_site_ai') . '</label><select class="form-control" name="s[ai]"' . $dis . '>' . $ai . '</select></div>'
+            . '<div class="blocks-form__field">' . $check('s[llms]', $s->llms, I18n::msg('fluid_site_llms')) . ' ' . $check('s[llmsFull]', $s->llmsFull, I18n::msg('fluid_site_llms_full')) . ' ' . $check('s[markdown]', $s->markdown, I18n::msg('fluid_site_markdown')) . '</div>'
+            . '<div class="blocks-form__field">' . $check('s[locked]', $s->locked, I18n::msg('fluid_site_locked')) . ' ' . $check('s[previews]', $s->previews, I18n::msg('fluid_site_previews')) . '</div>'
+            . '<div class="blocks-form__field">' . $check('s[flat]', $s->flat, I18n::msg('fluid_site_flat')) . '</div>'
+            . '<div class="blocks-form__field is-half"><label class="control-label">' . I18n::msg('fluid_site_skip') . '</label><select class="form-control" name="s[skipCategories]"' . $dis . '>'
+            . '<option value="0"' . (0 === $s->skipCategories ? ' selected' : '') . '>' . I18n::msg('fluid_site_skip_never') . '</option><option value="1"' . (1 === $s->skipCategories ? ' selected' : '') . '>' . I18n::msg('fluid_site_skip_empty') . '</option><option value="2"' . (2 === $s->skipCategories ? ' selected' : '') . '>' . I18n::msg('fluid_site_skip_always') . '</option></select></div>'
+            . '<div class="blocks-form__field">' . $check('s[indexNow]', $s->indexNow, I18n::msg('fluid_site_indexnow')) . '</div>'
+            . '<div class="blocks-form__field"><label class="control-label">' . I18n::msg('fluid_site_robots') . '</label><textarea class="form-control" name="s[robots]" rows="3"' . $dis . ' placeholder="Disallow: /intern/">' . escape($s->robots) . '</textarea></div>'
             . '</div></details>'
-            . '<div class="site-actions">' . ($code ? '<span class="help-block">Im Code festgelegt (' . escape((string) $site->class) . ') – nur lesbar.</span>'
-                : (null !== $site && !$main ? '<button type="button" class="btn" data-site-act="site_delete" data-id="' . escape($key) . '" data-confirm="Website entfernen? Ihre Seiten gehören dann wieder zur Haupt-Website.">Entfernen</button>' : '')
-                . '<button type="submit" class="btn btn--primary">' . (null === $site ? 'Website anlegen' : 'Speichern') . '</button>') . '</div></form>';
+            . '<div class="site-actions">' . ($code ? '<span class="help-block">' . I18n::msg('fluid_site_code', (string) $site->class) . '</span>'
+                : (null !== $site && !$main ? '<button type="button" class="btn" data-site-act="site_delete" data-id="' . escape($key) . '" data-confirm="' . I18n::msg('fluid_site_site_delete_confirm') . '">' . I18n::msg('fluid_site_remove') . '</button>' : '')
+                . '<button type="submit" class="btn btn--primary">' . (null === $site ? I18n::msg('fluid_site_site_add') : I18n::msg('fluid_site_save')) . '</button>') . '</div></form>';
         if (null === $site) {
             return $f;
         }
@@ -277,18 +273,18 @@ final class SiteAdmin
         }
 
         return '<section class="site-group"><h3 class="site-h">' . escape('' !== $site->name ? $site->name : $site->key) . '</h3>' . $f
-            . ($code ? '' : '<details class="site-more"><summary>Domain hinzufügen</summary>' . self::domainCard($site, null) . '</details>') . '</section>';
+            . ($code ? '' : '<details class="site-more"><summary>' . I18n::msg('fluid_site_domain_add') . '</summary>' . self::domainCard($site, null) . '</details>') . '</section>';
     }
 
     private static function domainCard(Site $site, ?Domain $d): string
     {
         $dis = $site->isCode() ? ' disabled' : '';
         $roles = '';
-        foreach (['primary' => 'Hauptdomain', 'variant' => 'Variante (Stage, lokal)', 'alias' => 'Alias (→ Hauptdomain)'] as $v => $l) {
-            $roles .= '<option value="' . $v . '"' . (($d->role->value ?? 'primary') === $v ? ' selected' : '') . '>' . $l . '</option>';
+        foreach (['primary', 'variant', 'alias'] as $v) {
+            $roles .= '<option value="' . $v . '"' . (($d->role->value ?? 'primary') === $v ? ' selected' : '') . '>' . I18n::msg('fluid_site_role_' . $v) . '</option>';
         }
         $langs = '';
-        $defaults = '<option value="0">Standard der Website</option>';
+        $defaults = '<option value="0">' . I18n::msg('fluid_site_lang_default') . '</option>';
         foreach (Language::getAll() as $l) {
             if ($site->hasLanguage($l->id)) {
                 $langs .= '<label class="blocks-form__check"><input type="checkbox" name="languages[]" value="' . $l->id . '"' . (null !== $d && in_array($l->id, $d->languages, true) ? ' checked' : '') . $dis . '> ' . escape($l->name) . '</label> ';
@@ -298,13 +294,13 @@ final class SiteAdmin
 
         return '<form class="site-card site-card--sub" data-site-form="domain_save" data-tab="domains"><input type="hidden" name="id" value="' . ($d->id ?? 0) . '"><input type="hidden" name="site" value="' . escape($site->key) . '">'
             . '<div class="blocks-form__grid">'
-            . '<div class="blocks-form__field is-half"><label class="control-label">Domain</label><input class="form-control" name="host" value="' . escape($d->host ?? '') . '" placeholder="www.beispiel.de" required' . $dis . '></div>'
-            . '<div class="blocks-form__field is-half"><label class="control-label">Rolle</label><select class="form-control" name="role"' . $dis . '>' . $roles . '</select></div>'
-            . '<div class="blocks-form__field"><label class="control-label">Sprachen dieser Domain</label><div>' . $langs . '</div><p class="help-block">Keine gewählt = alle Sprachen der Website. Andere Sprachen leiten zu ihrer Domain.</p></div>'
-            . '<div class="blocks-form__field is-half"><label class="control-label">Sprache ohne Präfix</label><select class="form-control" name="default_language"' . $dis . '>' . $defaults . '</select></div>'
-            . '<div class="blocks-form__field is-half"><label class="blocks-form__check"><input type="checkbox" name="https" value="1"' . (($d->https ?? true) ? ' checked' : '') . $dis . '> https erzwingen</label></div>'
-            . '</div>' . ($site->isCode() ? '' : '<div class="site-actions">' . (null !== $d ? '<button type="button" class="btn" data-site-act="domain_delete" data-id="' . $d->id . '" data-confirm="Domain entfernen?">Entfernen</button>' : '')
-                . '<button type="submit" class="btn btn--primary">' . (null !== $d ? 'Speichern' : 'Domain hinzufügen') . '</button></div>') . '</form>';
+            . '<div class="blocks-form__field is-half"><label class="control-label">Domain</label><input class="form-control" name="host" value="' . escape($d->host ?? '') . '" placeholder="' . I18n::msg('fluid_site_host_placeholder') . '" required' . $dis . '></div>'
+            . '<div class="blocks-form__field is-half"><label class="control-label">' . I18n::msg('fluid_site_role') . '</label><select class="form-control" name="role"' . $dis . '>' . $roles . '</select></div>'
+            . '<div class="blocks-form__field"><label class="control-label">' . I18n::msg('fluid_site_domain_languages') . '</label><div>' . $langs . '</div><p class="help-block">' . I18n::msg('fluid_site_domain_languages_help') . '</p></div>'
+            . '<div class="blocks-form__field is-half"><label class="control-label">' . I18n::msg('fluid_site_lang_noprefix') . '</label><select class="form-control" name="default_language"' . $dis . '>' . $defaults . '</select></div>'
+            . '<div class="blocks-form__field is-half"><label class="blocks-form__check"><input type="checkbox" name="https" value="1"' . (($d->https ?? true) ? ' checked' : '') . $dis . '> ' . I18n::msg('fluid_site_https') . '</label></div>'
+            . '</div>' . ($site->isCode() ? '' : '<div class="site-actions">' . (null !== $d ? '<button type="button" class="btn" data-site-act="domain_delete" data-id="' . $d->id . '" data-confirm="' . I18n::msg('fluid_site_domain_delete_confirm') . '">' . I18n::msg('fluid_site_remove') . '</button>' : '')
+                . '<button type="submit" class="btn btn--primary">' . (null !== $d ? I18n::msg('fluid_site_save') : I18n::msg('fluid_site_domain_add')) . '</button></div>') . '</form>';
     }
 
     private static function siteSave(): string
@@ -314,7 +310,7 @@ final class SiteAdmin
         $page = static fn (string $name): ?int => ($id = (int) preg_replace('~\D~', '', Request::post($name, 'string', ''))) && Article::get($id) ? $id : null;
         $root = $page('root') ?? 0;
         if (Site::MAIN !== $key && $root < 1) {
-            throw new ApiError('Bitte den Startpunkt der Website im Seitenbaum wählen.');
+            throw new ApiError(I18n::rawMsg('fluid_site_root_required'));
         }
         $languages = array_values(array_filter(array_map('intval', (array) Request::post('languages', 'array', [])), Language::exists(...)));
         $languages = count($languages) === Language::count() && (null === $old || [] === $old->languages) ? [] : $languages;
@@ -331,7 +327,7 @@ final class SiteAdmin
             throw new ApiError($e->getMessage());
         }
 
-        return null === $old ? 'Website angelegt – sie übernimmt ihre Seiten, sobald sie eine Domain hat.' : 'Website gespeichert.';
+        return null === $old ? I18n::rawMsg('fluid_site_site_added') : I18n::rawMsg('fluid_site_site_saved');
     }
 
     private static function domainSave(): string
@@ -349,29 +345,28 @@ final class SiteAdmin
             throw new ApiError($e->getMessage());
         }
 
-        return 'Domain gespeichert.';
+        return I18n::rawMsg('fluid_site_domain_saved');
     }
 
     // ------------------------------------------------------------------ Redirects
 
     private static function redirects(): string
     {
-        $h = '<p class="site-intro">Ändert sich die Adresse einer Seite, entsteht die Weiterleitung automatisch. Hier legen Sie eigene an – z. B. für alte Adressen nach einem Relaunch. '
-            . '„/alt/*“ leitet alles darunter um; „*“ im Ziel übernimmt den Rest.</p>'
+        $h = '<p class="site-intro">' . I18n::msg('fluid_site_redirects_help') . '</p>'
             . '<form class="site-card" data-site-form="redirect_save" data-tab="redirects"><div class="blocks-form__grid">'
-            . '<div class="blocks-form__field"><label class="control-label">Alte Adresse</label><input class="form-control" name="source" placeholder="/alte-seite oder /alt/*" required data-redirect-source></div>'
-            . '<div class="blocks-form__field"><label class="control-label">Ziel</label>' . Picker::link('redirect_target', 'target', '', false) . '<p class="help-block">Seite, /pfad oder https://…</p></div>'
-            . '<div class="blocks-form__field is-half"><label class="control-label">Art</label><select class="form-control" name="code"><option value="301">301 – dauerhaft</option><option value="308">308 – dauerhaft, Methode bleibt</option>'
-            . '<option value="302">302 – vorübergehend</option><option value="307">307 – vorübergehend, Methode bleibt</option><option value="303">303 – siehe andere Seite</option>'
-            . '<option value="410">410 – gelöscht (ohne Ziel)</option><option value="short">' . I18n::msg('fluid_shortlink_option') . '</option></select></div>'
+            . '<div class="blocks-form__field"><label class="control-label">' . I18n::msg('fluid_site_redirect_source') . '</label><input class="form-control" name="source" placeholder="' . I18n::msg('fluid_site_redirect_source_placeholder') . '" required data-redirect-source></div>'
+            . '<div class="blocks-form__field"><label class="control-label">' . I18n::msg('fluid_site_redirect_target') . '</label>' . Picker::link('redirect_target', 'target', '', false) . '<p class="help-block">' . I18n::msg('fluid_site_redirect_target_help') . '</p></div>'
+            . '<div class="blocks-form__field is-half"><label class="control-label">' . I18n::msg('fluid_site_redirect_code') . '</label><select class="form-control" name="code"><option value="301">301 – ' . I18n::msg('fluid_redirect_permanent') . '</option><option value="308">308 – ' . I18n::msg('fluid_redirect_permanent_method') . '</option>'
+            . '<option value="302">302 – ' . I18n::msg('fluid_redirect_temporary') . '</option><option value="307">307 – ' . I18n::msg('fluid_redirect_temporary_method') . '</option><option value="303">303 – ' . I18n::msg('fluid_redirect_see_other') . '</option>'
+            . '<option value="410">410 – ' . I18n::msg('fluid_redirect_gone') . '</option><option value="short">' . I18n::msg('fluid_shortlink_option') . '</option></select></div>'
             . self::siteSelect('is-half')
-            . '<div class="blocks-form__field is-half"><label class="control-label">Gültig bis (optional)</label><input class="form-control" type="date" name="expires"></div>'
-            . '<div class="blocks-form__field is-half"><label class="control-label">Notiz (optional)</label><input class="form-control" name="note" maxlength="190"></div>'
-            . '<div class="blocks-form__field"><label class="blocks-form__check"><input type="checkbox" name="keep_query" value="1" checked> Parameter der Anfrage übernehmen (?…)</label></div>'
-            . '</div><div class="site-actions"><button type="submit" class="btn btn--primary">Weiterleitung anlegen</button></div></form>'
+            . '<div class="blocks-form__field is-half"><label class="control-label">' . I18n::msg('fluid_shortlink_expires') . '</label><input class="form-control" type="date" name="expires"></div>'
+            . '<div class="blocks-form__field is-half"><label class="control-label">' . I18n::msg('fluid_site_redirect_note') . '</label><input class="form-control" name="note" maxlength="190"></div>'
+            . '<div class="blocks-form__field"><label class="blocks-form__check"><input type="checkbox" name="keep_query" value="1" checked> ' . I18n::msg('fluid_site_redirect_keep_query') . '</label></div>'
+            . '</div><div class="site-actions"><button type="submit" class="btn btn--primary">' . I18n::msg('fluid_site_redirect_add') . '</button></div></form>'
             . '<form class="site-card" data-site-form="redirect_test" data-tab="redirects"><div class="blocks-form__grid">'
-            . '<div class="blocks-form__field"><label class="control-label">Adresse testen</label><input class="form-control" name="address" placeholder="/alte-seite?x=1" required></div>'
-            . self::siteSelect('') . '</div><div class="site-actions"><button type="submit" class="btn">Testen</button></div></form>';
+            . '<div class="blocks-form__field"><label class="control-label">' . I18n::msg('fluid_site_redirect_test') . '</label><input class="form-control" name="address" placeholder="' . I18n::msg('fluid_site_redirect_test_placeholder') . '" required></div>'
+            . self::siteSelect('') . '</div><div class="site-actions"><button type="submit" class="btn">' . I18n::msg('fluid_site_redirect_test_btn') . '</button></div></form>';
         try {
             $rules = Sql::factory()->getArray('SELECT * FROM ' . Redirects::TABLE . ' ORDER BY updated DESC, id DESC LIMIT 200');
             $nf = Sql::factory()->getArray('SELECT path, hits, last_seen FROM ' . Redirects::TABLE_404 . ' ORDER BY hits DESC, last_seen DESC LIMIT 20');
@@ -379,26 +374,26 @@ final class SiteAdmin
             $rules = $nf = [];
         }
         if ($rules) {
-            $h .= '<h3 class="site-h">Weiterleitungen (' . count($rules) . ')</h3><ul class="site-list" role="list">';
+            $h .= '<h3 class="site-h">' . I18n::msg('fluid_site_tab_redirects') . ' (' . count($rules) . ')</h3><ul class="site-list" role="list">';
             foreach ($rules as $r) {
                 $target = (string) $r['target'];
                 $internal = Redirects::parseTarget($target);
                 if ('page' === ($internal['type'] ?? '') && ($a = Article::get((int) $internal['id'], $internal['lang'] ?? Router::splitLanguage((string) $r['source'])[0]))) {
                     $target = $a->name . ' (' . (Router::prefix($a->languageId) . '/' . Routes::path($a->id, $a->languageId)) . ')';
                 }
-                $h .= '<li class="site-list__item"><span class="site-list__main"><code>' . escape((string) $r['source']) . '</code> → ' . escape(410 === (int) $r['code'] ? 'gelöscht (410)' : $target)
+                $h .= '<li class="site-list__item"><span class="site-list__main"><code>' . escape((string) $r['source']) . '</code> → ' . escape(410 === (int) $r['code'] ? I18n::rawMsg('fluid_site_redirect_gone') : $target)
                     . '<small>' . (int) $r['code'] . ' · ' . match ((string) $r['origin']) {
-                        'auto' => 'automatisch', Shortlinks::ORIGIN => I18n::msg('fluid_shortlink'), default => 'manuell',
-                    } . ' · ' . (int) $r['hits'] . ' Aufrufe' . (null !== $r['expires'] && strtotime((string) $r['expires']) < time() ? ' · ' . I18n::msg('fluid_shortlink_expired', date('d.m.Y', (int) strtotime((string) $r['expires']))) : '') . ('' !== (string) $r['note'] && 'auto' !== $r['origin'] ? ' · ' . escape((string) $r['note']) : '') . '</small></span>'
-                    . '<button type="button" class="btn btn--icon" data-site-act="redirect_delete" data-id="' . (int) $r['id'] . '" data-confirm="Weiterleitung löschen?" aria-label="Löschen">✕</button></li>';
+                        'auto' => I18n::msg('fluid_site_redirect_auto'), Shortlinks::ORIGIN => I18n::msg('fluid_shortlink'), default => I18n::msg('fluid_site_redirect_manual'),
+                    } . ' · ' . I18n::msg('fluid_site_hits', (int) $r['hits']) . (null !== $r['expires'] && strtotime((string) $r['expires']) < time() ? ' · ' . I18n::msg('fluid_shortlink_expired', date('d.m.Y', (int) strtotime((string) $r['expires']))) : '') . ('' !== (string) $r['note'] && 'auto' !== $r['origin'] ? ' · ' . escape((string) $r['note']) : '') . '</small></span>'
+                    . '<button type="button" class="btn btn--icon" data-site-act="redirect_delete" data-id="' . (int) $r['id'] . '" data-confirm="' . I18n::msg('fluid_site_redirect_delete_confirm') . '" aria-label="' . I18n::msg('fluid_shortlink_delete') . '">✕</button></li>';
             }
             $h .= '</ul>';
         }
         if ($nf) {
-            $h .= '<h3 class="site-h">Nicht gefunden (404)</h3><p class="help-block">Adressen, die Besucher aufgerufen haben und die es nicht gibt – ohne IP. Häufige alte Adressen umleiten.</p><ul class="site-list" role="list">';
+            $h .= '<h3 class="site-h">' . I18n::msg('fluid_site_404') . '</h3><p class="help-block">' . I18n::msg('fluid_site_404_help') . '</p><ul class="site-list" role="list">';
             foreach ($nf as $r) {
-                $h .= '<li class="site-list__item"><span class="site-list__main"><code>' . escape((string) $r['path']) . '</code><small>' . (int) $r['hits'] . ' Aufrufe</small></span>'
-                    . '<button type="button" class="btn" data-prefill-source="' . escape((string) $r['path']) . '">Umleiten …</button></li>';
+                $h .= '<li class="site-list__item"><span class="site-list__main"><code>' . escape((string) $r['path']) . '</code><small>' . I18n::msg('fluid_site_hits', (int) $r['hits']) . '</small></span>'
+                    . '<button type="button" class="btn" data-prefill-source="' . escape((string) $r['path']) . '">' . I18n::msg('fluid_site_redirect_prefill') . '</button></li>';
             }
             $h .= '</ul>';
         }
@@ -413,10 +408,10 @@ final class SiteAdmin
         $code = $short ? 302 : Request::post('code', 'int', 301);
         $target = trim(Request::post('target', 'string', ''));
         if ('' === $source || '/' === $source) {
-            throw new ApiError('Bitte die alte Adresse angeben (z. B. /alte-seite).');
+            throw new ApiError(I18n::rawMsg('fluid_site_redirect_source_required'));
         }
         if (410 !== $code && '' === $target) {
-            throw new ApiError('Bitte ein Ziel wählen.');
+            throw new ApiError(I18n::rawMsg('fluid_site_redirect_target_required'));
         }
         if (preg_match('~^\d+$~', $target)) {
             $target = 'redaxo://' . $target;
@@ -438,7 +433,7 @@ final class SiteAdmin
             throw new ApiError($e->getMessage());
         }
 
-        return 'Weiterleitung angelegt.';
+        return I18n::rawMsg('fluid_site_redirect_added');
     }
 
     /** Choice of the website (only with several) */
@@ -447,11 +442,11 @@ final class SiteAdmin
         if (count(Sites::all()) < 2) {
             return '';
         }
-        $o = '<option value="">alle Websites</option>';
+        $o = '<option value="">' . I18n::msg('fluid_site_all_sites') . '</option>';
         foreach (Sites::all() as $site) {
             $o .= '<option value="' . escape($site->key) . '">' . escape('' !== $site->name ? $site->name : $site->key) . '</option>';
         }
 
-        return '<div class="blocks-form__field ' . $class . '"><label class="control-label">Website</label><select class="form-control" name="site">' . $o . '</select></div>';
+        return '<div class="blocks-form__field ' . $class . '"><label class="control-label">' . I18n::msg('fluid_site_site') . '</label><select class="form-control" name="site">' . $o . '</select></div>';
     }
 }

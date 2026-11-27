@@ -73,15 +73,15 @@ final class Api
         $user = Editing::user();
         try {
             if (!$user) {
-                self::send(['ok' => false, 'error' => 'Keine Berechtigung – bitte im Backend anmelden.'], 403);
+                self::send(['ok' => false, 'error' => I18n::rawMsg('fluid_api_error_login')], 403);
             }
             if ('POST' !== ($_SERVER['REQUEST_METHOD'] ?? '') || !CsrfToken::factory(self::CSRF)->isValid()) {
-                self::send(['ok' => false, 'error' => 'Sitzung abgelaufen – bitte Seite neu laden.'], 419);
+                self::send(['ok' => false, 'error' => I18n::rawMsg('fluid_api_error_session')], 419);
             }
             if ('logout' === Request::get(self::PARAM, 'string') && !Editing::isGuest()) {
                 self::logout();
             }
-            $article = Article::getCurrent() ?? self::fail('Artikel nicht gefunden.', 404);
+            $article = Article::getCurrent() ?? self::fail(I18n::rawMsg('fluid_api_error_article'), 404);
             // Action permissions of the core (as in the backend)
             $action = Request::get(self::PARAM, 'string');
             // FLUID_API_ACTION: addons can take over an action – return ['result' => array, 'state' => array].
@@ -95,7 +95,7 @@ final class Api
                 self::send(['ok' => true, 'state' => (array) ($taken['state'] ?? self::state($article))] + $taken['result']);
             }
             if (Editing::isGuest()) {
-                self::fail('Für Gäste nicht verfügbar.', 403);
+                self::fail(I18n::rawMsg('fluid_api_error_guest'), 403);
             }
             // Edit lock: changes to the page only for the person currently holding it (HTTP 423)
             if (in_array($action, self::LOCKED, true)) {
@@ -109,7 +109,7 @@ final class Api
             // Errors of the core handlers (page not found, rule violated …) with translated message
             self::send(['ok' => false, 'error' => $e->getMessage()], 400);
         } catch (Throwable $e) {
-            self::send(['ok' => false, 'error' => 'Fehler: ' . $e->getMessage()], 500);
+            self::send(['ok' => false, 'error' => I18n::rawMsg('fluid_error_prefix', $e->getMessage())], 500);
         }
     }
 
@@ -162,11 +162,11 @@ final class Api
             'paste', 'duplicate' => (static function () use ($article, $user) {
                 $clip = 'duplicate' === Request::get(self::PARAM, 'string')
                     ? BlockOps::payload($article, Request::post('slice', 'int', 0))['clip']
-                    : (json_decode(Request::post('clip', 'string', ''), true) ?: self::fail('Die Zwischenablage ist leer.'));
+                    : (json_decode(Request::post('clip', 'string', ''), true) ?: self::fail(I18n::rawMsg('fluid_api_clipboard_empty')));
                 // Cut: remove the original only after pasting – not behind itself
                 $cut = 'paste' === Request::get(self::PARAM, 'string') ? json_decode(Request::post('cut', 'string', ''), true) : null;
                 if (is_array($cut) && (int) ($cut['slice'] ?? 0) === Request::post('after', 'int', 0)) {
-                    self::fail('Ein Block lässt sich nicht hinter sich selbst verschieben.');
+                    self::fail(I18n::rawMsg('fluid_api_move_self'));
                 }
                 $id = BlockOps::insert($article, $user, Request::post('after', 'int', 0), $clip);
                 if (is_array($cut) && (int) ($cut['slice'] ?? 0) > 0) {
@@ -190,7 +190,7 @@ final class Api
                 Versions::restore($article->id, $article->languageId, $state['date'] ?? Request::post('date', 'string', ''), $state['revision'] ?? Request::post('revision', 'int', 0));
                 Activity::log('restore', $article->id, Request::post('date', 'string', ''));
 
-                return ['reload' => true, 'message' => 'Stand in den Entwurf geholt – prüfen und veröffentlichen.'];
+                return ['reload' => true, 'message' => I18n::rawMsg('fluid_api_version_restored')];
             })(),
             'drafts' => ['drafts' => Drafts::all($article->languageId, $user)],
             'inbox' => ['items' => Data\Inbox::list($user, Request::post('filter', 'string', 'new')), 'new' => Data\Inbox::countNew($user)],
@@ -203,21 +203,21 @@ final class Api
             'inbox_delete' => (static function () use ($user) {
                 Data\Inbox::delete($user, Request::post('table', 'string', ''), Request::post('id', 'int', 0));
 
-                return ['items' => Data\Inbox::list($user, Request::post('filter', 'string', 'new')), 'new' => Data\Inbox::countNew($user), 'message' => 'Anfrage gelöscht.'];
+                return ['items' => Data\Inbox::list($user, Request::post('filter', 'string', 'new')), 'new' => Data\Inbox::countNew($user), 'message' => I18n::rawMsg('fluid_api_inbox_deleted')];
             })(),
             'activity' => ['activity' => Activity::recent(150)],
             // Copy the content of a page from another language (into the draft, or live without working version)
             'lang_copy' => (static function () use ($article) {
                 $from = Request::post('from', 'int', Language::getStartId());
                 if ($from === $article->languageId || !Language::exists($from)) {
-                    self::fail('Bitte eine andere Sprache wählen.');
+                    self::fail(I18n::rawMsg('fluid_api_lang_other'));
                 }
                 // into the draft, or live without working version – live stays unchanged until „Veröffentlichen“
                 ContentHandler::copyContent($article->id, $article->id, $from, $article->languageId, FluidAddon::revision(), true);
                 ArticleCache::delete($article->id, $article->languageId);
-                Activity::log('save', $article->id, 'Inhalt aus ' . (Language::get($from)->name ?? $from) . ' übernommen');
+                Activity::log('save', $article->id, I18n::rawMsg('fluid_api_lang_copied_log', (string) (Language::get($from)->name ?? $from)));
 
-                return ['reload' => true, 'message' => 'Inhalt übernommen – jetzt übersetzen und veröffentlichen.'];
+                return ['reload' => true, 'message' => I18n::rawMsg('fluid_api_lang_copied')];
             })(),
             'page' => self::page($article),
             'page_save' => self::pageSave($article, $user),
@@ -225,7 +225,7 @@ final class Api
             'page_add' => self::pageAdd($article, $user),
             'template_save' => (static function () use ($article, $user) {
                 if (!self::mayTemplates($user)) {
-                    self::fail('Vorlagen dürfen nur Admins bzw. Benutzer mit Recht auf „Seitenvorlagen“ speichern.', 403);
+                    self::fail(I18n::rawMsg('fluid_api_templates_save_perm'), 403);
                 }
 
                 return self::templateSave($article);
@@ -233,14 +233,14 @@ final class Api
             'templates' => ['templates' => PageTemplates::all($article->languageId), 'canManage' => self::mayTemplates($user)],
             'template_rename', 'template_delete' => (static function () use ($article, $user): array {
                 if (!self::mayTemplates($user)) {
-                    self::fail('Vorlagen dürfen nur Admins bzw. Benutzer mit Recht auf „Seitenvorlagen“ verwalten.', 403);
+                    self::fail(I18n::rawMsg('fluid_api_templates_manage_perm'), 403);
                 }
                 $id = Request::post('id', 'int', 0);
                 if ('template_rename' === Request::get(self::PARAM, 'string')) {
                     PageTemplates::rename($id, Request::post('name', 'string', ''), $article->languageId);
-                    $msg = 'Vorlage umbenannt.';
+                    $msg = I18n::rawMsg('fluid_api_template_renamed');
                 } else {
-                    $msg = 'Vorlage „' . PageTemplates::delete($id, $article->languageId) . '“ gelöscht.';
+                    $msg = I18n::rawMsg('fluid_api_template_deleted', PageTemplates::delete($id, $article->languageId));
                 }
 
                 return ['templates' => PageTemplates::all($article->languageId), 'canManage' => true, 'message' => $msg];
@@ -258,7 +258,7 @@ final class Api
                 ModuleForm::save(self::plainSlice($article, $user), (array) Request::post('m', 'array', []));
                 return [];
             })(),
-            default => self::fail('Unbekannte Aktion.', 400),
+            default => self::fail(I18n::rawMsg('fluid_api_unknown_action'), 400),
         });
         // Activity log (save, publish, discard and restore log their actions themselves)
         $log = ['add' => 'block_add', 'module_add' => 'block_add', 'delete' => 'block_delete', 'paste' => 'block_add', 'duplicate' => 'block_add', 'page_add' => 'page_add', 'page_save' => 'page_settings',
@@ -337,15 +337,15 @@ final class Api
         $key = Request::post('module', 'string');
         $module = BlockModule::classFor($key);
         if (null === $module) {
-            self::fail('Unbekannter Blocktyp.');
+            self::fail(I18n::rawMsg('fluid_api_unknown_type'));
         }
         self::requireModulePerm($user, $key);
         if (!Template::checkModuleAllowed((string) $article->templateKey, 1, $key)) {
-            self::fail('Dieser Block ist im Template der Seite nicht erlaubt.', 403);
+            self::fail(I18n::rawMsg('fluid_api_block_not_allowed'), 403);
         }
         $col = max(0, min(4, Request::post('col', 'int', 0)));
         if ($col > 0 && !$module::nestable()) {
-            self::fail('Dieser Block kann nicht in einer Spalte stehen.');
+            self::fail(I18n::rawMsg('fluid_api_block_no_column'));
         }
         $priority = self::position($article, $col);
         // Save the fields' default values (variant, select fields …) as well
@@ -396,7 +396,7 @@ final class Api
             $u = array_find_key($units, static fn (array $unit) => $unit[0] === $slice->id);
             $v = $up ? $u - 1 : $u + 1;
             if (null === $u || !isset($units[$v])) {
-                self::fail($up ? 'Der Block steht schon oben.' : 'Der Block steht schon unten.');
+                self::fail($up ? I18n::rawMsg('fluid_api_move_top') : I18n::rawMsg('fluid_api_move_bottom'));
             }
             [$units[$u], $units[$v]] = [$units[$v], $units[$u]];
         } else {
@@ -408,7 +408,7 @@ final class Api
             $k = array_search($slice->id, $same, true);
             $other = $same[$up ? $k - 1 : $k + 1] ?? null;
             if (null === $other) {
-                self::fail($up ? 'Der Block steht schon oben in der Spalte.' : 'Der Block steht schon unten in der Spalte.');
+                self::fail($up ? I18n::rawMsg('fluid_api_move_col_top') : I18n::rawMsg('fluid_api_move_col_bottom'));
             }
             $a = array_search($slice->id, $unit, true);
             $b = array_search($other, $unit, true);
@@ -460,7 +460,7 @@ final class Api
         Activity::log('publish', $article->id);
         Search\Search::markDirty();
 
-        return ['message' => 'Veröffentlicht.'];
+        return ['message' => I18n::rawMsg('fluid_api_published')];
     }
 
     private static function discard(Article $article): array
@@ -483,22 +483,22 @@ final class Api
             . ('' !== $help ? '<p class="help-block">' . escape($help) . '</p>' : '') . '</div>';
         $html = '<div class="blocks-form" data-blocks-form><div class="blocks-form__grid">'
             . self::routeFields($article, $f)
-            . $f('Titel der Seite', '<input class="form-control" type="text" name="name" value="' . escape($article->name) . '" required maxlength="191">', $article->isStartArticle() && $article->categoryId ? 'Erscheint auch im Menü.' : '')
-            . '<div class="blocks-form__field"><label class="blocks-form__check"><input type="checkbox" name="online" value="1"' . ($article->isOnline() ? ' checked' : '') . '> Online – für Besucher sichtbar</label></div>'
+            . $f(I18n::rawMsg('fluid_page_title'), '<input class="form-control" type="text" name="name" value="' . escape($article->name) . '" required maxlength="191">', $article->isStartArticle() && $article->categoryId ? I18n::rawMsg('fluid_page_title_help') : '')
+            . '<div class="blocks-form__field"><label class="blocks-form__check"><input type="checkbox" name="online" value="1"' . ($article->isOnline() ? ' checked' : '') . '> ' . I18n::msg('fluid_page_online') . '</label></div>'
             . (Article::getSiteStartArticleId() === $article->id
-                ? $f('Adresse', '<p class="blocks-form__static"><code>/</code> – Startseite</p>')
+                ? $f(I18n::rawMsg('fluid_address'), '<p class="blocks-form__static"><code>/</code> – ' . I18n::msg('fluid_page_home') . '</p>')
                 : self::addressField($article, $f))
-            . $f('Titel für Suchmaschinen (optional)', '<input class="form-control" type="text" name="seo_title" value="' . escape($s['title']) . '" maxlength="191" data-count="60" placeholder="' . escape(PageSettings::title($article, Core::getProject()->instanceName)) . '">',
-                'Erscheint im Browser-Tab und in Suchergebnissen – etwa 50–60 Zeichen. Leer = Seitentitel und Name der Website.')
-            . $f('Beschreibung für Suchmaschinen', '<textarea class="form-control" name="description" rows="3" maxlength="300" data-count="160">' . escape($s['description']) . '</textarea>', 'Etwa 120–160 Zeichen: worum geht es auf dieser Seite?')
-            . $f('Bild für soziale Netzwerke', Form\Picker::media('page_image', 'image', $s['image'], true, false), 'Erscheint, wenn die Seite geteilt wird (z. B. 1200 × 630 px).')
-            . '<div class="blocks-form__field"><label class="blocks-form__check"><input type="checkbox" name="noindex" value="1"' . ($s['noindex'] ? ' checked' : '') . '> Nicht in Suchmaschinen aufnehmen</label></div>'
+            . $f(I18n::rawMsg('fluid_page_seo_title'), '<input class="form-control" type="text" name="seo_title" value="' . escape($s['title']) . '" maxlength="191" data-count="60" placeholder="' . escape(PageSettings::title($article, Core::getProject()->instanceName)) . '">',
+                I18n::rawMsg('fluid_page_seo_title_help'))
+            . $f(I18n::rawMsg('fluid_page_description'), '<textarea class="form-control" name="description" rows="3" maxlength="300" data-count="160">' . escape($s['description']) . '</textarea>', I18n::rawMsg('fluid_page_description_help'))
+            . $f(I18n::rawMsg('fluid_page_image'), Form\Picker::media('page_image', 'image', $s['image'], true, false), I18n::rawMsg('fluid_page_image_help'))
+            . '<div class="blocks-form__field"><label class="blocks-form__check"><input type="checkbox" name="noindex" value="1"' . ($s['noindex'] ? ' checked' : '') . '> ' . I18n::msg('fluid_page_noindex') . '</label></div>'
             . self::seoFields($article, $f)
             . self::blogFields($article, $f)
             . self::shortlinkField($article)
             . '</div></div>';
 
-        return ['html' => $html, 'label' => 'Seiteneinstellungen'];
+        return ['html' => $html, 'label' => I18n::rawMsg('fluid_page_settings')];
     }
 
     /** Page settings: advanced SEO of klxm/routes (right routes[seo]) – canonical, page as redirect, sitemap, page type */
@@ -509,21 +509,21 @@ final class Api
         }
         $s = Pages::get($article->id, $article->languageId);
         $codes = '';
-        foreach ([301 => '301 – dauerhaft', 308 => '308 – dauerhaft', 302 => '302 – vorübergehend', 307 => '307 – vorübergehend'] as $c => $l) {
+        foreach ([301 => '301 – ' . I18n::msg('fluid_redirect_permanent'), 308 => '308 – ' . I18n::msg('fluid_redirect_permanent'), 302 => '302 – ' . I18n::msg('fluid_redirect_temporary'), 307 => '307 – ' . I18n::msg('fluid_redirect_temporary')] as $c => $l) {
             $codes .= '<option value="' . $c . '"' . ($s->redirectCode === $c ? ' selected' : '') . '>' . $l . '</option>';
         }
         $types = '';
-        foreach (['WebPage' => 'Seite', 'AboutPage' => 'Über uns', 'ContactPage' => 'Kontakt', 'FAQPage' => 'Fragen und Antworten', 'CollectionPage' => 'Übersicht', 'ProfilePage' => 'Profil', 'ItemPage' => 'Einzelnes Element'] as $t => $l) {
-            $types .= '<option value="' . $t . '"' . ($s->type === $t ? ' selected' : '') . '>' . $l . '</option>';
+        foreach (['WebPage' => 'webpage', 'AboutPage' => 'aboutpage', 'ContactPage' => 'contactpage', 'FAQPage' => 'faqpage', 'CollectionPage' => 'collectionpage', 'ProfilePage' => 'profilepage', 'ItemPage' => 'itempage'] as $t => $l) {
+            $types .= '<option value="' . $t . '"' . ($s->type === $t ? ' selected' : '') . '>' . I18n::msg('fluid_page_type_' . $l) . '</option>';
         }
 
-        return '<details class="blocks-form__more"' . ('' !== $s->canonical || '' !== $s->redirect || $s->nofollow || !$s->sitemap ? ' open' : '') . '><summary>Erweitert (SEO)</summary>'
-            . '<div class="blocks-form__field"><label class="blocks-form__check"><input type="checkbox" name="seo[nofollow]" value="1"' . ($s->nofollow ? ' checked' : '') . '> Links dieser Seite nicht folgen (nofollow)</label></div>'
-            . '<div class="blocks-form__field"><label class="blocks-form__check"><input type="checkbox" name="seo[no_sitemap]" value="1"' . (!$s->sitemap ? ' checked' : '') . '> Nicht in Sitemap und llms.txt</label></div>'
-            . $f('Kanonische Adresse (optional)', Form\Picker::link('seo_canonical', 'seo[canonical]', $s->canonical, false), 'Nur wenn derselbe Inhalt woanders maßgeblich ist. Leer = diese Seite.')
-            . $f('Seite leitet weiter auf (optional)', Form\Picker::link('seo_redirect', 'seo[redirect]', $s->redirect, false), 'Besucher landen dort; Sie selbst sehen die Seite weiter zum Bearbeiten.')
-            . $f('Art der Weiterleitung', '<select class="form-control" name="seo[redirectCode]">' . $codes . '</select>')
-            . $f('Art der Seite (schema.org)', '<select class="form-control" name="seo[type]">' . $types . '</select>', 'Hilft Suchmaschinen und KI, die Seite einzuordnen.')
+        return '<details class="blocks-form__more"' . ('' !== $s->canonical || '' !== $s->redirect || $s->nofollow || !$s->sitemap ? ' open' : '') . '><summary>' . I18n::msg('fluid_page_seo_advanced') . '</summary>'
+            . '<div class="blocks-form__field"><label class="blocks-form__check"><input type="checkbox" name="seo[nofollow]" value="1"' . ($s->nofollow ? ' checked' : '') . '> ' . I18n::msg('fluid_page_nofollow') . '</label></div>'
+            . '<div class="blocks-form__field"><label class="blocks-form__check"><input type="checkbox" name="seo[no_sitemap]" value="1"' . (!$s->sitemap ? ' checked' : '') . '> ' . I18n::msg('fluid_page_no_sitemap') . '</label></div>'
+            . $f(I18n::rawMsg('fluid_page_canonical'), Form\Picker::link('seo_canonical', 'seo[canonical]', $s->canonical, false), I18n::rawMsg('fluid_page_canonical_help'))
+            . $f(I18n::rawMsg('fluid_page_redirect'), Form\Picker::link('seo_redirect', 'seo[redirect]', $s->redirect, false), I18n::rawMsg('fluid_page_redirect_help'))
+            . $f(I18n::rawMsg('fluid_page_redirect_code'), '<select class="form-control" name="seo[redirectCode]">' . $codes . '</select>')
+            . $f(I18n::rawMsg('fluid_page_type'), '<select class="form-control" name="seo[type]">' . $types . '</select>', I18n::rawMsg('fluid_page_type_help'))
             . '</details>';
     }
 
@@ -532,19 +532,19 @@ final class Api
     {
         $isCat = $article->isStartArticle() && null !== Category::get($article->id);
         if ($isCat) {
-            return '<div class="blocks-form__field"><label class="blocks-form__check"><input type="checkbox" name="blog" value="1"' . (Blog\Blog::isBlog($article->id) ? ' checked' : '') . '> Blog / News – Unterseiten sind Beiträge</label>'
-                . '<p class="help-block">Beiträge erscheinen nach Datum sortiert (neueste zuerst), mit Kopf (Datum, Autor, Bild) und „Vorheriger/Nächster Beitrag“; RSS-Feed unter …/feed.xml. Übersicht mit dem Block „Beiträge“.</p></div>';
+            return '<div class="blocks-form__field"><label class="blocks-form__check"><input type="checkbox" name="blog" value="1"' . (Blog\Blog::isBlog($article->id) ? ' checked' : '') . '> ' . I18n::msg('fluid_page_blog') . '</label>'
+                . '<p class="help-block">' . I18n::msg('fluid_page_blog_help') . '</p></div>';
         }
         if (!Blog\Blog::blogOf($article)) {
             return '';
         }
         $p = Blog\Post::get($article->id, $article->languageId);
 
-        return '<h3 class="blocks-form__h">Beitrag</h3>'
-            . $f('Datum', '<input class="form-control" type="date" name="post_date" value="' . escape($p ? $p->date->format('Y-m-d') : date('Y-m-d')) . '">', 'Bestimmt die Reihenfolge – neueste zuerst. Ein Datum in der Zukunft geht trotzdem live, wenn die Seite online ist.')
-            . $f('Autor (optional)', '<input class="form-control" type="text" name="post_author" value="' . escape($p->author ?? '') . '" maxlength="120">')
-            . $f('Schlagworte (optional)', '<input class="form-control" type="text" name="post_tags" value="' . escape(implode(', ', $p->tags ?? [])) . '" maxlength="255" placeholder="z. B. Veranstaltung, Team">', 'Mit Komma getrennt. Besucher können in der Übersicht danach filtern.')
-            . '<p class="help-block">Teaserbild = „Bild für soziale Netzwerke“, Kurztext = „Beschreibung für Suchmaschinen“.</p>';
+        return '<h3 class="blocks-form__h">' . I18n::msg('fluid_page_post') . '</h3>'
+            . $f(I18n::rawMsg('fluid_page_post_date'), '<input class="form-control" type="date" name="post_date" value="' . escape($p ? $p->date->format('Y-m-d') : date('Y-m-d')) . '">', I18n::rawMsg('fluid_page_post_date_help'))
+            . $f(I18n::rawMsg('fluid_page_post_author'), '<input class="form-control" type="text" name="post_author" value="' . escape($p->author ?? '') . '" maxlength="120">')
+            . $f(I18n::rawMsg('fluid_page_post_tags'), '<input class="form-control" type="text" name="post_tags" value="' . escape(implode(', ', $p->tags ?? [])) . '" maxlength="255" placeholder="' . I18n::msg('fluid_page_post_tags_placeholder') . '">', I18n::rawMsg('fluid_page_post_tags_help'))
+            . '<p class="help-block">' . I18n::msg('fluid_page_post_teaser_help') . '</p>';
     }
 
     /**
@@ -585,10 +585,10 @@ final class Api
                 'textarea' => '<textarea class="form-control" name="' . escape($name) . '" rows="3" maxlength="1000" data-count="160">' . escape($fd->value) . '</textarea>',
                 'media' => Form\Picker::media('route_' . $fd->name, $name, $fd->value, true, false),
                 default => '<input class="form-control" type="text" name="' . escape($name) . '" value="' . escape($fd->value) . '" maxlength="191"' . ('title' === $fd->role ? ' data-count="60"' : '') . '>',
-            }, 'slug' === $fd->role ? 'Die Adresse entsteht daraus; die alte leitet danach automatisch weiter.' : '');
+            }, 'slug' === $fd->role ? I18n::rawMsg('fluid_page_slug_help') : '');
         }
 
-        return $html . '<h3 class="blocks-form__h">Seite</h3>';
+        return $html . '<h3 class="blocks-form__h">' . I18n::msg('fluid_page_type_webpage') . '</h3>';
     }
 
     /** Saves the fields of an entry: YForm tables via the record API (validation, timestamps), otherwise the source */
@@ -604,9 +604,9 @@ final class Api
         $table = $source instanceof TableSource && class_exists(Table::class) ? Data\YFormBridge::table($source->config()->table) : null;
         if (null !== $table) {
             if (Editing::isGuest() || !Data\RecordBlocks::canEdit($user, $table)) {
-                self::fail('Dafür fehlt Ihnen das Recht, diese YForm-Tabelle zu bearbeiten.', 403);
+                self::fail(I18n::rawMsg('fluid_error_yform_table_perm'), 403);
             }
-            $record = $table::query()->where('id', (int) $entry->id)->first() ?? self::fail('Eintrag nicht gefunden.');
+            $record = $table::query()->where('id', (int) $entry->id)->first() ?? self::fail(I18n::rawMsg('fluid_error_entry_not_found'));
             foreach ($source->editable($entry) as $fd) {
                 if (array_key_exists($fd->name, $values) && null !== ($field = $table->getField($fd->name))) {
                     $record->set($fd->name, $field->fromInput($values[$fd->name]));
@@ -615,12 +615,12 @@ final class Api
             try {
                 $record->save();
             } catch (ValidationException $e) {
-                self::fail(implode(' ', $e->errors->all()) ?: 'Ein Wert ist nicht gültig.');
+                self::fail(implode(' ', $e->errors->all()) ?: I18n::rawMsg('fluid_api_value_invalid'));
             }
             Routes::rebuildSource($source->key());
         } else {
             if (Editing::isGuest()) {
-                self::fail('Gäste können Einträge nicht ändern.', 403);
+                self::fail(I18n::rawMsg('fluid_api_guest_entries'), 403);
             }
             $source->save($entry, $values);
         }
@@ -658,7 +658,7 @@ final class Api
         Routes::rebuild();
 
         // New address: switch to it (offline there is no redirect for the old one)
-        return ['message' => 'Seiteneinstellungen gespeichert.', 'reload' => true, 'url' => $entryUrl ?? Url::article($article->id, $article->languageId)];
+        return ['message' => I18n::rawMsg('fluid_page_saved'), 'reload' => true, 'url' => $entryUrl ?? Url::article($article->id, $article->languageId)];
     }
 
     /**
@@ -762,7 +762,7 @@ final class Api
     {
         $name = trim(Request::post('name', 'string', ''));
         if ('' === $name) {
-            self::fail('Bitte einen Titel angeben.');
+            self::fail(I18n::rawMsg('fluid_error_title_required'));
         }
         // Position: from the page tree (parent = ID of a menu item, 0 = top level) or „hier“ / „oberste Ebene“
         $parent = '' !== Request::post('parent', 'string', '')
@@ -770,7 +770,7 @@ final class Api
             : ('root' === Request::post('where', 'string', 'here') ? null : $article->categoryId);
         $perm = $user->getComplexPerm('structure');
         if (!$perm instanceof StructurePermission || !$perm->hasCategoryPerm($parent)) {
-            self::fail('Keine Berechtigung, hier eine Seite anzulegen.', 403);
+            self::fail(I18n::rawMsg('fluid_api_page_add_perm'), 403);
         }
         $template = (string) $article->templateKey;
         if ('menu' === Request::post('kind', 'string', 'menu')) {
@@ -791,7 +791,7 @@ final class Api
             PageTemplates::copy($source, $id, $article->languageId);
         }
 
-        return ['url' => Url::article($id, $article->languageId, [Editing::PARAM => 1]), 'message' => 'Seite angelegt (offline).'];
+        return ['url' => Url::article($id, $article->languageId, [Editing::PARAM => 1]), 'message' => I18n::rawMsg('fluid_api_page_added')];
     }
 
     /** Saving and managing templates: admins or permission on the category „Seitenvorlagen“ */
@@ -807,7 +807,7 @@ final class Api
     {
         $id = PageTemplates::saveFrom($article, Request::post('name', 'string', ''));
 
-        return ['message' => 'Als Vorlage gespeichert. Sie erscheint beim Anlegen neuer Seiten.', 'templates' => PageTemplates::all($article->languageId), 'id' => $id];
+        return ['message' => I18n::rawMsg('fluid_api_template_saved'), 'templates' => PageTemplates::all($article->languageId), 'id' => $id];
     }
 
     /**
@@ -818,7 +818,7 @@ final class Api
     {
         // Preview (without saving) also for guests (guest access, e.g. demo) – only admins save
         if (!$user->admin && ($save || !Editing::isGuest())) {
-            self::fail('Das Design dürfen nur Admins ändern.', 403);
+            self::fail(I18n::rawMsg('fluid_api_design_perm'), 403);
         }
         $template = $article->templateKey ? Template::get($article->templateKey) : null;
         $kit = null;
@@ -829,7 +829,7 @@ final class Api
             }
         }
         if (!$kit) {
-            self::fail('Diese Seite nutzt kein Kit mit Style-Editor.');
+            self::fail(I18n::rawMsg('fluid_api_design_no_kit'));
         }
         $design = $kit->design();
         $raw = json_decode(Request::post('values', 'string', ''), true);
@@ -844,7 +844,7 @@ final class Api
             'fonts' => $design->fontLinks($values),
             'opt' => $kit->designCss($values),
             'checks' => array_values(array_filter($design->checks($values), static fn (array $c) => !$c['ok'])),
-            'message' => $save ? 'Design gespeichert – gilt für die ganze Website.' : '',
+            'message' => $save ? I18n::rawMsg('fluid_api_design_saved') : '',
         ];
     }
 
@@ -885,7 +885,7 @@ final class Api
         $key = Request::post('module', 'string', '');
         self::requireModulePerm($user, $key);
         if (!ModuleForm::addable($key, $article)) {
-            self::fail('Dieses Modul lässt sich hier nicht hinzufügen.', 403);
+            self::fail(I18n::rawMsg('fluid_api_module_add_denied'), 403);
         }
         if (!$create) {
             return ['html' => ModuleForm::newForm($key, $article)];
@@ -925,11 +925,11 @@ final class Api
     {
         $slice = self::reload($article, Request::post('slice', 'int', 0));
         if (null !== BlockModule::classFor($slice->moduleKey) || Editing::isGuest()) {
-            self::fail('Dieses Modul lässt sich hier nicht bearbeiten.');
+            self::fail(I18n::rawMsg('fluid_api_module_edit_denied'));
         }
         $perm = $user->getComplexPerm('modules');
         if (!$user->admin && (!$perm instanceof ModulePermission || !$perm->hasPerm($slice->moduleKey))) {
-            self::fail('Dafür fehlt Ihnen das Recht an diesem Modul.');
+            self::fail(I18n::rawMsg('fluid_api_module_perm'));
         }
 
         return $slice;
@@ -940,7 +940,7 @@ final class Api
     {
         $slice = self::reload($article, Request::post('slice', 'int', 0));
         if (null === BlockModule::classFor($slice->moduleKey)) {
-            self::fail('Dieser Block hat kein Feldschema und lässt sich nur im Backend bearbeiten.');
+            self::fail(I18n::rawMsg('fluid_api_block_no_schema'));
         }
 
         return [$slice, BlockModule::of($slice)];
@@ -950,7 +950,7 @@ final class Api
     {
         $slice = ArticleSlice::getArticleSliceById($id, $article->languageId, FluidAddon::revision());
         if (!$slice || $slice->articleId !== $article->id) {
-            self::fail('Block nicht gefunden.', 404);
+            self::fail(I18n::rawMsg('fluid_error_block_not_found'), 404);
         }
 
         return $slice;
@@ -1040,7 +1040,7 @@ final class Api
     {
         $perm = $user->getComplexPerm('modules');
         if (!$perm instanceof ModulePermission || !$perm->hasPerm($moduleKey)) {
-            self::fail('Keine Berechtigung für diesen Blocktyp.', 403);
+            self::fail(I18n::rawMsg('fluid_error_block_type_perm'), 403);
         }
     }
 

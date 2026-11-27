@@ -14,51 +14,52 @@ use Klxm\Fluid\Field\YFormTable;
 use Klxm\Fluid\Kit\Fluid\FluidBlock;
 use Klxm\Fluid\Kit\Fluid\Module\Item\FormField;
 use Redaxo\Core\Content\AsModule;
+use Redaxo\Core\Translation\Translatable;
 
-#[AsModule('fluid.form', 'Formular')]
+#[AsModule('fluid.form', new Translatable('fluid_block_form'))]
 #[AsBlock(
     icon: 'envelope-simple',
-    group: 'Daten',
-    help: 'Formular mit YForm – selbst zusammengestellt (Felder, Schritte, speichern und/oder per E-Mail) oder eine Formular-Klasse aus dem Projekt (#[AsForm]). Prüfung, Schutz vor Bots und CSRF über YForm.',
+    group: new Translatable('fluid_block_group_data'),
+    help: new Translatable('fluid_block_form_help'),
     requires: 'yform',
-    variants: ['single' => 'Formular unter der Überschrift', 'split' => 'Text links, Formular rechts'],
+    variants: ['single' => new Translatable('fluid_block_form_variant_single'), 'split' => new Translatable('fluid_block_form_variant_split')],
     nestable: true,
 )]
 final class Form extends FluidBlock
 {
     #[Text(
-        'Dachzeile (optional)',
+        new Translatable('fluid_field_eyebrow'),
         maxLength: 60,
         width: 'half',
     )]
     public string $eyebrow = '';
 
     #[Text(
-        'Überschrift',
+        new Translatable('fluid_field_title'),
         maxLength: 110,
         width: 'half',
     )]
     public string $title = '';
 
     #[Textarea(
-        'Einleitung (optional)',
+        new Translatable('fluid_field_intro'),
         maxLength: 400,
         rows: 2,
     )]
     public string $intro = '';
 
     #[YFormForm(
-        'Formular aus dem Projekt (optional)',
-        note: 'Leer = eigenes Formular aus den Feldern unten.',
+        new Translatable('fluid_block_form_form'),
+        note: new Translatable('fluid_block_form_form_help'),
     )]
     public string $form = '';
 
     #[Collection(
-        'Felder des eigenen Formulars',
+        new Translatable('fluid_block_form_fields'),
         item: FormField::class,
-        itemLabel: 'Feld',
+        itemLabel: new Translatable('fluid_block_form_item'),
         titleField: 'label',
-        note: '„— Neuer Schritt —“ teilt das Formular in Schritte mit „Weiter“ und „Zurück“.',
+        note: new Translatable('fluid_block_form_fields_help'),
     )]
     public array $fields = [
         ['type' => 'text', 'label' => 'Name', 'required' => true],
@@ -73,19 +74,19 @@ final class Form extends FluidBlock
     ];
 
     #[Choice(
-        'Nach dem Absenden',
+        new Translatable('fluid_block_form_mode'),
         required: true,
         choices: [
-            'save_mail' => 'Speichern und per E-Mail senden',
-            'save' => 'Nur speichern',
-            'mail' => 'Nur per E-Mail senden',
+            'save_mail' => new Translatable('fluid_block_form_mode_save_mail'),
+            'save' => new Translatable('fluid_block_form_mode_save'),
+            'mail' => new Translatable('fluid_block_form_mode_mail'),
         ],
         width: 'half',
     )]
     public string $mode = 'save_mail';
 
     #[Text(
-        'E-Mail an (mehrere mit Komma)',
+        new Translatable('fluid_block_form_mail_to'),
         maxLength: 300,
         placeholder: 'info@example.org',
         width: 'half',
@@ -93,84 +94,84 @@ final class Form extends FluidBlock
     public string $mailTo = '';
 
     #[Text(
-        'Betreff der E-Mail (optional)',
+        new Translatable('fluid_block_form_mail_subject'),
         maxLength: 150,
-        placeholder: 'Neue Nachricht: {name}',
+        placeholder: new Translatable('fluid_block_form_mail_subject_placeholder'),
         width: 'half',
     )]
     public string $mailSubject = '';
 
     #[YFormTable(
-        'Speichern in (optional)',
+        new Translatable('fluid_block_form_target'),
         width: 'half',
-        note: 'Leer = „Formular-Eingänge“ (Postfach). Eine eigene YForm-Tabelle übernimmt Felder mit gleichem Feldnamen.',
+        note: new Translatable('fluid_block_form_target_help'),
     )]
     public string $target = '';
 
     #[Checkbox(
-        'Bestätigung an den Absender (an das E-Mail-Feld)',
+        new Translatable('fluid_block_form_confirm'),
         width: 'half',
     )]
     public bool $confirm = false;
 
     #[Checkbox(
-        'Angaben in die Bestätigung kopieren',
+        new Translatable('fluid_block_form_confirm_copy'),
         width: 'half',
     )]
     public bool $confirmCopy = false;
 
     #[Text(
-        'Betreff der Bestätigung',
+        new Translatable('fluid_block_form_confirm_subject'),
         maxLength: 150,
-        placeholder: 'Ihre Nachricht ist angekommen',
+        placeholder: new Translatable('fluid_block_form_confirm_subject_placeholder'),
     )]
     public string $confirmSubject = '';
 
     #[Textarea(
-        'Text der Bestätigung',
+        new Translatable('fluid_block_form_confirm_text'),
         rows: 3,
-        placeholder: 'Vielen Dank für Ihre Nachricht, {name}. Wir melden uns bald.',
+        placeholder: new Translatable('fluid_block_form_confirm_text_placeholder'),
     )]
     public string $confirmText = '';
 
     #[Text(
-        'Beschriftung des Buttons',
+        new Translatable('fluid_block_form_submit'),
         maxLength: 40,
-        placeholder: 'Absenden',
+        placeholder: new Translatable('fluid_block_form_submit_placeholder'),
         width: 'half',
     )]
     public string $submit = '';
 
     #[Text(
-        'Name im Postfach',
+        new Translatable('fluid_block_form_form_name'),
         maxLength: 80,
-        placeholder: 'z. B. Kontakt, Anmeldung',
+        placeholder: new Translatable('fluid_block_form_form_name_placeholder'),
         width: 'half',
     )]
     public string $formName = '';
 
     #[Textarea(
-        'Text nach dem Absenden',
+        new Translatable('fluid_block_form_success'),
         maxLength: 600,
         rows: 2,
-        placeholder: 'Vielen Dank! Ihre Nachricht ist angekommen.',
+        placeholder: new Translatable('fluid_block_form_success_placeholder'),
     )]
     public string $success = '';
 
-    #[Link('Stattdessen weiter zu Seite (optional)')]
+    #[Link(new Translatable('fluid_block_form_redirect'))]
     public string $redirect = '';
 
     #[Text(
-        'Titel des ersten Schritts (bei Schritten)',
+        new Translatable('fluid_block_form_first_step'),
         maxLength: 80,
     )]
     public string $firstStep = '';
 
     #[Textarea(
-        'Hinweis unter dem Formular (optional)',
+        new Translatable('fluid_block_form_note'),
         maxLength: 400,
         rows: 2,
-        note: 'Zum Beispiel Datenschutz: wofür die Angaben verwendet werden.',
+        note: new Translatable('fluid_block_form_note_help'),
     )]
     public string $note = '';
 }

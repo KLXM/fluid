@@ -12,6 +12,7 @@ use Redaxo\Core\Content\StructurePermission;
 use Redaxo\Core\Content\Template;
 use Redaxo\Core\Database\Sql;
 use Redaxo\Core\Security\User;
+use Redaxo\Core\Translation\I18n;
 
 use function array_map;
 use function array_merge;
@@ -89,7 +90,7 @@ final class BlockOps
             }
         }
         if (null === $from) {
-            throw new ApiError('Nur Abschnitte lassen sich so verschieben – Blöcke in Spalten mit den Pfeilen.');
+            throw new ApiError(I18n::rawMsg('fluid_blockops_reorder_sections'));
         }
         $unit = $units[$from];
         array_splice($units, $from, 1);
@@ -106,12 +107,12 @@ final class BlockOps
     /** Moves a block into the neighbouring column of its layout (← →), to the end of that column */
     public static function column(Article $article, int $sliceId, int $dir): void
     {
-        $slice = ArticleSlice::getArticleSliceById($sliceId, $article->languageId, FluidAddon::revision()) ?? throw new ApiError('Block nicht gefunden.');
-        $parent = Layout::parentOf($slice) ?? throw new ApiError('Der Block steht in keinem Layout.');
+        $slice = ArticleSlice::getArticleSliceById($sliceId, $article->languageId, FluidAddon::revision()) ?? throw new ApiError(I18n::rawMsg('fluid_error_block_not_found'));
+        $parent = Layout::parentOf($slice) ?? throw new ApiError(I18n::rawMsg('fluid_blockops_no_layout'));
         $n = Layout::count(BlockModule::valuesOf($parent));
         $col = min($n, Layout::col($slice)) + $dir;
         if ($col < 1 || $col > $n) {
-            throw new ApiError($dir < 0 ? 'Der Block steht schon in der ersten Spalte.' : 'Der Block steht schon in der letzten Spalte.');
+            throw new ApiError($dir < 0 ? I18n::rawMsg('fluid_blockops_first_col') : I18n::rawMsg('fluid_blockops_last_col'));
         }
         $tunes = BlockModule::tunesOf($slice);
         $tunes['col'] = $col;
@@ -137,7 +138,7 @@ final class BlockOps
     /** Content of a block for the clipboard (with column blocks for a layout): module, values, tunes, children */
     public static function payload(Article $article, int $sliceId): array
     {
-        $slice = ArticleSlice::getArticleSliceById($sliceId, $article->languageId, FluidAddon::revision()) ?? throw new ApiError('Block nicht gefunden.');
+        $slice = ArticleSlice::getArticleSliceById($sliceId, $article->languageId, FluidAddon::revision()) ?? throw new ApiError(I18n::rawMsg('fluid_error_block_not_found'));
         $item = static fn (ArticleSlice $s) => ['module' => $s->moduleKey, 'values' => (object) BlockModule::valuesOf($s), 'tunes' => (object) BlockModule::tunesOf($s)];
         $out = $item($slice);
         if (Layout::isLayout($slice)) {
@@ -152,15 +153,15 @@ final class BlockOps
     private static function check(User $user, string $template, string $key): void
     {
         if (!Module::exists($key)) {
-            throw new ApiError('Dieser Block lässt sich hier nicht einfügen.');
+            throw new ApiError(I18n::rawMsg('fluid_error_block_insert_here'));
         }
         $label = self::label($key);
         $perm = $user->getComplexPerm('modules');
         if (!$user->admin && (!$perm instanceof ModulePermission || !$perm->hasPerm($key))) {
-            throw new ApiError('Keine Berechtigung für den Block „' . $label . '“.');
+            throw new ApiError(I18n::rawMsg('fluid_blockops_block_perm', $label));
         }
         if (!Template::checkModuleAllowed($template, 1, $key)) {
-            throw new ApiError('Der Block „' . $label . '“ ist im Template dieser Seite nicht erlaubt.');
+            throw new ApiError(I18n::rawMsg('fluid_blockops_block_template', $label));
         }
     }
 
@@ -234,14 +235,14 @@ final class BlockOps
         $key = (string) ($clip['module'] ?? '');
         $m = BlockModule::classFor($key);
         if (null === $m || !empty($clip['children']) || !$m::nestable()) {
-            throw new ApiError('Dieser Block lässt sich nicht in eine Spalte einfügen.');
+            throw new ApiError(I18n::rawMsg('fluid_blockops_no_column'));
         }
         $perm = $user->getComplexPerm('modules');
         if (!$user->admin && (!$perm instanceof ModulePermission || !$perm->hasPerm($key))) {
-            throw new ApiError('Keine Berechtigung für den Block „' . $m::label() . '“.');
+            throw new ApiError(I18n::rawMsg('fluid_blockops_block_perm', $m::label()));
         }
         if (!Template::checkModuleAllowed((string) $article->templateKey, 1, $key)) {
-            throw new ApiError('Der Block „' . $m::label() . '“ ist im Template dieser Seite nicht erlaubt.');
+            throw new ApiError(I18n::rawMsg('fluid_blockops_block_template', $m::label()));
         }
         [$values, $tunes] = self::clipValues($clip);
         $tunes = Lock::forCopy($user, $tunes);
@@ -269,10 +270,10 @@ final class BlockOps
         $article = Article::get($source->articleId, $source->languageId);
         $perm = $user->getComplexPerm('structure');
         if (null === $article || (!$user->admin && !($perm instanceof StructurePermission && $perm->hasCategoryPerm($article->categoryId)))) {
-            throw new ApiError('Eingefügt – das Original lässt sich ohne Recht auf seine Seite nicht entfernen.');
+            throw new ApiError(I18n::rawMsg('fluid_blockops_cut_no_perm'));
         }
         if (null !== BlockModule::classFor($source->moduleKey) && '' !== Lock::reason($user, $source)) {
-            throw new ApiError('Eingefügt – das Original ist gesperrt bzw. ohne Modulrecht und bleibt stehen.');
+            throw new ApiError(I18n::rawMsg('fluid_blockops_cut_locked'));
         }
         ContentHandler::deleteSlice($source->id);   // Column blocks of a layout: FluidAddon (SliceDeleting)
         ArticleCache::delete($article->id, $article->languageId);

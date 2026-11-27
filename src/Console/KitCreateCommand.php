@@ -25,30 +25,30 @@ use function is_file;
  *
  * @internal
  */
-#[AsCommand(name: 'fluid:kit:create', description: 'Legt ein eigenes Kit im Projekt an, das von einem Kit erbt (Standard: fluid)')]
+#[AsCommand(name: 'fluid:kit:create', description: 'Creates a custom kit in the project that inherits from a kit (default: fluid)')]
 final class KitCreateCommand extends AbstractCommand
 {
     public function __invoke(
         SymfonyStyle $io,
-        #[Argument('Schlüssel des Kits, z. B. nature (Kleinbuchstaben, Ziffern, Bindestrich)')] string $key,
-        #[Option(description: 'Name in der Kit-Auswahl, z. B. „Nature“')] string $label = '',
-        #[Option(description: 'Eltern-Kit, von dem das neue Kit erbt')] string $parent = Kit::DEFAULT,
-        #[Option(description: 'Views des Eltern-Kits zum Anpassen kopieren, z. B. --view=hero,cards')] string $view = '',
-        #[Option(description: 'Seitenrahmen (template.view.php) zum Anpassen kopieren')] bool $template = false,
+        #[Argument('Key of the kit, e.g. nature (lowercase letters, digits, hyphen)')] string $key,
+        #[Option(description: 'Name in the kit selection, e.g. "Nature"')] string $label = '',
+        #[Option(description: 'Parent kit the new kit inherits from')] string $parent = Kit::DEFAULT,
+        #[Option(description: 'Copy views of the parent kit for customising, e.g. --view=hero,cards')] string $view = '',
+        #[Option(description: 'Copy the page frame (template.view.php) for customising')] bool $template = false,
     ): int {
         if (!preg_match('~^[a-z][a-z0-9-]{1,30}$~', $key)) {
-            $io->error('Schlüssel: Kleinbuchstaben, Ziffern und Bindestrich, mit einem Buchstaben am Anfang (2–31 Zeichen).');
+            $io->error('Key: lowercase letters, digits and hyphen, starting with a letter (2–31 characters).');
 
             return Command::FAILURE;
         }
         if (null !== Kit::get($key)) {
-            $io->error('Ein Kit „' . $key . '“ gibt es schon.');
+            $io->error('A kit "' . $key . '" already exists.');
 
             return Command::FAILURE;
         }
         $parentKit = Kit::get($parent);
         if (null === $parentKit) {
-            $io->error('Eltern-Kit „' . $parent . '“ gibt es nicht (' . implode(', ', array_keys(Kit::all())) . ').');
+            $io->error('Parent kit "' . $parent . '" does not exist (' . implode(', ', array_keys(Kit::all())) . ').');
 
             return Command::FAILURE;
         }
@@ -57,7 +57,7 @@ final class KitCreateCommand extends AbstractCommand
         $name = str_replace(' ', '', ucwords(str_replace('-', ' ', $key)));
         $dir = $srcDir . '/Kit/' . $name;
         if (is_dir($dir)) {
-            $io->error('Den Ordner ' . Path::relative($dir) . ' gibt es schon.');
+            $io->error('The folder ' . Path::relative($dir) . ' already exists.');
 
             return Command::FAILURE;
         }
@@ -74,8 +74,8 @@ final class KitCreateCommand extends AbstractCommand
             use Klxm\\Fluid\\Kit;
 
             /**
-             * Kit „{$label}“ – erbt von „{$parentKit->label()}“. Dateien in diesem Ordner ersetzen die des Eltern-Kits:
-             * kit.php (Definition), views/{typ}.php, template.view.php, functions.php, assets/.
+             * Kit "{$label}" – inherits from "{$parentKit->label()}". Files in this folder replace those of the parent kit:
+             * kit.php (definition), views/{type}.php, template.view.php, functions.php, assets/.
              */
             #[AsKit('{$key}', '{$this->quote($label)}', parent: '{$parentKit->key()}')]
             final class {$class} extends Kit {}
@@ -86,19 +86,19 @@ final class KitCreateCommand extends AbstractCommand
             <?php
 
             /*
-             * Kit „{$label}“: Definition. \$parent ist die Definition des Eltern-Kits „{$parentKit->key()}“ – alles, was hier
-             * fehlt, gilt von dort. Hintergründe und 'assets' werden je Schlüssel ergänzt, 'css' wird angehängt. Felder der
-             * Blöcke stehen in deren Klassen; 'blocks' ergänzt sie je Blocktyp (Varianten kommen hinzu, Felder werden angehängt).
+             * Kit "{$label}": definition. \$parent is the definition of the parent kit "{$parentKit->key()}" – anything missing
+             * here applies from there. Backgrounds and 'assets' are merged per key, 'css' is appended. The blocks' fields
+             * live in their classes; 'blocks' extends them per block type (variants are added, fields are appended).
              *
-             * Beispiele:
-             *   'blocks' => ['hero' => ['variants' => ['eigene' => 'Eigene Variante']]],   // View: views/hero.php
+             * Examples:
+             *   'blocks' => ['hero' => ['variants' => ['custom' => 'Custom variant']]],   // view: views/hero.php
              *   'backgrounds' => ['sand' => 'Sand'],
-             *   'design' => \$parent['design'],   // Style-Editor; eigene Vorlagen unter ['presets']
+             *   'design' => \$parent['design'],   // style editor; own presets under ['presets']
              */
 
             return [
                 'label' => '{$this->quote($label)}',
-                // Stylesheets für jede Seite – nach dem Grund- und Block-CSS des Eltern-Kits
+                // Stylesheets for every page – after the base and block CSS of the parent kit
                 'css' => ['css/kit.css'],
             ];
 
@@ -106,10 +106,10 @@ final class KitCreateCommand extends AbstractCommand
 
         File::put($dir . '/assets/css/kit.css', <<<CSS
             /*
-             * Kit „{$label}“ – eigenes CSS. Wird nach dem CSS von „{$parentKit->label()}“ (auch dem der Blöcke) geladen und
-             * kann es überschreiben. Einzelne Dateien des Eltern-Kits (z. B. css/b-cards.css) ersetzt eine gleichnamige Datei hier.
-             * Tipp: Farben und Schriften stellen Redakteure im Style-Editor (Design) ein – hier gehört hin, was das Kit
-             * grundsätzlich anders macht. Relative Pfade (url(…)) zeigen auf assets/ dieses Kits.
+             * Kit "{$label}" – own CSS. Loaded after the CSS of "{$parentKit->label()}" (including that of the blocks) and
+             * can override it. A file of the same name here replaces a single file of the parent kit (e.g. css/b-cards.css).
+             * Tip: editors set colours and fonts in the style editor (Design) – this is the place for what the kit does
+             * fundamentally differently. Relative paths (url(…)) point to this kit's assets/.
              */
 
             CSS);
@@ -119,7 +119,7 @@ final class KitCreateCommand extends AbstractCommand
             $type = (string) preg_replace('~[^a-z0-9_]~', '', $type);
             $source = $parentKit->file('views/' . $type . '.php');
             if (null === $source) {
-                $io->warning('Keine View „' . $type . '“ im Eltern-Kit.');
+                $io->warning('No view "' . $type . '" in the parent kit.');
                 continue;
             }
             File::copy($source, $dir . '/views/' . $type . '.php');
@@ -136,17 +136,17 @@ final class KitCreateCommand extends AbstractCommand
         // Re-read classes (ClassDiscovery) so the kit appears in the selection right away
         Cache::delete();
 
-        $io->success('Kit „' . $label . '“ angelegt: ' . Path::relative($dir));
+        $io->success('Kit "' . $label . '" created: ' . Path::relative($dir));
         $io->listing(array_merge([
-            $class . '.php – Anmeldung (#[AsKit])',
-            'kit.php – Definition (erbt von „' . $parentKit->key() . '“)',
-            'assets/css/kit.css – eigenes CSS',
+            $class . '.php – registration (#[AsKit])',
+            'kit.php – definition (inherits from "' . $parentKit->key() . '")',
+            'assets/css/kit.css – own CSS',
         ], $copied));
         $io->text([
-            'Nächste Schritte:',
-            '  1. Website-Einstellungen → Reiter „Kit“ → „' . $label . '“ wählen.',
-            '  2. assets/css/kit.css anpassen; weitere Views mit --view=typ,typ kopieren oder von Hand anlegen.',
-            '  3. Auf dem Server: Ordner mit ausliefern, dann `bin/console migrate` (veröffentlicht die Assets).',
+            'Next steps:',
+            '  1. Website settings → tab "Kit" → choose "' . $label . '".',
+            '  2. Adjust assets/css/kit.css; copy more views with --view=type,type or create them by hand.',
+            '  3. On the server: deploy the folder, then run `bin/console migrate` (publishes the assets).',
         ]);
 
         return Command::SUCCESS;

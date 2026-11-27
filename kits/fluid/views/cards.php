@@ -1,6 +1,7 @@
 <?php
 
 use Klxm\Fluid\Block;
+use Redaxo\Core\Translation\I18n;
 
 /**
  * Cards: image (image on top) · overlay (text on the image) · horizontal (landscape – each card is a container and switches
@@ -53,5 +54,5 @@ $id = $b->domId() . '-reel';
   <?php if ('' !== trim((string) ($d['more_label'] ?? '')) && '' !== trim((string) ($d['more_link'] ?? ''))): ?>
   <p class="more-row"><a class="btn btn--secondary" <?= fluid_link_attrs($d['more_link']) ?>><span<?= $b->edit('more_label') ?>><?= e($d['more_label']) ?></span></a></p>
   <?php endif ?>
-  <?php elseif (is_editing()): ?><p class="empty-hint">Noch keine Karten – in der Seitenleiste hinzufügen.</p><?php endif ?>
+  <?php elseif (is_editing()): ?><p class="empty-hint"><?= I18n::msg('fluid_kit_empty_cards') ?></p><?php endif ?>
 </div>

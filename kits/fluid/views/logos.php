@@ -1,6 +1,7 @@
 <?php
 
 use Klxm\Fluid\Block;
+use Redaxo\Core\Translation\I18n;
 
 /**
  * Logos: grid (wrapping row, centered) · marquee (pure CSS marquee: list doubled, second half aria-hidden;
@@ -32,5 +33,5 @@ $render = static function (bool $dup) use ($items, $b): string {
   <?php else: ?>
   <ul class="logos" role="list"><?= $render(false) ?></ul>
   <?php endif ?>
-  <?php elseif (is_editing()): ?><p class="empty-hint">Noch keine Logos – in der Seitenleiste hinzufügen.</p><?php endif ?>
+  <?php elseif (is_editing()): ?><p class="empty-hint"><?= I18n::msg('fluid_kit_empty_logos') ?></p><?php endif ?>
 </div>

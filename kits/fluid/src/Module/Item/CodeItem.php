@@ -5,20 +5,21 @@ namespace Klxm\Fluid\Kit\Fluid\Module\Item;
 use Klxm\Fluid\Field\Choice;
 use Klxm\Fluid\Field\Text;
 use Klxm\Fluid\Field\Textarea;
+use Redaxo\Core\Translation\Translatable;
 
 /** Eintrag von „Dateien“ im Block Code */
 final class CodeItem
 {
     #[Text(
-        'Dateiname oder Titel (optional)',
+        new Translatable('fluid_block_code_item_file'),
         maxLength: 120,
-        placeholder: 'z. B. src/Module/Text.php',
+        placeholder: new Translatable('fluid_block_code_item_file_placeholder'),
         width: 'half',
     )]
     public string $file = '';
 
     #[Choice(
-        'Sprache',
+        new Translatable('fluid_block_code_item_lang'),
         required: true,
         choices: [
             'php' => 'PHP',
@@ -29,14 +30,14 @@ final class CodeItem
             'html' => 'HTML',
             'css' => 'CSS',
             'js' => 'JavaScript',
-            'text' => 'Text',
+            'text' => new Translatable('fluid_field_text'),
         ],
         width: 'half',
     )]
     public string $lang = 'php';
 
     #[Textarea(
-        'Code',
+        new Translatable('fluid_block_code'),
         required: true,
         maxLength: 12000,
         rows: 12,

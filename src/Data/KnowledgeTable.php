@@ -3,6 +3,7 @@
 namespace Klxm\Fluid\Data;
 
 use Klxm\Fluid\Glossary\GlossaryTable;
+use Redaxo\Core\Translation\I18n;
 use Yakamara\YForm\Field\Checkbox;
 use Yakamara\YForm\Field\Choice;
 use Yakamara\YForm\Field\Date;
@@ -50,23 +51,23 @@ abstract class KnowledgeTable extends Table
 
     public function fields(): iterable
     {
-        yield Text::new('title')->label('Titel')->required()->maxLength(191)->filterable();
-        yield BelongsTo::new('parent')->label('Oberkapitel')->target(static::class)->onDelete(OnDelete::SetNull)->placeholder('– oberste Ebene –')->filterable();
-        yield Integer::new('sort')->label('Reihenfolge')->notice('Kapitel einer Ebene stehen nach dieser Zahl, dann nach dem Titel.');
-        yield Text::new('number')->label('Kapitelnummer (optional)')->maxLength(20)->notice('Leer = automatisch (1, 1.1, 1.2 …).');
+        yield Text::new('title')->label('translate:fluid_knowledge_title')->required()->maxLength(191)->filterable();
+        yield BelongsTo::new('parent')->label('translate:fluid_knowledge_parent')->target(static::class)->onDelete(OnDelete::SetNull)->placeholder(I18n::rawMsg('fluid_knowledge_parent_top'))->filterable();
+        yield Integer::new('sort')->label('translate:fluid_knowledge_sort')->notice(I18n::rawMsg('fluid_knowledge_sort_notice'));
+        yield Text::new('number')->label('translate:fluid_knowledge_number')->maxLength(20)->notice(I18n::rawMsg('fluid_knowledge_number_notice'));
         if ([] !== $this->areas()) {
-            yield Choice::new('area')->label('Bereich')->options($this->areas())->placeholder('–')->filterable();
+            yield Choice::new('area')->label('translate:fluid_knowledge_area')->options($this->areas())->placeholder('–')->filterable();
         }
-        yield Textarea::new('teaser')->label('Anreißer')->rows(3);
-        yield Media::new('image')->label('Bild')->types('jpg', 'jpeg', 'png', 'webp', 'avif');
-        yield FluidBlocks::new('content')->label('Inhalt (Blöcke)')->blocks(...$this->contentBlocks());
-        yield Text::new('tags')->label('Schlagworte')->maxLength(255)->notice('Mit Komma getrennt.');
-        yield ManyToMany::new('related')->label('Verwandte Kapitel')->target(static::class);
+        yield Textarea::new('teaser')->label('translate:fluid_knowledge_teaser')->rows(3);
+        yield Media::new('image')->label('translate:fluid_knowledge_image')->types('jpg', 'jpeg', 'png', 'webp', 'avif');
+        yield FluidBlocks::new('content')->label('translate:fluid_knowledge_content')->blocks(...$this->contentBlocks());
+        yield Text::new('tags')->label('translate:fluid_knowledge_tags')->maxLength(255)->notice(I18n::rawMsg('fluid_knowledge_tags_notice'));
+        yield ManyToMany::new('related')->label('translate:fluid_knowledge_related')->target(static::class);
         if (class_exists(GlossaryTable::class)) {
-            yield ManyToMany::new('terms')->label('Glossar-Begriffe')->target(GlossaryTable::class);
+            yield ManyToMany::new('terms')->label('translate:fluid_knowledge_terms')->target(GlossaryTable::class);
         }
-        yield Date::new('reviewed')->label('Zuletzt geprüft');
-        yield Checkbox::new('online')->label('Online')->default(true)->filterable();
+        yield Date::new('reviewed')->label('translate:fluid_knowledge_reviewed');
+        yield Checkbox::new('online')->label('translate:fluid_knowledge_online')->default(true)->filterable();
         yield FluidLanguage::new('lang');
     }
 

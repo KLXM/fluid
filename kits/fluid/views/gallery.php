@@ -2,6 +2,7 @@
 
 use Klxm\Meta\Alt;
 use Redaxo\Core\MediaPool\Media;
+use Redaxo\Core\Translation\I18n;
 
 /**
  * Image gallery: grid (same ratio) · masonry (columns, original ratio) · justified (flush rows). Lightbox via
@@ -71,6 +72,6 @@ $single = 1 === count($items) && 'grid' !== $singleSize;
   </ul>
   <?= $lightbox ? fluid_lightbox() : '' ?>
   <?php elseif (is_editing()): ?>
-  <p class="empty-hint">Noch keine Bilder – in der Seitenleiste unter „Bilder“ hinzufügen.</p>
+  <p class="empty-hint"><?= I18n::msg('fluid_kit_empty_gallery') ?></p>
   <?php endif ?>
 </div>

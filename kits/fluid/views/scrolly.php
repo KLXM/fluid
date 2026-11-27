@@ -2,6 +2,7 @@
 
 use Klxm\Fluid\Block;
 use Klxm\Fluid\Kit;
+use Redaxo\Core\Translation\I18n;
 
 /**
  * Scrollytelling: the image column stays in place (position: sticky), text sections scroll past; js/scrolly.js fades in
@@ -63,5 +64,5 @@ if ($long) {
       <?php endforeach ?>
     </ol>
   </div>
-  <?php elseif (is_editing()): ?><p class="empty-hint">Noch keine Abschnitte – in der Seitenleiste hinzufügen.</p><?php endif ?>
+  <?php elseif (is_editing()): ?><p class="empty-hint"><?= I18n::msg('fluid_kit_empty_scrolly') ?></p><?php endif ?>
 </div>

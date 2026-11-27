@@ -10,6 +10,7 @@ use Redaxo\Core\Content\Module;
 use Redaxo\Core\Content\Template;
 use Redaxo\Core\Form\Form;
 use Redaxo\Core\Form\FormSchema;
+use Redaxo\Core\Translation\I18n;
 use Redaxo\Core\Translation\Translatable;
 use Redaxo\Core\View\Renderable;
 use ReflectionMethod;
@@ -155,7 +156,7 @@ final class ModuleForm
         $class = Module::getClass($key);
         $fields = null !== $class ? self::fields($class) : null;
         if (null === $class || null === $fields) {
-            throw new ApiError('Dieses Modul lässt sich nur im Formular des Backends bearbeiten.');
+            throw new ApiError(I18n::rawMsg('fluid_moduleform_backend_only'));
         }
 
         return [$class, $fields];
@@ -177,9 +178,9 @@ final class ModuleForm
             }
             $messages = [];
             foreach ($form->getFieldErrors() as $prop => $error) {
-                $messages[] = '„' . ($labels[$prop] ?? $prop) . '“: ' . self::text($error);
+                $messages[] = I18n::rawMsg('fluid_moduleform_field_error', $labels[$prop] ?? $prop, self::text($error));
             }
-            throw new ApiError(implode(' ', $messages) ?: 'Die Eingaben sind nicht gültig.');
+            throw new ApiError(implode(' ', $messages) ?: I18n::rawMsg('fluid_moduleform_invalid'));
         }
         $error = $module->validate();
         if (null !== $error) {

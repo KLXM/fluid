@@ -13,6 +13,7 @@ use Redaxo\Core\ExtensionPoint\Extension;
 use Redaxo\Core\ExtensionPoint\ExtensionPoint;
 use Redaxo\Core\Http\Request;
 use Redaxo\Core\Language\Language;
+use Redaxo\Core\Translation\I18n;
 use Yakamara\YForm\Data\Record;
 use Yakamara\YForm\Field\Checkbox;
 use Yakamara\YForm\Field\Text;
@@ -329,7 +330,7 @@ final class Knowledge
             . ($next ? '<a class="kn-pager__next" href="' . escape($url($next)) . '" rel="next"><span class="kn-pager__l">' . escape(lt('Weiter')) . '</span><span class="kn-pager__t">' . escape($next['number'] . ' ' . $next['title']) . '</span></a>' : '')
             . '</nav>' : '';
         $edit = YFormBridge::editUrl($t, $id);
-        $editBtn = null !== $edit && Editing::active() ? '<p><a class="fdl-edit" href="' . escape($edit) . '" target="_blank" rel="noopener">' . escape('Kapitel bearbeiten') . '</a></p>' : '';
+        $editBtn = null !== $edit && Editing::active() ? '<p><a class="fdl-edit" href="' . escape($edit) . '" target="_blank" rel="noopener">' . I18n::msg('fluid_knowledge_edit') . '</a></p>' : '';
 
         return '<div class="wrap kn kn--' . $style . '">'
             . ('magazin' === $style ? $head : '')

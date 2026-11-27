@@ -49,14 +49,14 @@ final class FeatureSelfTest
     public static function groups(): array
     {
         return [
-            'Rechte' => static fn () => new self()->run('rights'),
-            'Listen-Vorlagen' => static fn () => new self()->run('listTemplates'),
-            'Menü' => static fn () => new self()->run('menu'),
-            'Glossar' => static fn () => new self()->run('glossary'),
-            'Wissen' => static fn () => new self()->run('knowledge'),
-            'Adressen' => static fn () => new self()->run('addresses'),
-            'Kurzlinks' => static fn () => new self()->run('shortlinks'),
-            'Template-Kopf' => static fn () => new self()->run('kitHead'),
+            'Permissions' => static fn () => new self()->run('rights'),
+            'List templates' => static fn () => new self()->run('listTemplates'),
+            'Menu' => static fn () => new self()->run('menu'),
+            'Glossary' => static fn () => new self()->run('glossary'),
+            'Knowledge' => static fn () => new self()->run('knowledge'),
+            'URLs' => static fn () => new self()->run('addresses'),
+            'Short links' => static fn () => new self()->run('shortlinks'),
+            'Template head' => static fn () => new self()->run('kitHead'),
         ];
     }
 
@@ -77,7 +77,7 @@ final class FeatureSelfTest
         if ($got === $want) {
             ++$this->ok;
         } else {
-            $this->fails[] = $label . ': ' . json_encode($got, JSON_UNESCAPED_UNICODE) . ' statt ' . json_encode($want, JSON_UNESCAPED_UNICODE);
+            $this->fails[] = $label . ': ' . json_encode($got, JSON_UNESCAPED_UNICODE) . ' instead of ' . json_encode($want, JSON_UNESCAPED_UNICODE);
         }
     }
 
@@ -85,23 +85,23 @@ final class FeatureSelfTest
 
     private function rights(): void
     {
-        $this->eq('Ohne Modulrecht', Lock::reasonFor(false, false, true), 'perm');
-        $this->eq('Gesperrt ohne Recht', Lock::reasonFor(true, true, false), 'lock');
-        $this->eq('Gesperrt mit Recht', Lock::reasonFor(true, true, true), '');
-        $this->eq('Frei', Lock::reasonFor(true, false, false), '');
+        $this->eq('Without module permission', Lock::reasonFor(false, false, true), 'perm');
+        $this->eq('Locked without permission', Lock::reasonFor(true, true, false), 'lock');
+        $this->eq('Locked with permission', Lock::reasonFor(true, true, true), '');
+        $this->eq('Unlocked', Lock::reasonFor(true, false, false), '');
         $stored = ['background' => 'muted', 'spaceTop' => 'large', 'lock' => true];
         $input = ['background' => 'dark', 'spaceTop' => 'none', 'anchor' => 'x', 'col' => 2, 'lock' => '0'];
-        $this->eq('Ohne Gestaltung: Abschnitt bleibt, Spalte folgt', Lock::tunesFor(false, false, $stored, $input), ['background' => 'muted', 'spaceTop' => 'large', 'col' => 2, 'lock' => true]);
-        $this->eq('Gestaltung Stufe 1: Abschnitt ja, Sperre bleibt', Lock::tunesFor(true, false, $stored, $input), ['background' => 'dark', 'spaceTop' => 'none', 'anchor' => 'x', 'col' => 2, 'lock' => true]);
-        $this->eq('Stufe 2 entsperrt', Lock::tunesFor(true, true, $stored, $input), ['background' => 'dark', 'spaceTop' => 'none', 'anchor' => 'x', 'col' => 2]);
-        $this->eq('Stufe 2 sperrt', Lock::tunesFor(true, true, [], ['lock' => '1'])['lock'] ?? null, true);
-        $this->eq('Kopie ohne Recht entsperrt', Lock::forCopy(null, ['lock' => true, 'background' => 'muted']), ['background' => 'muted']);
+        $this->eq('Without design: section stays, column follows', Lock::tunesFor(false, false, $stored, $input), ['background' => 'muted', 'spaceTop' => 'large', 'col' => 2, 'lock' => true]);
+        $this->eq('Design level 1: section yes, lock stays', Lock::tunesFor(true, false, $stored, $input), ['background' => 'dark', 'spaceTop' => 'none', 'anchor' => 'x', 'col' => 2, 'lock' => true]);
+        $this->eq('Level 2 unlocks', Lock::tunesFor(true, true, $stored, $input), ['background' => 'dark', 'spaceTop' => 'none', 'anchor' => 'x', 'col' => 2]);
+        $this->eq('Level 2 locks', Lock::tunesFor(true, true, [], ['lock' => '1'])['lock'] ?? null, true);
+        $this->eq('Copy without permission is unlocked', Lock::forCopy(null, ['lock' => true, 'background' => 'muted']), ['background' => 'muted']);
         $role = '{"general":null,"options":"|moveSlice[]|","modules":"all"}';
         $once = Perm::withDesign($role);
-        $this->eq('Rolle bekommt beide Optionen', null !== $once && str_contains($once, '|moveSlice[]|fluid[design]|fluid[design_full]|'), true);
+        $this->eq('Role gets both options', null !== $once && str_contains($once, '|moveSlice[]|fluid[design]|fluid[design_full]|'), true);
         $this->eq('Migration idempotent', Perm::withDesign((string) $once), null);
-        $this->eq('Leere Optionen', json_decode((string) Perm::withDesign('{"options":null}'), true)['options'] ?? null, '|fluid[design]|fluid[design_full]|');
-        $this->eq('Optionen angemeldet', Permission::has(Perm::DESIGN) && Permission::has(Perm::DESIGN_FULL), true);
+        $this->eq('Empty options', json_decode((string) Perm::withDesign('{"options":null}'), true)['options'] ?? null, '|fluid[design]|fluid[design_full]|');
+        $this->eq('Options registered', Permission::has(Perm::DESIGN) && Permission::has(Perm::DESIGN_FULL), true);
     }
 
     // ------------------------------------------------------------------ List templates
@@ -110,34 +110,34 @@ final class FeatureSelfTest
     {
         $m = BlockModule::classFor('fluid.datalist');
         if (null === $m) {
-            $this->fails[] = 'Block Datenliste fehlt';
+            $this->fails[] = 'Block data list missing';
 
             return;
         }
         $keys = ListTemplates::keys($m);
-        $this->eq('Darstellung gehört zur Vorlage', in_array('variant', $keys, true), true);
-        $this->eq('Tabelle, Titel, Bedingung und Adressen bleiben beim Block', array_values(array_intersect($keys, ['table', 'title', 'title_field', 'filter_field', 'detail', 'template', 'limit'])), []);
+        $this->eq('Display belongs to the template', in_array('variant', $keys, true), true);
+        $this->eq('Table, title, condition and URLs stay with the block', array_values(array_intersect($keys, ['table', 'title', 'title_field', 'filter_field', 'detail', 'template', 'limit'])), []);
         $data = ['table' => 'rex_x', 'variant' => 'cards', 'size' => 's', 'title' => 'Hallo'];
-        $this->eq('Ohne Vorlage unverändert', ListTemplates::resolve($m, $data), $data);
-        $this->eq('Fehlende Vorlage: eigene Werte', ListTemplates::resolve($m, $data + ['template' => 'gibt-es-nicht']), $data + ['template' => 'gibt-es-nicht']);
+        $this->eq('Unchanged without template', ListTemplates::resolve($m, $data), $data);
+        $this->eq('Missing template: own values', ListTemplates::resolve($m, $data + ['template' => 'gibt-es-nicht']), $data + ['template' => 'gibt-es-nicht']);
         $tpl = ['variant' => 'table', 'options' => ['table_sort' => true, 'image_field' => 'bild', 'sort_field' => 'rex_x.datum']];
         $out = ListTemplates::apply($m, $data, $tpl, 'rex_x');
-        $this->eq('Vorlage legt Darstellung fest', $out['variant'], 'table');
-        $this->eq('Option der Vorlage', $out['table_sort'], true);
-        $this->eq('Feld ohne Präfix bekommt die Tabelle', $out['image_field'], 'rex_x.bild');
-        $this->eq('Feld mit Präfix bleibt', $out['sort_field'], 'rex_x.datum');
-        $this->eq('Fehlende Option = Standard des Feldes', $out['size'], 'm');
-        $this->eq('Inhalt bleibt beim Block', $out['title'], 'Hallo');
+        $this->eq('Template sets the display', $out['variant'], 'table');
+        $this->eq('Template option', $out['table_sort'], true);
+        $this->eq('Field without prefix gets the table', $out['image_field'], 'rex_x.bild');
+        $this->eq('Field with prefix stays', $out['sort_field'], 'rex_x.datum');
+        $this->eq('Missing option = field default', $out['size'], 'm');
+        $this->eq('Content stays with the block', $out['title'], 'Hallo');
         $opts = ListTemplates::optionsFrom($m, ['variant' => 'list', 'image_field' => 'rex_x.bild', 'title' => 'nicht'], 'rex_x');
-        $this->eq('Als Vorlage speichern: Präfix weg, nur Vorlagen-Felder', [$opts['variant'] ?? null, $opts['image_field'] ?? null, isset($opts['title'])], ['list', 'bild', false]);
+        $this->eq('Save as template: prefix removed, template fields only', [$opts['variant'] ?? null, $opts['image_field'] ?? null, isset($opts['title'])], ['list', 'bild', false]);
         // Extension point: an extension's template, only for its table
         Extension::register('FLUID_LIST_TEMPLATES', static function (ExtensionPoint $ep): array {
             return (array) $ep->subject + ['selbsttest' => ['name' => 'Selbsttest', 'tables' => ['rex_selbsttest'], 'default' => true, 'options' => ['variant' => 'list']]];
         });
         $code = ListTemplates::code($m, 'rex_selbsttest');
-        $this->eq('Vorlage aus dem Extension Point', isset($code['ext:selbsttest']) ? [$code['ext:selbsttest']['variant'], $code['ext:selbsttest']['locked']] : null, ['list', true]);
-        $this->eq('Nur für ihre Tabelle', isset(ListTemplates::code($m, 'rex_andere')['ext:selbsttest']), false);
-        $this->eq('Vorschau je Darstellung', str_contains(ListTemplates::preview('table'), '<svg') && str_contains(ListTemplates::preview('table'), 'aria-hidden="true"'), true);
+        $this->eq('Template from the extension point', isset($code['ext:selbsttest']) ? [$code['ext:selbsttest']['variant'], $code['ext:selbsttest']['locked']] : null, ['list', true]);
+        $this->eq('Only for its table', isset(ListTemplates::code($m, 'rex_andere')['ext:selbsttest']), false);
+        $this->eq('Preview per display', str_contains(ListTemplates::preview('table'), '<svg') && str_contains(ListTemplates::preview('table'), 'aria-hidden="true"'), true);
     }
 
     // ------------------------------------------------------------------ Addresses
@@ -228,10 +228,10 @@ final class FeatureSelfTest
 
     private function menu(): void
     {
-        $this->eq('Standard aus', Data\MenuEntries::config(null), ['mode' => '', 'limit' => 12]);
-        $this->eq('Bereinigung', Data\MenuEntries::config(['menu_entries' => 'quatsch', 'menu_limit' => 999]), ['mode' => '', 'limit' => 50]);
-        $this->eq('Zwei Ebenen', Data\MenuEntries::config(['menu_entries' => 'two', 'menu_limit' => '5']), ['mode' => 'two', 'limit' => 5]);
-        $this->eq('Ohne Einstellung unverändert', Data\MenuEntries::extend([['id' => 0, 'label' => 'A', 'href' => '/a', 'current' => false, 'active' => false, 'children' => []]], 1),
+        $this->eq('Off by default', Data\MenuEntries::config(null), ['mode' => '', 'limit' => 12]);
+        $this->eq('Sanitising', Data\MenuEntries::config(['menu_entries' => 'quatsch', 'menu_limit' => 999]), ['mode' => '', 'limit' => 50]);
+        $this->eq('Two levels', Data\MenuEntries::config(['menu_entries' => 'two', 'menu_limit' => '5']), ['mode' => 'two', 'limit' => 5]);
+        $this->eq('Unchanged without setting', Data\MenuEntries::extend([['id' => 0, 'label' => 'A', 'href' => '/a', 'current' => false, 'active' => false, 'children' => []]], 1),
             [['id' => 0, 'label' => 'A', 'href' => '/a', 'current' => false, 'active' => false, 'children' => []]]);
     }
 
@@ -244,15 +244,15 @@ final class FeatureSelfTest
         $a = new Glossary\Annotator($terms, ['lang' => 'de']);
         $html = '<body><main><h2>SPF erklärt</h2><p>Mit SPF und SPF.</p><p><a href="/x">SPF</a> und <button>Barrierefreiheit</button></p><p>Barrierefreiheit hilft.</p></main></body>';
         $out = $a->annotate($html);
-        $this->eq('Zwei Begriffe markiert', $a->count, 2);
-        $this->eq('Nicht in Überschriften', str_contains($out, '<h2>SPF erklärt</h2>'), true);
-        $this->eq('Nicht in Links und Knöpfen', str_contains($out, '<a href="/x">SPF</a>') && str_contains($out, '<button>Barrierefreiheit</button>'), true);
-        $this->eq('Nur das erste Vorkommen', substr_count($out, 'class="gl-term"'), 2);
-        $this->eq('Popover mit Link zur Detailseite', str_contains($out, 'popovertarget="gl-1"') && str_contains($out, 'href="/glossar/spf"'), true);
-        $this->eq('Zweimal anwenden ändert nichts', new Glossary\Annotator($terms, ['lang' => 'de'])->annotate($out), $out);
-        $this->eq('Ausnahme data-glossary="off"', new Glossary\Annotator($terms)->annotate('<body><main><p data-glossary="off">SPF</p></main></body>'), '<body><main><p data-glossary="off">SPF</p></main></body>');
-        $this->eq('Schreibweisen', Glossary\Glossary::splitVariants("CDN, CDNs\nContent Delivery Network;CDN"), ['CDN', 'CDNs', 'Content Delivery Network']);
-        $this->eq('Kurztext gekürzt', mb_strlen(Glossary\Glossary::short(str_repeat('Wort ', 80))) <= Glossary\Glossary::SHORT_MAX, true);
+        $this->eq('Two terms marked', $a->count, 2);
+        $this->eq('Not in headings', str_contains($out, '<h2>SPF erklärt</h2>'), true);
+        $this->eq('Not in links and buttons', str_contains($out, '<a href="/x">SPF</a>') && str_contains($out, '<button>Barrierefreiheit</button>'), true);
+        $this->eq('Only the first occurrence', substr_count($out, 'class="gl-term"'), 2);
+        $this->eq('Popover with link to the detail page', str_contains($out, 'popovertarget="gl-1"') && str_contains($out, 'href="/glossar/spf"'), true);
+        $this->eq('Applying twice changes nothing', new Glossary\Annotator($terms, ['lang' => 'de'])->annotate($out), $out);
+        $this->eq('Opt-out data-glossary="off"', new Glossary\Annotator($terms)->annotate('<body><main><p data-glossary="off">SPF</p></main></body>'), '<body><main><p data-glossary="off">SPF</p></main></body>');
+        $this->eq('Spellings', Glossary\Glossary::splitVariants("CDN, CDNs\nContent Delivery Network;CDN"), ['CDN', 'CDNs', 'Content Delivery Network']);
+        $this->eq('Short text truncated', mb_strlen(Glossary\Glossary::short(str_repeat('Wort ', 80))) <= Glossary\Glossary::SHORT_MAX, true);
     }
 
     // ------------------------------------------------------------------ Knowledge
@@ -273,15 +273,15 @@ final class FeatureSelfTest
         ];
         $tree = Data\Knowledge::build($rows);
         $num = static fn (int $id) => $tree['nodes'][$id]['number'];
-        $this->eq('Nummern automatisch', [$num(1), $num(2), $num(4), $num(3), $num(5)], ['1', '2', '2.1', '2.2', '2.1.1']);
-        $this->eq('Nummer überschreibbar, Kinder folgen', [$num(6), $num(7)], ['A', 'A.1']);
-        $this->eq('Lesereihenfolge', array_slice($tree['order'], 0, 5), [1, 2, 4, 5, 3]);
-        $this->eq('Fehlendes Oberkapitel = oberste Ebene', in_array(10, $tree['roots'], true), true);
-        $this->eq('Schleife bricht nicht', count($tree['order']), 10);
-        $this->eq('Oberkapitel', array_column(Data\Knowledge::ancestors($tree, 5), 'id'), [2, 4]);
+        $this->eq('Automatic numbers', [$num(1), $num(2), $num(4), $num(3), $num(5)], ['1', '2', '2.1', '2.2', '2.1.1']);
+        $this->eq('Number can be overridden, children follow', [$num(6), $num(7)], ['A', 'A.1']);
+        $this->eq('Reading order', array_slice($tree['order'], 0, 5), [1, 2, 4, 5, 3]);
+        $this->eq('Missing parent chapter = top level', in_array(10, $tree['roots'], true), true);
+        $this->eq('Loop does not break', count($tree['order']), 10);
+        $this->eq('Parent chapters', array_column(Data\Knowledge::ancestors($tree, 5), 'id'), [2, 4]);
         [$prev, $next] = Data\Knowledge::neighbours($tree, 4);
-        $this->eq('Vor/Zurück', [$prev['id'] ?? null, $next['id'] ?? null], [2, 5]);
+        $this->eq('Previous/next', [$prev['id'] ?? null, $next['id'] ?? null], [2, 5]);
         [$html, $secs] = Data\Knowledge::sections('<h2>Erster Teil</h2><p>x</p><h2 id="da">Zweiter</h2>');
-        $this->eq('Abschnitte mit Anker', [$secs, str_contains($html, 'id="kn-s-1"')], [[['id' => 'kn-s-1', 'title' => 'Erster Teil'], ['id' => 'da', 'title' => 'Zweiter']], true]);
+        $this->eq('Sections with anchors', [$secs, str_contains($html, 'id="kn-s-1"')], [[['id' => 'kn-s-1', 'title' => 'Erster Teil'], ['id' => 'da', 'title' => 'Zweiter']], true]);
     }
 }

@@ -4,6 +4,7 @@ namespace Klxm\Fluid\Glossary;
 
 use Klxm\Fluid\Data\FluidBlocks;
 use Klxm\Fluid\Data\FluidLanguage;
+use Redaxo\Core\Translation\I18n;
 use Yakamara\YForm\Attribute\AsTable;
 use Yakamara\YForm\Field\Checkbox;
 use Yakamara\YForm\Field\Text;
@@ -23,18 +24,18 @@ if (!class_exists(Table::class)) {
  *
  * Custom fields: no need to extend the class – a project can set an entirely different source with Glossary::$store.
  */
-#[AsTable('rex_fluid_glossary', label: 'Glossar', icon: 'fa-book')]
+#[AsTable('rex_fluid_glossary', label: 'translate:fluid_glossary_tab', icon: 'fa-book')]
 final class GlossaryTable extends Table
 {
     public function fields(): iterable
     {
-        yield Text::new('term')->label('Begriff')->required()->maxLength(120)->filterable();
-        yield Textarea::new('variants')->label('Schreibweisen')->rows(2)
-            ->notice('Eine je Zeile oder mit Komma getrennt, z. B. Mehrzahl oder Abkürzung. "In Anführungszeichen" = nur genau diese Schreibweise.');
-        yield Textarea::new('short')->label('Kurztext')->required()->rows(3)
-            ->notice('Klartext für das Hinweisfenster, höchstens ' . Glossary::SHORT_MAX . ' Zeichen.');
-        yield FluidBlocks::new('text')->label('Text (ausführliche Erklärung, Detailseite)')->blocks('richtext', 'media_text', 'quote', 'faq', 'video');
-        yield Checkbox::new('online')->label('Online')->default(true)->filterable();
+        yield Text::new('term')->label('translate:fluid_glossary_field_term')->required()->maxLength(120)->filterable();
+        yield Textarea::new('variants')->label('translate:fluid_glossary_field_variants')->rows(2)
+            ->notice(I18n::rawMsg('fluid_glossary_variants_notice'));
+        yield Textarea::new('short')->label('translate:fluid_glossary_field_short')->required()->rows(3)
+            ->notice(I18n::rawMsg('fluid_glossary_short_notice', Glossary::SHORT_MAX));
+        yield FluidBlocks::new('text')->label('translate:fluid_glossary_field_text')->blocks('richtext', 'media_text', 'quote', 'faq', 'video');
+        yield Checkbox::new('online')->label('translate:fluid_glossary_field_online')->default(true)->filterable();
         yield FluidLanguage::new('lang');
     }
 

@@ -10,92 +10,93 @@ use Klxm\Fluid\Field\Text;
 use Klxm\Fluid\Kit\Fluid\FluidBlock;
 use Klxm\Fluid\Maps\Maps;
 use Redaxo\Core\Content\AsModule;
+use Redaxo\Core\Translation\Translatable;
 
-#[AsModule('fluid.map', 'Karte')]
+#[AsModule('fluid.map', new Translatable('fluid_block_map'))]
 #[AsBlock(
     icon: 'map-trifold',
-    group: 'Website',
-    help: 'Interaktive Karte (OpenStreetMap-Daten über den eigenen Server – ohne Einwilligung, ohne Cookies).',
+    group: new Translatable('fluid_block_group_website'),
+    help: new Translatable('fluid_block_map_help'),
     nestable: true,
 )]
 final class Map extends FluidBlock
 {
     #[Text(
-        'Dachzeile (optional)',
+        new Translatable('fluid_field_eyebrow'),
         maxLength: 60,
         width: 'half',
     )]
     public string $eyebrow = '';
 
     #[Text(
-        'Überschrift',
+        new Translatable('fluid_field_title'),
         maxLength: 110,
         width: 'half',
     )]
     public string $title = '';
 
     #[Choice(
-        'Ort',
+        new Translatable('fluid_block_map_location'),
         required: true,
-        choices: ['site' => 'Standort der Website (Website → Kontakt & Zeiten)', 'custom' => 'Eigener Ort'],
+        choices: ['site' => new Translatable('fluid_block_map_location_site'), 'custom' => new Translatable('fluid_block_map_location_custom')],
     )]
     public string $location = 'site';
 
     #[Geo(
-        'Eigener Ort',
-        note: '„Breite, Länge“ – oder „Aus Adresse ermitteln“ mit der Adresse unten.',
+        new Translatable('fluid_block_map_point'),
+        note: new Translatable('fluid_block_map_point_help'),
     )]
     public string $point = '';
 
     #[Text(
-        'Beschriftung',
-        placeholder: 'Standard: Name der Website',
+        new Translatable('fluid_block_map_label'),
+        placeholder: new Translatable('fluid_block_map_label_placeholder'),
         width: 'half',
     )]
     public string $label = '';
 
     #[Text(
-        'Adresse unter der Karte',
-        placeholder: 'Standard: Adresse der Website',
+        new Translatable('fluid_block_map_address'),
+        placeholder: new Translatable('fluid_block_map_address_placeholder'),
         width: 'half',
     )]
     public string $address = '';
 
     #[Choice(
-        'Zoomstufe',
+        new Translatable('fluid_block_map_zoom'),
         required: true,
         choices: [
-            11 => '11 – Stadt',
-            13 => '13 – Stadtteil',
-            15 => '15 – Straße',
+            11 => new Translatable('fluid_block_map_zoom_11'),
+            13 => new Translatable('fluid_block_map_zoom_13'),
+            15 => new Translatable('fluid_block_map_zoom_15'),
             16 => '16',
-            17 => '17 – Gebäude',
+            17 => new Translatable('fluid_block_map_zoom_17'),
         ],
         width: 'half',
     )]
     public string $zoom = '15';
 
     #[Choice(
-        'Höhe',
+        new Translatable('fluid_field_height'),
         required: true,
-        choices: Maps::HEIGHTS,
+        choices: static function (): array { return Maps::choices('height'); },
         width: 'half',
     )]
     public string $height = 'm';
 
     #[Choice(
-        'Kartenstil',
-        choices: Maps::STYLES,
+        new Translatable('fluid_block_map_style'),
+        choices: static function (): array { return Maps::choices('style'); },
         width: 'half',
     )]
     public string $style = 'liberty';
 
     #[Checkbox(
-        'Erst nach Klick laden (Zwei-Klick)',
+        new Translatable('fluid_block_map_click'),
         width: 'half',
     )]
     public bool $click = false;
 
-    #[Checkbox('Link „Route planen“ anzeigen')]
+    #[Checkbox(new Translatable('fluid_block_map_route'))]
     public bool $route = true;
 }

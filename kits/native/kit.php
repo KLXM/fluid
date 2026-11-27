@@ -22,6 +22,8 @@ $defaults = array_combine($colorKeys, $light) + [
 ];
 $darkDefaults = array_combine($colorKeys, $dark) + ['secondary' => '#9DB0D8', 'on_secondary' => '#0A1628'];
 
+$n = static fn (string $key): string => I18n::rawMsg('fluid_native_' . $key);
+
 $design = $parent['design'];
 // „Kopf & Fuß“ belongs to the page frame of fluid – this kit's frame comes from NativeCSS
 // „Dichte des Fußbereichs“ stays (group „Form & Raum“; CSS in native.css)
@@ -56,10 +58,10 @@ $values = static function (array $l, array $d, array $rest) use ($colorKeys): ar
     return $v + $rest;
 };
 $design['presets'] = [
-    'native' => ['label' => 'NativeCSS', 'description' => 'Tiefes Blau, Navy, blaugetönte Flächen und die Systemschrift des Geräts – wie die NativeCSS-Website.',
+    'native' => ['label' => 'NativeCSS', 'description' => $n('preset_native_desc'),
         'values' => $values($light, $dark, ['secondary' => '#314164', 'on_secondary' => '#FFFFFF', 'secondary@dark' => '#9DB0D8', 'on_secondary@dark' => '#0A1628',
             'font_body' => 'system', 'font_head' => 'system', 'heading_weight' => 700, 'heading_tracking' => -1, 'radius' => 12, 'eyebrow' => 'plain'])],
-    'native-graphite' => ['label' => 'NativeCSS · Graphit', 'description' => 'Gedämpftes Grau als Marke, Navy als Zweitfarbe, Inter – sachlich und ruhig.',
+    'native-graphite' => ['label' => $n('preset_graphite'), 'description' => $n('preset_graphite_desc'),
         'values' => $values(
             ['#4A4A49', '#2F2F2E', '#FFFFFF', '#E7ECF3', '#111111', '#1F1F1F', '#55595F', '#FFFFFF', '#F2F4F7', '#DDE2E8', '#1B2233'],
             ['#C9C9C8', '#E2E2E1', '#111111', '#2E3440', '#F2F3F5', '#D6D8DC', '#A7ABB2', '#121417', '#1B1E23', '#2C3038', '#20283A'],
@@ -91,20 +93,20 @@ return [
     // on scrolling into view; „Bewegung reduzieren“ shows the section at once (NativeCSS CSS), „Dezente Animationen“ off in
     // the design turns all off (Block::revealOption()). On pages with effect: css/ncss-reveal.css and ncss/js/reveal.js (@reveal).
     'reveal' => [
-        'fade' => ['label' => 'Sanft einblenden', 'class' => 'ncss-reveal ncss-reveal--fade ncss-reveal--once', 'attr' => 'data-ncss-reveal'],
-        'rise' => ['label' => 'Von unten', 'class' => 'ncss-reveal ncss-reveal--slide-up ncss-reveal--once', 'attr' => 'data-ncss-reveal'],
-        'circle' => ['label' => 'Kreis', 'class' => 'ncss-reveal ncss-reveal--circle ncss-reveal--once', 'attr' => 'data-ncss-reveal'],
-        'curtain' => ['label' => 'Vorhang', 'class' => 'ncss-reveal ncss-reveal--split ncss-reveal--once', 'attr' => 'data-ncss-reveal'],
+        'fade' => ['label' => $n('reveal_fade'), 'class' => 'ncss-reveal ncss-reveal--fade ncss-reveal--once', 'attr' => 'data-ncss-reveal'],
+        'rise' => ['label' => $n('reveal_rise'), 'class' => 'ncss-reveal ncss-reveal--slide-up ncss-reveal--once', 'attr' => 'data-ncss-reveal'],
+        'circle' => ['label' => $n('reveal_circle'), 'class' => 'ncss-reveal ncss-reveal--circle ncss-reveal--once', 'attr' => 'data-ncss-reveal'],
+        'curtain' => ['label' => $n('reveal_curtain'), 'class' => 'ncss-reveal ncss-reveal--split ncss-reveal--once', 'attr' => 'data-ncss-reveal'],
     ],
     // Additional display only in this kit (missing from the select in kit fluid; saved blocks show „Abwechselnd“ there)
     'blocks' => [
         'media_text' => [
-            'variants' => ['morph' => 'Morphing beim Scrollen'],
-            'variant_help' => ['morph' => 'Das Bild startet groß und rückt beim Scrollen zur Seite, der Text erscheint daneben. Bei „Bewegung reduzieren“ stehen Bild und Text einfach nebeneinander. Beim Bearbeiten wie „Bild rechts“.'],
+            'variants' => ['morph' => $n('media_text_morph')],
+            'variant_help' => ['morph' => $n('media_text_morph_help')],
         ],
         'video' => [
-            'variants' => ['morph' => 'Video mit Morphing beim Scrollen'],
-            'variant_help' => ['morph' => 'Eigene Videodatei, stumm in Schleife (wie ein Hintergrundvideo, mit Pause-Schalter): startet groß und rückt beim Scrollen zur Seite, der Text daneben erscheint. Bei „Bewegung reduzieren“ nur das Standbild neben dem Text. Beim Bearbeiten wie „Video mit Text daneben“.'],
+            'variants' => ['morph' => $n('video_morph')],
+            'variant_help' => ['morph' => $n('video_morph_help')],
         ],
     ],
     'assets' => [

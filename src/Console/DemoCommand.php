@@ -53,7 +53,7 @@ use const PATHINFO_FILENAME;
  *
  * @internal
  */
-#[AsCommand(name: 'fluid:demo', description: 'Legt Demo-Seiten des Kits „fluid“ an (--set=fluid|redaxo6, --replace ersetzt alle Inhalte – nur Testinstallationen)')]
+#[AsCommand(name: 'fluid:demo', description: 'Creates demo pages of the "fluid" kit (--set=fluid|redaxo6, --replace replaces all content – test installations only)')]
 final class DemoCommand extends AbstractCommand
 {
     /** Title and alt text of the demo images (screenshots from docs/bilder) */
@@ -106,25 +106,25 @@ final class DemoCommand extends AbstractCommand
 
     public function __invoke(
         SymfonyStyle $io,
-        #[Option(description: 'Auch anlegen, wenn schon Artikel existieren')] bool $force = false,
-        #[Option(description: 'Alle Kategorien, Artikel und Slices vorher löschen (nur Testinstallationen!)')] bool $replace = false,
-        #[Option(description: 'Inhalte: fluid (Beispiel-Agentur) oder redaxo6 (Seite über REDAXO 6)')] string $set = 'fluid',
-        #[Option(description: 'Design des Kits auf den Standard zurücksetzen')] bool $resetDesign = false,
-        #[Option(description: 'Nur diese Demo-Seiten (Slugs, mit Komma getrennt) anhängen, z. B. daten oder redaxo-6,projekt – vorhandene Inhalte bleiben')] string $page = '',
-        #[Option(description: 'Nur Beispielzeilen in die YForm-Tabellen der Demo schreiben (Tabellen sind Klassen im Projekt)')] bool $yform = false,
-        #[Option(description: 'Demo-Bilder des Kits in den Medienpool übernehmen (vorhandene bleiben)')] bool $media = false,
-        #[Option(name: 'media-dir', description: 'Weitere Dateien aus diesem Ordner in den Medienpool übernehmen (vorhandene bleiben), z. B. einen Trailer, der nicht im Kit liegt')] string $mediaDir = '',
-        #[Option(description: 'Design-Vorlage setzen, z. B. redaxo (mit REDAXO-Logo aus dem Core), kanzlei, handwerk …; auf einer Website mit Seiten nur die Vorlage')] string $design = '',
-        #[Option(name: 'kit', description: 'Kit, für das --design gilt (Standard: das gewählte), z. B. native')] string $designKit = '',
-        #[Option(description: 'Mit --page: vorhandene Seiten neu befüllen (ihre Blöcke in der Startsprache werden ersetzt, Seite und Adresse bleiben)')] bool $update = false,
-        #[Option(name: 'lang', description: 'Übersetzung der vorhandenen Demo-Seiten anlegen (Sprachcode, z. B. en; Texte aus demo-{set}.{code}.php)')] string $translate = '',
+        #[Option(description: 'Create even if articles already exist')] bool $force = false,
+        #[Option(description: 'Delete all categories, articles and slices first (test installations only!)')] bool $replace = false,
+        #[Option(description: 'Content: fluid (sample agency) or redaxo6 (site about REDAXO 6)')] string $set = 'fluid',
+        #[Option(description: 'Reset the kit design to its defaults')] bool $resetDesign = false,
+        #[Option(description: 'Only append these demo pages (slugs, comma-separated), e.g. daten or redaxo-6,projekt – existing content stays')] string $page = '',
+        #[Option(description: 'Only write sample rows into the demo YForm tables (tables are classes in the project)')] bool $yform = false,
+        #[Option(description: 'Import the kit demo images into the media pool (existing ones stay)')] bool $media = false,
+        #[Option(name: 'media-dir', description: 'Import further files from this folder into the media pool (existing ones stay), e.g. a trailer that is not in the kit')] string $mediaDir = '',
+        #[Option(description: 'Set a design preset, e.g. redaxo (with REDAXO logo from the core), kanzlei, handwerk …; on a website with pages only the preset')] string $design = '',
+        #[Option(name: 'kit', description: 'Kit that --design applies to (default: the selected one), e.g. native')] string $designKit = '',
+        #[Option(description: 'With --page: refill existing pages (their blocks in the start language are replaced, page and URL stay)')] bool $update = false,
+        #[Option(name: 'lang', description: 'Create a translation of the existing demo pages (language code, e.g. en; texts from demo-{set}.{code}.php)')] string $translate = '',
     ): int {
         if ($media) {
             $io->note(self::media());
         }
         if ('' !== $mediaDir) {
             if (!is_dir($mediaDir)) {
-                $io->error('Ordner nicht gefunden: ' . $mediaDir);
+                $io->error('Folder not found: ' . $mediaDir);
 
                 return Command::FAILURE;
             }
@@ -133,7 +133,7 @@ final class DemoCommand extends AbstractCommand
         if ($yform) {
             $demo = require self::demoFile($set);
             if (!isset($demo['yform']) || !YFormBridge::available()) {
-                $io->error('Keine YForm-Tabellen in dieser Demo oder YForm fehlt.');
+                $io->error('No YForm tables in this demo, or YForm is missing.');
 
                 return Command::FAILURE;
             }
@@ -143,7 +143,7 @@ final class DemoCommand extends AbstractCommand
         }
         if ($resetDesign) {
             FluidAddon::instance()->removeConfig('design.' . Kit::active()->key());
-            $io->note('Design zurückgesetzt.');
+            $io->note('Design reset.');
         }
         $sql = Sql::factory();
         if ('' !== $page || '' !== $translate) {
@@ -158,7 +158,7 @@ final class DemoCommand extends AbstractCommand
             }
             $sql->setQuery('SET FOREIGN_KEY_CHECKS = 1');
             Cache::delete();
-            $io->note('Alle Inhalte gelöscht.');
+            $io->note('All content deleted.');
         } elseif (!$force && $sql->getArray('SELECT id FROM rex_article LIMIT 1')) {
             // Website with pages: only set the design preset
             if ('' !== $design) {
@@ -170,7 +170,7 @@ final class DemoCommand extends AbstractCommand
             if ($media || '' !== $mediaDir) {
                 return Command::SUCCESS;
             }
-            $io->error('Es gibt schon Artikel. Mit --force trotzdem anlegen, mit --replace vorher alles löschen.');
+            $io->error('Articles already exist. Use --force to create anyway, --replace to delete everything first.');
 
             return Command::FAILURE;
         }
@@ -193,7 +193,7 @@ final class DemoCommand extends AbstractCommand
             $slugs = array_map('trim', explode(',', $page));
             $demo['pages'] = array_values(array_filter($demo['pages'], static fn (array $p) => in_array($p['slug'], $slugs, true)));
             if (count($demo['pages']) !== count($slugs)) {
-                $io->error('Nicht alle Demo-Seiten gefunden: ' . $page . ' (oder benötigtes AddOn fehlt).');
+                $io->error('Not all demo pages found: ' . $page . ' (or a required AddOn is missing).');
 
                 return Command::FAILURE;
             }
@@ -234,7 +234,7 @@ final class DemoCommand extends AbstractCommand
             if (empty($def['is_home'])) {
                 Routes::setSlug($id, $lang, $title);
             }
-            $io->note('„' . $article->name . '“ heißt jetzt „' . $title . '“.');
+            $io->note('"' . $article->name . '" is now called "' . $title . '".');
         };
         if ('' !== $translate) {
             return self::translate($io, $set, $translate, $demo['pages'], $all, $existing, $kit, (array) ($demo['yform'] ?? []));
@@ -260,7 +260,7 @@ final class DemoCommand extends AbstractCommand
                             PageSettings::save($art, $art->name, true, (string) ($post['excerpt'] ?? ''), (string) ($post['image'] ?? ''), false);
                             Blog::saveMeta($art, (string) ($post['date'] ?? date('Y-m-d')), (string) ($post['author'] ?? ''), (string) ($post['tags'] ?? ''));
                         }
-                        $io->note('„' . $def['title'] . '“ wird neu befüllt.');
+                        $io->note('"' . $def['title'] . '" is refilled.');
                     } else {
                         $kept[$slug] = true;
                     }
@@ -291,20 +291,20 @@ final class DemoCommand extends AbstractCommand
                 Category::clearInstanceListPool();
                 Article::clearInstancePool();
                 Article::clearInstanceListPool();
-                $io->note('„' . $def['title'] . '“ steht wieder im Menü.');
+                $io->note('"' . $def['title'] . '" is back in the menu.');
             }
             // Page already exists (e.g. from an earlier run on the top level): move it to the new place with --page,
             // content stays – with --update the blocks are replaced
             if ('' !== $page && null !== ($old = $existing($slug)) && null !== ($oldCat = Category::get($old))) {
                 if (null !== $parentCat && $oldCat->parentId !== $parentCat) {
                     CategoryHandler::move($old, $parentCat);
-                    $io->note('„' . $def['title'] . '“ verschoben (vorhandene Inhalte bleiben).');
+                    $io->note('"' . $def['title'] . '" moved (existing content stays).');
                 }
                 $rename($old, $def);
                 $ids[$slug] = $old;
                 if ($update) {
                     Sql::factory()->setQuery('DELETE FROM rex_article_slice WHERE article_id = ? AND language_id = ?', [$old, $lang]);
-                    $io->note('„' . $def['title'] . '“ wird neu befüllt.');
+                    $io->note('"' . $def['title'] . '" is refilled.');
                 } else {
                     $kept[$slug] = true;
                 }
@@ -404,7 +404,7 @@ final class DemoCommand extends AbstractCommand
         if ('' !== $design) {
             $io->note(self::design($design, $designKit));
         }
-        $io->success(sprintf('%d Seiten mit %d Blöcken angelegt.%s', count($ids) - count($kept), $count, $skipped ? ' Übersprungen (noch nicht portiert): ' . implode(', ', array_keys($skipped)) : ''));
+        $io->success(sprintf('%d pages with %d blocks created.%s', count($ids) - count($kept), $count, $skipped ? ' Skipped (not ported yet): ' . implode(', ', array_keys($skipped)) : ''));
 
         return Command::SUCCESS;
     }
@@ -425,7 +425,7 @@ final class DemoCommand extends AbstractCommand
     {
         $file = dirname(self::demoFile($set)) . '/demo-' . ('redaxo6' === $set ? 'redaxo6' : 'fluid') . '.' . $code . '.php';
         if (!is_file($file)) {
-            $io->error('Keine Übersetzung: ' . $file);
+            $io->error('No translation: ' . $file);
 
             return Command::FAILURE;
         }
@@ -470,7 +470,7 @@ final class DemoCommand extends AbstractCommand
         foreach ($pages as $def) {
             $id = $ids[(string) $def['slug']] ?? null;
             if (null === $id) {
-                $io->note('Seite „' . $def['title'] . '“ gibt es nicht – übersprungen.');
+                $io->note('Page "' . $def['title'] . '" does not exist – skipped.');
                 continue;
             }
             $title = $map[(string) $def['title']] ?? (string) $def['title'];
@@ -552,7 +552,7 @@ final class DemoCommand extends AbstractCommand
 
         Routes::rebuild();
         Cache::delete();
-        $io->success(sprintf('%s: %d Seiten mit %d Blöcken übersetzt.%s', $language->name, $pagesDone, $count, $notes ? ' Datensätze: ' . implode(', ', $notes) . '.' : ''));
+        $io->success(sprintf('%s: %d pages with %d blocks translated.%s', $language->name, $pagesDone, $count, $notes ? ' Records: ' . implode(', ', $notes) . '.' : ''));
 
         return Command::SUCCESS;
     }
@@ -605,7 +605,7 @@ final class DemoCommand extends AbstractCommand
             $added[] = $name;
         }
 
-        return $added ? 'Medienpool: ' . implode(', ', $added) : 'Medienpool: Demo-Bilder schon vorhanden.';
+        return $added ? 'Media pool: ' . implode(', ', $added) : 'Media pool: demo images already present.';
     }
 
     /** Set the design preset; „redaxo“ additionally with the REDAXO logo from the core (grey and white) if no logo is set yet */
@@ -613,14 +613,14 @@ final class DemoCommand extends AbstractCommand
     {
         $kit = '' !== $kitKey ? Kit::get($kitKey) : Kit::active();
         if (null === $kit) {
-            return 'Kit „' . $kitKey . '“ gibt es nicht (' . implode(', ', array_keys(Kit::all())) . ').';
+            return 'Kit "' . $kitKey . '" does not exist (' . implode(', ', array_keys(Kit::all())) . ').';
         }
         $presets = (array) ($kit->design()->def()['presets'] ?? []);
         if (!isset($presets[$preset])) {
-            return 'Design-Vorlage „' . $preset . '“ gibt es nicht (' . implode(', ', array_keys($presets)) . ').';
+            return 'Design preset "' . $preset . '" does not exist (' . implode(', ', array_keys($presets)) . ').';
         }
         $kit->design()->save((array) $presets[$preset]['values']);
-        $msg = 'Design-Vorlage „' . $presets[$preset]['label'] . '“ gesetzt.';
+        $msg = 'Design preset "' . $presets[$preset]['label'] . '" set.';
         // directly from the configuration (Settings::all() buffers the state before the demo's settings)
         $site = (array) FluidAddon::instance()->getConfig(Settings::CONFIG, []);
         $logo = Path::core('assets/redaxo-logo.svg');
@@ -656,7 +656,7 @@ final class DemoCommand extends AbstractCommand
         foreach ($tables as $name => $t) {
             $table = Tables::find($name);
             if (!$table) {
-                $out[] = $name . ' fehlt – Klasse aus examples/yform ins Projekt kopieren und `console migrate` ausführen';
+                $out[] = $name . ' missing – copy the class from examples/yform into the project and run `console migrate`';
                 continue;
             }
             if ([] === ($t['rows'] ?? []) || $table::query()->exists()) {
@@ -669,10 +669,10 @@ final class DemoCommand extends AbstractCommand
                 }
                 $rec->save();
             }
-            $out[] = count($t['rows']) . ' Beispielzeilen in ' . $name;
+            $out[] = count($t['rows']) . ' sample rows in ' . $name;
         }
 
-        return $out ? 'YForm: ' . implode(', ', $out) : 'YForm: Beispieldaten schon vorhanden.';
+        return $out ? 'YForm: ' . implode(', ', $out) : 'YForm: sample data already present.';
     }
 
     /** Temporary file with the name of the file in the media pool (the media pool takes over the file name) */

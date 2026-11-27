@@ -6,19 +6,20 @@ use Klxm\Fluid\Field\MediaPicker;
 use Klxm\Fluid\Field\RichText;
 use Klxm\Fluid\Field\Text;
 use Redaxo\Core\MediaPool\Media;
+use Redaxo\Core\Translation\Translatable;
 
 /** Entry of „Abschnitte“ in the block Scrolly */
 final class ScrollyItem
 {
     #[Text(
-        'Dachzeile (optional)',
+        new Translatable('fluid_field_eyebrow'),
         maxLength: 40,
         width: 'half',
     )]
     public string $eyebrow = '';
 
     #[Text(
-        'Titel',
+        new Translatable('fluid_field_item_title'),
         required: true,
         maxLength: 90,
         width: 'half',
@@ -27,15 +28,15 @@ final class ScrollyItem
 
     // Formerly a text field: old plain text appears unchanged as before (fluid_is_plain_text), the editor turns it into paragraphs
     #[RichText(
-        'Text',
-        note: 'Zwischenüberschriften, Fettdruck, Links und Listen möglich. Gut lesbar bis etwa 2.500 Zeichen je Abschnitt – längere Texte lieber teilen.',
+        new Translatable('fluid_field_text'),
+        note: new Translatable('fluid_block_scrolly_item_text_help'),
     )]
     public string $text = '';
 
     #[MediaPicker(
-        'Bild (optional)',
+        new Translatable('fluid_field_image_optional'),
         preview: true,
-        note: 'Ohne Bild bleibt das Bild des vorigen Abschnitts stehen.',
+        note: new Translatable('fluid_block_scrolly_item_image_help'),
     )]
     public ?Media $image = null;
 }

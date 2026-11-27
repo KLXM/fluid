@@ -4,9 +4,9 @@ namespace Klxm\Fluid;
 
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Security\User;
+use Redaxo\Core\Translation\I18n;
 use Throwable;
 
-use function sprintf;
 use function usort;
 
 /**
@@ -90,7 +90,7 @@ final class EditLock
     /** @param array<string, mixed> $holder */
     public static function message(array $holder): string
     {
-        return sprintf('%s bearbeitet diese Seite gerade – Speichern ist gesperrt, bis die Bearbeitung beendet ist.', (string) ($holder['name'] ?? '?'));
+        return I18n::rawMsg('fluid_editlock_message', (string) ($holder['name'] ?? '?'));
     }
 
     /**

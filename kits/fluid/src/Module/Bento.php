@@ -9,41 +9,42 @@ use Klxm\Fluid\Field\Textarea;
 use Klxm\Fluid\Kit\Fluid\FluidBlock;
 use Klxm\Fluid\Kit\Fluid\Module\Item\BentoItem;
 use Redaxo\Core\Content\AsModule;
+use Redaxo\Core\Translation\Translatable;
 
-#[AsModule('fluid.bento', 'Bento-Raster')]
+#[AsModule('fluid.bento', new Translatable('fluid_block_bento'))]
 #[AsBlock(
     icon: 'squares-four',
-    group: 'Inhalt',
-    help: 'Kacheln unterschiedlicher Größe in einem dichten Raster – für Leistungen, Zahlen und Bilder. Kacheln rücken bei wenig Platz automatisch untereinander.',
+    group: new Translatable('fluid_block_group_content'),
+    help: new Translatable('fluid_block_bento_help'),
     nestable: false,
 )]
 final class Bento extends FluidBlock
 {
     #[Text(
-        'Dachzeile (optional)',
+        new Translatable('fluid_field_eyebrow'),
         maxLength: 60,
         width: 'half',
     )]
     public string $eyebrow = '';
 
     #[Text(
-        'Überschrift',
+        new Translatable('fluid_field_title'),
         maxLength: 110,
         width: 'half',
     )]
     public string $title = '';
 
     #[Textarea(
-        'Einleitung (optional)',
+        new Translatable('fluid_field_intro'),
         maxLength: 400,
         rows: 2,
     )]
     public string $intro = '';
 
     #[Collection(
-        'Kacheln',
+        new Translatable('fluid_block_bento_items'),
         item: BentoItem::class,
-        itemLabel: 'Kachel',
+        itemLabel: new Translatable('fluid_block_bento_item'),
         titleField: 'title',
         max: 10,
     )]

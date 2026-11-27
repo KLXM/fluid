@@ -5,6 +5,7 @@ namespace Klxm\Fluid\Seo;
 use Klxm\Routes\Advice;
 use Klxm\Routes\Router;
 use Redaxo\Core\Content\Article;
+use Redaxo\Core\Translation\I18n;
 
 use function count;
 use function Redaxo\Core\View\escape;
@@ -25,8 +26,8 @@ final class AdvicePanel
     private static function page(Article $article): string
     {
         $a = Advice::page($article);
-        $h = self::score($a['score']) . '<p class="site-intro">So finden Suchmaschinen und KI-Assistenten (ChatGPT, Claude, Perplexity …) diese Seite – und zitieren sie.</p>';
-        $groups = ['todo' => 'Offen', 'tip' => 'Tipps', 'ok' => 'Gut'];
+        $h = self::score($a['score']) . '<p class="site-intro">' . I18n::msg('fluid_seo_intro') . '</p>';
+        $groups = ['todo' => I18n::msg('fluid_seo_todo'), 'tip' => I18n::msg('fluid_seo_tips'), 'ok' => I18n::msg('fluid_seo_ok')];
         foreach ($groups as $level => $label) {
             $items = array_values(array_filter($a['hints'], static fn (array $x): bool => $x['level'] === $level));
             if ([] === $items) {
@@ -41,18 +42,18 @@ final class AdvicePanel
                 : '<h3 class="site-h">' . $label . ' (' . count($items) . ')</h3>' . $list;
         }
 
-        return $h . '<p class="help-block">Titel, Beschreibung und Bild ändern Sie in den Seiteneinstellungen.</p>';
+        return $h . '<p class="help-block">' . I18n::msg('fluid_seo_page_help') . '</p>';
     }
 
     private static function site(Article $article): string
     {
         $rows = Advice::site(Router::site(), $article->languageId);
         if ([] === $rows) {
-            return '<p class="site-intro">Alles erledigt – keine offenen Punkte auf den Seiten dieser Website.</p>';
+            return '<p class="site-intro">' . I18n::msg('fluid_seo_site_done') . '</p>';
         }
-        $h = '<p class="site-intro">' . count($rows) . ' Seiten mit offenen Punkten, die wichtigsten zuerst. Ein Klick öffnet die Seite – dort zeigt „Diese Seite“ alle Hinweise, auch zum Inhalt.</p><ul class="site-list" role="list">';
+        $h = '<p class="site-intro">' . I18n::msg('fluid_seo_site_intro', count($rows)) . '</p><ul class="site-list" role="list">';
         foreach ($rows as $r) {
-            $parts = array_filter([[] !== $r['open'] ? 'Offen: ' . implode(', ', $r['open']) : '', [] !== $r['tipTopics'] ? 'Tipps: ' . implode(', ', $r['tipTopics']) : '']);
+            $parts = array_filter([[] !== $r['open'] ? I18n::rawMsg('fluid_seo_todo_list', implode(', ', $r['open'])) : '', [] !== $r['tipTopics'] ? I18n::rawMsg('fluid_seo_tips_list', implode(', ', $r['tipTopics'])) : '']);
             $h .= '<li class="site-list__item"><a class="site-list__main advice__row" href="' . escape($r['url']) . '"><span><b>' . escape($r['name']) . '</b>'
                 . '<small>' . escape(implode(' · ', $parts)) . '</small></span>' . self::badge($r['score']) . '</a></li>';
         }
@@ -62,9 +63,9 @@ final class AdvicePanel
 
     private static function score(int $score): string
     {
-        $word = $score >= 85 ? 'sehr gut' : ($score >= 65 ? 'gut, mit Luft nach oben' : 'ausbaufähig');
+        $word = I18n::rawMsg($score >= 85 ? 'fluid_seo_score_great' : ($score >= 65 ? 'fluid_seo_score_good' : 'fluid_seo_score_poor'));
 
-        return '<div class="advice__score" data-level="' . ($score >= 85 ? 'ok' : ($score >= 65 ? 'tip' : 'todo')) . '"><span>' . $score . '</span><small>von 100 – ' . $word . '</small></div>';
+        return '<div class="advice__score" data-level="' . ($score >= 85 ? 'ok' : ($score >= 65 ? 'tip' : 'todo')) . '"><span>' . $score . '</span><small>' . I18n::msg('fluid_seo_score', $word) . '</small></div>';
     }
 
     private static function badge(int $score): string

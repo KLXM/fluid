@@ -6,6 +6,7 @@ use Klxm\Fluid\RichText;
 use Klxm\Tiptap\AsProfile;
 use Klxm\Tiptap\ProfileDefinition;
 use Override;
+use Redaxo\Core\Translation\Translatable;
 
 /**
  * Text editor of fluid – in the sidebar and directly on the page (inline mode of TipTap). Headings h2–h4, marker,
@@ -14,7 +15,7 @@ use Override;
  *
  * Projects adapt it like any profile: a class with the same name (`tiptap.fluid`) in the project wins.
  */
-#[AsProfile('tiptap.fluid', 'fluid', description: 'Texte in fluid – Seitenleiste und direkt auf der Seite.', priority: -10)]
+#[AsProfile('tiptap.fluid', 'fluid', description: new Translatable('fluid_tiptap_profile_desc'), priority: -10)]
 final class FluidProfile extends ProfileDefinition
 {
     public const string NAME = 'tiptap.fluid';

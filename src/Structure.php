@@ -11,6 +11,7 @@ use Redaxo\Core\Content\CategoryHandler;
 use Redaxo\Core\Content\StructurePermission;
 use Redaxo\Core\Http\Request;
 use Redaxo\Core\Security\User;
+use Redaxo\Core\Translation\I18n;
 
 use function in_array;
 
@@ -86,7 +87,7 @@ final class Structure
         $id = Request::post('id', 'int', 0);
         $msg = '';
         if ('tree' !== $action) {
-            $a = Article::get($id, $languageId) ?? throw new ApiError('Seite nicht gefunden.');
+            $a = Article::get($id, $languageId) ?? throw new ApiError(I18n::rawMsg('fluid_structure_not_found'));
             self::requirePerm($user, $a->isStartArticle() && $a->categoryId === $a->id ? (Category::get($a->id)?->parentId) : $a->categoryId);
             $isCat = null !== Category::get($a->id) && $a->isStartArticle();
             Perm::require($user, match ($action) {
@@ -102,26 +103,26 @@ final class Structure
                 case 'tree_status':
                     $on = !$a->isOnline();
                     $isCat ? CategoryHandler::changeStatus($a->id, $languageId, $on ? 1 : 0) : ArticleHandler::changeStatus($a->id, $languageId, $on ? 1 : 0);
-                    $msg = '„' . $a->name . '“ ist jetzt ' . ($on ? 'online.' : 'offline.');
+                    $msg = I18n::rawMsg($on ? 'fluid_structure_online' : 'fluid_structure_offline', $a->name);
                     break;
                 case 'tree_menu':
                     if ($isCat) {
                         // Menu item: only hide from the menu or show again – position, subpages and status remain
                         $hide = !self::isHidden($a->id);
                         self::setHidden($a->id, $languageId, $hide);
-                        $msg = $hide ? '„' . $a->name . '“ erscheint nicht mehr im Menü – die Seite bleibt online und an ihrer Stelle.' : '„' . $a->name . '“ steht wieder im Menü.';
+                        $msg = I18n::rawMsg($hide ? 'fluid_structure_menu_hidden' : 'fluid_structure_menu_shown', $a->name);
                     } else {
                         // Page without menu entry: menu items are categories in REDAXO
                         ArticleHandler::convertToCategory($a->id);
-                        $msg = '„' . $a->name . '“ steht jetzt im Menü.';
+                        $msg = I18n::rawMsg('fluid_structure_menu_added', $a->name);
                     }
                     break;
                 case 'tree_delete':
                     if ($a->id === Article::getSiteStartArticleId() || $a->id === Article::getNotfoundArticleId()) {
-                        throw new ApiError('Startseite und Seite „nicht gefunden“ lassen sich nicht löschen.');
+                        throw new ApiError(I18n::rawMsg('fluid_structure_delete_protected'));
                     }
                     $isCat ? CategoryHandler::delete($a->id) : ArticleHandler::delete($a->id);
-                    $msg = '„' . $a->name . '“ gelöscht.';
+                    $msg = I18n::rawMsg('fluid_structure_deleted', $a->name);
                     break;
             }
             Routes::rebuild();
@@ -134,13 +135,13 @@ final class Structure
     private static function move(Article $a, bool $isCat, ?int $parent, int $index, User $user, int $languageId): string
     {
         if (null !== $parent && !Category::get($parent)) {
-            throw new ApiError('Hier lassen sich keine Unterseiten anlegen – die Zielseite steht nicht im Menü.');
+            throw new ApiError(I18n::rawMsg('fluid_structure_no_children'));
         }
         self::requirePerm($user, $parent);
         if ($isCat) {
-            $cat = Category::get($a->id) ?? throw new ApiError('Seite nicht gefunden.');
+            $cat = Category::get($a->id) ?? throw new ApiError(I18n::rawMsg('fluid_structure_not_found'));
             if (null !== $parent && ($parent === $a->id || in_array($a->id, Category::get($parent)->path ?? [], true))) {
-                throw new ApiError('Eine Seite kann nicht unter sich selbst stehen.');
+                throw new ApiError(I18n::rawMsg('fluid_structure_self'));
             }
             if ($parent !== $cat->parentId) {
                 CategoryHandler::move($a->id, $parent);   // throws on errors
@@ -154,7 +155,7 @@ final class Structure
             ArticleHandler::edit($a->id, $languageId, ['name' => $fresh->name, 'priority' => $index + 1, 'template' => $fresh->templateKey]);
         }
 
-        return '„' . $a->name . '“ verschoben.';
+        return I18n::rawMsg('fluid_structure_moved', $a->name);
     }
 
     private static function requirePerm(User $user, ?int $categoryId): void
@@ -164,7 +165,7 @@ final class Structure
         }
         $perm = $user->getComplexPerm('structure');
         if (!$perm instanceof StructurePermission || !$perm->hasCategoryPerm($categoryId)) {
-            throw new ApiError('Keine Berechtigung für diesen Bereich der Seitenstruktur.');
+            throw new ApiError(I18n::rawMsg('fluid_structure_perm'));
         }
     }
 }

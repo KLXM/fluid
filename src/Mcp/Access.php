@@ -60,7 +60,7 @@ final class Access
 
     public static function anonymous(): self
     {
-        return new self(null, false, false, null, 'öffentlich');
+        return new self(null, false, false, null, 'public');
     }
 
     public function isPublic(): bool
@@ -71,11 +71,11 @@ final class Access
     public function describe(): string
     {
         if ($this->isPublic()) {
-            return 'öffentlicher Zugang: nur veröffentlichte Inhalte, nur lesen';
+            return 'public access: published content only, read only';
         }
 
-        return 'Schlüssel „' . $this->label . '“ für ' . ($this->user->name ?: $this->user->login) . ': '
-            . ($this->write ? 'lesen und ändern (Entwurf)' . ($this->publish ? ', veröffentlichen' : ', ohne Veröffentlichen') : 'nur lesen');
+        return 'key "' . $this->label . '" for ' . ($this->user->name ?: $this->user->login) . ': '
+            . ($this->write ? 'read and change (draft)' . ($this->publish ? ', publish' : ', without publishing') : 'read only');
     }
 
     /** May read this page? Public: only online; key: the user's structure permission */

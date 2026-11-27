@@ -133,16 +133,16 @@ final class RecordInline
     {
         $ref = explode('~', Request::post('field', 'string', ''));
         if (3 !== count($ref)) {
-            throw new ApiError('Feld nicht gefunden.');
+            throw new ApiError(I18n::rawMsg('fluid_data_field_not_found'));
         }
         [$tname, $rid, $fname] = $ref;
-        $table = YFormBridge::table($tname) ?? throw new ApiError('Tabelle nicht gefunden.');
+        $table = YFormBridge::table($tname) ?? throw new ApiError(I18n::rawMsg('fluid_data_table_not_found'));
         if (Editing::isGuest() || !RecordBlocks::canEdit($user, $table)) {
-            throw new ApiError('Dafür fehlt Ihnen das Recht, diese YForm-Tabelle zu bearbeiten.');
+            throw new ApiError(I18n::rawMsg('fluid_error_yform_table_perm'));
         }
         $field = $table->getField($fname);
-        $kind = self::kind($field) ?? throw new ApiError('Dieses Feld lässt sich nur in der Maske bearbeiten.');
-        $record = $table::query()->where('id', (int) $rid)->first() ?? throw new ApiError('Eintrag nicht gefunden.');
+        $kind = self::kind($field) ?? throw new ApiError(I18n::rawMsg('fluid_data_field_form_only'));
+        $record = $table::query()->where('id', (int) $rid)->first() ?? throw new ApiError(I18n::rawMsg('fluid_error_entry_not_found'));
 
         $input = Request::post('value', 'string', '');
         $input = match ($kind) {
@@ -157,7 +157,7 @@ final class RecordInline
         try {
             $record->save();
         } catch (ValidationException $e) {
-            throw new ApiError(implode(' ', $e->errors->for($fname) ?: $e->errors->all()) ?: 'Der Wert ist nicht gültig.');
+            throw new ApiError(implode(' ', $e->errors->for($fname) ?: $e->errors->all()) ?: I18n::rawMsg('fluid_data_value_invalid'));
         }
 
         $out = ['html' => YFormBridge::html($record, $field), 'text' => YFormBridge::text($record, $field)];

@@ -8,6 +8,7 @@ use Redaxo\Core\Core;
 use Redaxo\Core\Filesystem\Url;
 use Redaxo\Core\Http\Request;
 use Redaxo\Core\Language\Language;
+use Redaxo\Core\Translation\I18n;
 
 use const ENT_QUOTES;
 use const JSON_HEX_AMP;
@@ -45,7 +46,7 @@ final class Links
             }
         };
         foreach (Article::getRootArticles(false, $languageId) as $a) {
-            $add($a, 'Hauptebene', 0, false);
+            $add($a, I18n::rawMsg('fluid_links_root'), 0, false);
         }
         $walk(Category::getRootCategories(false, $languageId), '', 0);
 

@@ -2,6 +2,7 @@
 
 use Klxm\Fluid\Block;
 use Klxm\Fluid\Kit;
+use Redaxo\Core\Translation\I18n;
 
 /**
  * Packages / comparison in the kit „NativeCSS“:
@@ -35,7 +36,7 @@ if ('list' === $v):
     </div>
     <?php endforeach ?>
   </dl>
-  <?php elseif (is_editing()): ?><p class="empty-hint">Noch keine Einträge – in der Seitenleiste unter „Preisliste“ hinzufügen.</p><?php endif ?>
+  <?php elseif (is_editing()): ?><p class="empty-hint"><?= I18n::msg('fluid_kit_empty_pricing_list') ?></p><?php endif ?>
   <?php if ('' !== trim((string) ($d['note'] ?? ''))): ?><p class="plans__note"<?= $b->edit('note') ?>><?= fluid_title((string) $d['note']) ?></p><?php endif ?>
 </div>
 <?php return; endif;
@@ -73,6 +74,6 @@ $items = array_values(array_filter((array) ($d['items'] ?? []), static fn ($i) =
       <?php endforeach ?>
     </ul>
   </div>
-  <?php elseif (is_editing()): ?><p class="empty-hint">Noch keine Pakete – in der Seitenleiste hinzufügen.</p><?php endif ?>
+  <?php elseif (is_editing()): ?><p class="empty-hint"><?= I18n::msg('fluid_kit_empty_pricing') ?></p><?php endif ?>
   <?php if ('' !== trim((string) ($d['note'] ?? ''))): ?><p class="plans__note"<?= $b->edit('note') ?>><?= fluid_title((string) $d['note']) ?></p><?php endif ?>
 </div>

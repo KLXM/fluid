@@ -10,16 +10,17 @@ use Klxm\Fluid\Field\Text;
 use Klxm\Fluid\Field\Textarea;
 use Klxm\Fluid\Kit\Fluid\FluidBlock;
 use Redaxo\Core\Content\AsModule;
+use Redaxo\Core\Translation\Translatable;
 
-#[AsModule('fluid.richtext', 'Fließtext / Artikel')]
+#[AsModule('fluid.richtext', new Translatable('fluid_block_richtext'))]
 #[AsBlock(
     icon: 'paragraph',
-    group: 'Inhalt',
-    help: 'Freier Text mit Zwischenüberschriften, Listen, Zitaten und Links. „Artikel“: angenehme Lesebreite mit automatischem Inhaltsverzeichnis.',
+    group: new Translatable('fluid_block_group_content'),
+    help: new Translatable('fluid_block_richtext_help'),
     variants: [
-        'standard' => 'Standard',
-        'article' => 'Artikel mit Inhaltsverzeichnis',
-        'columns' => 'Mehrspaltig (Zeitungssatz)',
+        'standard' => new Translatable('fluid_block_richtext_variant_standard'),
+        'article' => new Translatable('fluid_block_richtext_variant_article'),
+        'columns' => new Translatable('fluid_block_richtext_variant_columns'),
     ],
     nestable: ['standard', 'columns'],
     drags: [
@@ -27,85 +28,85 @@ use Redaxo\Core\Content\AsModule;
             'field' => 'measure',
             'target' => '.prose:not(.prose--columns)',
             'class' => 'prose--m-{v}',
-            'label' => 'Textbreite',
+            'label' => new Translatable('fluid_block_richtext_drag_measure'),
         ],
     ],
 )]
 final class Richtext extends FluidBlock
 {
     #[Text(
-        'Dachzeile (optional)',
+        new Translatable('fluid_field_eyebrow'),
         maxLength: 60,
         width: 'half',
     )]
     public string $eyebrow = '';
 
     #[Text(
-        'Überschrift',
+        new Translatable('fluid_field_title'),
         maxLength: 110,
         width: 'half',
     )]
     public string $title = '';
 
     #[Textarea(
-        'Einleitung (optional)',
+        new Translatable('fluid_field_intro'),
         maxLength: 400,
         rows: 2,
     )]
     public string $intro = '';
 
-    #[RichTextField('Text')]
+    #[RichTextField(new Translatable('fluid_field_text'))]
     public string $text = '';
 
     #[Choice(
-        'Textbreite',
+        new Translatable('fluid_block_richtext_measure'),
         required: true,
-        choices: ['narrow' => 'Schmal', 'normal' => 'Lesebreite', 'wide' => 'Breit', 'full' => 'Volle Breite'],
+        choices: ['narrow' => new Translatable('fluid_block_richtext_measure_narrow'), 'normal' => new Translatable('fluid_block_richtext_measure_normal'), 'wide' => new Translatable('fluid_block_richtext_measure_wide'), 'full' => new Translatable('fluid_block_richtext_measure_full')],
         width: 'half',
         variants: ['standard', 'article'],
-        note: 'Auch auf der Seite einstellbar: am rechten Rand des Textes ziehen.',
+        note: new Translatable('fluid_block_richtext_measure_help'),
     )]
     public string $measure = 'normal';
 
     #[Text(
-        'Angaben über dem Text (optional, bei „Artikel“)',
+        new Translatable('fluid_block_richtext_meta'),
         maxLength: 120,
-        placeholder: 'z. B. Redaktion · 12. März 2026',
+        placeholder: new Translatable('fluid_block_richtext_meta_placeholder'),
     )]
     public string $meta = '';
 
     #[Checkbox(
-        'Initiale (großer erster Buchstabe)',
+        new Translatable('fluid_block_richtext_dropcap'),
         width: 'half',
     )]
     public bool $dropcap = false;
 
     #[Checkbox(
-        'Inhaltsverzeichnis anzeigen (bei „Artikel“)',
+        new Translatable('fluid_block_richtext_toc'),
         width: 'half',
     )]
     public bool $toc = true;
 
     #[Choice(
-        'Einblenden, wenn der Text in den Blick kommt',
+        new Translatable('fluid_block_richtext_reveal'),
         required: true,
-        choices: ['off' => 'Aus', 'block' => 'Ganzer Block', 'paragraphs' => 'Absätze nacheinander'],
+        choices: ['off' => new Translatable('fluid_block_richtext_reveal_off'), 'block' => new Translatable('fluid_block_richtext_reveal_block'), 'paragraphs' => new Translatable('fluid_block_richtext_reveal_paragraphs')],
         width: 'half',
-        note: 'Art der Bewegung: Design → Bewegung & Farbschema („Art des Einblendens“). Nur mit eingeschalteten Animationen; Besucher mit „Bewegung reduzieren“ sehen den Text sofort.',
+        note: new Translatable('fluid_block_richtext_reveal_help'),
     )]
     public string $reveal = 'off';
 
     #[Choice(
-        'Beim Scrollen mitlaufen (Inhaltsverzeichnis)',
+        new Translatable('fluid_block_richtext_scrollspy'),
         required: true,
         choices: [
-            'off' => 'Aus',
-            'mark' => 'Aktuellen Abschnitt markieren',
-            'progress' => 'Markieren mit Lesefortschritt',
+            'off' => new Translatable('fluid_block_richtext_scrollspy_off'),
+            'mark' => new Translatable('fluid_block_richtext_scrollspy_mark'),
+            'progress' => new Translatable('fluid_block_richtext_scrollspy_progress'),
         ],
         width: 'half',
         variants: ['article'],
-        note: 'Die Markierung gleitet zum Abschnitt, der gerade gelesen wird. Ohne Bewegung (Design oder „Bewegung reduzieren“) springt sie ohne Animation.',
+        note: new Translatable('fluid_block_richtext_scrollspy_help'),
     )]
     public string $scrollspy = 'off';
 }

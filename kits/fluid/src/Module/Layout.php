@@ -6,8 +6,9 @@ use Klxm\Fluid\Kit;
 use Klxm\Fluid\LayoutBlock;
 use Override;
 use Redaxo\Core\Content\AsModule;
+use Redaxo\Core\Translation\Translatable;
 
-#[AsModule('fluid.layout', 'Layout (Spalten)')]
+#[AsModule('fluid.layout', new Translatable('fluid_block_layout'))]
 final class Layout extends LayoutBlock
 {
     #[Override]

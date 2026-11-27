@@ -9,41 +9,42 @@ use Klxm\Fluid\Field\Textarea;
 use Klxm\Fluid\Kit\Fluid\FluidBlock;
 use Klxm\Fluid\Kit\Fluid\Module\Item\CodeItem;
 use Redaxo\Core\Content\AsModule;
+use Redaxo\Core\Translation\Translatable;
 
-#[AsModule('fluid.code', 'Code')]
+#[AsModule('fluid.code', new Translatable('fluid_block_code'))]
 #[AsBlock(
     icon: 'code',
-    group: 'Inhalt',
-    help: 'Codebeispiele zum Kopieren – eine oder mehrere Dateien untereinander (z. B. Klasse und View). Der Code wird so ausgegeben, wie er eingegeben ist.',
+    group: new Translatable('fluid_block_group_content'),
+    help: new Translatable('fluid_block_code_help'),
     nestable: true,
 )]
 final class Code extends FluidBlock
 {
     #[Text(
-        'Dachzeile (optional)',
+        new Translatable('fluid_field_eyebrow'),
         maxLength: 60,
         width: 'half',
     )]
     public string $eyebrow = '';
 
     #[Text(
-        'Überschrift',
+        new Translatable('fluid_field_title'),
         maxLength: 110,
         width: 'half',
     )]
     public string $title = '';
 
     #[Textarea(
-        'Einleitung (optional)',
+        new Translatable('fluid_field_intro'),
         maxLength: 400,
         rows: 2,
     )]
     public string $intro = '';
 
     #[Collection(
-        'Dateien',
+        new Translatable('fluid_block_code_items'),
         item: CodeItem::class,
-        itemLabel: 'Datei',
+        itemLabel: new Translatable('fluid_block_code_item'),
         titleField: 'file',
         min: 1,
         max: 6,
@@ -51,7 +52,7 @@ final class Code extends FluidBlock
     public array $items = [];
 
     #[Text(
-        'Hinweis unter dem Code (optional)',
+        new Translatable('fluid_block_code_note'),
         maxLength: 240,
     )]
     public string $note = '';

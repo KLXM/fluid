@@ -21,6 +21,7 @@ use Redaxo\Core\ExtensionPoint\Extension;
 use Redaxo\Core\ExtensionPoint\ExtensionPoint;
 use Redaxo\Core\Http\Request;
 use Redaxo\Core\Security\User;
+use Redaxo\Core\Translation\I18n;
 use Throwable;
 use Yakamara\YForm\Field\Media;
 
@@ -338,7 +339,7 @@ final class ListTemplates
     {
         $name = trim((string) preg_replace('~\s+~u', ' ', strip_tags($name)));
 
-        return '' === $name ? 'Vorlage' : mb_substr($name, 0, 80);
+        return '' === $name ? I18n::rawMsg('fluid_ltpl_template') : mb_substr($name, 0, 80);
     }
 
     /** @param class-string<BlockModule> $module */
@@ -369,16 +370,16 @@ final class ListTemplates
             return [];
         }
         $img = YFormBridge::field($t, '', [Media::class]);
-        $out = [['name' => 'Karten', 'options' => ['variant' => 'cards', 'size' => 'm']]];
+        $out = [['name' => I18n::rawMsg('fluid_ltpl_suggest_cards'), 'options' => ['variant' => 'cards', 'size' => 'm']]];
         if (null !== $img) {
-            $out[] = ['name' => 'Große Karten mit Bild', 'options' => ['variant' => 'cards', 'size' => 'l', 'image_field' => $img->name]];
-            $out[] = ['name' => 'Liste mit Bild', 'options' => ['variant' => 'list', 'image_field' => $img->name]];
+            $out[] = ['name' => I18n::rawMsg('fluid_ltpl_suggest_cards_large'), 'options' => ['variant' => 'cards', 'size' => 'l', 'image_field' => $img->name]];
+            $out[] = ['name' => I18n::rawMsg('fluid_ltpl_suggest_list_image'), 'options' => ['variant' => 'list', 'image_field' => $img->name]];
         } else {
-            $out[] = ['name' => 'Liste', 'options' => ['variant' => 'list']];
+            $out[] = ['name' => I18n::rawMsg('fluid_ltpl_suggest_list'), 'options' => ['variant' => 'list']];
         }
-        $out[] = ['name' => 'Tabelle sortierbar', 'options' => ['variant' => 'table', 'table_sort' => true]];
+        $out[] = ['name' => I18n::rawMsg('fluid_ltpl_suggest_table'), 'options' => ['variant' => 'table', 'table_sort' => true]];
         if (Knowledge::is($t)) {   // Knowledge base: table of contents with chapter tree
-            array_unshift($out, ['name' => 'Inhaltsverzeichnis', 'options' => ['variant' => 'toc']]);
+            array_unshift($out, ['name' => I18n::rawMsg('fluid_ltpl_suggest_toc'), 'options' => ['variant' => 'toc']]);
         }
 
         return $out;
@@ -475,11 +476,11 @@ final class ListTemplates
                 . ('' !== $opts ? ' data-options="' . escape($opts) . '"' : '') . '>'
                 . ('' === $key ? '<span class="ltpl-tile__own" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" focusable="false"><path fill="currentColor" d="M4 6h10v2H4V6Zm12 0h4v2h-4V6ZM4 11h4v2H4v-2Zm6 0h10v2H10v-2Zm-6 5h12v2H4v-2Zm14 0h2v2h-2v-2Z"/></svg></span>' : self::preview($variant))
                 . '<span class="ltpl-tile__name">' . escape($tname) . '</span>'
-                . ('' !== $key ? '<span class="ltpl-tile__meta">' . escape((string) ($variants[$variant] ?? $variant)) . ($isDefault ? ' · Standard' : '') . '</span>' : '')
+                . ('' !== $key ? '<span class="ltpl-tile__meta">' . escape((string) ($variants[$variant] ?? $variant)) . ($isDefault ? ' · ' . I18n::msg('fluid_form_default') : '') . '</span>' : '')
                 . '</label>';
         };
         $h = '<fieldset class="ltpl" data-ltpl data-keys="' . escape((string) json_encode(self::keys($module))) . '"' . ($manage ? ' data-manage' : '') . ' data-block="' . escape($module::key()) . '">'
-            . '<legend class="rex-field-label">' . escape($label) . '</legend><div class="ltpl-grid">' . $tile('', 'Eigene Einstellungen', '', '', false, '', false);
+            . '<legend class="rex-field-label">' . escape($label) . '</legend><div class="ltpl-grid">' . $tile('', I18n::rawMsg('fluid_ltpl_own'), '', '', false, '', false);
         foreach (array_keys(YFormBridge::tables()) as $tbl) {
             $std = self::defaultKey($module, $tbl);
             foreach (self::forTable($module, $tbl) as $k => $tpl) {
@@ -489,20 +490,20 @@ final class ListTemplates
         }
         $h .= '</div>';
         if ('' !== $value && '' !== $table && null === self::find($module, $table, $value)) {
-            $h .= '<p class="rex-field-note ltpl-warn">Die gewählte Vorlage gibt es nicht mehr – es gelten die eigenen Einstellungen dieses Blocks.</p>';
+            $h .= '<p class="rex-field-note ltpl-warn">' . I18n::msg('fluid_ltpl_missing') . '</p>';
         }
-        $h .= '<div class="ltpl-actions"><button type="button" class="blocks-btn" data-ltpl-detach hidden>Anpassen (Vorlage lösen)</button>';
+        $h .= '<div class="ltpl-actions"><button type="button" class="blocks-btn" data-ltpl-detach hidden>' . I18n::msg('fluid_ltpl_detach') . '</button>';
         if ($manage) {
-            $h .= '<details class="ltpl-save"><summary class="blocks-btn">Als Vorlage speichern …</summary><div class="ltpl-save__row">'
-                . '<label class="rex-field-label" for="' . $id . '-name">Name der Vorlage</label>'
-                . '<input class="rex-input" type="text" id="' . $id . '-name" maxlength="80" placeholder="z. B. Neueste drei" data-ltpl-name>'
-                . '<button type="button" class="blocks-btn" data-ltpl-op="save">Speichern</button></div>'
-                . '<p class="rex-field-note">Speichert die Darstellung dieses Blocks (Darstellung, Felder, Sortierung, Filter, Breite) als Vorlage der gewählten Tabelle.</p></details>'
+            $h .= '<details class="ltpl-save"><summary class="blocks-btn">' . I18n::msg('fluid_ltpl_save_as') . '</summary><div class="ltpl-save__row">'
+                . '<label class="rex-field-label" for="' . $id . '-name">' . I18n::msg('fluid_ltpl_name') . '</label>'
+                . '<input class="rex-input" type="text" id="' . $id . '-name" maxlength="80" placeholder="' . I18n::msg('fluid_ltpl_name_placeholder') . '" data-ltpl-name>'
+                . '<button type="button" class="blocks-btn" data-ltpl-op="save">' . I18n::msg('fluid_site_save') . '</button></div>'
+                . '<p class="rex-field-note">' . I18n::msg('fluid_ltpl_save_help') . '</p></details>'
                 . '<div class="ltpl-manage" data-ltpl-manage hidden>'
-                . '<button type="button" class="blocks-btn" data-ltpl-op="default">Als Standard der Tabelle</button>'
-                . '<button type="button" class="blocks-btn" data-ltpl-op="overwrite">Mit diesen Einstellungen überschreiben</button>'
-                . '<button type="button" class="blocks-btn" data-ltpl-op="rename">Umbenennen</button>'
-                . '<button type="button" class="blocks-btn blocks-btn--danger" data-ltpl-op="delete">Löschen</button></div>';
+                . '<button type="button" class="blocks-btn" data-ltpl-op="default">' . I18n::msg('fluid_ltpl_default') . '</button>'
+                . '<button type="button" class="blocks-btn" data-ltpl-op="overwrite">' . I18n::msg('fluid_ltpl_overwrite') . '</button>'
+                . '<button type="button" class="blocks-btn" data-ltpl-op="rename">' . I18n::msg('fluid_ltpl_rename') . '</button>'
+                . '<button type="button" class="blocks-btn blocks-btn--danger" data-ltpl-op="delete">' . I18n::msg('fluid_shortlink_delete') . '</button></div>';
         }
 
         return $h . '</div>' . ('' !== $help ? '<p class="rex-field-note">' . escape($help) . '</p>' : '') . '</fieldset>';
@@ -517,15 +518,15 @@ final class ListTemplates
     public static function api(User $user): array
     {
         if (!Perm::can($user, Perm::DESIGN_FULL)) {
-            throw new ApiError('Vorlagen verwalten dürfen nur Personen mit dem Recht „Blöcke gestalten und sperren“.', 403);
+            throw new ApiError(I18n::rawMsg('fluid_ltpl_perm'), 403);
         }
         $module = BlockModule::classFor(Request::post('block', 'string', ''));
         if (null === $module || !self::supports($module)) {
-            throw new ApiError('Dieser Block kennt keine Vorlagen.');
+            throw new ApiError(I18n::rawMsg('fluid_ltpl_unsupported'));
         }
         $table = Request::post('table', 'string', '');
         if (null === YFormBridge::table($table)) {
-            throw new ApiError('Bitte zuerst eine Tabelle wählen.');
+            throw new ApiError(I18n::rawMsg('fluid_ltpl_table_required'));
         }
         $op = Request::post('op', 'string', '');
         $key = Request::post('key', 'string', '');
@@ -533,40 +534,40 @@ final class ListTemplates
         $data = is_array($f[1] ?? null) ? Stored::clean($f[1]) : [];
         $tpl = '' !== $key ? self::find($module, $table, $key) : null;
         if ('save' !== $op && (null === $tpl || 'db' !== $tpl['source'])) {
-            throw new ApiError('Diese Vorlage lässt sich hier nicht ändern (Vorlagen des Kits sind fest).');
+            throw new ApiError(I18n::rawMsg('fluid_ltpl_fixed'));
         }
         $msg = match ($op) {
             'save' => (static function () use ($module, $table, $data, &$key): string {
                 $key = self::create($module, $table, Request::post('name', 'string', ''), self::optionsFrom($module, $data, $table));
 
-                return 'Als Vorlage gespeichert.';
+                return I18n::rawMsg('fluid_ltpl_saved');
             })(),
             'overwrite' => (static function () use ($module, $table, $key, $data): string {
                 self::update($module, $table, $key, null, self::optionsFrom($module, $data, $table));
 
-                return 'Vorlage überschrieben – gilt überall, wo sie gewählt ist.';
+                return I18n::rawMsg('fluid_ltpl_overwritten');
             })(),
             'rename' => (static function () use ($module, $table, $key): string {
                 self::update($module, $table, $key, Request::post('name', 'string', ''), null);
 
-                return 'Vorlage umbenannt.';
+                return I18n::rawMsg('fluid_api_template_renamed');
             })(),
             'default' => (static function () use ($module, $table, $key, $tpl): string {
                 self::setDefault($module, $table, !empty($tpl['default']) ? null : $key);
 
-                return !empty($tpl['default']) ? 'Kein Standard mehr für diese Tabelle.' : 'Standard der Tabelle festgelegt.';
+                return !empty($tpl['default']) ? I18n::rawMsg('fluid_ltpl_default_removed') : I18n::rawMsg('fluid_ltpl_default_set');
             })(),
             'delete' => (static function () use ($module, $table, &$key): string {
                 self::delete($module, $table, $key);
                 $key = '';
 
-                return 'Vorlage gelöscht. Blöcke, die sie gewählt hatten, zeigen ihre eigenen Einstellungen.';
+                return I18n::rawMsg('fluid_ltpl_deleted');
             })(),
-            default => throw new ApiError('Unbekannte Aktion.'),
+            default => throw new ApiError(I18n::rawMsg('fluid_api_unknown_action')),
         };
-        $field = array_values(array_filter($module::fields(), static fn (array $x) => 'listtemplate' === ($x['type'] ?? '')))[0] ?? ['name' => 'template', 'label' => 'Vorlage'];
+        $field = array_values(array_filter($module::fields(), static fn (array $x) => 'listtemplate' === ($x['type'] ?? '')))[0] ?? ['name' => 'template', 'label' => I18n::rawMsg('fluid_ltpl_template')];
 
-        return ['html' => self::renderInput($module, Request::post('name_attr', 'string', 'f[1][template]'), $key, $table, (string) ($field['label'] ?? 'Vorlage'), (string) ($field['help'] ?? ''), false),
+        return ['html' => self::renderInput($module, Request::post('name_attr', 'string', 'f[1][template]'), $key, $table, (string) ($field['label'] ?? I18n::rawMsg('fluid_ltpl_template')), (string) ($field['help'] ?? ''), false),
             'key' => $key, 'message' => $msg];
     }
 }

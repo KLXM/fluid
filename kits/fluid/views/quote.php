@@ -1,6 +1,7 @@
 <?php
 
 use Klxm\Fluid\Block;
+use Redaxo\Core\Translation\I18n;
 
 /**
  * Quote / testimonials: single (pull quote, large type in container units) · grid (masonry with CSS columns,
@@ -64,5 +65,5 @@ $person = static function (array $it, int $i) use ($b): string {
     </figure></li>
     <?php endforeach ?>
   </ul>
-  <?php elseif (is_editing()): ?><p class="empty-hint">Noch kein Zitat – in der Seitenleiste hinzufügen.</p><?php endif ?>
+  <?php elseif (is_editing()): ?><p class="empty-hint"><?= I18n::msg('fluid_kit_empty_quote') ?></p><?php endif ?>
 </div>

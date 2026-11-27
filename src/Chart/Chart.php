@@ -8,6 +8,7 @@ use Klxm\Fluid\FluidAddon;
 use Klxm\Routes\Router;
 use Redaxo\Core\ClassDiscovery;
 use Redaxo\Core\Language\Language;
+use Redaxo\Core\Translation\I18n;
 use Throwable;
 
 use function array_map;
@@ -134,10 +135,25 @@ final class Chart
         return self::$sources;
     }
 
+    /**
+     * Choices of the block in the editor's language (the constants above stay German for code that needs constant expressions).
+     *
+     * @param 'type'|'format'|'height'|'table' $kind
+     * @return array<string, string>
+     */
+    public static function choices(string $kind): array
+    {
+        $keys = array_keys(match ($kind) {
+            'type' => self::TYPE_LABELS, 'format' => self::FORMATS, 'height' => self::HEIGHTS, default => self::TABLE_VIEWS,
+        });
+
+        return array_combine(array_map('strval', $keys), array_map(static fn ($k): string => I18n::rawMsg('fluid_chart_' . $kind . '_' . ('' === (string) $k ? 'offer' : $k)), $keys));
+    }
+
     /** @return array<string, string> choice „Daten“ in the block: manual + registered sources */
     public static function sourceChoices(): array
     {
-        return ['' => 'Werte von Hand eingeben'] + array_map(static fn (array $s): string => $s['label'], self::allSources());
+        return ['' => I18n::rawMsg('fluid_chart_source_manual')] + array_map(static fn (array $s): string => $s['label'], self::allSources());
     }
 
     /**

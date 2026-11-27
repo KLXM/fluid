@@ -7,6 +7,7 @@ use Redaxo\Core\Content\Category;
 use Redaxo\Core\Database\Sql;
 use Redaxo\Core\Security\Permission;
 use Redaxo\Core\Security\User;
+use Redaxo\Core\Translation\I18n;
 
 use function is_array;
 
@@ -35,32 +36,32 @@ final class Perm
     /** Flag in the config: existing roles have received the design options */
     public const string MIGRATED = 'perm_design_roles';
 
-    /** Labels for messages */
+    /** Labels for messages (lang keys) */
     private const array LABEL = [
-        'version[live_version]' => 'Veröffentlichen (Liveversion)',
-        'moveSlice[]' => 'Blöcke verschieben',
-        'publishSlice[]' => 'Blöcke online/offline schalten',
-        'copyContent[]' => 'Inhalte kopieren',
-        'addArticle[]' => 'Artikel anlegen',
-        'addCategory[]' => 'Kategorien anlegen',
-        'editArticle[]' => 'Artikel bearbeiten',
-        'editCategory[]' => 'Kategorien bearbeiten',
-        'moveArticle[]' => 'Artikel verschieben',
-        'moveCategory[]' => 'Kategorien verschieben',
-        'publishArticle[]' => 'Artikel online/offline schalten',
-        'publishCategory[]' => 'Kategorien online/offline schalten',
-        'deleteArticle[]' => 'Artikel löschen',
-        'deleteCategory[]' => 'Kategorien löschen',
-        'article2category[]' => 'Artikel ↔ Kategorie umwandeln',
-        self::DESIGN => 'Blöcke gestalten (Abschnitt)',
-        self::DESIGN_FULL => 'Blöcke gestalten und sperren',
+        'version[live_version]' => 'fluid_perm_live_version',
+        'moveSlice[]' => 'fluid_perm_move_slice',
+        'publishSlice[]' => 'fluid_perm_publish_slice',
+        'copyContent[]' => 'fluid_perm_copy_content',
+        'addArticle[]' => 'fluid_perm_add_article',
+        'addCategory[]' => 'fluid_perm_add_category',
+        'editArticle[]' => 'fluid_perm_edit_article',
+        'editCategory[]' => 'fluid_perm_edit_category',
+        'moveArticle[]' => 'fluid_perm_move_article',
+        'moveCategory[]' => 'fluid_perm_move_category',
+        'publishArticle[]' => 'fluid_perm_publish_article',
+        'publishCategory[]' => 'fluid_perm_publish_category',
+        'deleteArticle[]' => 'fluid_perm_delete_article',
+        'deleteCategory[]' => 'fluid_perm_delete_category',
+        'article2category[]' => 'fluid_perm_article2category',
+        self::DESIGN => 'fluid_perm_design',
+        self::DESIGN_FULL => 'fluid_perm_design_full',
     ];
 
     /** Register the design options in the core role form (boot) */
     public static function register(): void
     {
-        Permission::register(self::DESIGN, 'fluid: Blöcke gestalten – Abschnitt (Hintergrund, Abstände, Sprungmarke, Einblend-Effekt)', Permission::OPTIONS);
-        Permission::register(self::DESIGN_FULL, 'fluid: Blöcke gestalten und sperren – gesperrte Blöcke ändern und löschen', Permission::OPTIONS);
+        Permission::register(self::DESIGN, I18n::rawMsg('fluid_perm_design_register'), Permission::OPTIONS);
+        Permission::register(self::DESIGN_FULL, I18n::rawMsg('fluid_perm_design_full_register'), Permission::OPTIONS);
     }
 
     /**
@@ -121,7 +122,7 @@ final class Perm
     public static function require(User $user, string $perm): void
     {
         if (!self::can($user, $perm)) {
-            throw new ApiError('Dafür fehlt Ihnen das Recht „' . (self::LABEL[$perm] ?? $perm) . '“.');
+            throw new ApiError(I18n::rawMsg('fluid_perm_missing', isset(self::LABEL[$perm]) ? I18n::rawMsg(self::LABEL[$perm]) : $perm));
         }
     }
 

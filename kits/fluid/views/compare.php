@@ -1,6 +1,7 @@
 <?php
 
 use Klxm\Fluid\Block;
+use Redaxo\Core\Translation\I18n;
 
 /**
  * Before/after: two images on top of each other, a slider (real <input type="range">: mouse, touch, keyboard, screen reader)
@@ -19,5 +20,5 @@ $cmp = fluid_compare($d, '(min-width: 1080px) 1000px, 100vw', $ratio, 'hx-cmp');
     <?php if ('' !== trim((string) $d['caption']) || is_editing()): ?><figcaption class="video__cap"<?= $b->edit('caption') ?>><?= fluid_title((string) $d['caption']) ?></figcaption><?php endif ?>
   </figure>
   <?= fluid_alt_hint($d['before'] ?? null) . fluid_alt_hint($d['after'] ?? null) ?>
-  <?php elseif (is_editing()): ?><p class="empty-hint">Noch keine Bilder – in der Seitenleiste „Bild vorher“ und „Bild nachher“ wählen.</p><?php endif ?>
+  <?php elseif (is_editing()): ?><p class="empty-hint"><?= I18n::msg('fluid_kit_empty_compare') ?></p><?php endif ?>
 </div>

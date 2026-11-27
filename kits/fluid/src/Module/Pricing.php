@@ -11,42 +11,43 @@ use Klxm\Fluid\Kit\Fluid\Module\Item\PriceListItem;
 use Klxm\Fluid\Kit\Fluid\Module\Item\PricingItem;
 use Klxm\Fluid\Kit\Fluid\Module\Item\PricingRow;
 use Redaxo\Core\Content\AsModule;
+use Redaxo\Core\Translation\Translatable;
 
-#[AsModule('fluid.pricing', 'Pakete / Vergleich')]
+#[AsModule('fluid.pricing', new Translatable('fluid_block_pricing'))]
 #[AsBlock(
     icon: 'currency-eur',
-    group: 'Inhalt',
-    help: 'Pakete als Karten oder als Vergleichstabelle, oder eine Preisliste wie auf einer Speisekarte. Ein Paket lässt sich hervorheben. Nur verbindliche, aktuelle Preise angeben.',
-    variants: ['cards' => 'Karten', 'table' => 'Vergleichstabelle', 'list' => 'Preisliste (Speisekarte)'],
-    variantHelp: ['list' => 'Name, Pünktchen, Preis – für Speisekarten, Preislisten, Gebühren. Beliebig viele Einträge, jeweils mit kurzer Beschreibung.'],
+    group: new Translatable('fluid_block_group_content'),
+    help: new Translatable('fluid_block_pricing_help'),
+    variants: ['cards' => new Translatable('fluid_block_pricing_variant_cards'), 'table' => new Translatable('fluid_block_pricing_variant_table'), 'list' => new Translatable('fluid_block_pricing_variant_list')],
+    variantHelp: ['list' => new Translatable('fluid_block_pricing_variant_list_help')],
 )]
 final class Pricing extends FluidBlock
 {
     #[Text(
-        'Dachzeile (optional)',
+        new Translatable('fluid_field_eyebrow'),
         maxLength: 60,
         width: 'half',
     )]
     public string $eyebrow = '';
 
     #[Text(
-        'Überschrift',
+        new Translatable('fluid_field_title'),
         maxLength: 110,
         width: 'half',
     )]
     public string $title = '';
 
     #[Textarea(
-        'Einleitung (optional)',
+        new Translatable('fluid_field_intro'),
         maxLength: 400,
         rows: 2,
     )]
     public string $intro = '';
 
     #[Collection(
-        'Pakete',
+        new Translatable('fluid_block_pricing_items'),
         item: PricingItem::class,
-        itemLabel: 'Paket',
+        itemLabel: new Translatable('fluid_block_pricing_items_item_label'),
         titleField: 'name',
         max: 4,
         variants: ['cards', 'table'],
@@ -55,9 +56,9 @@ final class Pricing extends FluidBlock
 
     /** @var list<PriceListItem> */
     #[Collection(
-        'Preisliste',
+        new Translatable('fluid_block_pricing_entries'),
         item: PriceListItem::class,
-        itemLabel: 'Eintrag',
+        itemLabel: new Translatable('fluid_block_pricing_entries_item_label'),
         titleField: 'name',
         max: 80,
         variants: ['list'],
@@ -65,9 +66,9 @@ final class Pricing extends FluidBlock
     public array $entries = [];
 
     #[Collection(
-        'Vergleichszeilen (bei „Vergleichstabelle“)',
+        new Translatable('fluid_block_pricing_rows'),
         item: PricingRow::class,
-        itemLabel: 'Zeile',
+        itemLabel: new Translatable('fluid_block_pricing_rows_item_label'),
         titleField: 'label',
         max: 20,
         variants: ['table'],
@@ -75,9 +76,9 @@ final class Pricing extends FluidBlock
     public array $rows = [];
 
     #[Text(
-        'Hinweis unter den Paketen (optional)',
+        new Translatable('fluid_block_pricing_note'),
         maxLength: 200,
-        placeholder: 'z. B. Alle Preise inkl. MwSt.',
+        placeholder: new Translatable('fluid_block_pricing_note_placeholder'),
     )]
     public string $note = '';
 }

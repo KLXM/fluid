@@ -2,6 +2,7 @@
 
 use Klxm\Fluid\Block;
 use Klxm\Fluid\Kit;
+use Redaxo\Core\Translation\I18n;
 
 /**
  * Quote / testimonials in the kit „NativeCSS“: „Groß“ as a featured testimonial (.ncss-testimonial--featured), „Raster“ as
@@ -41,5 +42,5 @@ $fig = static function (array $it, int $i, string $mod) use ($b): string {
   <ul class="ncss-testimonial-grid" role="list">
     <?php foreach ($items as $i => $it): ?><li data-reveal><?= $fig($it, $i, '') ?></li><?php endforeach ?>
   </ul>
-  <?php elseif (is_editing()): ?><p class="empty-hint">Noch kein Zitat – in der Seitenleiste hinzufügen.</p><?php endif ?>
+  <?php elseif (is_editing()): ?><p class="empty-hint"><?= I18n::msg('fluid_kit_empty_quote') ?></p><?php endif ?>
 </div>

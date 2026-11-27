@@ -7,6 +7,7 @@ use Redaxo\Core\Core;
 use Redaxo\Core\Filesystem\Path;
 use Redaxo\Core\Language\Language;
 use Redaxo\Core\MediaPool\Media;
+use Redaxo\Core\Translation\I18n;
 
 use function array_slice;
 use function count;
@@ -93,7 +94,7 @@ final class Tracks
     public static function parse(string $raw): array
     {
         if (strlen($raw) > self::MAX_BYTES) {
-            return [[], 'Datei ist zu groß (max. 2 MB).'];
+            return [[], I18n::rawMsg('fluid_tracks_too_large')];
         }
         if (str_starts_with($raw, "\xEF\xBB\xBF")) {
             $raw = substr($raw, 3);
@@ -106,7 +107,7 @@ final class Tracks
         }
         $raw = str_replace(["\r\n", "\r"], "\n", $raw);
         if (str_contains($raw, "\0")) {
-            return [[], 'Keine gültige Untertitel-Datei.'];
+            return [[], I18n::rawMsg('fluid_tracks_invalid')];
         }
         $cues = [];
         $time = '(?:(\d{1,3}):)?(\d{1,2}):(\d{1,2})[.,](\d{1,3})';
@@ -132,11 +133,11 @@ final class Tracks
             }
             $cues[] = ['start' => self::ms($mm[1], $mm[2], $mm[3], $mm[4]), 'end' => self::ms($mm[5], $mm[6], $mm[7], $mm[8]), 'text' => implode("\n", array_slice($lines, 1)), 'settings' => $mm[9]];
             if (count($cues) > self::MAX_CUES) {
-                return [[], 'Zu viele Einträge.'];
+                return [[], I18n::rawMsg('fluid_tracks_too_many')];
             }
         }
 
-        return $cues ? [self::cleanCues($cues), null] : [[], 'Keine Untertitel gefunden – bitte eine WebVTT- (.vtt) oder SubRip-Datei (.srt) wählen.'];
+        return $cues ? [self::cleanCues($cues), null] : [[], I18n::rawMsg('fluid_tracks_none')];
     }
 
     private static function ms(string $h, string $m, string $s, string $f): int

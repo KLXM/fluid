@@ -20,16 +20,16 @@ if (!class_exists(Table::class)) {
  *
  * @internal
  */
-#[AsTable('rex_fluid_form_entry', label: 'Formular-Eingänge', icon: 'fa-inbox')]
+#[AsTable('rex_fluid_form_entry', label: 'translate:fluid_data_form_entries', icon: 'fa-inbox')]
 final class FormEntryTable extends Table
 {
     public function fields(): iterable
     {
-        yield Text::new('form')->label('Formular')->maxLength(191);
-        yield Text::new('page')->label('Seite')->maxLength(255);
-        yield Textarea::new('summary')->label('Angaben');
-        yield Textarea::new('data')->label('Daten (JSON)');
-        yield CreatedAt::new('created')->label('Eingegangen');
+        yield Text::new('form')->label('translate:fluid_data_entry_form')->maxLength(191);
+        yield Text::new('page')->label('translate:fluid_data_entry_page')->maxLength(255);
+        yield Textarea::new('summary')->label('translate:fluid_data_entry_summary');
+        yield Textarea::new('data')->label('translate:fluid_data_entry_data');
+        yield CreatedAt::new('created')->label('translate:fluid_data_entry_created');
     }
 
     public function list(ListConfig $list): ListConfig

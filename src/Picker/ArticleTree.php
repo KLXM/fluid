@@ -6,6 +6,7 @@ use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\Category;
 use Redaxo\Core\Content\StructurePermission;
 use Redaxo\Core\Security\User;
+use Redaxo\Core\Translation\I18n;
 
 /**
  * Page picker on the website (FrontendPicker): categories and articles of the structure, like the core's linkmap.
@@ -47,7 +48,7 @@ final class ArticleTree
             return $out;
         }
         foreach (Article::getRootArticles(false, $languageId) as $a) {
-            $add($a, 'Hauptebene', 0, false);
+            $add($a, I18n::rawMsg('fluid_links_root'), 0, false);
         }
         $walk(Category::getRootCategories(false, $languageId), '', 0);
 

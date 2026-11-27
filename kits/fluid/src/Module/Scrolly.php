@@ -10,52 +10,63 @@ use Klxm\Fluid\Field\Textarea;
 use Klxm\Fluid\Kit\Fluid\FluidBlock;
 use Klxm\Fluid\Kit\Fluid\Module\Item\ScrollyItem;
 use Redaxo\Core\Content\AsModule;
+use Redaxo\Core\Translation\Translatable;
 
-#[AsModule('fluid.scrolly', 'Scrollytelling')]
+#[AsModule('fluid.scrolly', new Translatable('fluid_block_scrolly'))]
 #[AsBlock(
     icon: 'article',
-    group: 'Inhalt',
-    help: 'Ein Bild bleibt stehen, während die Texte daneben vorbeiziehen; das Bild wechselt passend zum Abschnitt. Abschnitte ohne eigenes Bild behalten das vorige, Texte dürfen lang sein (Zwischenüberschriften, Links). Bei wenig Platz stehen Bild und Text jeweils untereinander.',
-    variants: ['left' => 'Bild links', 'right' => 'Bild rechts'],
+    group: new Translatable('fluid_block_group_content'),
+    help: new Translatable('fluid_block_scrolly_help'),
+    variants: ['left' => new Translatable('fluid_block_scrolly_variant_left'), 'right' => new Translatable('fluid_block_scrolly_variant_right')],
 )]
 final class Scrolly extends FluidBlock
 {
     #[Text(
-        'Dachzeile (optional)',
+        new Translatable('fluid_field_eyebrow'),
         maxLength: 60,
         width: 'half',
     )]
     public string $eyebrow = '';
 
     #[Text(
-        'Überschrift',
+        new Translatable('fluid_field_title'),
         maxLength: 110,
         width: 'half',
     )]
     public string $title = '';
 
     #[Textarea(
-        'Einleitung (optional)',
+        new Translatable('fluid_field_intro'),
         maxLength: 400,
         rows: 2,
     )]
     public string $intro = '';
 
     #[Choice(
-        'Bildformat',
+        new Translatable('fluid_field_ratio'),
         required: true,
-        choices: ['auto' => 'Automatisch (je Bild, ohne Zuschnitt)'] + self::RATIOS,
+        choices: self::scrollyRatios(...),
         width: 'half',
-        note: '„Automatisch“ zeigt jedes Bild ganz in seinem eigenen Format – Hochformate bleiben ganz.',
+        note: new Translatable('fluid_block_scrolly_ratio_help'),
     )]
     public string $ratio = 'auto';
 
     #[Collection(
-        'Abschnitte',
+        new Translatable('fluid_block_scrolly_items'),
         item: ScrollyItem::class,
-        itemLabel: 'Abschnitt',
+        itemLabel: new Translatable('fluid_block_scrolly_items_item_label'),
         titleField: 'title',
         max: 8,
     )]
     public array $items = [];
+
+    /**
+     * Image formats of the block: automatic (per image, no cropping) or one of the formats.
+     *
+     * @return array<string, Translatable>
+     */
+    public static function scrollyRatios(): array
+    {
+        return ['auto' => new Translatable('fluid_block_scrolly_ratio_auto')] + self::ratios();
+    }
 }

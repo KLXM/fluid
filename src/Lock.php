@@ -11,6 +11,7 @@ use Redaxo\Core\Database\Sql;
 use Redaxo\Core\Exception\UserMessageException;
 use Redaxo\Core\ExtensionPoint\Extension;
 use Redaxo\Core\Security\User;
+use Redaxo\Core\Translation\I18n;
 
 use function array_key_exists;
 use function in_array;
@@ -56,8 +57,8 @@ final class Lock
     public static function assert(User $user, ArticleSlice $slice): void
     {
         match (self::reason($user, $slice)) {
-            'perm' => throw new ApiError('Keine Berechtigung für diesen Blocktyp.', 403),
-            'lock' => throw new ApiError('Dieser Block ist gesperrt – ändern oder löschen dürfen ihn nur Personen mit dem Recht „Blöcke gestalten und sperren“.', 403),
+            'perm' => throw new ApiError(I18n::rawMsg('fluid_error_block_type_perm'), 403),
+            'lock' => throw new ApiError(I18n::rawMsg('fluid_lock_locked'), 403),
             default => null,
         };
     }
@@ -127,7 +128,7 @@ final class Lock
         $guard = static function (ArticleSlice $slice): void {
             $user = Core::getUser();
             if (null !== $user && null !== BlockModule::classFor($slice->moduleKey) && 'lock' === self::reason($user, $slice)) {
-                throw new UserMessageException('Dieser Block ist gesperrt – ändern oder löschen dürfen ihn nur Personen mit dem Recht „Blöcke gestalten und sperren“.');
+                throw new UserMessageException(I18n::rawMsg('fluid_lock_locked'));
             }
         };
         Extension::register(SliceUpdating::class, static fn (SliceUpdating $ep) => $guard($ep->slice));

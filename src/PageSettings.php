@@ -19,6 +19,7 @@ use Redaxo\Core\Database\Sql;
 use Redaxo\Core\ExtensionPoint\AsExtension;
 use Redaxo\Core\ExtensionPoint\ExtensionLevel;
 use Redaxo\Core\MediaPool\Media;
+use Redaxo\Core\Translation\I18n;
 
 /**
  * Page settings on the website: title and online status (core) plus the SEO settings of klxm/routes ({@see Pages}:
@@ -86,7 +87,7 @@ final class PageSettings
     {
         $name = trim($name);
         if ('' === $name) {
-            throw new ApiError('Bitte einen Titel angeben.');
+            throw new ApiError(I18n::rawMsg('fluid_error_title_required'));
         }
         if ($name !== $article->name) {
             ArticleHandler::edit($article->id, $article->languageId, ['name' => $name, 'template' => $article->templateKey]);

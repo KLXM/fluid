@@ -1,6 +1,7 @@
 <?php
 
 use Klxm\Fluid\Block;
+use Redaxo\Core\Translation\I18n;
 
 /**
  * Bento grid: dense grid (grid-auto-flow: dense) of tiles of different sizes. The number of columns follows from the
@@ -40,5 +41,5 @@ $tones = ['card', 'tint', 'highlight', 'accent', 'dark', 'image'];
     <?php endforeach ?>
   </ul>
   </div>
-  <?php elseif (is_editing()): ?><p class="empty-hint">Noch keine Kacheln – in der Seitenleiste hinzufügen.</p><?php endif ?>
+  <?php elseif (is_editing()): ?><p class="empty-hint"><?= I18n::msg('fluid_kit_empty_bento') ?></p><?php endif ?>
 </div>

@@ -75,7 +75,7 @@ final class Toolbar
             $modules[] = [
                 'key' => $key,
                 'label' => $module::label(),
-                'group' => (string) ($def['group'] ?? 'Inhalt'),
+                'group' => (string) ($def['group'] ?? I18n::rawMsg('fluid_toolbar_group_content')),
                 'help' => (string) ($def['help'] ?? ''),
                 'nestable' => $module::nestable(),
                 'drags' => self::drags($module, $def),
@@ -87,7 +87,7 @@ final class Toolbar
             if ($guest || !ModuleForm::addable($key, $article) || !$perm instanceof ModulePermission || !$perm->hasPerm($key)) {
                 continue;
             }
-            $modules[] = ['key' => $key, 'label' => $class::name(), 'group' => 'REDAXO-Module', 'help' => 'Gewöhnliches Modul – Felder in der Seitenleiste', 'nestable' => false, 'drags' => [], 'native' => true];
+            $modules[] = ['key' => $key, 'label' => $class::name(), 'group' => I18n::rawMsg('fluid_toolbar_group_modules'), 'help' => I18n::rawMsg('fluid_toolbar_module_help'), 'nestable' => false, 'drags' => [], 'native' => true];
         }
 
         $config = [
@@ -116,6 +116,8 @@ final class Toolbar
             'designSave' => $user->admin && !$guest,
             // Language of the interface and the texts of the editor script (lang files, keys fluid_js_*)
             'locale' => I18n::getLocale(),
+            // order of the block groups in the picker (labels in the editor's language)
+            'groupOrder' => array_map(static fn (string $g): string => I18n::rawMsg('fluid_block_group_' . $g), ['header', 'content', 'media', 'layout', 'data', 'website']),
             't' => Locale::scriptTexts(),
             // „SEO & KI“: hints for this page and the whole website (klxm/routes Advice)
             'seo' => true,

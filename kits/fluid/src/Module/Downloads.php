@@ -12,59 +12,60 @@ use Klxm\Fluid\Field\Textarea;
 use Klxm\Fluid\Kit\Fluid\FluidBlock;
 use Klxm\Fluid\Kit\Fluid\Module\Item\DownloadsFile;
 use Redaxo\Core\Content\AsModule;
+use Redaxo\Core\Translation\Translatable;
 
-#[AsModule('fluid.downloads', 'Downloads')]
+#[AsModule('fluid.downloads', new Translatable('fluid_block_downloads'))]
 #[AsBlock(
     icon: 'download-simple',
-    group: 'Medien',
-    help: 'Dateien aus dem Medienpool zum Herunterladen; PDFs auf Wunsch auch zum Ansehen. Größe und Typ erscheinen automatisch.',
+    group: new Translatable('fluid_block_group_media'),
+    help: new Translatable('fluid_block_downloads_help'),
     nestable: true,
 )]
 final class Downloads extends FluidBlock
 {
     #[Text(
-        'Dachzeile (optional)',
+        new Translatable('fluid_field_eyebrow'),
         maxLength: 60,
         width: 'half',
     )]
     public string $eyebrow = '';
 
     #[Text(
-        'Überschrift',
+        new Translatable('fluid_field_title'),
         maxLength: 110,
         width: 'half',
     )]
     public string $title = '';
 
     #[Textarea(
-        'Einleitung (optional)',
+        new Translatable('fluid_field_intro'),
         maxLength: 400,
         rows: 2,
     )]
     public string $intro = '';
 
     #[Choice(
-        'Quelle',
+        new Translatable('fluid_block_downloads_source'),
         required: true,
-        choices: ['manual' => 'Einzelne Dateien auswählen', 'collection' => 'Alle Dateien einer Medienkategorie'],
+        choices: ['manual' => new Translatable('fluid_block_downloads_source_manual'), 'collection' => new Translatable('fluid_block_downloads_source_collection')],
         width: 'half',
     )]
     public string $source = 'manual';
 
     #[MediaCategory(
-        'Medienkategorie',
+        new Translatable('fluid_block_downloads_collection'),
         width: 'half',
     )]
     public string $collection = '';
 
     #[Collection(
-        'Dateien (bei „Einzelne Dateien“)',
+        new Translatable('fluid_block_downloads_files'),
         item: DownloadsFile::class,
-        itemLabel: 'Datei',
+        itemLabel: new Translatable('fluid_block_downloads_item'),
         titleField: 'label',
     )]
     public array $files = [];
 
-    #[Checkbox('PDFs zusätzlich „Ansehen“ anbieten (öffnet im Browser)')]
+    #[Checkbox(new Translatable('fluid_block_downloads_show_viewer'))]
     public bool $showViewer = true;
 }

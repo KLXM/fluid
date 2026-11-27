@@ -2,6 +2,7 @@
 
 use Klxm\Fluid\Block;
 use Klxm\Fluid\Hotspots;
+use Redaxo\Core\Translation\I18n;
 
 /**
  * Interactive image (Klxm\Fluid\Hotspots): image with numbered buttons and popups (<button popovertarget>), areas as
@@ -25,6 +26,6 @@ if ('' === $html && !is_editing()) {
   <?php if ('' !== $html): ?>
   <div class="cms-hs-wrap<?= 'text' === ($d['width'] ?? '') ? ' cms-hs-wrap--text' : '' ?>"><?= $html ?></div>
   <?php else: ?>
-  <p class="empty-hint">Noch kein Bild – in der Seitenleiste ein Bild wählen und Markierungen setzen.</p>
+  <p class="empty-hint"><?= I18n::msg('fluid_kit_empty_hotspots') ?></p>
   <?php endif ?>
 </div>

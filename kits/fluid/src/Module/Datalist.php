@@ -13,88 +13,89 @@ use Klxm\Fluid\Field\YFormField;
 use Klxm\Fluid\Field\YFormTable;
 use Klxm\Fluid\Kit\Fluid\FluidBlock;
 use Redaxo\Core\Content\AsModule;
+use Redaxo\Core\Translation\Translatable;
 
-#[AsModule('fluid.datalist', 'Datenliste')]
+#[AsModule('fluid.datalist', new Translatable('fluid_block_datalist'))]
 #[AsBlock(
     icon: 'rows',
-    group: 'Daten',
-    help: 'Einträge einer YForm-Tabelle als Karten, Liste oder Tabelle – mit Detailansicht auf derselben Seite. Die Tabelle ist eine Klasse im Projekt (#[AsTable]); im Bearbeiten-Modus öffnet „Bearbeiten“ am Eintrag die Maske von YForm im Popup.',
+    group: new Translatable('fluid_block_group_data'),
+    help: new Translatable('fluid_block_datalist_help'),
     requires: 'yform',
-    variants: ['cards' => 'Karten', 'list' => 'Liste', 'table' => 'Tabelle', 'toc' => 'Inhaltsverzeichnis'],
+    variants: ['cards' => new Translatable('fluid_block_datalist_variant_cards'), 'list' => new Translatable('fluid_block_datalist_variant_list'), 'table' => new Translatable('fluid_block_datalist_variant_table'), 'toc' => new Translatable('fluid_block_datalist_variant_toc')],
     reload: true,
     listTemplate: true,
 )]
 final class Datalist extends FluidBlock
 {
     #[Text(
-        'Dachzeile (optional)',
+        new Translatable('fluid_field_eyebrow'),
         maxLength: 60,
         width: 'half',
     )]
     public string $eyebrow = '';
 
     #[Text(
-        'Überschrift',
+        new Translatable('fluid_field_title'),
         maxLength: 110,
         width: 'half',
     )]
     public string $title = '';
 
     #[Textarea(
-        'Einleitung (optional)',
+        new Translatable('fluid_field_intro'),
         maxLength: 400,
         rows: 2,
     )]
     public string $intro = '';
 
     #[YFormTable(
-        'YForm-Tabelle',
+        new Translatable('fluid_block_datalist_table'),
         required: true,
     )]
     public string $table = '';
 
     #[ListTemplate(
-        'Vorlage',
-        note: 'Eine Vorlage legt Darstellung, Felder, Sortierung, Filter und Breite fest – Änderungen an der Vorlage gelten überall, wo sie gewählt ist.',
+        new Translatable('fluid_block_datalist_template'),
+        note: new Translatable('fluid_block_datalist_template_help'),
     )]
     public string $template = '';
 
     #[YFormField(
-        'Titel',
+        new Translatable('fluid_field_item_title'),
         width: 'half',
-        note: 'Leer = erstes Textfeld',
+        note: new Translatable('fluid_block_datalist_title_field_help'),
     )]
     public string $titleField = '';
 
     #[YFormField(
-        'Bild',
+        new Translatable('fluid_field_image'),
         width: 'half',
-        note: 'Leer = erstes Medienfeld',
+        note: new Translatable('fluid_block_datalist_image_field_help'),
     )]
     public string $imageField = '';
 
     #[YFormField(
-        'Text',
+        new Translatable('fluid_field_text'),
         width: 'half',
-        note: 'Leer = erstes mehrzeiliges Feld',
+        note: new Translatable('fluid_block_datalist_text_field_help'),
     )]
     public string $textField = '';
 
     #[YFormField(
-        'Zusatzangabe (z. B. Datum, Ort)',
+        new Translatable('fluid_block_datalist_meta_field'),
         width: 'half',
     )]
     public string $metaField = '';
 
     #[YFormField(
-        'Nur Einträge, bei denen …',
+        new Translatable('fluid_block_datalist_filter_field'),
         width: 'half',
-        note: 'z. B. „Online“',
+        note: new Translatable('fluid_block_datalist_filter_field_help'),
     )]
     public string $filterField = '';
 
     #[Text(
-        '… gleich ist',
+        new Translatable('fluid_block_datalist_filter_value'),
         maxLength: 100,
         placeholder: '1',
         width: 'half',
@@ -102,81 +103,81 @@ final class Datalist extends FluidBlock
     public string $filterValue = '';
 
     #[YFormField(
-        'Sortieren nach',
+        new Translatable('fluid_block_datalist_sort_field'),
         width: 'half',
-        note: 'Leer = Einstellung der Tabelle',
+        note: new Translatable('fluid_block_datalist_sort_field_help'),
     )]
     public string $sortField = '';
 
     #[Choice(
-        'Reihenfolge',
+        new Translatable('fluid_block_datalist_sort_dir'),
         required: true,
-        choices: ['asc' => 'Aufsteigend (A–Z, älteste zuerst)', 'desc' => 'Absteigend (Z–A, neueste zuerst)'],
+        choices: ['asc' => new Translatable('fluid_block_datalist_sort_dir_asc'), 'desc' => new Translatable('fluid_block_datalist_sort_dir_desc')],
         width: 'half',
     )]
     public string $sortDir = 'asc';
 
     #[Checkbox(
-        'Spalten zum Sortieren anklickbar (bei „Tabelle“)',
+        new Translatable('fluid_block_datalist_table_sort'),
         width: 'half',
         variants: ['table'],
-        note: 'Sortiert die Einträge dieser Seite.',
+        note: new Translatable('fluid_block_datalist_table_sort_help'),
     )]
     public bool $tableSort = false;
 
     #[YFormField(
-        'Filter für Besucher nach … (bei „Karten“ und „Liste“)',
+        new Translatable('fluid_block_datalist_visitor_filter'),
         width: 'half',
         variants: ['cards', 'list'],
-        note: 'z. B. Kategorie – Besucher filtern die Einträge dieser Seite mit Knöpfen über der Liste.',
+        note: new Translatable('fluid_block_datalist_visitor_filter_help'),
     )]
     public string $visitorFilter = '';
 
     #[Checkbox(
-        'Suchfeld für Besucher',
+        new Translatable('fluid_block_datalist_visitor_search'),
         width: 'half',
-        note: 'Sucht in allen Textfeldern der Tabelle – auch über alle Seiten beim Blättern. tee* beginnt mit, "tee" genau, !tee schließt aus.',
+        note: new Translatable('fluid_block_datalist_visitor_search_help'),
     )]
     public bool $visitorSearch = false;
 
     #[Number(
-        'Höchstens bzw. je Seite (0 = alle)',
+        new Translatable('fluid_block_datalist_limit'),
         width: 'half',
     )]
     public int $limit = 0;
 
     #[Checkbox(
-        'Blättern (Seite 2, 3 …)',
+        new Translatable('fluid_field_paging'),
         width: 'half',
-        note: 'Mit „Höchstens“ als Anzahl je Seite.',
+        note: new Translatable('fluid_block_datalist_pager_help'),
     )]
     public bool $pager = false;
 
     #[Choice(
-        'Breite je Eintrag (mindestens)',
+        new Translatable('fluid_field_size'),
         required: true,
-        choices: self::SIZES,
+        choices: self::sizes(...),
         width: 'half',
-        note: 'Wie viele Einträge nebeneinander passen, ergibt sich aus dem verfügbaren Platz – auf jedem Gerät.',
+        note: new Translatable('fluid_field_size_help'),
     )]
     public string $size = 'm';
 
     #[Checkbox(
-        'Einträge verlinken (Detailansicht mit allen Feldern)',
-        note: 'Eigene Adresse je Eintrag, z. B. /presse/titel-12 – mit Titel und Beschreibung für Suchmaschinen und in der Sitemap.',
+        new Translatable('fluid_block_datalist_detail'),
+        note: new Translatable('fluid_block_datalist_detail_help'),
     )]
     public bool $detail = true;
 
     #[Choice(
-        'Einträge im Menü zeigen',
-        choices: ['' => 'Keine', 'top' => 'Oberste Ebene', 'two' => 'Zwei Ebenen (Kapitel und Unterkapitel)'],
+        new Translatable('fluid_block_datalist_menu_entries'),
+        choices: ['' => new Translatable('fluid_block_datalist_menu_entries_none'), 'top' => new Translatable('fluid_block_datalist_menu_entries_top'), 'two' => new Translatable('fluid_block_datalist_menu_entries_two')],
         width: 'half',
-        note: 'Mit Detailansicht: Die Einträge erscheinen im Menü unter dieser Seite. Zwei Ebenen gibt es bei Tabellen der Art „Wissen“.',
+        note: new Translatable('fluid_block_datalist_menu_entries_help'),
     )]
     public string $menuEntries = '';
 
     #[Number(
-        'Höchstens im Menü (je Ebene)',
+        new Translatable('fluid_block_datalist_menu_limit'),
         min: 1,
         max: 50,
         width: 'half',
@@ -184,23 +185,23 @@ final class Datalist extends FluidBlock
     public int $menuLimit = 12;
 
     #[Choice(
-        'Stil der Detailansicht (Wissen)',
+        new Translatable('fluid_block_datalist_knowledge_style'),
         required: true,
-        choices: ['magazin' => 'Magazin (mit Einstieg)', 'sachlich' => 'Sachlich (Handbuch, Satzung)'],
-        note: 'Nur bei Tabellen der Art „Wissen“: Kapitelnavigation mit Suche, Abschnitten und Vor/Zurück.',
+        choices: ['magazin' => new Translatable('fluid_block_datalist_knowledge_style_magazin'), 'sachlich' => new Translatable('fluid_block_datalist_knowledge_style_sachlich')],
+        note: new Translatable('fluid_block_datalist_knowledge_style_help'),
     )]
     public string $knowledgeStyle = 'magazin';
 
     #[Checkbox(
-        '„In den Kalender“ in der Detailansicht anbieten (.ics)',
-        note: 'Für Termine: Tabelle mit Datumsfeld (Datum oder Datum mit Uhrzeit, optional Ende und Ort). Besucher laden den Termin als Kalenderdatei.',
+        new Translatable('fluid_block_datalist_ics'),
+        note: new Translatable('fluid_block_datalist_ics_help'),
     )]
     public bool $ics = false;
 
     #[Text(
-        'Text, wenn keine Einträge da sind',
+        new Translatable('fluid_block_datalist_empty_text'),
         maxLength: 160,
-        placeholder: 'Zurzeit gibt es hier keine Einträge.',
+        placeholder: new Translatable('fluid_block_datalist_empty_text_placeholder'),
     )]
     public string $emptyText = '';
 }

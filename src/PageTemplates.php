@@ -10,6 +10,7 @@ use Redaxo\Core\Content\Category;
 use Redaxo\Core\Content\CategoryHandler;
 use Redaxo\Core\Content\ContentHandler;
 use Redaxo\Core\Filesystem\Url;
+use Redaxo\Core\Translation\I18n;
 
 /**
  * Page templates (model from KLXM Studio – Core\PageTemplates): templates are normal pages in the offline category
@@ -33,7 +34,7 @@ final class PageTemplates
         if (!$create) {
             return null;
         }
-        $id = CategoryHandler::add(['parent_id' => null, 'priority' => 9999, 'name' => 'Seitenvorlagen', 'status' => 0])->id;
+        $id = CategoryHandler::add(['parent_id' => null, 'priority' => 9999, 'name' => I18n::rawMsg('fluid_templates_category'), 'status' => 0])->id;
         FluidAddon::instance()->setConfig(self::CONFIG, $id);
 
         return $id;
@@ -57,7 +58,7 @@ final class PageTemplates
         $a = self::template($id, $languageId);
         $name = trim($name);
         if ('' === $name) {
-            throw new ApiError('Bitte einen Namen eingeben.');
+            throw new ApiError(I18n::rawMsg('fluid_templates_name_required'));
         }
         ArticleHandler::edit($a->id, $languageId, ['name' => mb_substr($name, 0, 191), 'template' => (string) $a->templateKey]);
     }
@@ -75,7 +76,7 @@ final class PageTemplates
     {
         $a = Article::get($id, $languageId);
         if (null === $a || $a->isStartArticle() || $a->categoryId !== self::categoryId()) {
-            throw new ApiError('Vorlage nicht gefunden.');
+            throw new ApiError(I18n::rawMsg('fluid_templates_not_found'));
         }
 
         return $a;

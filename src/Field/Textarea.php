@@ -4,6 +4,7 @@ namespace Klxm\Fluid\Field;
 
 use Attribute;
 use Redaxo\Core\Form\Field\Textarea as CoreTextarea;
+use Redaxo\Core\Translation\Translatable;
 use Redaxo\Core\View\Renderable;
 
 /**
@@ -16,7 +17,7 @@ class Textarea extends CoreTextarea implements FluidField
     /**
      * @param 'half'|null $width fluid: half width in the form
      * @param list<string>|null $variants fluid: only in these displays of the block
-     * @param string|null $placeholder fluid: placeholder in the input field
+     * @param string|Translatable|null $placeholder fluid: placeholder in the input field
      * @param bool $search fluid: include in the search index
      */
     public function __construct(
@@ -29,7 +30,7 @@ class Textarea extends CoreTextarea implements FluidField
         public readonly ?string $width = null,
         /** @var list<string>|null */
         public readonly ?array $variants = null,
-        public readonly ?string $placeholder = null,
+        public readonly string|Translatable|null $placeholder = null,
         public readonly bool $search = true,
     ) {
         parent::__construct($label, $note, $required, $key, $rows, $maxLength);
@@ -37,6 +38,6 @@ class Textarea extends CoreTextarea implements FluidField
 
     public function fluid(): array
     {
-        return array_filter(['width' => $this->width, 'variants' => $this->variants, 'placeholder' => $this->placeholder, 'search' => $this->search ? null : false], static fn ($v) => null !== $v);
+        return array_filter(['width' => $this->width, 'variants' => $this->variants, 'placeholder' => null !== $this->placeholder ? Translatable::text($this->placeholder) : null, 'search' => $this->search ? null : false], static fn ($v) => null !== $v);
     }
 }

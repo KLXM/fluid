@@ -15,6 +15,7 @@ use Redaxo\Core\Core;
 use Redaxo\Core\Database\Sql;
 use Redaxo\Core\Database\Table;
 use Redaxo\Core\Filesystem\Url;
+use Redaxo\Core\Translation\I18n;
 
 use function array_key_exists;
 use function count;
@@ -37,8 +38,9 @@ final class Versions
 {
     public const int KEEP = 40;
 
-    public const array TYPES = ['fluid_save' => 'Gespeichert', 'fluid_published' => 'Veröffentlicht', 'fluid_publish' => 'Vor dem Veröffentlichen',
-        'fluid_restore' => 'Vor dem Wiederherstellen', 'fluid_discard' => 'Vor dem Verwerfen'];
+    /** History types → lang keys of their labels */
+    public const array TYPES = ['fluid_save' => 'fluid_versions_saved', 'fluid_published' => 'fluid_versions_published', 'fluid_publish' => 'fluid_versions_before_publish',
+        'fluid_restore' => 'fluid_versions_before_restore', 'fluid_discard' => 'fluid_versions_before_discard'];
 
     // ------------------------------------------------------------------ versions view (like KLXM Studio: timeline, preview, comparison)
 
@@ -157,7 +159,7 @@ final class Versions
 
         return array_map(static fn (array $r) => [
             'date' => (string) $r['history_date'], 'type' => (string) $r['history_type'],
-            'label' => self::TYPES[$r['history_type']] ?? ('Live: ' . str_replace('_', ' ', (string) $r['history_type'])),
+            'label' => isset(self::TYPES[$r['history_type']]) ? I18n::rawMsg(self::TYPES[$r['history_type']]) : ('Live: ' . str_replace('_', ' ', (string) $r['history_type'])),
             'user' => (string) $r['history_user'], 'revision' => (int) $r['revision'], 'blocks' => (int) $r['blocks'],
         ], $rows);
     }
@@ -169,7 +171,7 @@ final class Versions
         $sql = Sql::factory();
         $rows = $sql->getArray('SELECT * FROM ' . $table . ' WHERE article_id = ? AND language_id = ? AND revision = ? AND history_date = ?', [$articleId, $languageId, $fromRevision, $date]);
         if (!$rows) {
-            throw new ApiError('Diesen Stand gibt es nicht mehr.');
+            throw new ApiError(I18n::rawMsg('fluid_versions_gone'));
         }
         $target = FluidAddon::revision();
         self::snapshot($articleId, $languageId, $target, 'fluid_restore');
@@ -345,7 +347,7 @@ final class Versions
                 // version: intermediate state of the draft (cleared on publish) or published state (archive)
                 'stage' => $st['now'] ? null : (ArticleRevision::WORK === (int) $st['revision'] ? 'draft' : 'live'),
                 ...self::when($st['date'], $now),
-                'note' => $st['now'] ? (self::isWorkVersion() && self::hasChanges($article) ? 'Entwurf mit unveröffentlichten Änderungen' : 'Aktueller Stand') : (self::TYPES[$st['type']] ?? 'Gespeichert'),
+                'note' => $st['now'] ? I18n::rawMsg(self::isWorkVersion() && self::hasChanges($article) ? 'fluid_versions_draft_changes' : 'fluid_versions_current') : I18n::rawMsg(self::TYPES[$st['type']] ?? 'fluid_versions_saved'),
                 'user' => $st['user'],
                 'preview' => $url($st['key']), 'preview_mark' => $url($st['key'], true),
                 'diff' => ['new' => $d['new'], 'changed' => $d['changed'], 'removed' => $d['removed'], 'first' => null === $older],
@@ -376,18 +378,18 @@ final class Versions
     {
         $ts = strtotime($date) ?: $now;
         $fmt = static fn (string $pattern): string => class_exists(IntlDateFormatter::class)
-            ? (string) new IntlDateFormatter('de_DE', IntlDateFormatter::NONE, IntlDateFormatter::NONE, date_default_timezone_get(), null, $pattern)->format($ts)
+            ? (string) new IntlDateFormatter(I18n::getLocale(), IntlDateFormatter::NONE, IntlDateFormatter::NONE, date_default_timezone_get(), null, $pattern)->format($ts)
             : date('d.m.Y', $ts);
         $diff = $now - $ts;
         $ago = match (true) {
-            $diff < 60 => 'gerade eben',
-            $diff < 3600 => 'vor ' . intdiv($diff, 60) . ' Min.',
-            $diff < 86400 => 'vor ' . intdiv($diff, 3600) . ' Std.',
-            $diff < 172800 => 'gestern',
-            default => 'vor ' . intdiv($diff, 86400) . ' Tagen',
+            $diff < 60 => I18n::rawMsg('fluid_versions_now'),
+            $diff < 3600 => I18n::rawMsg('fluid_versions_min', intdiv($diff, 60)),
+            $diff < 86400 => I18n::rawMsg('fluid_versions_hour', intdiv($diff, 3600)),
+            $diff < 172800 => I18n::rawMsg('fluid_versions_yesterday'),
+            default => I18n::rawMsg('fluid_versions_days', intdiv($diff, 86400)),
         };
 
-        return ['label' => $ago, 'day' => $fmt('d. MMMM y'), 'time' => date('H:i', $ts), 'ago' => $ago, 'at' => $fmt('d. MMMM y') . ', ' . date('H:i', $ts) . ' Uhr',
+        return ['label' => $ago, 'day' => $fmt('d. MMMM y'), 'time' => date('H:i', $ts), 'ago' => $ago, 'at' => I18n::rawMsg('fluid_versions_at', $fmt('d. MMMM y'), date('H:i', $ts)),
             'ts' => $ts, 'hm' => [(int) date('G', $ts), (int) date('i', $ts)], 'dm' => [(int) date('j', $ts), rtrim($fmt('MMM'), '.')]];
     }
 

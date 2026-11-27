@@ -6,6 +6,7 @@ use Redaxo\Core\Core;
 use Redaxo\Core\ExtensionPoint\Extension;
 use Redaxo\Core\ExtensionPoint\ExtensionPoint;
 use Redaxo\Core\Language\Language;
+use Redaxo\Core\Translation\I18n;
 
 use function array_key_exists;
 use function count;
@@ -39,93 +40,96 @@ final class Settings
     {
         // Tab „Kit“ only if there is more than one (project or Composer packages with #[AsKit])
         $kits = Kit::options();
-        $kitTab = count($kits) > 1 ? ['kit' => ['label' => 'Kit', 'fields' => [
-            ['name' => 'kit', 'label' => 'Kit der Website', 'type' => 'select', 'required' => true, 'default' => Kit::DEFAULT, 'options' => $kits,
-                'help' => 'Das Kit bestimmt die Gestaltung der ganzen Website. Inhalte und Blöcke bleiben beim Wechsel erhalten; jedes Kit hat eigene Design-Einstellungen.',
+        $kitTab = count($kits) > 1 ? ['kit' => ['label' => I18n::rawMsg('fluid_settings_tab_kit'), 'fields' => [
+            ['name' => 'kit', 'label' => I18n::rawMsg('fluid_settings_kit'), 'type' => 'select', 'required' => true, 'default' => Kit::DEFAULT, 'options' => $kits,
+                'help' => I18n::rawMsg('fluid_settings_kit_help'),
             ],
         ]]] : [];
 
-        $days = ['1' => 'Montag', '2' => 'Dienstag', '3' => 'Mittwoch', '4' => 'Donnerstag', '5' => 'Freitag', '6' => 'Samstag', '0' => 'Sonntag'];
+        $days = [];
+        foreach (['1' => 'mon', '2' => 'tue', '3' => 'wed', '4' => 'thu', '5' => 'fri', '6' => 'sat', '0' => 'sun'] as $n => $d) {
+            $days[$n] = I18n::rawMsg('fluid_settings_day_' . $d);
+        }
 
         return [
-            'base' => ['label' => 'Stammdaten', 'fields' => [
-                ['name' => 'org_name', 'label' => 'Name (Organisation, Firma, Praxis …)', 'type' => 'text', 'max' => 120, 'required' => true,
-                    'help' => 'Erscheint im Kopf, im Fuß, im Browser-Tab und für Suchmaschinen.'],
-                ['name' => 'short_name', 'label' => 'Kurzname (optional)', 'type' => 'text', 'max' => 40, 'width' => 'half'],
-                ['name' => 'tagline', 'translate' => true, 'label' => 'Claim / Unterzeile (optional)', 'type' => 'text', 'max' => 120, 'width' => 'half'],
-                ['name' => 'logo', 'label' => 'Logo (optional)', 'type' => 'media', 'width' => 'half', 'help' => 'SVG oder PNG mit transparentem Hintergrund. Ohne Logo erscheint der Name.'],
-                ['name' => 'logo_dark', 'label' => 'Logo auf dunklem Grund (optional)', 'type' => 'media', 'width' => 'half'],
-                ['name' => 'schema_type', 'label' => 'Art (für Suchmaschinen)', 'type' => 'select', 'default' => 'Organization', 'required' => true,
-                    'options' => ['Organization' => 'Organisation', 'LocalBusiness' => 'Lokales Unternehmen', 'ProfessionalService' => 'Dienstleister / Agentur',
-                        'MedicalBusiness' => 'Praxis / Gesundheit', 'Restaurant' => 'Gastronomie', 'Store' => 'Geschäft', 'EducationalOrganization' => 'Bildung',
-                        'NGO' => 'Verein / gemeinnützig', 'GovernmentOrganization' => 'Behörde / Kommune', 'Person' => 'Person'],
-                    'help' => 'Für strukturierte Daten (schema.org) – hilft Suchmaschinen, Name, Adresse und Zeiten richtig zuzuordnen.'],
-                ['name' => 'default_meta_description', 'translate' => true, 'label' => 'Beschreibung für Suchmaschinen (Standard)', 'type' => 'textarea', 'rows' => 2, 'max' => 300,
-                    'help' => 'Für Seiten ohne eigene Beschreibung (Seiteneinstellungen).'],
+            'base' => ['label' => I18n::rawMsg('fluid_settings_tab_base'), 'fields' => [
+                ['name' => 'org_name', 'label' => I18n::rawMsg('fluid_settings_org_name'), 'type' => 'text', 'max' => 120, 'required' => true,
+                    'help' => I18n::rawMsg('fluid_settings_org_name_help')],
+                ['name' => 'short_name', 'label' => I18n::rawMsg('fluid_settings_short_name'), 'type' => 'text', 'max' => 40, 'width' => 'half'],
+                ['name' => 'tagline', 'translate' => true, 'label' => I18n::rawMsg('fluid_settings_tagline'), 'type' => 'text', 'max' => 120, 'width' => 'half'],
+                ['name' => 'logo', 'label' => I18n::rawMsg('fluid_settings_logo'), 'type' => 'media', 'width' => 'half', 'help' => I18n::rawMsg('fluid_settings_logo_help')],
+                ['name' => 'logo_dark', 'label' => I18n::rawMsg('fluid_settings_logo_dark'), 'type' => 'media', 'width' => 'half'],
+                ['name' => 'schema_type', 'label' => I18n::rawMsg('fluid_settings_schema_type'), 'type' => 'select', 'default' => 'Organization', 'required' => true,
+                    'options' => ['Organization' => I18n::rawMsg('fluid_settings_schema_type_organization'), 'LocalBusiness' => I18n::rawMsg('fluid_settings_schema_type_localbusiness'), 'ProfessionalService' => I18n::rawMsg('fluid_settings_schema_type_professionalservice'),
+                        'MedicalBusiness' => I18n::rawMsg('fluid_settings_schema_type_medicalbusiness'), 'Restaurant' => I18n::rawMsg('fluid_settings_schema_type_restaurant'), 'Store' => I18n::rawMsg('fluid_settings_schema_type_store'), 'EducationalOrganization' => I18n::rawMsg('fluid_settings_schema_type_educationalorganization'),
+                        'NGO' => I18n::rawMsg('fluid_settings_schema_type_ngo'), 'GovernmentOrganization' => I18n::rawMsg('fluid_settings_schema_type_governmentorganization'), 'Person' => I18n::rawMsg('fluid_settings_schema_type_person')],
+                    'help' => I18n::rawMsg('fluid_settings_schema_type_help')],
+                ['name' => 'default_meta_description', 'translate' => true, 'label' => I18n::rawMsg('fluid_settings_default_meta_description'), 'type' => 'textarea', 'rows' => 2, 'max' => 300,
+                    'help' => I18n::rawMsg('fluid_settings_default_meta_description_help')],
             ]],
-            'contact' => ['label' => 'Kontakt & Zeiten', 'fields' => [
-                ['name' => 'street', 'label' => 'Straße und Hausnummer', 'type' => 'text', 'max' => 120],
-                ['name' => 'zip', 'label' => 'PLZ', 'type' => 'text', 'max' => 12, 'width' => 'half'],
-                ['name' => 'city', 'label' => 'Ort', 'type' => 'text', 'max' => 80, 'width' => 'half'],
-                ['name' => 'country', 'label' => 'Land (optional)', 'type' => 'text', 'max' => 60, 'width' => 'half'],
-                ['name' => 'geo', 'label' => 'Standort für die Karte', 'type' => 'geo', 'width' => 'half',
-                    'help' => '„Aus Adresse ermitteln“ sucht die Koordinaten (OpenStreetMap). Oder „Breite, Länge“ eintragen.'],
-                ['name' => 'phone', 'label' => 'Telefon', 'type' => 'text', 'max' => 40, 'width' => 'half', 'placeholder' => 'z. B. 02841 123456'],
-                ['name' => 'email', 'label' => 'E-Mail', 'type' => 'text', 'max' => 120, 'width' => 'half'],
-                ['name' => 'hours', 'label' => 'Öffnungszeiten', 'type' => 'repeater', 'item_label' => 'Zeit', 'title_field' => 'tag', 'fields' => [
-                    ['name' => 'tag', 'label' => 'Tag', 'type' => 'select', 'options' => $days, 'required' => true, 'width' => 'half'],
-                    ['name' => 'notiz', 'label' => 'Hinweis (optional)', 'type' => 'text', 'max' => 60, 'width' => 'half', 'placeholder' => 'z. B. nach Vereinbarung'],
-                    ['name' => 'von', 'label' => 'von', 'type' => 'time', 'width' => 'half'],
-                    ['name' => 'bis', 'label' => 'bis', 'type' => 'time', 'width' => 'half'],
-                    ['name' => 'pause_von', 'label' => 'Pause von (optional)', 'type' => 'time', 'width' => 'half'],
-                    ['name' => 'pause_bis', 'label' => 'Pause bis', 'type' => 'time', 'width' => 'half'],
+            'contact' => ['label' => I18n::rawMsg('fluid_settings_tab_contact'), 'fields' => [
+                ['name' => 'street', 'label' => I18n::rawMsg('fluid_settings_street'), 'type' => 'text', 'max' => 120],
+                ['name' => 'zip', 'label' => I18n::rawMsg('fluid_settings_zip'), 'type' => 'text', 'max' => 12, 'width' => 'half'],
+                ['name' => 'city', 'label' => I18n::rawMsg('fluid_settings_city'), 'type' => 'text', 'max' => 80, 'width' => 'half'],
+                ['name' => 'country', 'label' => I18n::rawMsg('fluid_settings_country'), 'type' => 'text', 'max' => 60, 'width' => 'half'],
+                ['name' => 'geo', 'label' => I18n::rawMsg('fluid_settings_geo'), 'type' => 'geo', 'width' => 'half',
+                    'help' => I18n::rawMsg('fluid_settings_geo_help')],
+                ['name' => 'phone', 'label' => I18n::rawMsg('fluid_settings_phone'), 'type' => 'text', 'max' => 40, 'width' => 'half', 'placeholder' => I18n::rawMsg('fluid_settings_phone_placeholder')],
+                ['name' => 'email', 'label' => I18n::rawMsg('fluid_settings_email'), 'type' => 'text', 'max' => 120, 'width' => 'half'],
+                ['name' => 'hours', 'label' => I18n::rawMsg('fluid_settings_hours'), 'type' => 'repeater', 'item_label' => I18n::rawMsg('fluid_settings_hours_item'), 'title_field' => 'tag', 'fields' => [
+                    ['name' => 'tag', 'label' => I18n::rawMsg('fluid_settings_hours_tag'), 'type' => 'select', 'options' => $days, 'required' => true, 'width' => 'half'],
+                    ['name' => 'notiz', 'label' => I18n::rawMsg('fluid_settings_hours_notiz'), 'type' => 'text', 'max' => 60, 'width' => 'half', 'placeholder' => I18n::rawMsg('fluid_settings_hours_notiz_placeholder')],
+                    ['name' => 'von', 'label' => I18n::rawMsg('fluid_settings_hours_von'), 'type' => 'time', 'width' => 'half'],
+                    ['name' => 'bis', 'label' => I18n::rawMsg('fluid_settings_hours_bis'), 'type' => 'time', 'width' => 'half'],
+                    ['name' => 'pause_von', 'label' => I18n::rawMsg('fluid_settings_hours_pause_von'), 'type' => 'time', 'width' => 'half'],
+                    ['name' => 'pause_bis', 'label' => I18n::rawMsg('fluid_settings_hours_pause_bis'), 'type' => 'time', 'width' => 'half'],
                 ]],
-                ['name' => 'hours_note', 'translate' => true, 'label' => 'Hinweis zu den Zeiten (optional)', 'type' => 'text', 'max' => 160, 'placeholder' => 'z. B. Termine nach Vereinbarung'],
-                ['name' => 'social', 'label' => 'Social Media', 'type' => 'repeater', 'item_label' => 'Profil', 'title_field' => 'label', 'fields' => [
-                    ['name' => 'label', 'label' => 'Name', 'type' => 'text', 'max' => 40, 'width' => 'half', 'placeholder' => 'z. B. Instagram'],
-                    ['name' => 'url', 'label' => 'Adresse', 'type' => 'url', 'width' => 'half'],
+                ['name' => 'hours_note', 'translate' => true, 'label' => I18n::rawMsg('fluid_settings_hours_note'), 'type' => 'text', 'max' => 160, 'placeholder' => I18n::rawMsg('fluid_settings_hours_note_placeholder')],
+                ['name' => 'social', 'label' => I18n::rawMsg('fluid_settings_social'), 'type' => 'repeater', 'item_label' => I18n::rawMsg('fluid_settings_social_item'), 'title_field' => 'label', 'fields' => [
+                    ['name' => 'label', 'label' => I18n::rawMsg('fluid_settings_social_label'), 'type' => 'text', 'max' => 40, 'width' => 'half', 'placeholder' => I18n::rawMsg('fluid_settings_social_label_placeholder')],
+                    ['name' => 'url', 'label' => I18n::rawMsg('fluid_settings_social_url'), 'type' => 'url', 'width' => 'half'],
                 ]],
             ]],
-            'layout' => ['label' => 'Kopf, Fuß & Hinweis', 'fields' => [
-                ['name' => 'header_cta_label', 'translate' => true, 'label' => 'Button im Kopf – Beschriftung (optional)', 'type' => 'text', 'max' => 32, 'width' => 'half', 'placeholder' => 'z. B. Termin vereinbaren'],
-                ['name' => 'header_cta_link', 'label' => 'Button im Kopf – Ziel', 'type' => 'link', 'width' => 'half', 'help' => 'Seite, #anker, https://… – Sonderwerte „phone“ und „email“.'],
-                ['name' => 'search_page', 'label' => 'Seite mit der Suche (optional)', 'type' => 'link', 'width' => 'half',
-                    'help' => 'Seite mit dem Block „Suche“ – dann erscheint im Kopf eine Lupe.'],
-                ['name' => 'topbar_text', 'translate' => true, 'label' => 'Infoleiste über dem Kopf (optional)', 'type' => 'text', 'max' => 120, 'help' => 'Kurzer Text neben Telefon und E-Mail – erscheint, wenn im Design eine Infoleiste gewählt ist.'],
-                ['name' => 'footer_text', 'translate' => true, 'label' => 'Text im Fuß (optional)', 'type' => 'textarea', 'rows' => 2, 'max' => 300],
-                ['name' => 'footer_statement', 'translate' => true, 'label' => 'Großer Satz im Fuß (Design „Statement“)', 'type' => 'text', 'max' => 120, 'help' => '*Wort* hebt hervor.'],
+            'layout' => ['label' => I18n::rawMsg('fluid_settings_tab_layout'), 'fields' => [
+                ['name' => 'header_cta_label', 'translate' => true, 'label' => I18n::rawMsg('fluid_settings_header_cta_label'), 'type' => 'text', 'max' => 32, 'width' => 'half', 'placeholder' => I18n::rawMsg('fluid_settings_header_cta_label_placeholder')],
+                ['name' => 'header_cta_link', 'label' => I18n::rawMsg('fluid_settings_header_cta_link'), 'type' => 'link', 'width' => 'half', 'help' => I18n::rawMsg('fluid_settings_header_cta_link_help')],
+                ['name' => 'search_page', 'label' => I18n::rawMsg('fluid_settings_search_page'), 'type' => 'link', 'width' => 'half',
+                    'help' => I18n::rawMsg('fluid_settings_search_page_help')],
+                ['name' => 'topbar_text', 'translate' => true, 'label' => I18n::rawMsg('fluid_settings_topbar_text'), 'type' => 'text', 'max' => 120, 'help' => I18n::rawMsg('fluid_settings_topbar_text_help')],
+                ['name' => 'footer_text', 'translate' => true, 'label' => I18n::rawMsg('fluid_settings_footer_text'), 'type' => 'textarea', 'rows' => 2, 'max' => 300],
+                ['name' => 'footer_statement', 'translate' => true, 'label' => I18n::rawMsg('fluid_settings_footer_statement'), 'type' => 'text', 'max' => 120, 'help' => I18n::rawMsg('fluid_settings_footer_statement_help')],
                 // Call to action in the footer (fluid_footer_cta): own button, separate from the header; empty = no button
-                ['name' => 'footer_cta_label', 'translate' => true, 'label' => 'Handlungsaufruf im Fuß – Beschriftung (optional)', 'type' => 'text', 'max' => 32, 'width' => 'half', 'placeholder' => 'z. B. Mitglied werden',
-                    'help' => 'Erscheint als Button im Fußbereich – bei „Großer Schriftzug“ statt des Buttons aus dem Kopf. Leer = kein Button.'],
-                ['name' => 'footer_cta_link', 'label' => 'Handlungsaufruf im Fuß – Ziel', 'type' => 'link', 'width' => 'half', 'help' => 'Seite, #anker, https://… – Sonderwerte „phone“ und „email“.'],
-                ['name' => 'notice_active', 'label' => 'Hinweisleiste zeigen', 'type' => 'bool', 'default' => false],
-                ['name' => 'notice_text', 'translate' => true, 'label' => 'Hinweis', 'type' => 'text', 'max' => 200, 'placeholder' => 'z. B. Vom 22.12. bis 6.1. geschlossen.'],
-                ['name' => 'video_lightbox', 'label' => 'Video-Links in Lightbox öffnen', 'type' => 'bool', 'default' => false,
-                    'help' => 'Links und Buttons auf YouTube- oder Vimeo-Videos öffnen den Player in einer Lightbox auf der Website – nur, wenn Besucher in den Dienst eingewilligt haben (AddOn consent_kit bzw. „Videos künftig direkt laden“ im Block Video). Ohne Einwilligung bleibt es ein normaler Link. Einzelne Buttons lassen sich ausnehmen.'],
+                ['name' => 'footer_cta_label', 'translate' => true, 'label' => I18n::rawMsg('fluid_settings_footer_cta_label'), 'type' => 'text', 'max' => 32, 'width' => 'half', 'placeholder' => I18n::rawMsg('fluid_settings_footer_cta_label_placeholder'),
+                    'help' => I18n::rawMsg('fluid_settings_footer_cta_label_help')],
+                ['name' => 'footer_cta_link', 'label' => I18n::rawMsg('fluid_settings_footer_cta_link'), 'type' => 'link', 'width' => 'half', 'help' => I18n::rawMsg('fluid_settings_footer_cta_link_help')],
+                ['name' => 'notice_active', 'label' => I18n::rawMsg('fluid_settings_notice_active'), 'type' => 'bool', 'default' => false],
+                ['name' => 'notice_text', 'translate' => true, 'label' => I18n::rawMsg('fluid_settings_notice_text'), 'type' => 'text', 'max' => 200, 'placeholder' => I18n::rawMsg('fluid_settings_notice_text_placeholder')],
+                ['name' => 'video_lightbox', 'label' => I18n::rawMsg('fluid_settings_video_lightbox'), 'type' => 'bool', 'default' => false,
+                    'help' => I18n::rawMsg('fluid_settings_video_lightbox_help')],
                 // <ncss-preferences> of NativeCSS in the header – kit „NativeCSS“ and kit fluid (frame of both kits); scripts and
                 // panel come from kits/native, so only if that kit exists
                 ...(null !== Kit::get('native') ? [
-                    ['name' => 'visitor_prefs', 'label' => 'Darstellungs-Knopf für Besucher anzeigen', 'type' => 'bool', 'default' => false,
-                        'help' => 'Ein Knopf „Darstellung“ im Kopf der Website: Besucher wählen Farbschema, Kontrast, Bewegung, Schriftgröße, Lese-Schrift, Textabstände, unterstrichene Links und einen deutlicheren Fokus-Rahmen – gespeichert in ihrem Browser. Ohne Wahl gelten die Einstellungen ihres Geräts. Ersetzt keine barrierefreie Gestaltung, ergänzt sie.'],
-                    ['name' => 'visitor_prefs_fonts', 'label' => 'Dabei Lese-Schriften anbieten (Atkinson Hyperlegible, Lexend, OpenDyslexic)', 'type' => 'bool', 'default' => true,
-                        'help' => 'Die Schriften liegen auf dem eigenen Server und laden erst, wenn jemand sie wählt.'],
+                    ['name' => 'visitor_prefs', 'label' => I18n::rawMsg('fluid_settings_visitor_prefs'), 'type' => 'bool', 'default' => false,
+                        'help' => I18n::rawMsg('fluid_settings_visitor_prefs_help')],
+                    ['name' => 'visitor_prefs_fonts', 'label' => I18n::rawMsg('fluid_settings_visitor_prefs_fonts'), 'type' => 'bool', 'default' => true,
+                        'help' => I18n::rawMsg('fluid_settings_visitor_prefs_fonts_help')],
                 ] : []),
             ]],
             ...$kitTab,
-            'legal' => ['label' => 'Recht & Suchmaschinen', 'fields' => [
-                ['name' => 'imprint_page', 'label' => 'Impressum', 'type' => 'link', 'width' => 'half'],
-                ['name' => 'privacy_page', 'label' => 'Datenschutz', 'type' => 'link', 'width' => 'half'],
-                ['name' => 'accessibility_page', 'label' => 'Erklärung zur Barrierefreiheit (optional)', 'type' => 'link', 'width' => 'half'],
-                ['name' => 'mail_keep_days', 'label' => 'Gesendete Mails aufbewahren (Tage)', 'type' => 'number', 'max' => 5, 'width' => 'half', 'placeholder' => (string) Mail\Mail::KEEP_DAYS,
-                    'help' => 'Nur wenn das Mail-Archiv eingeschaltet ist (REX_MAILER_ARCHIVE). Ältere Mails löscht der Cronjob „fluid_mail_archive_purge“ täglich. 0 = nie löschen.'],
-                ['name' => 'robots', 'label' => 'robots.txt (optional)', 'type' => 'textarea', 'rows' => 4, 'max' => 2000,
-                    'help' => 'Leer = Standard (alles erlaubt außer Backend und Bearbeiten-Ansichten). Die Zeile „Sitemap:“ kommt automatisch dazu.'],
-                ['name' => 'robots_previews', 'label' => 'Linkvorschau beim Teilen erlauben, auch wenn Suchmaschinen gesperrt sind', 'type' => 'bool', 'default' => false,
-                    'help' => 'Nur wirksam, wenn der Text oben alles sperrt („User-agent: *“ mit „Disallow: /“) – etwa vor dem Start einer Live-Website. Facebook, LinkedIn, WhatsApp & Co. dürfen dann Titel, Text und Bild geteilter Seiten lesen, Suchmaschinen nicht. Für Test- und Vorschau-Websites aus lassen.'],
+            'legal' => ['label' => I18n::rawMsg('fluid_settings_tab_legal'), 'fields' => [
+                ['name' => 'imprint_page', 'label' => I18n::rawMsg('fluid_settings_imprint_page'), 'type' => 'link', 'width' => 'half'],
+                ['name' => 'privacy_page', 'label' => I18n::rawMsg('fluid_settings_privacy_page'), 'type' => 'link', 'width' => 'half'],
+                ['name' => 'accessibility_page', 'label' => I18n::rawMsg('fluid_settings_accessibility_page'), 'type' => 'link', 'width' => 'half'],
+                ['name' => 'mail_keep_days', 'label' => I18n::rawMsg('fluid_settings_mail_keep_days'), 'type' => 'number', 'max' => 5, 'width' => 'half', 'placeholder' => (string) Mail\Mail::KEEP_DAYS,
+                    'help' => I18n::rawMsg('fluid_settings_mail_keep_days_help')],
+                ['name' => 'robots', 'label' => I18n::rawMsg('fluid_settings_robots'), 'type' => 'textarea', 'rows' => 4, 'max' => 2000,
+                    'help' => I18n::rawMsg('fluid_settings_robots_help')],
+                ['name' => 'robots_previews', 'label' => I18n::rawMsg('fluid_settings_robots_previews'), 'type' => 'bool', 'default' => false,
+                    'help' => I18n::rawMsg('fluid_settings_robots_previews_help')],
             ]],
-            'editorial' => ['label' => 'Redaktion', 'fields' => [
-                ['name' => 'edit_lock', 'label' => 'Bearbeitungssperre: Eine Seite bearbeitet immer nur eine Person', 'type' => 'bool', 'default' => false,
-                    'help' => 'Wer eine Seite zuerst im Bearbeiten-Modus öffnet, hält sie; alle anderen sehen sie nur an, bis die Person fertig ist (spätestens etwa eine Minute nach dem Schließen). Administratoren können übernehmen. Ohne Sperre warnt fluid nur, wenn inzwischen jemand anderes gespeichert hat. Braucht die Präsenz der Redaktion.'],
+            'editorial' => ['label' => I18n::rawMsg('fluid_settings_tab_editorial'), 'fields' => [
+                ['name' => 'edit_lock', 'label' => I18n::rawMsg('fluid_settings_edit_lock'), 'type' => 'bool', 'default' => false,
+                    'help' => I18n::rawMsg('fluid_settings_edit_lock_help')],
             ]],
         ];
     }
@@ -175,7 +179,7 @@ final class Settings
     {
         $fields = self::schema()[$tab]['fields'] ?? null;
         if (null === $fields) {
-            throw new ApiError('Unbekannter Bereich.');
+            throw new ApiError(I18n::rawMsg('fluid_settings_unknown_tab'));
         }
         if (null !== $languageId && $languageId !== Language::getStartId()) {
             $i18n = FluidAddon::instance()->getConfig(self::CONFIG . '_i18n', []);
@@ -197,10 +201,10 @@ final class Settings
                 default => is_array($v) ? '' : mb_substr(trim((string) $v), 0, (int) ($f['max'] ?? 2000)),
             };
             if (!empty($f['required']) && '' === $all[$f['name']]) {
-                throw new ApiError('Bitte „' . $f['label'] . '“ ausfüllen.');
+                throw new ApiError(I18n::rawMsg('fluid_settings_required', $f['label']));
             }
             if ('kit' === $f['name'] && !isset(Kit::all()[$all['kit']])) {
-                throw new ApiError('Unbekanntes Kit.');
+                throw new ApiError(I18n::rawMsg('fluid_settings_unknown_kit'));
             }
         }
         FluidAddon::instance()->setConfig(self::CONFIG, $all);

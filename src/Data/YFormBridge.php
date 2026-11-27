@@ -7,6 +7,7 @@ use Klxm\Fluid\Editing;
 use Redaxo\Core\Addon\Addon;
 use Redaxo\Core\Filesystem\Url;
 use Redaxo\Core\Language\Language;
+use Redaxo\Core\Translation\I18n;
 use Yakamara\YForm\Data\Query;
 use Yakamara\YForm\Data\Record;
 use Yakamara\YForm\Field\Checkbox;
@@ -96,7 +97,12 @@ final class YFormBridge
     /** Feldtypen des eigenen Formulars (Block „Formular“) */
     public static function builderTypes(): array
     {
-        return class_exists(FormDefinition::class) ? BuiltForm::TYPES : ['text' => 'Textzeile'];
+        $types = class_exists(FormDefinition::class) ? BuiltForm::TYPES : ['text' => 'Textzeile'];
+        foreach ($types as $k => $l) {
+            $types[$k] = I18n::rawMsg('fluid_formtype_' . $k);
+        }
+
+        return $types;
     }
 
     /** Theme with the classes of the kit's public forms (css/dataform.css, .dff) */

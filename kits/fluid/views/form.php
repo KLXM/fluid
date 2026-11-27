@@ -10,6 +10,7 @@ use Klxm\Fluid\Data\YFormBridge;
 use Klxm\Fluid\Legal\Legal;
 use Klxm\Fluid\Legal\LegalDialog;
 use Redaxo\Core\Content\Article;
+use Redaxo\Core\Translation\I18n;
 
 $v = 'split' === $b->variant() ? 'split' : 'single';
 // form class from the project (#[AsForm]) or the own form from the block's fields (Data\BuiltForm)
@@ -21,12 +22,12 @@ $form = '';
 if ($def) {
     $form = YFormBridge::runForm($def);
     if (is_editing() && $def instanceof BuiltForm) {
-        $mode = ['save_mail' => 'speichert und sendet per E-Mail', 'save' => 'speichert', 'mail' => 'sendet per E-Mail'][$d['mode'] ?? 'save_mail'] ?? '';
-        $warn = in_array($d['mode'] ?? 'save_mail', ['mail', 'save_mail'], true) && '' === trim((string) ($d['mail_to'] ?? '')) ? ' – <b>E-Mail-Empfänger fehlt</b>' : '';
-        $form = '<p class="empty-hint">Eigenes Formular: ' . e($mode) . $warn . '. Felder und Ablauf in der Seitenleiste.</p>' . $form;
+        $mode = ['save_mail' => I18n::rawMsg('fluid_kit_form_mode_save_mail'), 'save' => I18n::rawMsg('fluid_kit_form_mode_save'), 'mail' => I18n::rawMsg('fluid_kit_form_mode_mail')][$d['mode'] ?? 'save_mail'] ?? '';
+        $warn = in_array($d['mode'] ?? 'save_mail', ['mail', 'save_mail'], true) && '' === trim((string) ($d['mail_to'] ?? ''));
+        $form = '<p class="empty-hint">' . I18n::msg($warn ? 'fluid_kit_form_own_no_recipient' : 'fluid_kit_form_own', $mode) . '</p>' . $form;
     }
 } elseif (is_editing()) {
-    $form = '<p class="empty-hint">' . e(YFormBridge::available() ? 'Bitte in der Seitenleiste Felder anlegen oder ein Formular wählen.' : 'Für diesen Block wird das AddOn YForm benötigt.') . '</p>';
+    $form = '<p class="empty-hint">' . e(YFormBridge::available() ? I18n::rawMsg('fluid_kit_form_empty') : I18n::rawMsg('fluid_kit_needs_yform')) . '</p>';
 }
 $note = trim((string) ($d['note'] ?? ''));
 $privacy = '' !== $form ? Legal::url('privacy') : '';

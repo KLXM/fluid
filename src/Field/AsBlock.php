@@ -3,6 +3,7 @@
 namespace Klxm\Fluid\Field;
 
 use Attribute;
+use Redaxo\Core\Translation\Translatable;
 
 /**
  * Block settings on the class – the fields are attributes on the properties (see {@see Field}).
@@ -11,24 +12,25 @@ use Attribute;
  *     #[AsBlock(icon: 'info', group: 'Inhalt', nestable: true, variants: ['info' => 'Information', 'warn' => 'Warnung'])]
  *     final class Hinweis extends FluidBlock { … }
  *
- * Label: name of the module (AsModule), unless `label:` is given.
+ * Label: name of the module (AsModule), unless `label:` is given. Texts for editors (group, help, label, variants,
+ * variant help, labels of drags) are given directly or as translation key (`new Translatable('my_label')`).
  */
 #[Attribute(Attribute::TARGET_CLASS)]
 final class AsBlock
 {
     public function __construct(
         public readonly string $icon = 'square',
-        /** Group in the block selection (Kopf, Inhalt, Website, Daten …) */
-        public readonly string $group = 'Inhalt',
-        public readonly ?string $help = null,
-        public readonly ?string $label = null,
-        /** @var array<string, string> Variants: key => label (first = default) */
+        /** Group in the block selection (Kopf, Inhalt, Website, Daten … – see lang keys fluid_block_group_*) */
+        public readonly string|Translatable $group = new Translatable('fluid_block_group_content'),
+        public readonly string|Translatable|null $help = null,
+        public readonly string|Translatable|null $label = null,
+        /** @var array<string, string|Translatable> Variants: key => label (first = default) */
         public readonly array $variants = [],
-        /** @var array<string, string> Wann welche Variante? (Handbuch) */
+        /** @var array<string, string|Translatable> When to use which variant? (manual) */
         public readonly array $variantHelp = [],
         /** @var bool|list<string> Allowed in a column of the block „Layout“ – entirely or only these variants */
         public readonly bool|array $nestable = false,
-        /** @var list<array<string, string>> Handles on the page (field, target, class, apply, label) */
+        /** @var list<array<string, string|Translatable>> Handles on the page (field, target, class, apply, label) */
         public readonly array $drags = [],
         /** Required addon (e.g. 'yform') – otherwise the block is missing from the selection */
         public readonly ?string $requires = null,

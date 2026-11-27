@@ -12,6 +12,7 @@ use Redaxo\Core\Content\ModulePermission;
 use Redaxo\Core\Http\Request;
 use Redaxo\Core\Http\Response;
 use Redaxo\Core\Security\BackendLogin;
+use Redaxo\Core\Translation\I18n;
 use RuntimeException;
 use Throwable;
 
@@ -30,12 +31,12 @@ final class BlocksApi extends ApiFunction
     public function execute(): Result
     {
         try {
-            $user = BackendLogin::createUser() ?? throw new RuntimeException('Bitte im Backend anmelden.', 403);
+            $user = BackendLogin::createUser() ?? throw new RuntimeException(I18n::rawMsg('fluid_error_login'), 403);
             $key = Request::post('module', 'string', '');
-            $module = BlockData::module($key) ?? throw new RuntimeException('Unbekannter Block.', 404);
+            $module = BlockData::module($key) ?? throw new RuntimeException(I18n::rawMsg('fluid_data_unknown_block'), 404);
             $perm = $user->getComplexPerm('modules');
             if (!$user->admin && (!$perm instanceof ModulePermission || !$perm->hasPerm($key))) {
-                throw new RuntimeException('Keine Berechtigung für diesen Block.', 403);
+                throw new RuntimeException(I18n::rawMsg('fluid_data_block_perm'), 403);
             }
             if ('parse' === Request::post('action', 'string', 'form')) {
                 $f = Request::post('fb', 'array', []);

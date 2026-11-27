@@ -6,6 +6,7 @@ use Klxm\Fluid\Media\Ffmpeg;
 use Redaxo\Core\Language\Language;
 use Redaxo\Core\MediaManager\MediaManager;
 use Redaxo\Core\MediaPool\Media;
+use Redaxo\Core\Translation\I18n;
 
 /**
  * Video & audio in the kit „NativeCSS“:
@@ -45,7 +46,7 @@ if ('audio' === $b->variant()):
     <?php endif ?>
     <?php if ('' !== trim((string) $d['caption']) || is_editing()): ?><figcaption class="video__cap"<?= $b->edit('caption') ?>><?= fluid_title((string) $d['caption']) ?></figcaption><?php endif ?>
   </figure>
-  <?php elseif (is_editing()): ?><p class="empty-hint">Noch keine Audiodatei – in der Seitenleiste hinzufügen.</p><?php endif ?>
+  <?php elseif (is_editing()): ?><p class="empty-hint"><?= I18n::msg('fluid_kit_empty_audio') ?></p><?php endif ?>
 </div>
 <?php return; endif;
 

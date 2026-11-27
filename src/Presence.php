@@ -115,7 +115,7 @@ final class Presence
     {
         foreach (self::KEYS as $k) {
             if (!isset($who[$k]) || '' === (string) $who[$k]) {
-                throw new InvalidArgumentException("Presence: Schlüssel „{$k}“ fehlt.");
+                throw new InvalidArgumentException("Presence: key \"{$k}\" missing.");
             }
         }
         return implode('|', array_map(static fn ($k) => str_replace('|', '/', (string) $who[$k]), self::KEYS));

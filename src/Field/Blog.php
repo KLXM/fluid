@@ -4,6 +4,7 @@ namespace Klxm\Fluid\Field;
 
 use Attribute;
 use Redaxo\Core\Form\Field\Choice as CoreChoice;
+use Redaxo\Core\Translation\Translatable;
 use Redaxo\Core\View\Renderable;
 
 /**
@@ -27,7 +28,7 @@ class Blog extends CoreChoice implements FluidField
         /** @var list<string>|null */
         public readonly ?array $variants = null,
     ) {
-        parent::__construct($label, static fn (): array => \Klxm\Fluid\Blog\Blog::all(), placeholder: 'Alle Blogs', note: $note, required: $required, key: $key);
+        parent::__construct($label, static fn (): array => \Klxm\Fluid\Blog\Blog::all(), placeholder: new Translatable('fluid_field_blog_all'), note: $note, required: $required, key: $key);
     }
 
     public function fluid(): array

@@ -9,6 +9,7 @@ use Klxm\Routes\Routes;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\StructurePermission;
 use Redaxo\Core\Language\Language;
+use Redaxo\Core\Translation\I18n;
 use Throwable;
 
 use function array_key_exists;
@@ -60,7 +61,7 @@ final class TargetEdit
         }
         $title = trim(str_replace('*', '', (string) $label)) ?: $target['title'];
         $page = 'page' === $target['kind'];
-        $aria = ($page ? 'Seite „' : 'Datensatz „') . $title . '“ bearbeiten';
+        $aria = I18n::rawMsg($page ? 'fluid_target_edit_page' : 'fluid_target_edit_record', $title);
 
         return '<a class="cms-target-edit' . ($page ? '' : ' fdl-edit') . '" href="' . escape($target['href']) . '" data-cms-target="' . $target['kind'] . '"'
             . ($page ? '' : ' target="_blank" rel="noopener"')
@@ -68,7 +69,7 @@ final class TargetEdit
             . ($page
                 ? '<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false"><rect x="1.8" y="2.6" width="12.4" height="10.8" rx="1.8" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M1.8 5.8h12.4" stroke="currentColor" stroke-width="1.4"/></svg>'
                 : '<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false"><ellipse cx="8" cy="3.6" rx="5.2" ry="2" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M2.8 3.6v8.8c0 1.1 2.3 2 5.2 2s5.2-.9 5.2-2V3.6M2.8 8c0 1.1 2.3 2 5.2 2s5.2-.9 5.2-2" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>')
-            . '<span>' . ($page ? 'Seite' : 'Datensatz') . '</span></a>';
+            . '<span>' . I18n::msg($page ? 'fluid_target_page' : 'fluid_target_record') . '</span></a>';
     }
 
     /**

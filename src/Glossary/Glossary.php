@@ -20,6 +20,7 @@ use Redaxo\Core\Http\Request;
 use Redaxo\Core\Http\Response;
 use Redaxo\Core\Language\Language;
 use Redaxo\Core\Security\User;
+use Redaxo\Core\Translation\I18n;
 use Throwable;
 
 use function array_key_exists;
@@ -158,10 +159,11 @@ final class Glossary
             if (!self::available()) {
                 return $schema;
             }
-            $schema['glossary'] = ['label' => 'Glossar', 'fields' => [
-                ['name' => 'glossary', 'label' => 'Begriffe automatisch markieren', 'type' => 'bool', 'default' => false,
-                    'help' => 'Fachbegriffe aus dem Glossar werden im Text unterstrichen; ein Klick zeigt die Erklärung. Nicht in Links, Überschriften und Knöpfen. Ein Bereich lässt sich mit data-glossary="off" ausnehmen.'],
-                ['name' => 'glossary_mode', 'label' => 'Wie oft markieren', 'type' => 'select', 'default' => 'page', 'required' => true, 'options' => self::MODES],
+            $schema['glossary'] = ['label' => I18n::rawMsg('fluid_glossary_tab'), 'fields' => [
+                ['name' => 'glossary', 'label' => I18n::rawMsg('fluid_settings_glossary'), 'type' => 'bool', 'default' => false,
+                    'help' => I18n::rawMsg('fluid_settings_glossary_help')],
+                ['name' => 'glossary_mode', 'label' => I18n::rawMsg('fluid_settings_glossary_mode'), 'type' => 'select', 'default' => 'page', 'required' => true,
+                    'options' => ['page' => I18n::rawMsg('fluid_settings_glossary_mode_page'), 'section' => I18n::rawMsg('fluid_settings_glossary_mode_section')]],
             ]];
 
             return $schema;
@@ -304,7 +306,7 @@ final class Glossary
     {
         $store = self::store();
         if (!$store->canEdit($user)) {
-            throw new ApiError('Dafür fehlt Ihnen das Recht, das Glossar zu bearbeiten.', 403);
+            throw new ApiError(I18n::rawMsg('fluid_glossary_perm'), 403);
         }
         $op = Request::post('op', 'string', 'list');
         $lang = $article->languageId;
@@ -312,10 +314,10 @@ final class Glossary
         if ('create' === $op) {
             $id = $store->create(Request::post('term', 'string', ''), Request::post('short', 'string', ''), self::splitVariants(Request::post('variants', 'string', '')),
                 Request::post('online', 'bool', true), Request::post('all_languages', 'bool', false) ? '' : self::language($lang));
-            $msg = 'Begriff angelegt.' . (self::enabled() ? ' Er wird beim Ansehen der Seite markiert.' : '');
+            $msg = I18n::rawMsg(self::enabled() ? 'fluid_glossary_created_marked' : 'fluid_glossary_created');
         } elseif ('variant' === $op) {
             $store->addVariant(Request::post('id', 'int', 0), Request::post('variant', 'string', ''));
-            $msg = 'Schreibweise hinzugefügt.';
+            $msg = I18n::rawMsg('fluid_glossary_variant_added');
         }
         $list = array_map(static fn (array $t) => ['id' => $t['id'], 'term' => $t['term'], 'short' => $t['short'], 'variants' => $t['variants'], 'online' => $t['online'],
             'url' => $t['url'], 'edit' => $store->editUrl((int) $t['id'])], self::terms($lang, true));

@@ -19,6 +19,7 @@ use Redaxo\Core\Filesystem\Url;
 use Redaxo\Core\Http\Request;
 use Redaxo\Core\Http\Response;
 use Redaxo\Core\Language\Language;
+use Redaxo\Core\Translation\I18n;
 use Yakamara\YForm\Field\Media;
 use Yakamara\YForm\Field\Text;
 use Yakamara\YForm\Field\Textarea;
@@ -26,7 +27,7 @@ use Yakamara\YForm\Field\Textarea;
 $t = YFormBridge::table((string) ($d['table'] ?? ''));
 if (!$t) {
     if (is_editing()) {
-        echo '<div class="wrap"><p class="empty-hint">' . e(YFormBridge::available() ? 'Bitte in der Seitenleiste eine YForm-Tabelle wählen.' : 'Für diesen Block wird das AddOn YForm benötigt.') . '</p></div>';
+        echo '<div class="wrap"><p class="empty-hint">' . e(YFormBridge::available() ? I18n::rawMsg('fluid_kit_choose_table') : I18n::rawMsg('fluid_kit_needs_yform')) . '</p></div>';
     }
 
     return;
@@ -74,7 +75,7 @@ if ($row):
     <?php $metaInline = $metaF ? RecordInline::attrs($t, $row, $metaF) : '' ?>
     <?php if ($metaF && (($m = YFormBridge::html($row, $metaF)) !== '' || '' !== $metaInline)): ?><p class="df-meta"<?= $metaInline ?>><?= $m ?></p><?php endif ?>
     <h2 class="h2 df-title"<?= $titleF ? RecordInline::attrs($t, $row, $titleF) : '' ?>><?= e($title($row)) ?></h2>
-    <?= $editBtn($edit($row->id), 'Eintrag bearbeiten') ?>
+    <?= $editBtn($edit($row->id), I18n::rawMsg('fluid_kit_edit_entry')) ?>
     <?php // events: „In den Kalender“ as .ics (Data\Ics) – only with a date field and the option enabled
     if (!empty($d['ics']) && null !== Ics::dateField($t) && '' !== YFormBridge::sortValue($row, Ics::dateField($t))): ?>
     <p class="df-actions"><a class="btn btn--secondary btn--small" href="<?= e(Ics::url($b->articleId, $row->id)) ?>" download><?= icon('calendar-plus') ?><?= e(lt('In den Kalender')) ?></a></p>
@@ -82,7 +83,7 @@ if ($row):
     <?php
     // change image (media pool) – as a button on the image, so the image tools (edit, adjust …) stay free
     $imgInline = $imageF ? RecordInline::attrs($t, $row, $imageF) : '';
-    $imgBtn = '' !== $imgInline ? '<button type="button" class="fdl-recimg"' . $imgInline . '>' . e('' !== $img ? 'Bild wechseln' : '+ Bild wählen') . '</button>' : '';
+    $imgBtn = '' !== $imgInline ? '<button type="button" class="fdl-recimg"' . $imgInline . '>' . e('' !== $img ? I18n::rawMsg('fluid_kit_change_image') : I18n::rawMsg('fluid_kit_choose_image')) . '</button>' : '';
     ?>
     <?php if ('' !== $img): ?><div class="df-img ratio-16-9"><?= $img ?><?= $imgBtn ?></div><?php elseif ('' !== $imgBtn): ?><p class="df-img-empty"><?= $imgBtn ?></p><?php endif ?>
   </header>
@@ -186,7 +187,7 @@ $reload = $pg && $pg['pages'] > 1 ? Live::region($b) : '';
   <ul class="dl-items<?= 'cards' === $layout ? ' dl-cols-' . $cols : '' ?>" role="list">
     <?php foreach ($rowsL as $ri => $r): $name = $title($r);
     $url = $detailOn ? $href($r) : null ?>
-    <li class="dl-item<?= isset($flt['item'][$ri]) ? ' ncss-filter-item' : '' ?>"<?= isset($flt['item'][$ri]) ? ' data-category="' . e($flt['item'][$ri]) . '"' : '' ?>><?= $editBtn($edit($r->id), 'Eintrag bearbeiten') ?>
+    <li class="dl-item<?= isset($flt['item'][$ri]) ? ' ncss-filter-item' : '' ?>"<?= isset($flt['item'][$ri]) ? ' data-category="' . e($flt['item'][$ri]) . '"' : '' ?>><?= $editBtn($edit($r->id), I18n::rawMsg('fluid_kit_edit_entry')) ?>
       <?php if ($imageF): $p = $pic($r, 'cards' === $layout ? '(min-width: 1080px) 400px, 100vw' : '(min-width: 1080px) 320px, 40vw', '16:10') ?>
       <div class="dl-img ratio-16-10"><?= '' !== $p ? $p : '<span class="dl-ph" aria-hidden="true"></span>' ?></div>
       <?php endif ?>
@@ -207,6 +208,6 @@ $reload = $pg && $pg['pages'] > 1 ? Live::region($b) : '';
     <?php if ($pg['page'] < $pg['pages']): ?><a href="<?= e($pq($pg['page'] + 1)) ?>" data-live-nav rel="next"><?= e(lt('Weiter')) ?> →</a><?php else: ?><span></span><?php endif ?>
   </nav>
   <?php endif ?>
-  <?php if ($new = $edit()): ?><p class="fdl-new"><?= $editBtn($new, '+ Neuer Eintrag') ?></p><?php endif ?>
+  <?php if ($new = $edit()): ?><p class="fdl-new"><?= $editBtn($new, I18n::rawMsg('fluid_kit_new_entry')) ?></p><?php endif ?>
 </div>
 <?= '' !== $reload ? Live::assets() : '' /* live.js only if the list can load more */ ?>

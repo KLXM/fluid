@@ -6,25 +6,26 @@ use Klxm\Fluid\Field\Link;
 use Klxm\Fluid\Field\MediaPicker;
 use Klxm\Fluid\Field\Text;
 use Redaxo\Core\MediaPool\Media;
+use Redaxo\Core\Translation\Translatable;
 
 /** Eintrag von „Logos“ im Block Logos */
 final class LogosItem
 {
     #[Text(
-        'Name',
+        new Translatable('fluid_field_name'),
         required: true,
         width: 'half',
     )]
     public string $name = '';
 
     #[Link(
-        'Link (optional)',
+        new Translatable('fluid_block_logos_item_link'),
         width: 'half',
     )]
     public string $link = '';
 
     #[MediaPicker(
-        'Logo (SVG oder PNG, transparent)',
+        new Translatable('fluid_block_logos_item_image'),
         preview: true,
     )]
     public ?Media $image = null;

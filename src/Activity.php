@@ -4,6 +4,7 @@ namespace Klxm\Fluid;
 
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Database\Sql;
+use Redaxo\Core\Translation\I18n;
 use Throwable;
 
 /**
@@ -14,11 +15,12 @@ final class Activity
 {
     public const string TABLE = 'rex_fluid_activity';
 
+    /** Actions → lang keys of their labels */
     public const array LABELS = [
-        'save' => 'gespeichert', 'publish' => 'veröffentlicht', 'discard' => 'Entwurf verworfen', 'restore' => 'Version wiederhergestellt',
-        'page_add' => 'Seite angelegt', 'page_settings' => 'Seiteneinstellungen geändert', 'tree' => 'Seitenstruktur geändert',
-        'design' => 'Design geändert', 'site' => 'Website-Einstellungen geändert', 'block_add' => 'Block eingefügt', 'block_delete' => 'Block gelöscht',
-        'form_mail_failed' => 'Formular-Mail nicht gesendet', 'lock_taken' => 'Bearbeitung übernommen',
+        'save' => 'fluid_activity_save', 'publish' => 'fluid_activity_publish', 'discard' => 'fluid_activity_discard', 'restore' => 'fluid_activity_restore',
+        'page_add' => 'fluid_activity_page_add', 'page_settings' => 'fluid_activity_page_settings', 'tree' => 'fluid_activity_tree',
+        'design' => 'fluid_activity_design', 'site' => 'fluid_activity_site', 'block_add' => 'fluid_activity_block_add', 'block_delete' => 'fluid_activity_block_delete',
+        'form_mail_failed' => 'fluid_activity_form_mail_failed', 'lock_taken' => 'fluid_activity_lock_taken',
     ];
     private const int MAX = 2000;
 
@@ -54,7 +56,7 @@ final class Activity
         return array_map(static function (array $r): array {
             $a = $r['article_id'] ? Article::get((int) $r['article_id']) : null;
 
-            return ['when' => (string) $r['created'], 'user' => (string) $r['user'], 'action' => self::LABELS[$r['action']] ?? (string) $r['action'],
+            return ['when' => (string) $r['created'], 'user' => (string) $r['user'], 'action' => isset(self::LABELS[$r['action']]) ? I18n::rawMsg(self::LABELS[$r['action']]) : (string) $r['action'],
                 'page' => $a->name ?? '', 'url' => $a?->getUrl() ?? '', 'detail' => (string) $r['detail']];
         }, $rows);
     }

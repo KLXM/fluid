@@ -15,6 +15,7 @@ use Redaxo\Core\Core;
 use Redaxo\Core\ExtensionPoint\Extension;
 use Redaxo\Core\Filesystem\Url;
 use Redaxo\Core\Http\Request;
+use Redaxo\Core\Translation\I18n;
 use Redaxo\Core\View\Asset;
 use Redaxo\Core\View\Fragment;
 
@@ -124,9 +125,9 @@ final class SliceGrid
             'article_id' => $layout->articleId, 'language' => $layout->languageId, 'content_section_id' => $layout->contentSectionId, self::VIEW => $v, self::LAYOUT => $layout->id,
         ]) . '#slice' . $layout->id);
 
-        return '<nav class="fluid-be-view" aria-label="Ansicht dieses Layouts">'
-            . '<a href="' . $url('grid') . '"' . ($grid ? ' aria-current="true"' : '') . '><i class="rex-icon fa-table-columns" aria-hidden="true"></i> Spalten</a>'
-            . '<a href="' . $url('tree') . '"' . (!$grid ? ' aria-current="true"' : '') . '><i class="rex-icon fa-sitemap" aria-hidden="true"></i> Baum</a></nav>';
+        return '<nav class="fluid-be-view" aria-label="' . I18n::msg('fluid_backend_grid_view_label') . '">'
+            . '<a href="' . $url('grid') . '"' . ($grid ? ' aria-current="true"' : '') . '><i class="rex-icon fa-table-columns" aria-hidden="true"></i> ' . I18n::msg('fluid_backend_grid_view_columns') . '</a>'
+            . '<a href="' . $url('tree') . '"' . (!$grid ? ' aria-current="true"' : '') . '><i class="rex-icon fa-sitemap" aria-hidden="true"></i> ' . I18n::msg('fluid_backend_grid_view_tree') . '</a></nav>';
     }
 
     /** SliceOutput im Bearbeiten-Modus: Panel eines Spalten-Blocks einsammeln – null = normal ausgeben. */
@@ -169,7 +170,7 @@ final class SliceGrid
         $h = '';
         for ($i = 1; $i <= $n; ++$i) {
             $h .= '<div class="fluid-be-gcol blocks-be-w' . max(1, min(12, (int) ($units[$i - 1] ?? 6))) . '">'
-                . '<span class="blocks-be-gcol__label">Spalte ' . $i . '</span>'
+                . '<span class="blocks-be-gcol__label">' . I18n::msg('fluid_backend_grid_column', $i) . '</span>'
                 . self::placeholder($layout->id, $i)
                 . self::addButton($layout, $next, $i) . '</div>';
         }
@@ -199,7 +200,7 @@ final class SliceGrid
         }
         self::$cols = [];
 
-        return (string) preg_replace('~<!--fluid-grid:\d+:\d+-->~', '<p class="blocks-be-empty">leer</p>', $content);
+        return (string) preg_replace('~<!--fluid-grid:\d+:\d+-->~', '<p class="blocks-be-empty">' . I18n::msg('fluid_backend_grid_empty') . '</p>', $content);
     }
 
     /** „Block hinzufügen“ before a column block: new blocks land in the same column */
@@ -233,9 +234,9 @@ final class SliceGrid
         if (null !== $article && $ep->hasPerm) {
             self::$opsUrl ??= BlockOpsApi::url($article, $slice->contentSectionId);
             $ep->additionalActions[] = [
-                'hidden_label' => 'Verdoppeln', 'icon' => 'duplicate',
+                'hidden_label' => I18n::msg('fluid_backend_grid_duplicate'), 'icon' => 'duplicate',
                 'url' => self::$opsUrl . '&fluid_op=duplicate&slice_id=' . $slice->id . '#slice' . $slice->id,
-                'attributes' => ['title' => 'Verdoppeln', 'data-fluid-op' => 'duplicate', 'data-slice' => (string) $slice->id],
+                'attributes' => ['title' => I18n::rawMsg('fluid_backend_grid_duplicate'), 'data-fluid-op' => 'duplicate', 'data-slice' => (string) $slice->id],
             ];
         }
         $parent = Layout::parentOf($slice);
@@ -287,7 +288,7 @@ final class SliceGrid
         usort($items, static fn (array $a, array $b): int => strnatcasecmp($a['title'], $b['title']));
         $fragment = new Fragment();
         $fragment->setVar('block', true);
-        $fragment->setVar('button_label', '+ Block in Spalte ' . $col);
+        $fragment->setVar('button_label', '+ ' . I18n::rawMsg('fluid_backend_grid_add_in_column', $col));
         $fragment->setVar('items', $items, false);
 
         return '<div class="fluid-be-add">' . $fragment->parse('core/structure/content/module_select.php') . '</div>';

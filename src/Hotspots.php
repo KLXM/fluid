@@ -6,6 +6,7 @@ use Klxm\Meta\Alt;
 use Redaxo\Core\ExtensionPoint\Extension;
 use Redaxo\Core\ExtensionPoint\ExtensionPoint;
 use Redaxo\Core\MediaPool\Media;
+use Redaxo\Core\Translation\I18n;
 
 use function array_column;
 use function array_filter;
@@ -261,24 +262,27 @@ final class Hotspots
      */
     public static function subFields(): array
     {
-        $shapes = ['point' => 'Punkt (Nummer)', 'circle' => 'Kreis', 'rect' => 'Rechteck', 'poly' => 'Fläche (Vieleck)'];
+        $shapes = [];
+        foreach (['point', 'circle', 'rect', 'poly'] as $s) {
+            $shapes[$s] = I18n::rawMsg('fluid_hotspots_shape_' . $s);
+        }
 
         return [
-            ['name' => 'title', 'label' => 'Titel', 'type' => 'text', 'max' => 160, 'width' => 'half'],
-            ['name' => 'shape', 'label' => 'Form', 'type' => 'select', 'required' => true, 'default' => 'point', 'width' => 'half', 'options' => $shapes],
-            ['name' => 'x', 'label' => 'Waagerecht (%)', 'type' => 'number', 'step' => '0.01', 'min' => 0, 'max_value' => 100, 'width' => 'half'],
-            ['name' => 'y', 'label' => 'Senkrecht (%)', 'type' => 'number', 'step' => '0.01', 'min' => 0, 'max_value' => 100, 'width' => 'half'],
-            ['name' => 'r', 'label' => 'Radius (% der Breite, Kreis)', 'type' => 'number', 'step' => '0.01', 'min' => 0, 'max_value' => 100, 'width' => 'half'],
-            ['name' => 'w', 'label' => 'Breite (%, Rechteck)', 'type' => 'number', 'step' => '0.01', 'min' => 0, 'max_value' => 100, 'width' => 'half'],
-            ['name' => 'h', 'label' => 'Höhe (%, Rechteck)', 'type' => 'number', 'step' => '0.01', 'min' => 0, 'max_value' => 100, 'width' => 'half'],
-            ['name' => 'points', 'label' => 'Eckpunkte (Fläche: x,y in %, durch Leerzeichen getrennt)', 'type' => 'text', 'placeholder' => '10,10 30,12 20,30',
-                'help' => 'Im Bild die Eckpunkte ziehen; Umschalt + Klick ins Bild fügt der gewählten Fläche einen Punkt an.'],
-            ['name' => 'text', 'label' => 'Text', 'type' => 'richtext'],
-            ['name' => 'link', 'label' => 'Link (optional)', 'type' => 'link', 'width' => 'half'],
-            ['name' => 'link_label', 'label' => 'Beschriftung des Links', 'type' => 'text', 'max' => 60, 'width' => 'half', 'placeholder' => 'Mehr erfahren'],
-            ['name' => 'term', 'label' => 'Glossar-Begriff (Kurzname, optional)', 'type' => 'text', 'max' => 120, 'width' => 'half',
-                'help' => 'Nur mit einem Glossar-AddOn: zeigt die Kurz-Erklärung des Begriffs und verlinkt ins Glossar.'],
-            ['name' => 'icon', 'label' => 'Symbol statt Nummer (optional)', 'type' => 'icon', 'width' => 'half'],
+            ['name' => 'title', 'label' => I18n::rawMsg('fluid_hotspots_title'), 'type' => 'text', 'max' => 160, 'width' => 'half'],
+            ['name' => 'shape', 'label' => I18n::rawMsg('fluid_hotspots_shape'), 'type' => 'select', 'required' => true, 'default' => 'point', 'width' => 'half', 'options' => $shapes],
+            ['name' => 'x', 'label' => I18n::rawMsg('fluid_hotspots_x'), 'type' => 'number', 'step' => '0.01', 'min' => 0, 'max_value' => 100, 'width' => 'half'],
+            ['name' => 'y', 'label' => I18n::rawMsg('fluid_hotspots_y'), 'type' => 'number', 'step' => '0.01', 'min' => 0, 'max_value' => 100, 'width' => 'half'],
+            ['name' => 'r', 'label' => I18n::rawMsg('fluid_hotspots_r'), 'type' => 'number', 'step' => '0.01', 'min' => 0, 'max_value' => 100, 'width' => 'half'],
+            ['name' => 'w', 'label' => I18n::rawMsg('fluid_hotspots_w'), 'type' => 'number', 'step' => '0.01', 'min' => 0, 'max_value' => 100, 'width' => 'half'],
+            ['name' => 'h', 'label' => I18n::rawMsg('fluid_hotspots_h'), 'type' => 'number', 'step' => '0.01', 'min' => 0, 'max_value' => 100, 'width' => 'half'],
+            ['name' => 'points', 'label' => I18n::rawMsg('fluid_hotspots_points'), 'type' => 'text', 'placeholder' => '10,10 30,12 20,30',
+                'help' => I18n::rawMsg('fluid_hotspots_points_help')],
+            ['name' => 'text', 'label' => I18n::rawMsg('fluid_hotspots_text'), 'type' => 'richtext'],
+            ['name' => 'link', 'label' => I18n::rawMsg('fluid_hotspots_link'), 'type' => 'link', 'width' => 'half'],
+            ['name' => 'link_label', 'label' => I18n::rawMsg('fluid_hotspots_link_label'), 'type' => 'text', 'max' => 60, 'width' => 'half', 'placeholder' => I18n::rawMsg('fluid_hotspots_link_label_placeholder')],
+            ['name' => 'term', 'label' => I18n::rawMsg('fluid_hotspots_term'), 'type' => 'text', 'max' => 120, 'width' => 'half',
+                'help' => I18n::rawMsg('fluid_hotspots_term_help')],
+            ['name' => 'icon', 'label' => I18n::rawMsg('fluid_hotspots_icon'), 'type' => 'icon', 'width' => 'half'],
             ['name' => 'id', 'label' => 'ID', 'type' => 'hidden'],
         ];
     }
@@ -347,7 +351,7 @@ final class Hotspots
                 continue;
             }
             $label = trim((string) ($d['label'] ?? ''));
-            $out[] = ['url' => $d['url'], 'label' => '' !== $label ? $label : 'Im Editor öffnen', 'title' => trim((string) ($d['title'] ?? ''))];
+            $out[] = ['url' => $d['url'], 'label' => '' !== $label ? $label : I18n::rawMsg('fluid_hotspots_open_editor'), 'title' => trim((string) ($d['title'] ?? ''))];
         }
 
         return $out;

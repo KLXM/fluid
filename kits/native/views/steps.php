@@ -2,6 +2,7 @@
 
 use Klxm\Fluid\Block;
 use Klxm\Fluid\Kit;
+use Redaxo\Core\Translation\I18n;
 
 /**
  * Steps / timeline in kit „NativeCSS“: „Zeitleiste“ with .ncss-timeline of NativeCSS (date, marker as dot or
@@ -45,5 +46,5 @@ if ($draw) {
     </li>
     <?php endforeach ?>
   </ol>
-  <?php elseif (is_editing()): ?><p class="empty-hint">Noch keine Schritte – in der Seitenleiste hinzufügen.</p><?php endif ?>
+  <?php elseif (is_editing()): ?><p class="empty-hint"><?= I18n::msg('fluid_kit_empty_steps') ?></p><?php endif ?>
 </div>

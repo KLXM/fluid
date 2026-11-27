@@ -8,40 +8,41 @@ use Klxm\Fluid\Field\Text;
 use Klxm\Fluid\Kit\Fluid\FluidBlock;
 use Klxm\Fluid\Kit\Fluid\Module\Item\QuoteItem;
 use Redaxo\Core\Content\AsModule;
+use Redaxo\Core\Translation\Translatable;
 
-#[AsModule('fluid.quote', 'Zitat / Stimmen')]
+#[AsModule('fluid.quote', new Translatable('fluid_block_quote'))]
 #[AsBlock(
     icon: 'quotes',
-    group: 'Inhalt',
-    help: '„Groß“: ein Zitat als Blickfang (Pull-Quote). „Raster“, „Band“ und „Laufband“ für mehrere Stimmen (Laufband hält bei Maus oder Fokus an). Nur echte, freigegebene Stimmen verwenden.',
+    group: new Translatable('fluid_block_group_content'),
+    help: new Translatable('fluid_block_quote_help'),
     variants: [
-        'single' => 'Groß (ein Zitat)',
-        'grid' => 'Raster (Mauerwerk)',
-        'reel' => 'Wischbares Band',
-        'marquee' => 'Laufband (läuft langsam durch)',
+        'single' => new Translatable('fluid_block_quote_variant_single'),
+        'grid' => new Translatable('fluid_block_quote_variant_grid'),
+        'reel' => new Translatable('fluid_block_quote_variant_reel'),
+        'marquee' => new Translatable('fluid_block_quote_variant_marquee'),
     ],
     nestable: ['single', 'grid'],
 )]
 final class Quote extends FluidBlock
 {
     #[Text(
-        'Dachzeile (optional)',
+        new Translatable('fluid_field_eyebrow'),
         maxLength: 60,
         width: 'half',
     )]
     public string $eyebrow = '';
 
     #[Text(
-        'Überschrift',
+        new Translatable('fluid_field_title'),
         maxLength: 110,
         width: 'half',
     )]
     public string $title = '';
 
     #[Collection(
-        'Zitate',
+        new Translatable('fluid_block_quote_items'),
         item: QuoteItem::class,
-        itemLabel: 'Zitat',
+        itemLabel: new Translatable('fluid_block_quote_items_item_label'),
         titleField: 'name',
         max: 12,
     )]

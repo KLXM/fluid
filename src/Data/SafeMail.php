@@ -4,6 +4,7 @@ namespace Klxm\Fluid\Data;
 
 use Klxm\Fluid\Activity;
 use Redaxo\Core\Log\Logger;
+use Redaxo\Core\Translation\I18n;
 use Throwable;
 use Yakamara\YForm\Form\Action\Action;
 use Yakamara\YForm\Form\Action\SendMail;
@@ -47,7 +48,7 @@ final class SafeMail extends Action
             }
             self::$failed[] = $this->kind;
             Logger::logException($e);
-            Activity::log('form_mail_failed', null, (self::TEAM === $this->kind ? 'Benachrichtigung' : 'Bestätigung') . ': ' . $e->getMessage());
+            Activity::log('form_mail_failed', null, I18n::rawMsg(self::TEAM === $this->kind ? 'fluid_safemail_team_failed' : 'fluid_safemail_confirm_failed', $e->getMessage()));
         }
     }
 }

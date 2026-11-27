@@ -13,11 +13,12 @@ use Redaxo\Core\Content\Article;
 use Redaxo\Core\Filesystem\Url;
 use Redaxo\Core\Http\Request;
 use Redaxo\Core\Language\Language;
+use Redaxo\Core\Translation\I18n;
 
 $blog = (int) ($d['blog'] ?? 0);
 if ([] === Blog::all()) {
     if (is_editing()) {
-        echo '<div class="wrap"><p class="empty-hint">Noch kein Blog: bei einer Menüseite in den Seiteneinstellungen „Blog / News“ anhaken. Deren Unterseiten sind dann Beiträge.</p></div>';
+        echo '<div class="wrap"><p class="empty-hint">' . I18n::msg('fluid_kit_empty_posts') . '</p></div>';
     }
 
     return;
@@ -61,7 +62,7 @@ $reload = ($pager && $pages > 1) || !empty($d['tags']) ? Live::region($b) : '';
   </ul>
   <?php endif ?>
   <?php if (is_editing()): ?>
-  <p class="posts-new"><button type="button" class="btn btn--primary btn--sm" data-fluid-new-post="<?= (int) ($blog ?: array_key_first(Blog::all())) ?>">+ <?= e('Neuer Beitrag') ?></button></p>
+  <p class="posts-new"><button type="button" class="btn btn--primary btn--sm" data-fluid-new-post="<?= (int) ($blog ?: array_key_first(Blog::all())) ?>">+ <?= e(I18n::rawMsg('fluid_kit_new_post')) ?></button></p>
   <?php endif ?>
   <?php if (!$res['posts']): ?>
   <p class="dl-empty"><?= e(trim((string) ($d['empty_text'] ?? '')) ?: lt('Noch keine Beiträge.')) ?></p>

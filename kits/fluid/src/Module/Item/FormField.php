@@ -7,12 +7,13 @@ use Klxm\Fluid\Field\Checkbox;
 use Klxm\Fluid\Field\Choice;
 use Klxm\Fluid\Field\Text;
 use Klxm\Fluid\Field\Textarea;
+use Redaxo\Core\Translation\Translatable;
 
 /** Eintrag von „Felder des eigenen Formulars“ im Block Form */
 final class FormField
 {
     #[Choice(
-        'Art',
+        new Translatable('fluid_field_kind'),
         required: true,
         choices: static function (): array { return YFormBridge::builderTypes(); },
         width: 'half',
@@ -20,72 +21,72 @@ final class FormField
     public string $type = 'text';
 
     #[Checkbox(
-        'Pflichtfeld',
+        new Translatable('fluid_block_form_item_required'),
         width: 'half',
     )]
     public bool $required = false;
 
     #[Text(
-        'Bezeichnung (bei „Neuer Schritt“: Titel, bei Hinweis: Text)',
+        new Translatable('fluid_block_form_item_label'),
         maxLength: 300,
     )]
     public string $label = '';
 
     #[Textarea(
-        'Auswahl: eine Möglichkeit je Zeile',
+        new Translatable('fluid_block_form_item_options'),
         rows: 3,
     )]
     public string $options = '';
 
     #[Text(
-        'Platzhalter (optional)',
+        new Translatable('fluid_block_form_item_placeholder'),
         maxLength: 120,
         width: 'half',
     )]
     public string $placeholder = '';
 
     #[Text(
-        'Hilfetext (optional)',
+        new Translatable('fluid_block_form_item_help'),
         maxLength: 200,
         width: 'half',
     )]
     public string $help = '';
 
     #[Text(
-        'Mindestens (optional)',
-        note: 'Text: Zeichen, Zahl: Wert, Datum: z. B. 2026-01-01 oder today',
+        new Translatable('fluid_block_form_item_min'),
+        note: new Translatable('fluid_block_form_item_min_help'),
         maxLength: 20,
         width: 'half',
     )]
     public string $min = '';
 
     #[Text(
-        'Höchstens (optional)',
-        note: 'Text: Zeichen, Zahl: Wert, Datum: z. B. +1 year',
+        new Translatable('fluid_block_form_item_max'),
+        note: new Translatable('fluid_block_form_item_max_help'),
         maxLength: 20,
         width: 'half',
     )]
     public string $max = '';
 
     #[Text(
-        'Datei: erlaubte Typen',
+        new Translatable('fluid_block_form_item_file_types'),
         maxLength: 80,
         width: 'half',
-        placeholder: 'pdf, jpg, png, docx …',
+        placeholder: new Translatable('fluid_block_form_item_file_types_placeholder'),
     )]
     public string $fileTypes = '';
 
     #[Choice(
-        'Datei: höchstens',
+        new Translatable('fluid_block_form_item_max_size'),
         choices: YFormBridge::UPLOAD_SIZES,
         width: 'half',
     )]
     public string $maxSize = '5M';
 
     #[Text(
-        'Feldname (optional, für eine YForm-Tabelle)',
+        new Translatable('fluid_block_form_item_name'),
         maxLength: 40,
-        placeholder: 'automatisch aus der Bezeichnung',
+        placeholder: new Translatable('fluid_block_form_item_name_placeholder'),
         search: false,
     )]
     public string $name = '';

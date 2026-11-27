@@ -17,6 +17,7 @@ use Redaxo\Core\Log\LogFile;
 use Redaxo\Core\Mailer\MailArchive;
 use Redaxo\Core\Mailer\Mailer;
 use Redaxo\Core\MediaPool\Media;
+use Redaxo\Core\Translation\I18n;
 use Symfony\Component\Mailer\Envelope;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
@@ -89,9 +90,9 @@ final class Mail
     {
         try {
             $name = Settings::name();
-            Core::getMailer()->send(new Email()->to($to)->subject('Testmail von ' . $name . ' · ' . date('d.m.Y H:i'))
-                ->text('Diese Testmail kommt von der Website „' . $name . '“ (fluid, REDAXO 6). Der Mailversand funktioniert.')
-                ->html(self::layout('Der Mailversand funktioniert', '<p>Diese Testmail kommt von der Website „' . escape($name) . '“.</p>')), archive: false);
+            Core::getMailer()->send(new Email()->to($to)->subject(I18n::rawMsg('fluid_mail_test_subject', $name, date('d.m.Y H:i')))
+                ->text(I18n::rawMsg('fluid_mail_test_text', $name))
+                ->html(self::layout(I18n::rawMsg('fluid_mail_test_title'), '<p>' . I18n::msg('fluid_mail_test_html', $name) . '</p>')), archive: false);
 
             return '';
         } catch (Throwable $e) {
@@ -137,7 +138,7 @@ final class Mail
     {
         $file = self::absolute($relative);
         if (null === $file) {
-            return 'Datei nicht gefunden.';
+            return I18n::rawMsg('fluid_mail_file_not_found');
         }
         $raw = (string) File::get($file);
         [$head, $body] = array_pad(preg_split("~\r?\n\r?\n~", $raw, 2) ?: [], 2, '');
@@ -151,7 +152,7 @@ final class Mail
         }
         $from = self::addresses($headers['from'] ?? '')[0] ?? null;
         if (!$recipients || null === $from) {
-            return 'Empfänger oder Absender fehlen in der Mail.';
+            return I18n::rawMsg('fluid_mail_no_address');
         }
         // remove Bcc and X-Envelope-To (including continuation lines) from the header – otherwise everyone would see the Bcc addresses
         $cleanHead = (string) preg_replace('~^(?:Bcc|X-Envelope-To):.*(?:\r?\n[ \t].*)*\r?\n?~mi', '', $head);
@@ -265,9 +266,9 @@ final class Mail
         $raw = trim((string) Settings::get('mail_keep_days', ''));
         $days = '' === $raw ? self::KEEP_DAYS : (int) $raw;
         if ($days <= 0) {
-            return 'Aufbewahrung unbegrenzt – nichts gelöscht.';
+            return I18n::rawMsg('fluid_mail_purge_never');
         }
 
-        return MailArchive::purge(new DateTimeImmutable('-' . $days . ' days')) . ' archivierte Mails gelöscht (älter als ' . $days . ' Tage).';
+        return I18n::rawMsg('fluid_mail_purged', MailArchive::purge(new DateTimeImmutable('-' . $days . ' days')), $days);
     }
 }

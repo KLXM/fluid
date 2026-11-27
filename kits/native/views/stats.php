@@ -3,6 +3,7 @@
 use Klxm\Fluid\Block;
 use Klxm\Fluid\InlineStyle;
 use Klxm\Fluid\Kit;
+use Redaxo\Core\Translation\I18n;
 
 /**
  * Key figures in the kit „NativeCSS“ – as in fluid (row · cards · split), plus whole numbers count up when scrolled into view
@@ -43,7 +44,7 @@ $value = static function (string $raw) use ($count, &$counting): string {
     </div>
     <?php endforeach ?>
   </dl>
-  <?php elseif (is_editing()): ?><p class="empty-hint">Noch keine Kennzahlen – in der Seitenleiste hinzufügen.</p><?php endif ?>
+  <?php elseif (is_editing()): ?><p class="empty-hint"><?= I18n::msg('fluid_kit_empty_stats') ?></p><?php endif ?>
 </div>
 <?php if ($counting) {
     Kit::active()->markUsed('stats', '@count');

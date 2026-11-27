@@ -6,6 +6,7 @@ use Klxm\Fluid\BlockData;
 use Override;
 use Redaxo\Core\Filesystem\Url;
 use Redaxo\Core\Http\Request;
+use Redaxo\Core\Translation\I18n;
 use Yakamara\YForm\Data\Record;
 use Yakamara\YForm\Field\Field;
 use Yakamara\YForm\Form\FieldContext;
@@ -13,7 +14,6 @@ use Yakamara\YForm\Form\FieldContext;
 use function count;
 use function is_array;
 use function is_string;
-use function Redaxo\Core\View\escape;
 
 use const JSON_UNESCAPED_SLASHES;
 use const JSON_UNESCAPED_UNICODE;
@@ -88,7 +88,7 @@ final class FluidBlocks extends Field
     {
         $n = count(BlockData::decode($value));
 
-        return 0 === $n ? '' : escape($n . ' ' . (1 === $n ? 'Block' : 'Blöcke'));
+        return 0 === $n ? '' : I18n::msg(1 === $n ? 'fluid_layout_blocks_one' : 'fluid_layout_blocks', $n);
     }
 
     #[Override]
@@ -104,7 +104,7 @@ final class FluidBlocks extends Field
         return '<div class="fluid-blocks-field" data-fluid-blocks="' . BlockData::attr($config) . '">'
             . '<input type="hidden" ' . $this->controlAttributes($context, ['value' => json_encode($blocks, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)], false) . '>'
             . '<ol class="fbf-list" data-fbf-list></ol>'
-            . '<div class="fbf-add"><div class="rex-input-group"><select class="rex-input" data-fbf-type aria-label="Blocktyp"></select><span class="rex-input-group-actions"><button type="button" class="rex-button" data-variant="field" data-fbf-add>Block hinzufügen</button></span></div></div>'
+            . '<div class="fbf-add"><div class="rex-input-group"><select class="rex-input" data-fbf-type aria-label="' . I18n::msg('fluid_data_block_type') . '"></select><span class="rex-input-group-actions"><button type="button" class="rex-button" data-variant="field" data-fbf-add>' . I18n::msg('fluid_data_block_add') . '</button></span></div></div>'
             . '</div>';
     }
 }

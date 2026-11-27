@@ -1,6 +1,7 @@
 <?php
 
 use Klxm\Fluid\Block;
+use Redaxo\Core\Translation\I18n;
 
 /**
  * Steps: numbers (grid, auto-fit) · timeline (vertical line; date on the left once the container is wide enough) ·
@@ -39,5 +40,5 @@ $cls = ('auto' !== $marker ? ' steps--m-' . $marker : '') . ('auto' !== $colors 
     </li>
     <?php endforeach ?>
   </ol>
-  <?php elseif (is_editing()): ?><p class="empty-hint">Noch keine Schritte – in der Seitenleiste hinzufügen.</p><?php endif ?>
+  <?php elseif (is_editing()): ?><p class="empty-hint"><?= I18n::msg('fluid_kit_empty_steps') ?></p><?php endif ?>
 </div>

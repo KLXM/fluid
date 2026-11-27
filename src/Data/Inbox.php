@@ -6,6 +6,7 @@ use Klxm\Fluid\ApiError;
 use Klxm\Fluid\BlockModule;
 use Redaxo\Core\Database\Sql;
 use Redaxo\Core\Security\User;
+use Redaxo\Core\Translation\I18n;
 use Yakamara\YForm\Field\CreatedAt;
 use Yakamara\YForm\Field\Email;
 use Yakamara\YForm\Permission\Access;
@@ -126,6 +127,6 @@ final class Inbox
                 return $t;
             }
         }
-        throw new ApiError('Keine Berechtigung für diese Anfragen.');
+        throw new ApiError(I18n::rawMsg('fluid_data_inbox_perm'));
     }
 }

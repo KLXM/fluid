@@ -8,6 +8,7 @@
 use Klxm\Fluid\Block;
 use Klxm\Fluid\Data\YFormBridge;
 use Klxm\Fluid\Maps\Maps;
+use Redaxo\Core\Translation\I18n;
 
 $address = fluid_address_lines();
 $phone = fluid_phone();
@@ -18,7 +19,7 @@ $hoursNote = trim((string) setting('hours_note', ''));
 $map = !empty($d['show_map']) && Maps::siteLocation() ? Maps::renderBlock(['location' => 'site', 'zoom' => 15, 'height' => 'm', 'route' => true]) : '';
 $def = YFormBridge::formDefinition((string) ($d['form'] ?? ''));
 $form = $def ? YFormBridge::runForm($def) : '';
-$c = $b->central('Adresse, Telefon, E-Mail und Zeiten unter „Website“ (Menü ⋯) ändern');
+$c = $b->central(I18n::rawMsg('fluid_kit_contact_central'));
 ?>
 <div class="wrap">
   <?= fluid_head($b) ?>
@@ -28,7 +29,7 @@ $c = $b->central('Adresse, Telefon, E-Mail und Zeiten unter „Website“ (Menü
       <div class="contact__card card">
         <span class="contact__ico"><?= icon('map-pin') ?></span>
         <h3 class="contact__h"><?= e(lt('Adresse')) ?></h3>
-        <address class="contact__address"><?= e(fluid_name()) ?><?php if ($address): ?><br><?= implode('<br>', array_map('e', $address)) ?><?php else: ?><br>[<?= e('Adresse unter „Website“ eintragen') ?>]<?php endif ?></address>
+        <address class="contact__address"><?= e(fluid_name()) ?><?php if ($address): ?><br><?= implode('<br>', array_map('e', $address)) ?><?php else: ?><br>[<?= e(I18n::rawMsg('fluid_kit_contact_no_address')) ?>]<?php endif ?></address>
       </div>
       <?php endif ?>
       <?php if (($tel && '' !== $phone) || '' !== $email || is_editing()): ?>
@@ -38,7 +39,7 @@ $c = $b->central('Adresse, Telefon, E-Mail und Zeiten unter „Website“ (Menü
         <ul class="contact__list" role="list">
           <?php if ($tel && '' !== $phone): ?><li><span class="contact__label"><?= e(lt('Telefon')) ?></span><a href="<?= e($tel) ?>"><?= e($phone) ?></a></li><?php endif ?>
           <?php if ('' !== $email): ?><li><span class="contact__label"><?= e(lt('E-Mail')) ?></span><a href="mailto:<?= e($email) ?>"><?= e($email) ?></a></li><?php endif ?>
-          <?php if (!($tel && '' !== $phone) && '' === $email): ?><li>[<?= e('Telefon und E-Mail unter „Website“ eintragen') ?>]</li><?php endif ?>
+          <?php if (!($tel && '' !== $phone) && '' === $email): ?><li>[<?= e(I18n::rawMsg('fluid_kit_contact_no_phone')) ?>]</li><?php endif ?>
         </ul>
       </div>
       <?php endif ?>

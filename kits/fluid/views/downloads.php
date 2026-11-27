@@ -7,6 +7,7 @@
 use Klxm\Fluid\Block;
 use Redaxo\Core\MediaPool\Media;
 use Redaxo\Core\MediaPool\MediaCategory;
+use Redaxo\Core\Translation\I18n;
 
 $rows = [];
 if (($d['source'] ?? 'manual') === 'collection' && '' !== (string) ($d['collection'] ?? '')) {
@@ -20,7 +21,7 @@ if (($d['source'] ?? 'manual') === 'collection' && '' !== (string) ($d['collecti
         if (!$m && !is_editing()) {
         continue;
         }
-        $rows[] = ['m' => $m, 'label' => trim((string) ($f['label'] ?? '')) ?: ($m ? ($m->title ?: $m->originalFileName) : '[Datei wählen]'),
+        $rows[] = ['m' => $m, 'label' => trim((string) ($f['label'] ?? '')) ?: ($m ? ($m->title ?: $m->originalFileName) : I18n::rawMsg('fluid_kit_choose_file')),
             'note' => (string) ($f['note'] ?? ''), 'path' => "files.$i.label"];
     }
 }
@@ -48,5 +49,5 @@ if (($d['source'] ?? 'manual') === 'collection' && '' !== (string) ($d['collecti
     </li>
     <?php endforeach ?>
   </ul>
-  <?php elseif (is_editing()): ?><p class="empty-hint">Noch keine Dateien – in der Seitenleiste Dateien oder eine Medienkategorie wählen.</p><?php endif ?>
+  <?php elseif (is_editing()): ?><p class="empty-hint"><?= I18n::msg('fluid_kit_empty_downloads') ?></p><?php endif ?>
 </div>

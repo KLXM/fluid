@@ -9,9 +9,10 @@
 use Redaxo\Core\Translation\I18n;
 
 $t = static fn (string $key): string => I18n::rawMsg('fluid_rich_' . $key);
+$kitText = static fn (string $key): string => I18n::rawMsg('fluid_kit_' . $key);
 
 return [
-    'label' => 'Fluid (breakpointlos)',
+    'label' => $kitText('fluid'),
     // Text formats in the text editor, class => label (Klxm\Fluid\TextFormats) – styled in css/prose.css and css/rich-extra.css
     'text' => [
         'paragraphs' => ['t-lead' => $t('t-lead'), 't-small' => $t('t-small'), 't-note' => $t('t-note'), 't-tip' => $t('t-tip'),
@@ -26,7 +27,7 @@ return [
     'design' => require __DIR__ . '/design.php',
     // Design options with their own stylesheet (only the selected one is loaded): css/opt-{option}-{value}.css
     'design_css' => ['header', 'footer', 'footer_density', 'pagebg', 'buttons', 'eyebrow', 'cards', 'dividers', 'palette', 'sections', 'transition'],
-    'backgrounds' => ['white' => 'Standard', 'muted' => 'Getönt', 'tint' => 'Akzent hell', 'accent' => 'Akzentfarbe', 'secondary' => 'Zweite Markenfarbe', 'dark' => 'Dunkel'],
+    'backgrounds' => ['white' => $kitText('bg_white'), 'muted' => $kitText('bg_muted'), 'tint' => $kitText('bg_tint'), 'accent' => $kitText('bg_accent'), 'secondary' => $kitText('bg_secondary'), 'dark' => $kitText('bg_dark')],
     'dark_backgrounds' => ['accent', 'secondary', 'dark'],
 
     // Stylesheets and scripts per block type (or type:variant) – only on pages that need them

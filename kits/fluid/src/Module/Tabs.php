@@ -9,41 +9,42 @@ use Klxm\Fluid\Field\Textarea;
 use Klxm\Fluid\Kit\Fluid\FluidBlock;
 use Klxm\Fluid\Kit\Fluid\Module\Item\TabsItem;
 use Redaxo\Core\Content\AsModule;
+use Redaxo\Core\Translation\Translatable;
 
-#[AsModule('fluid.tabs', 'Reiter (Tabs)')]
+#[AsModule('fluid.tabs', new Translatable('fluid_block_tabs'))]
 #[AsBlock(
     icon: 'list-bullets',
-    group: 'Inhalt',
-    help: 'Mehrere Inhalte auf engem Raum, umschaltbar über Reiter. „Reiter links“ stellt sich bei wenig Platz automatisch oben an. Ohne JavaScript stehen alle Inhalte untereinander.',
-    variants: ['top' => 'Reiter oben', 'side' => 'Reiter links'],
+    group: new Translatable('fluid_block_group_content'),
+    help: new Translatable('fluid_block_tabs_help'),
+    variants: ['top' => new Translatable('fluid_block_tabs_variant_top'), 'side' => new Translatable('fluid_block_tabs_variant_side')],
 )]
 final class Tabs extends FluidBlock
 {
     #[Text(
-        'Dachzeile (optional)',
+        new Translatable('fluid_field_eyebrow'),
         maxLength: 60,
         width: 'half',
     )]
     public string $eyebrow = '';
 
     #[Text(
-        'Überschrift',
+        new Translatable('fluid_field_title'),
         maxLength: 110,
         width: 'half',
     )]
     public string $title = '';
 
     #[Textarea(
-        'Einleitung (optional)',
+        new Translatable('fluid_field_intro'),
         maxLength: 400,
         rows: 2,
     )]
     public string $intro = '';
 
     #[Collection(
-        'Reiter',
+        new Translatable('fluid_block_tabs_items'),
         item: TabsItem::class,
-        itemLabel: 'Reiter',
+        itemLabel: new Translatable('fluid_block_tabs_items_item_label'),
         titleField: 'label',
         max: 8,
     )]

@@ -10,47 +10,48 @@ use Klxm\Fluid\Field\Textarea;
 use Klxm\Fluid\Kit\Fluid\FluidBlock;
 use Klxm\Fluid\Kit\Fluid\Module\Item\StepsItem;
 use Redaxo\Core\Content\AsModule;
+use Redaxo\Core\Translation\Translatable;
 
-#[AsModule('fluid.steps', 'Ablauf / Zeitleiste')]
+#[AsModule('fluid.steps', new Translatable('fluid_block_steps'))]
 #[AsBlock(
     icon: 'path',
-    group: 'Inhalt',
-    help: 'Nummerierte Schritte, eine Zeitleiste mit Datum/Phase oder ein Prozess mit Verbindungslinien.',
-    variants: ['numbers' => 'Nummerierte Schritte', 'timeline' => 'Zeitleiste', 'process' => 'Prozess mit Pfeilen'],
+    group: new Translatable('fluid_block_group_content'),
+    help: new Translatable('fluid_block_steps_help'),
+    variants: ['numbers' => new Translatable('fluid_block_steps_variant_numbers'), 'timeline' => new Translatable('fluid_block_steps_variant_timeline'), 'process' => new Translatable('fluid_block_steps_variant_process')],
     nestable: ['numbers', 'timeline'],
 )]
 final class Steps extends FluidBlock
 {
     #[Text(
-        'Dachzeile (optional)',
+        new Translatable('fluid_field_eyebrow'),
         maxLength: 60,
         width: 'half',
     )]
     public string $eyebrow = '';
 
     #[Text(
-        'Überschrift',
+        new Translatable('fluid_field_title'),
         maxLength: 110,
         width: 'half',
     )]
     public string $title = '';
 
     #[Textarea(
-        'Einleitung (optional)',
+        new Translatable('fluid_field_intro'),
         maxLength: 400,
         rows: 2,
     )]
     public string $intro = '';
 
     #[Choice(
-        'Kreise',
+        new Translatable('fluid_block_steps_marker'),
         required: true,
         choices: [
-            'auto' => 'Wie Design',
-            'filled' => 'Gefüllt',
-            'soft' => 'Zart gefüllt mit Rand',
-            'ring' => 'Nur Rand',
-            'dot' => 'Kleiner Punkt (ohne Nummer)',
+            'auto' => new Translatable('fluid_block_steps_marker_auto'),
+            'filled' => new Translatable('fluid_block_steps_marker_filled'),
+            'soft' => new Translatable('fluid_block_steps_marker_soft'),
+            'ring' => new Translatable('fluid_block_steps_marker_ring'),
+            'dot' => new Translatable('fluid_block_steps_marker_dot'),
         ],
         width: 'half',
         variants: ['timeline', 'process'],
@@ -58,13 +59,13 @@ final class Steps extends FluidBlock
     public string $marker = 'auto';
 
     #[Choice(
-        'Farben',
+        new Translatable('fluid_block_steps_colors'),
         required: true,
         choices: [
-            'auto' => 'Wie Design',
-            'alternate' => 'Farbig abwechselnd',
-            'accent' => 'Eine Farbe (Akzent)',
-            'neutral' => 'Neutral (Schriftfarbe)',
+            'auto' => new Translatable('fluid_block_steps_colors_auto'),
+            'alternate' => new Translatable('fluid_block_steps_colors_alternate'),
+            'accent' => new Translatable('fluid_block_steps_colors_accent'),
+            'neutral' => new Translatable('fluid_block_steps_colors_neutral'),
         ],
         width: 'half',
         variants: ['timeline', 'process', 'numbers'],
@@ -72,23 +73,23 @@ final class Steps extends FluidBlock
     public string $colors = 'auto';
 
     #[Choice(
-        'Animation',
+        new Translatable('fluid_block_steps_motion'),
         required: true,
         choices: [
-            'auto' => 'Wie Website (einblenden)',
-            'sequence' => 'Nacheinander einblenden',
-            'draw' => 'Linie wächst beim Scrollen (Zeitleiste)',
-            'none' => 'Keine Animation',
+            'auto' => new Translatable('fluid_block_steps_motion_auto'),
+            'sequence' => new Translatable('fluid_block_steps_motion_sequence'),
+            'draw' => new Translatable('fluid_block_steps_motion_draw'),
+            'none' => new Translatable('fluid_block_steps_motion_none'),
         ],
         width: 'half',
-        note: 'Animationen entfallen, wenn Besucher in ihrem System „Bewegung reduzieren“ eingestellt haben. „Nacheinander einblenden“ braucht die Bewegung der Website (Design).',
+        note: new Translatable('fluid_block_steps_motion_help'),
     )]
     public string $motion = 'auto';
 
     #[Collection(
-        'Schritte',
+        new Translatable('fluid_block_steps_items'),
         item: StepsItem::class,
-        itemLabel: 'Schritt',
+        itemLabel: new Translatable('fluid_block_steps_items_item_label'),
         titleField: 'title',
         max: 12,
     )]

@@ -2,6 +2,7 @@
 
 use Klxm\Fluid\Block;
 use Redaxo\Core\MediaPool\Media;
+use Redaxo\Core\Translation\I18n;
 
 /**
  * Slider (WAI-ARIA APG „Carousel“): CSS scroll snap, swipeable and scrollable without JavaScript; js/media.js adds arrows,
@@ -84,6 +85,6 @@ $head = fluid_head($b);
     <?php endif ?>
   </div>
   <?php elseif (is_editing()): ?>
-  <p class="empty-hint">Noch keine Folien – in der Seitenleiste unter „Folien“ hinzufügen.</p>
+  <p class="empty-hint"><?= I18n::msg('fluid_kit_empty_slider') ?></p>
   <?php endif ?>
 <?php if (!$bleed): ?></div><?php endif ?>

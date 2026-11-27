@@ -38,14 +38,14 @@ use function str_starts_with;
  *
  * @internal
  */
-#[AsCommand(name: 'fluid:upgrade:slices', description: 'Übernimmt Blöcke älterer REDAXO-6-Datenbanken in die Spalte data (vor oder nach migrate)')]
+#[AsCommand(name: 'fluid:upgrade:slices', description: 'Moves blocks of older REDAXO 6 databases into the data column (before or after migrate)')]
 final class UpgradeSlicesCommand extends AbstractCommand
 {
     private const array TABLES = ['rex_article_slice', 'rex_article_slice_history'];
 
     public function __invoke(
         SymfonyStyle $io,
-        #[Option(description: 'Alte Spalten (ctype_id, value1–20, media…, link…) danach entfernen')] bool $dropOld = false,
+        #[Option(description: 'Remove the old columns (ctype_id, value1–20, media…, link…) afterwards')] bool $dropOld = false,
     ): int {
         foreach (self::TABLES as $name) {
             $table = Table::get($name);
@@ -60,7 +60,7 @@ final class UpgradeSlicesCommand extends AbstractCommand
                     Sql::factory()->setQuery('UPDATE ' . $name . ' SET content_section_id = ctype_id WHERE content_section_id = 0');
                     // the core no longer fills ctype_id: as a required field without default every new slice would fail
                     $table->ensureColumn(Column::smallint('ctype_id', unsigned: true, nullable: true))->alter();
-                    $io->text('content_section_id aus ctype_id übernommen, ctype_id optional');
+                    $io->text('content_section_id copied from ctype_id, ctype_id optional');
                 } else {
                     $table->renameColumn('ctype_id', 'content_section_id')->alter();
                     $io->text('ctype_id → content_section_id');
@@ -68,12 +68,12 @@ final class UpgradeSlicesCommand extends AbstractCommand
             }
             if (!$table->hasColumn('data')) {
                 $table->ensureColumn(Column::json('data', nullable: true))->alter();
-                $io->text('Spalte data angelegt');
+                $io->text('Column data created');
             }
 
             $count = $table->hasColumn('value1') ? self::fill($name) : 0;
-            $io->text($count . ' Slices übernommen');
-            $io->text(self::flatten($name) . ' Blöcke auf die Speicherung des Cores umgestellt');
+            $io->text($count . ' slices migrated');
+            $io->text(self::flatten($name) . ' blocks switched to the core storage');
 
             if ($dropOld) {
                 $table = Table::get($name);
@@ -83,15 +83,15 @@ final class UpgradeSlicesCommand extends AbstractCommand
                 }
                 if ($old) {
                     $table->alter();
-                    $io->text(count($old) . ' alte Spalten entfernt');
+                    $io->text(count($old) . ' old columns removed');
                 }
             }
         }
         Cache::delete();   // rebuild content and classes
         if (Table::get('rex_article_slice_reference')->exists()) {
-            $io->text(ArticleSliceReference::rebuild() . ' Verweise (Medien, Seiten) neu aufgebaut');
+            $io->text(ArticleSliceReference::rebuild() . ' references (media, pages) rebuilt');
         }
-        $io->success('Fertig. Danach (falls noch nicht geschehen) `bin/console migrate`.');
+        $io->success('Done. Then (if not done yet) run `bin/console migrate`.');
 
         return Command::SUCCESS;
     }

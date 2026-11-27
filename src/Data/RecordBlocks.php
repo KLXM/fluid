@@ -15,6 +15,7 @@ use Klxm\Fluid\Lock;
 use Redaxo\Core\Content\ModulePermission;
 use Redaxo\Core\Http\Request;
 use Redaxo\Core\Security\User;
+use Redaxo\Core\Translation\I18n;
 use Yakamara\YForm\Data\Record;
 use Yakamara\YForm\Permission\Access;
 use Yakamara\YForm\Table\Table;
@@ -83,18 +84,18 @@ final class RecordBlocks
         }
         $start = self::id($name, $record->id, $field->name);
         $empty = '' === $html
-            ? '<div class="fbr-empty"><p>Noch keine Blöcke für diesen Eintrag.</p><button type="button" class="btn btn--primary btn--sm" data-record-add="' . escape($start) . '">+ Ersten Block einfügen</button></div>'
+            ? '<div class="fbr-empty"><p>' . I18n::msg('fluid_data_record_empty') . '</p><button type="button" class="btn btn--primary btn--sm" data-record-add="' . escape($start) . '">' . I18n::msg('fluid_data_record_add_first') . '</button></div>'
             : '';
 
         return '<div class="df-blocks df-blocks--edit" data-record-blocks="' . escape($start) . '" data-allowed="' . escape(implode(',', array_keys(BlockData::modules($field->allowed)))) . '">'
-            . '<p class="fbr-note">Blöcke dieses Eintrags – Änderungen werden sofort gespeichert (Datensatz, kein Entwurf).</p>'
+            . '<p class="fbr-note">' . I18n::msg('fluid_data_record_note') . '</p>'
             . $empty . $html . '</div>';
     }
 
     /** @return array{0: Block, 1: string} */
     private static function renderItem(string $table, int $rid, string $field, array $item, mixed $prev, int $articleId): array
     {
-        $m = BlockData::module($item['module']) ?? throw new ApiError('Unbekannter Block.');
+        $m = BlockData::module($item['module']) ?? throw new ApiError(I18n::rawMsg('fluid_data_unknown_block'));
         $uid = (string) ($item['uid'] ?? '');
         $b = $m::blockFromData('r-' . $uid, $item['data'], $item['tunes'], $prev instanceof Block ? $prev : null, $articleId);
 
@@ -107,16 +108,16 @@ final class RecordBlocks
     public static function handle(string $action, User $user, int $articleId): array
     {
         $ref = (string) (Request::post('slice', 'string', '') ?: Request::post('after', 'string', ''));
-        [$tname, $rid, $fname, $uid] = self::parse($ref) ?? throw new ApiError('Block nicht gefunden.');
-        $table = YFormBridge::table($tname) ?? throw new ApiError('Tabelle nicht gefunden.');
+        [$tname, $rid, $fname, $uid] = self::parse($ref) ?? throw new ApiError(I18n::rawMsg('fluid_error_block_not_found'));
+        $table = YFormBridge::table($tname) ?? throw new ApiError(I18n::rawMsg('fluid_data_table_not_found'));
         if (!self::canEdit($user, $table)) {
-            throw new ApiError('Dafür fehlt Ihnen das Recht, diese YForm-Tabelle zu bearbeiten.');
+            throw new ApiError(I18n::rawMsg('fluid_error_yform_table_perm'));
         }
         $field = $table->getField($fname);
         if (!$field instanceof FluidBlocks) {
-            throw new ApiError('Feld nicht gefunden.');
+            throw new ApiError(I18n::rawMsg('fluid_data_field_not_found'));
         }
-        $record = $table::query()->where('id', $rid)->first() ?? throw new ApiError('Eintrag nicht gefunden.');
+        $record = $table::query()->where('id', $rid)->first() ?? throw new ApiError(I18n::rawMsg('fluid_error_entry_not_found'));
         $blocks = BlockData::withUids(BlockData::decode($record->get($fname)));
         $index = static function (string $uid) use (&$blocks): int {
             foreach ($blocks as $i => $b) {
@@ -124,17 +125,17 @@ final class RecordBlocks
                     return $i;
                 }
             }
-            throw new ApiError('Block nicht gefunden – bitte Seite neu laden.');
+            throw new ApiError(I18n::rawMsg('fluid_data_block_reload'));
         };
         /** @return class-string<BlockModule> */
         $module = static function (string $key) use ($user, $field): string {
             $m = BlockData::module($key);
             if (!$m || !isset(BlockData::modules($field->allowed)[$key])) {
-                throw new ApiError('Dieser Block ist in diesem Feld nicht vorgesehen.');
+                throw new ApiError(I18n::rawMsg('fluid_data_block_not_in_field'));
             }
             $perm = $user->getComplexPerm('modules');
             if (!$user->admin && (!$perm instanceof ModulePermission || !$perm->hasPerm($key))) {
-                throw new ApiError('Keine Berechtigung für diesen Block.');
+                throw new ApiError(I18n::rawMsg('fluid_data_block_perm'));
             }
 
             return $m;
@@ -142,7 +143,7 @@ final class RecordBlocks
         $store = static function () use (&$blocks, $record, $fname, $tname, $rid, $articleId): void {
             $record->set($fname, array_values($blocks));
             $record->save();
-            Activity::log('save', $articleId, 'Eintrag ' . $tname . ' #' . $rid);
+            Activity::log('save', $articleId, I18n::rawMsg('fluid_data_record_log', $tname . ' #' . $rid));
         };
         $one = static function (int $i) use (&$blocks, $tname, $rid, $fname, $articleId): array {
             [, $html] = self::renderItem($tname, $rid, $fname, $blocks[$i], null, $articleId);
@@ -183,7 +184,7 @@ final class RecordBlocks
                 } else {
                     $clip = json_decode(Request::post('clip', 'string', ''), true);
                     if (!is_array($clip) || isset($clip['children'])) {
-                        throw new ApiError('Dieser Block lässt sich hier nicht einfügen.');
+                        throw new ApiError(I18n::rawMsg('fluid_error_block_insert_here'));
                     }
                     $m = $module((string) ($clip['module'] ?? ''));
                     [$values, $tunes] = BlockOps::clipValues($clip);
@@ -226,7 +227,7 @@ final class RecordBlocks
 
                 return ['clip' => ['module' => $b['module'], 'values' => (object) $b['data'], 'tunes' => (object) $b['tunes']], 'label' => $m ? $m::label() : $b['module']];
             default:
-                throw new ApiError('Blöcke eines Eintrags haben keinen Online-Schalter und keine Spalten.');
+                throw new ApiError(I18n::rawMsg('fluid_data_record_no_status'));
         }
     }
 }

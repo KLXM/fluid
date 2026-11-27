@@ -9,62 +9,63 @@ use Klxm\Fluid\Field\Textarea;
 use Klxm\Fluid\Field\YFormForm;
 use Klxm\Fluid\Kit\Fluid\FluidBlock;
 use Redaxo\Core\Content\AsModule;
+use Redaxo\Core\Translation\Translatable;
 
-#[AsModule('fluid.contact', 'Kontakt')]
+#[AsModule('fluid.contact', new Translatable('fluid_block_contact'))]
 #[AsBlock(
-    label: 'Kontakt (Karte, Formular, Zeiten)',
+    label: new Translatable('fluid_block_contact_label'),
     icon: 'address-book',
-    group: 'Website',
-    help: 'Adresse, Telefon, E-Mail, Öffnungszeiten und Karte kommen aus „Website“ (Menü ⋯). Optional ein Formular aus YForm.',
+    group: new Translatable('fluid_block_group_website'),
+    help: new Translatable('fluid_block_contact_help'),
 )]
 final class Contact extends FluidBlock
 {
     #[Text(
-        'Dachzeile (optional)',
+        new Translatable('fluid_field_eyebrow'),
         maxLength: 60,
         width: 'half',
     )]
     public string $eyebrow = '';
 
     #[Text(
-        'Überschrift',
+        new Translatable('fluid_field_title'),
         maxLength: 110,
         width: 'half',
     )]
     public string $title = '';
 
     #[Textarea(
-        'Einleitung (optional)',
+        new Translatable('fluid_field_intro'),
         maxLength: 400,
         rows: 2,
     )]
     public string $intro = '';
 
     #[Checkbox(
-        'Öffnungszeiten anzeigen (falls eingetragen)',
+        new Translatable('fluid_block_contact_show_hours'),
         width: 'half',
     )]
     public bool $showHours = true;
 
     #[Checkbox(
-        'Karte anzeigen (falls Standort eingetragen)',
+        new Translatable('fluid_block_contact_show_map'),
         width: 'half',
     )]
     public bool $showMap = true;
 
     #[YFormForm(
-        'Formular (optional, aus YForm)',
-        note: 'Formular-Klasse im Projekt (#[AsForm]) – z. B. Rückrufwunsch oder Anfrage.',
+        new Translatable('fluid_block_contact_form'),
+        note: new Translatable('fluid_block_contact_form_help'),
     )]
     public string $form = '';
 
     #[Text(
-        'Überschrift über dem Formular',
+        new Translatable('fluid_block_contact_form_title'),
         maxLength: 80,
-        placeholder: 'z. B. Schreiben Sie uns',
+        placeholder: new Translatable('fluid_block_contact_form_title_placeholder'),
     )]
     public string $formTitle = '';
 
-    #[Text('Hinweis unten (optional)')]
+    #[Text(new Translatable('fluid_block_contact_note'))]
     public string $note = '';
 }

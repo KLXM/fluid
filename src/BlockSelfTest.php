@@ -98,7 +98,7 @@ final class BlockSelfTest
     private function views(): void
     {
         $bad = self::viewComments();
-        $this->check([] === $bad, 'Views: kein Code hinter einem Zeilenkommentar (' . implode(', ', $bad) . ')');
+        $this->check([] === $bad, 'Views: no code after a line comment (' . implode(', ', $bad) . ')');
         // the test detects the error (probe in a file in the temp folder)
         $dir = sys_get_temp_dir() . '/fluid-views-' . bin2hex(random_bytes(4));
         @mkdir($dir . '/kits/probe/views', 0o777, true);
@@ -109,7 +109,7 @@ final class BlockSelfTest
         @rmdir($dir . '/kits/probe');
         @rmdir($dir . '/kits');
         @rmdir($dir);
-        $this->check(['kits/probe/views/x.php:1'] === $hits, 'Views: Probe mit Code hinter // wird erkannt (' . implode(', ', $hits) . ')');
+        $this->check(['kits/probe/views/x.php:1'] === $hits, 'Views: probe with code after // is detected (' . implode(', ', $hits) . ')');
     }
 
     // ------------------------------------------------------------------ table of contents
@@ -120,15 +120,15 @@ final class BlockSelfTest
             Kit::get(Kit::DEFAULT)?->definition();   // loads functions.php of the kit fluid
         }
         if (!function_exists('fluid_toc')) {
-            $this->fails[] = 'Inhaltsverzeichnis: fluid_toc() fehlt';
+            $this->fails[] = 'Table of contents: fluid_toc() missing';
 
             return;
         }
         [, $toc] = fluid_toc('<h3>Eins</h3><p>x</p><h4>Unter</h4><h3>Zwei</h3>', 't');
-        $this->check([2, 3, 2] === array_column($toc, 'level'), 'Inhaltsverzeichnis: nur h3/h4 – h3 oberste Ebene (unverändert)');
+        $this->check([2, 3, 2] === array_column($toc, 'level'), 'Table of contents: only h3/h4 – h3 top level (unchanged)');
         [$html, $toc] = fluid_toc('<h2>Eins</h2><h3>Unter</h3><h2 class="x">Zwei</h2><h4>Tief</h4>', 't');
-        $this->check([2, 3, 2, 3] === array_column($toc, 'level'), 'Inhaltsverzeichnis: Text mit h2 – h2 oberste Ebene');
-        $this->check(str_contains($html, '<h2 id="t-eins">') && str_contains($html, '<h2 class="x" id="t-zwei">'), 'Inhaltsverzeichnis: h2 bekommen Sprungmarken');
+        $this->check([2, 3, 2, 3] === array_column($toc, 'level'), 'Table of contents: text with h2 – h2 top level');
+        $this->check(str_contains($html, '<h2 id="t-eins">') && str_contains($html, '<h2 class="x" id="t-zwei">'), 'Table of contents: h2 get anchors');
     }
 
     // ------------------------------------------------------------------ video toggle
@@ -139,16 +139,16 @@ final class BlockSelfTest
             Kit::get(Kit::DEFAULT)?->definition();
         }
         $h = fluid_video_toggle('x__toggle');
-        $this->check(str_contains($h, 'class="x__toggle hx-vt hx-vt--icon is-paused" data-hero-video-toggle hidden'), 'Video-Schalter: Klassen, verborgen ohne Skript, Ausgangszustand angehalten');
-        $this->check(!str_contains($h, 'aria-pressed') && !str_contains($h, 'aria-label'), 'Video-Schalter: kein aria-pressed, Name aus dem Text');
-        $this->check(1 === preg_match('~<span class="hx-vt__label" data-l-pause="[^"]+" data-l-play="([^"]+)">\1</span></button>$~', $h), 'Video-Schalter: Text „abspielen“ mit beiden Beschriftungen für hero-video.js');
-        $this->check(str_contains($h, '#i-pause"') && str_contains($h, '#i-play"') && 2 === substr_count($h, 'aria-hidden="true"'), 'Video-Schalter: Symbole „pause“ und „play“, dekorativ');
-        $this->check(str_contains(fluid_video_toggle('', 'text'), 'hx-vt hx-vt--text') && str_contains(fluid_video_toggle('', 'quatsch'), 'hx-vt--icon'), 'Video-Schalter: Symbol mit Text, Unbekanntes = Symbol');
-        $this->check(Kit::active()->used('@videotoggle'), 'Video-Schalter: lädt CSS und Skript (@videotoggle)');
+        $this->check(str_contains($h, 'class="x__toggle hx-vt hx-vt--icon is-paused" data-hero-video-toggle hidden'), 'Video toggle: classes, hidden without script, initially paused');
+        $this->check(!str_contains($h, 'aria-pressed') && !str_contains($h, 'aria-label'), 'Video toggle: no aria-pressed, name from the text');
+        $this->check(1 === preg_match('~<span class="hx-vt__label" data-l-pause="[^"]+" data-l-play="([^"]+)">\1</span></button>$~', $h), 'Video toggle: text "play" with both labels for hero-video.js');
+        $this->check(str_contains($h, '#i-pause"') && str_contains($h, '#i-play"') && 2 === substr_count($h, 'aria-hidden="true"'), 'Video toggle: icons "pause" and "play", decorative');
+        $this->check(str_contains(fluid_video_toggle('', 'text'), 'hx-vt hx-vt--text') && str_contains(fluid_video_toggle('', 'quatsch'), 'hx-vt--icon'), 'Video toggle: icon with text, unknown = icon');
+        $this->check(Kit::active()->used('@videotoggle'), 'Video toggle: loads CSS and script (@videotoggle)');
         $map = (array) (Kit::get(Kit::DEFAULT)?->definition()['assets'] ?? []);
-        $this->check(['@videotoggle'] === ($map['css/video-toggle.css'] ?? null) && ['@videotoggle'] === ($map['js/hero-video.js'] ?? null), 'Video-Schalter: kit.php → assets');
+        $this->check(['@videotoggle'] === ($map['css/video-toggle.css'] ?? null) && ['@videotoggle'] === ($map['js/hero-video.js'] ?? null), 'Video toggle: kit.php → assets');
         foreach (['pause', 'play'] as $n) {
-            $this->check(str_contains((string) file_get_contents(dirname(__DIR__) . '/assets/kits/fluid/icons/core.svg'), 'id="i-' . $n . '"'), 'Video-Schalter: Symbol „' . $n . '“ im Symbolsatz');
+            $this->check(str_contains((string) file_get_contents(dirname(__DIR__) . '/assets/kits/fluid/icons/core.svg'), 'id="i-' . $n . '"'), 'Video toggle: icon "' . $n . '" in the icon set');
         }
     }
 
@@ -158,26 +158,26 @@ final class BlockSelfTest
     {
         $rules = DefaultChanges::rules();
         $this->check('center' === ($rules['media_text']['valign'] ?? null) && 'grid' === ($rules['gallery']['single_size'] ?? null) && '4:5' === ($rules['scrolly']['ratio'] ?? null),
-            'Standardwerte: Regeln für Text + Bild, Galerie, Scrollytelling');
+            'Defaults: rules for text + image, gallery, scrollytelling');
         $f = ['valign' => 'center'];
         $j = DefaultChanges::patchJson('{"variant":"right","title":"T","tunes":{"background":"muted"}}', $f);
         $d = json_decode((string) $j, true);
-        $this->check('center' === ($d['valign'] ?? null) && 'T' === $d['title'] && ['background' => 'muted'] === $d['tunes'], 'Standardwerte: fehlender Wert → bisheriger Zustand, Rest bleibt');
-        $this->check(null === DefaultChanges::patchJson((string) $j, $f), 'Standardwerte: zweiter Lauf ändert nichts (idempotent)');
-        $this->check(null === DefaultChanges::patchJson('{"valign":"top"}', $f), 'Standardwerte: vorhandener Wert bleibt');
-        $this->check(null === DefaultChanges::patchJson('{"valign":null}', $f), 'Standardwerte: auch null bleibt');
+        $this->check('center' === ($d['valign'] ?? null) && 'T' === $d['title'] && ['background' => 'muted'] === $d['tunes'], 'Defaults: missing value → previous state, rest stays');
+        $this->check(null === DefaultChanges::patchJson((string) $j, $f), 'Defaults: second run changes nothing (idempotent)');
+        $this->check(null === DefaultChanges::patchJson('{"valign":"top"}', $f), 'Defaults: existing value stays');
+        $this->check(null === DefaultChanges::patchJson('{"valign":null}', $f), 'Defaults: null stays too');
         $legacy = json_decode((string) DefaultChanges::patchJson('{"values":{"title":"A"},"tunes":{}}', $f), true);
-        $this->check('center' === ($legacy['values']['valign'] ?? null), 'Standardwerte: früheres Format {values, tunes}');
+        $this->check('center' === ($legacy['values']['valign'] ?? null), 'Defaults: former format {values, tunes}');
         $types = ['fluid.media_text' => 'media_text', 'fluid.cta' => 'cta'];
         $list = json_decode((string) DefaultChanges::patchBlockList('[{"module":"fluid.media_text","data":{"title":"x"},"tunes":{}},{"module":"fluid.cta","data":{}}]', ['media_text' => $f], $types), true);
-        $this->check('center' === ($list[0]['data']['valign'] ?? null) && [] === $list[1]['data'], 'Standardwerte: Feld „Fluid-Blöcke“, andere Blöcke unberührt');
+        $this->check('center' === ($list[0]['data']['valign'] ?? null) && [] === $list[1]['data'], 'Defaults: field "Fluid blocks", other blocks untouched');
         $mt = BlockModule::classFor('fluid.media_text');
         $def = null !== $mt ? array_column($mt::fields(), 'default', 'name') : [];
-        $this->check('follow' === ($def['valign'] ?? null), 'Standardwerte: neuer Text + Bild-Block bekommt „Mitlaufen“');
+        $this->check('follow' === ($def['valign'] ?? null), 'Defaults: new text + image block gets "follow"');
         $g = BlockModule::classFor('fluid.gallery');
-        $this->check('large' === (null !== $g ? array_column($g::fields(), 'default', 'name')['single_size'] ?? null : null), 'Standardwerte: neue Galerie bekommt Einzelbild „groß“');
+        $this->check('large' === (null !== $g ? array_column($g::fields(), 'default', 'name')['single_size'] ?? null : null), 'Defaults: new gallery gets single image "large"');
         $sc = BlockModule::classFor('fluid.scrolly');
-        $this->check('auto' === (null !== $sc ? array_column($sc::fields(), 'default', 'name')['ratio'] ?? null : null), 'Standardwerte: neues Scrollytelling bekommt „Automatisch“');
+        $this->check('auto' === (null !== $sc ? array_column($sc::fields(), 'default', 'name')['ratio'] ?? null : null), 'Defaults: new scrollytelling gets "automatic"');
     }
 
     // ------------------------------------------------------------------ interactive image
@@ -188,17 +188,17 @@ final class BlockSelfTest
             . '{"shape":"poly","points":"10,10 30,12 20,30"},{"shape":"poly","points":[[1,1]],"x":5,"y":6},{"shape":"rect","x":90,"y":90,"w":50,"h":50},{"title":"ohne Lage"},'
             . '{"id":"a","shape":"circle","x":50,"y":50}]}');
         $it = $n['items'];
-        $this->check(1 === $n['v'] && 5 === count($it), 'Markierungen: Format v1, ungültige Zeile fällt weg');
-        $this->check(12.35 === $it[0]['x'] && 100.0 === $it[0]['y'] && 'T' === $it[0]['title'] && '' === $it[0]['link'] && !str_contains($it[0]['text'], '<img'), 'Markierungen: runden, begrenzen, Titel ohne HTML, kein Bild im Text, kein javascript:');
-        $this->check('h2' === $it[1]['id'] && [[10.0, 10.0], [30.0, 12.0], [20.0, 30.0]] === $it[1]['points'], 'Markierungen: Vieleck aus Text, Kennung aus der Position');
-        $this->check('point' === $it[2]['shape'] && 5.0 === $it[2]['x'], 'Markierungen: Vieleck mit zu wenigen Punkten wird Punkt');
-        $this->check(10.0 === $it[3]['w'] && 10.0 === $it[3]['h'], 'Markierungen: Rechteck bleibt im Bild');
-        $this->check('a-2' === $it[4]['id'], 'Markierungen: doppelte Kennung wird eindeutig');
-        $this->check([20.0, 17.33] === Hotspots::anchor($it[1]), 'Markierungen: Mittelpunkt eines Vielecks');
+        $this->check(1 === $n['v'] && 5 === count($it), 'Hotspots: format v1, invalid row is dropped');
+        $this->check(12.35 === $it[0]['x'] && 100.0 === $it[0]['y'] && 'T' === $it[0]['title'] && '' === $it[0]['link'] && !str_contains($it[0]['text'], '<img'), 'Hotspots: round, clamp, title without HTML, no image in text, no javascript:');
+        $this->check('h2' === $it[1]['id'] && [[10.0, 10.0], [30.0, 12.0], [20.0, 30.0]] === $it[1]['points'], 'Hotspots: polygon from text, ID from the position');
+        $this->check('point' === $it[2]['shape'] && 5.0 === $it[2]['x'], 'Hotspots: polygon with too few points becomes a point');
+        $this->check(10.0 === $it[3]['w'] && 10.0 === $it[3]['h'], 'Hotspots: rectangle stays inside the image');
+        $this->check('a-2' === $it[4]['id'], 'Hotspots: duplicate ID becomes unique');
+        $this->check([20.0, 17.33] === Hotspots::anchor($it[1]), 'Hotspots: centre of a polygon');
         $rows = Hotspots::toForm($n);
-        $this->check('10,10 30,12 20,30' === $rows[1]['points'] && Hotspots::fromForm($rows) === $n, 'Markierungen: Formularzeilen hin und zurück ohne Verlust');
+        $this->check('10,10 30,12 20,30' === $rows[1]['points'] && Hotspots::fromForm($rows) === $n, 'Hotspots: form rows round trip without loss');
         $mid = Hotspots::fromForm([['title' => 'Neu', 'x' => '', 'y' => '']]);
-        $this->check(50.0 === ($mid['items'][0]['x'] ?? null), 'Markierungen: neue Zeile mit Inhalt ohne Lage → Bildmitte');
+        $this->check(50.0 === ($mid['items'][0]['x'] ?? null), 'Hotspots: new row with content but no position → image centre');
         $media = Sql::factory()->getArray("SELECT filename FROM rex_media WHERE filetype LIKE 'image/%' AND filetype <> 'image/svg+xml' ORDER BY id LIMIT 1");
         $file = (string) ($media[0]['filename'] ?? '');
         if ('' === $file) {
@@ -206,11 +206,11 @@ final class BlockSelfTest
         }
         Hotspots::reset();
         $h = Hotspots::render($file, $n, ['id' => 'st', 'label' => 'Probe']);
-        $this->check(str_contains($h, 'aria-label="Interaktives Bild: Probe" data-cms-hs') || str_contains($h, 'aria-label="Interactive image: Probe" data-cms-hs'), 'Markierungen: Bild benannt');
-        $this->check(5 === substr_count($h, 'popovertarget="st-') - 5 && str_contains($h, 'popover role="dialog"'), 'Markierungen: je Markierung Knopf (popovertarget) und Hinweisfenster');
-        $this->check(str_contains($h, 'class="cms-hs__pin x12 y100"') && str_contains($h, 'data-x="12.35"'), 'Markierungen: Lage über Klassen und data-x (CSSOM)');
-        $this->check(!preg_match('~\sstyle=~', $h), 'Markierungen: keine style-Attribute (CSP)');
-        $this->check(1 === substr_count($h, '<ol class="cms-hs__list"') && 3 === preg_match_all('~<(polygon|rect|circle) class="cms-hs__area"~', $h), 'Markierungen: Liste und Flächen als SVG');
+        $this->check(str_contains($h, 'aria-label="Interaktives Bild: Probe" data-cms-hs') || str_contains($h, 'aria-label="Interactive image: Probe" data-cms-hs'), 'Hotspots: image named');
+        $this->check(5 === substr_count($h, 'popovertarget="st-') - 5 && str_contains($h, 'popover role="dialog"'), 'Hotspots: button (popovertarget) and popover per hotspot');
+        $this->check(str_contains($h, 'class="cms-hs__pin x12 y100"') && str_contains($h, 'data-x="12.35"'), 'Hotspots: position via classes and data-x (CSSOM)');
+        $this->check(!preg_match('~\sstyle=~', $h), 'Hotspots: no style attributes (CSP)');
+        $this->check(1 === substr_count($h, '<ol class="cms-hs__list"') && 3 === preg_match_all('~<(polygon|rect|circle) class="cms-hs__area"~', $h), 'Hotspots: list and areas as SVG');
     }
 
     // ------------------------------------------------------------------ video links
@@ -220,18 +220,18 @@ final class BlockSelfTest
         $p = VideoLinks::parse(...);
         $this->check(['provider' => 'youtube', 'id' => 'dQw4w9WgXcQ'] === $p('https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=3')
             && ['provider' => 'youtube', 'id' => 'dQw4w9WgXcQ'] === $p('https://youtu.be/dQw4w9WgXcQ') && ['provider' => 'vimeo', 'id' => '76979871'] === $p('https://vimeo.com/76979871')
-            && null === $p('https://www.youtube.com/channel/x') && null === $p('https://example.org/watch?v=dQw4w9WgXcQ'), 'Video-Links: Erkennung nur von Video-Seiten');
+            && null === $p('https://www.youtube.com/channel/x') && null === $p('https://example.org/watch?v=dQw4w9WgXcQ'), 'Video links: only video pages are detected');
         $html = '<p><a href="https://youtu.be/dQw4w9WgXcQ">V</a> <a href="https://example.org/">E</a></p><script>"<a href=\"https://youtu.be/dQw4w9WgXcQ\">"</script></body>';
         $prev = VideoLinks::$force;
         try {
             VideoLinks::$force = false;
-            $this->check($html === VideoLinks::inject($html), 'Video-Links: ausgeschaltet → Ausgabe unverändert');
+            $this->check($html === VideoLinks::inject($html), 'Video links: switched off → output unchanged');
             VideoLinks::$force = true;
             $out = VideoLinks::enhance($html);
-            $this->check(str_contains($out, '<a href="https://youtu.be/dQw4w9WgXcQ" data-video-lb="youtube" data-video-id="dQw4w9WgXcQ">') && 1 === substr_count($out, 'data-video-lb'), 'Video-Links: Kennzeichnung, nicht im Skript, nicht bei anderen Links');
-            $this->check(str_contains(VideoLinks::optOut('<a class="btn" href="https://vimeo.com/76979871">x</a>', ['button_link' => 'https://vimeo.com/76979871', 'button_link_nolb' => true]), 'data-video-lb="off"'), 'Video-Links: Ausnahme je Link-Feld');
+            $this->check(str_contains($out, '<a href="https://youtu.be/dQw4w9WgXcQ" data-video-lb="youtube" data-video-id="dQw4w9WgXcQ">') && 1 === substr_count($out, 'data-video-lb'), 'Video links: marked, not in scripts, not on other links');
+            $this->check(str_contains(VideoLinks::optOut('<a class="btn" href="https://vimeo.com/76979871">x</a>', ['button_link' => 'https://vimeo.com/76979871', 'button_link_nolb' => true]), 'data-video-lb="off"'), 'Video links: opt-out per link field');
             $fields = VideoLinks::blockFields([['name' => 'button_link', 'type' => 'link'], ['name' => 'items', 'type' => 'repeater', 'fields' => [['name' => 'link', 'type' => 'link']]]]);
-            $this->check('button_link_nolb' === ($fields[1]['name'] ?? null) && 'link_nolb' === ($fields[2]['fields'][1]['name'] ?? null), 'Video-Links: Zusatzfeld hinter jedem Link-Feld');
+            $this->check('button_link_nolb' === ($fields[1]['name'] ?? null) && 'link_nolb' === ($fields[2]['fields'][1]['name'] ?? null), 'Video links: extra field after each link field');
         } finally {
             VideoLinks::$force = $prev;
         }
@@ -243,21 +243,21 @@ final class BlockSelfTest
     {
         $a = Data\Ics::event(['uid' => 'x@example.org', 'start' => '2026-12-03', 'title' => 'Termin; A, B', 'text' => "Zeile 1\nZeile 2", 'place' => 'Online']);
         $this->check(str_contains($a, "DTSTART;VALUE=DATE:20261203\r\nDTEND;VALUE=DATE:20261204\r\n") && str_contains($a, 'SUMMARY:Termin\; A\, B') && str_contains($a, 'DESCRIPTION:Zeile 1\nZeile 2'),
-            'Termine: ganztägig, Ende exklusiv, Text maskiert');
+            'Events: all-day, end exclusive, text escaped');
         $b = Data\Ics::event(['uid' => 'y', 'start' => '2026-12-03T18:30:00+01:00', 'title' => str_repeat('Ä', 60)]);
-        $this->check(str_contains($b, "DTSTART:20261203T173000Z\r\nDTEND:20261203T183000Z"), 'Termine: mit Uhrzeit in UTC, eine Stunde');
+        $this->check(str_contains($b, "DTSTART:20261203T173000Z\r\nDTEND:20261203T183000Z"), 'Events: with time in UTC, one hour');
         $ok = true;
         foreach (explode("\r\n", $b) as $line) {
             $ok = $ok && strlen($line) <= 75 && false !== mb_check_encoding($line, 'UTF-8');
         }
-        $this->check($ok && str_starts_with($b, "BEGIN:VCALENDAR\r\n") && str_ends_with($b, "END:VCALENDAR\r\n"), 'Termine: Zeilen höchstens 75 Bytes, UTF-8 nicht geteilt');
+        $this->check($ok && str_starts_with($b, "BEGIN:VCALENDAR\r\n") && str_ends_with($b, "END:VCALENDAR\r\n"), 'Events: lines at most 75 bytes, UTF-8 not split');
     }
 
     // ------------------------------------------------------------------ scrollytelling
 
     private function scrolly(): void
     {
-        $this->check(fluid_is_plain_text("Zeile 1\nZeile 2 <3") && !fluid_is_plain_text('<p>x</p>'), 'Scrollytelling: alter Klartext bleibt Klartext');
-        $this->check('<h4>A</h4><p>x</p><h4>B</h4>' === fluid_rich_below('<h2>A</h2><p>x</p><h4>B</h4>', 3), 'Scrollytelling: Zwischenüberschriften unter dem Abschnittstitel (h3 → h4)');
+        $this->check(fluid_is_plain_text("Zeile 1\nZeile 2 <3") && !fluid_is_plain_text('<p>x</p>'), 'Scrollytelling: old plain text stays plain text');
+        $this->check('<h4>A</h4><p>x</p><h4>B</h4>' === fluid_rich_below('<h2>A</h2><p>x</p><h4>B</h4>', 3), 'Scrollytelling: subheadings below the section title (h3 → h4)');
     }
 }

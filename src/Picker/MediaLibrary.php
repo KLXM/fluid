@@ -9,6 +9,7 @@ use Redaxo\Core\MediaPool\MediaCategory;
 use Redaxo\Core\MediaPool\MediaHandler;
 use Redaxo\Core\MediaPool\MediaPoolPermission;
 use Redaxo\Core\Security\User;
+use Redaxo\Core\Translation\I18n;
 use Redaxo\Core\Util\Pager;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -69,10 +70,10 @@ final class MediaLibrary
     public static function upload(User $user, int $category, string $title, array $types, mixed $file): array
     {
         if (!self::perm($user)->hasCategoryPerm($category ?: null)) {
-            throw new PickerError('Keine Rechte für diese Medienkategorie.', 403);
+            throw new PickerError(I18n::rawMsg('fluid_picker_media_category_perm'), 403);
         }
         if (!$file instanceof UploadedFile) {
-            throw new PickerError('Keine Datei empfangen.');
+            throw new PickerError(I18n::rawMsg('fluid_picker_no_file'));
         }
 
         return self::item(MediaHandler::add(['file' => $file, 'category_id' => $category ?: null, 'title' => $title], types: $types));
@@ -108,7 +109,7 @@ final class MediaLibrary
     {
         $perm = $user->getComplexPerm('media');
         if (!$perm instanceof MediaPoolPermission || !$perm->hasMediaPerm()) {
-            throw new PickerError('Keine Rechte für den Medienpool.', 403);
+            throw new PickerError(I18n::rawMsg('fluid_picker_media_perm'), 403);
         }
 
         return $perm;

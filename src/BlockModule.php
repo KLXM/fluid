@@ -19,6 +19,7 @@ use Redaxo\Core\ExtensionPoint\ExtensionPoint;
 use Redaxo\Core\Form\Form;
 use Redaxo\Core\Form\FormSchema;
 use Redaxo\Core\Http\Request;
+use Redaxo\Core\Translation\I18n;
 use ReflectionClass;
 
 use function array_diff_key;
@@ -394,10 +395,10 @@ abstract class BlockModule extends Module
 
         // Layout offline: its column blocks are gone from the website too (only the layout renders them)
         $inherited = null !== $parent && 1 !== $parent->status && 1 === $ep->slice->status
-            ? '<p class="blocks-be-inherited"><i class="rex-icon rex-icon-offline" aria-hidden="true"></i> Offline über das Layout – auf der Website nicht sichtbar</p>' : '';
+            ? '<p class="blocks-be-inherited"><i class="rex-icon rex-icon-offline" aria-hidden="true"></i> ' . I18n::msg('fluid_block_offline_by_layout') . '</p>' : '';
 
-        return '<div class="blocks-be-nest' . ('' !== $inherited ? ' is-inherited-offline' : '') . '">' . $inherited . '<p class="blocks-be-col"><span class="blocks-be-col__n">Spalte ' . Layout::col($ep->slice) . ' / ' . Layout::count($data) . '</span>'
-            . ' im Layout ' . escape(Layout::PRESET_LABELS[Layout::preset($data)]) . ($parent ? ' <a href="#slice' . $parent->id . '">↑ zum Layout</a>' : '') . '</p>' . $ep->subject . '</div>';
+        return '<div class="blocks-be-nest' . ('' !== $inherited ? ' is-inherited-offline' : '') . '">' . $inherited . '<p class="blocks-be-col"><span class="blocks-be-col__n">' . I18n::msg('fluid_block_column', Layout::col($ep->slice) . ' / ' . Layout::count($data)) . '</span>'
+            . ' ' . I18n::msg('fluid_block_in_layout', Layout::PRESET_LABELS[Layout::preset($data)]) . ($parent ? ' <a href="#slice' . $parent->id . '">' . I18n::msg('fluid_block_to_layout') . '</a>' : '') . '</p>' . $ep->subject . '</div>';
     }
 
     /** Short label of a slice for overviews: name of the block and – if present – headline or title */
@@ -507,7 +508,7 @@ abstract class BlockModule extends Module
         }
         $anchor = '' !== (string) ($t['anchor'] ?? '') ? ' id="' . escape($b->domId()) . '"' : '';
         $invalid = !static::nestable($b->variant()) && Editing::active()
-            ? '<p class="blocks-invalid">„' . escape(static::label()) . '“ in dieser Darstellung ist für Spalten nicht vorgesehen.</p>'
+            ? '<p class="blocks-invalid">' . I18n::msg('fluid_block_not_nestable', static::label()) . '</p>'
             : '';
 
         return '<div' . $anchor . ' class="' . escape(implode(' ', $cls)) . '"' . $this->editAttrs($b->type, Layout::col($this->slice)) . '>' . $invalid . $inner . "</div>\n";

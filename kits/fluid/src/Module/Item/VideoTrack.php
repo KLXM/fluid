@@ -6,41 +6,42 @@ use Klxm\Fluid\Field\Choice;
 use Klxm\Fluid\Field\MediaPicker;
 use Klxm\Fluid\Field\Text;
 use Redaxo\Core\MediaPool\Media;
+use Redaxo\Core\Translation\Translatable;
 
 /** Entry of „Untertitel und Kapitel (eigene Videodatei)“ in the block Video */
 final class VideoTrack
 {
     #[MediaPicker(
-        'Datei (.vtt oder .srt)',
+        new Translatable('fluid_block_video_track_item_file'),
         required: true,
         types: ['vtt', 'srt'],
     )]
     public ?Media $file = null;
 
     #[Text(
-        'Sprache (Kürzel)',
+        new Translatable('fluid_block_video_track_item_lang'),
         required: true,
         maxLength: 10,
-        placeholder: 'de',
+        placeholder: new Translatable('fluid_block_video_track_item_lang_placeholder'),
         width: 'half',
     )]
     public string $lang = '';
 
     #[Choice(
-        'Art',
+        new Translatable('fluid_field_kind'),
         choices: [
-            'subtitles' => 'Untertitel',
-            'captions' => 'Untertitel für Gehörlose (mit Geräuschen)',
-            'chapters' => 'Kapitel',
+            'subtitles' => new Translatable('fluid_block_video_track_item_kind_subtitles'),
+            'captions' => new Translatable('fluid_block_video_track_item_kind_captions'),
+            'chapters' => new Translatable('fluid_block_video_track_item_kind_chapters'),
         ],
         width: 'half',
     )]
     public string $kind = 'subtitles';
 
     #[Text(
-        'Bezeichnung im Player (optional)',
+        new Translatable('fluid_block_video_track_item_label'),
         maxLength: 40,
-        placeholder: 'automatisch, z. B. „Deutsch“',
+        placeholder: new Translatable('fluid_block_video_track_item_label_placeholder'),
     )]
     public string $label = '';
 }

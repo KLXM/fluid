@@ -12,102 +12,103 @@ use Klxm\Fluid\Field\Textarea;
 use Klxm\Fluid\Kit\Fluid\FluidBlock;
 use Klxm\Fluid\Kit\Fluid\Module\Item\ChartSeries;
 use Redaxo\Core\Content\AsModule;
+use Redaxo\Core\Translation\Translatable;
 
-#[AsModule('fluid.chart', 'Diagramm')]
+#[AsModule('fluid.chart', new Translatable('fluid_block_chart'))]
 #[AsBlock(
     icon: 'chart-line-up',
-    group: 'Inhalt',
-    help: 'Balken, Linie, Fläche, Torte oder Ring – Werte von Hand oder aus einer Datenquelle der Website. Die Zahlen stehen zusätzlich als Tabelle bereit (Screenreader, ohne JavaScript).',
+    group: new Translatable('fluid_block_group_content'),
+    help: new Translatable('fluid_block_chart_help'),
     variants: [
-        'standard' => 'Diagramm unter der Überschrift',
-        'split' => 'Text links, Diagramm rechts',
+        'standard' => new Translatable('fluid_block_chart_variant_standard'),
+        'split' => new Translatable('fluid_block_chart_variant_split'),
     ],
     nestable: true,
 )]
 final class Chart extends FluidBlock
 {
     #[Text(
-        'Dachzeile (optional)',
+        new Translatable('fluid_field_eyebrow'),
         maxLength: 60,
         width: 'half',
     )]
     public string $eyebrow = '';
 
     #[Text(
-        'Überschrift',
+        new Translatable('fluid_field_title'),
         maxLength: 110,
         width: 'half',
     )]
     public string $title = '';
 
     #[Textarea(
-        'Einleitung (optional)',
+        new Translatable('fluid_field_intro'),
         maxLength: 600,
         rows: 3,
     )]
     public string $intro = '';
 
     #[Choice(
-        'Art',
-        choices: Charts::TYPE_LABELS,
+        new Translatable('fluid_field_kind'),
+        choices: static function (): array { return Charts::choices('type'); },
         required: true,
         width: 'half',
     )]
     public string $chartType = 'bar';
 
-    #[Choice('Daten', choices: static function (): array { return Charts::sourceChoices(); }, width: 'half',
-        note: 'Von Hand oder aus einer Quelle der Website (#[AsChartSource]) – dann sind die Werte immer aktuell.')]
+    #[Choice(new Translatable('fluid_block_chart_source'), choices: static function (): array { return Charts::sourceChoices(); }, width: 'half',
+        note: new Translatable('fluid_block_chart_source_help'))]
     public string $source = '';
 
-    #[Textarea('Beschriftungen (eine je Zeile)', maxLength: 4000, rows: 5, placeholder: "Januar\nFebruar\nMärz",
-        note: 'Nur bei „Werte von Hand eingeben“.')]
+    #[Textarea(new Translatable('fluid_block_chart_labels'), maxLength: 4000, rows: 5, placeholder: new Translatable('fluid_block_chart_labels_placeholder', "\n"),
+        note: new Translatable('fluid_block_chart_labels_help'))]
     public string $labels = '';
 
     #[Collection(
-        'Reihen',
+        new Translatable('fluid_block_chart_series'),
         item: ChartSeries::class,
-        itemLabel: 'Reihe',
+        itemLabel: new Translatable('fluid_block_chart_series_item'),
         titleField: 'name',
         max: 8,
     )]
     public array $series = [];
 
     #[Choice(
-        'Zahlen',
-        choices: Charts::FORMATS,
+        new Translatable('fluid_block_chart_format'),
+        choices: static function (): array { return Charts::choices('format'); },
         required: true,
         width: 'half',
     )]
     public string $format = 'number';
 
     #[Text(
-        'Einheit (optional)',
+        new Translatable('fluid_block_chart_unit'),
         maxLength: 12,
-        placeholder: 'z. B. €, kg',
+        placeholder: new Translatable('fluid_block_chart_unit_placeholder'),
         width: 'half',
     )]
     public string $unit = '';
 
     #[Checkbox(
-        'Reihen stapeln (Balken, Fläche)',
+        new Translatable('fluid_block_chart_stacked'),
         width: 'half',
     )]
     public bool $stacked = false;
 
     #[Choice(
-        'Höhe',
-        choices: Charts::HEIGHTS,
+        new Translatable('fluid_field_height'),
+        choices: static function (): array { return Charts::choices('height'); },
         required: true,
         width: 'half',
     )]
     public string $height = '320';
 
-    #[Choice('Tabelle unter dem Diagramm', choices: Charts::TABLE_VIEWS, width: 'half',
-        note: '„Nicht anbieten“ nur, wenn dieselben Zahlen schon als Tabelle auf der Seite stehen.')]
+    #[Choice(new Translatable('fluid_block_chart_table_view'), choices: static function (): array { return Charts::choices('table'); }, width: 'half',
+        note: new Translatable('fluid_block_chart_table_view_help'))]
     public string $tableView = '';
 
-    #[Text('Beschreibung für Screenreader', maxLength: 300,
-        note: 'Ein Satz, was das Diagramm zeigt (z. B. „Anfragen je Monat, höchster Wert im Mai“). Leer: die Überschrift.')]
+    #[Text(new Translatable('fluid_block_chart_description'), maxLength: 300,
+        note: new Translatable('fluid_block_chart_description_help'))]
     public string $description = '';
 
     /**

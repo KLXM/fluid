@@ -11,10 +11,11 @@ use Klxm\Fluid\Glossary\Glossary;
 use Klxm\Fluid\Kit;
 use Klxm\Routes\Router;
 use Redaxo\Core\Language\Language;
+use Redaxo\Core\Translation\I18n;
 
 if (!Glossary::available()) {
     if (is_editing()) {
-        echo '<div class="wrap"><p class="empty-hint">' . e('Für das Glossar wird das AddOn YForm benötigt (danach console migrate).') . '</p></div>';
+        echo '<div class="wrap"><p class="empty-hint">' . e(I18n::rawMsg('fluid_kit_glossary_needs_yform')) . '</p></div>';
     }
 
     return;
@@ -33,7 +34,7 @@ if (null !== $term):
     <?php $hx = null === $b->prev ? 'h1' : 'h2' ?><<?= $hx ?> class="glx-term__title"><?= e($term['term']) ?></<?= $hx ?>>
     <?php if ($term['variants']): ?><p class="glx-term__alt"><?= e(lt('Auch')) ?>: <?= e(implode(', ', array_map(static fn ($v) => trim($v, '"„“'), $term['variants']))) ?></p><?php endif ?>
     <p class="glx-term__short"><?= e($term['short']) ?></p>
-    <?php if ($edit): ?><p><a class="fdl-edit" href="<?= e($edit) ?>" target="_blank" rel="noopener"><?= e('Begriff bearbeiten') ?></a></p><?php endif ?>
+    <?php if ($edit): ?><p><a class="fdl-edit" href="<?= e($edit) ?>" target="_blank" rel="noopener"><?= e(I18n::rawMsg('fluid_kit_glossary_edit')) ?></a></p><?php endif ?>
   </header>
 </div>
 <?php if ('' !== $long): ?><div class="glx-term__long"><?= $long ?></div><?php endif ?>

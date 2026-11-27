@@ -11,82 +11,83 @@ use Klxm\Fluid\Field\Textarea;
 use Klxm\Fluid\Kit\Fluid\FluidBlock;
 use Klxm\Fluid\Kit\Fluid\Module\Item\GalleryImage;
 use Redaxo\Core\Content\AsModule;
+use Redaxo\Core\Translation\Translatable;
 
-#[AsModule('fluid.gallery', 'Bildergalerie')]
+#[AsModule('fluid.gallery', new Translatable('fluid_block_gallery'))]
 #[AsBlock(
     icon: 'images',
-    group: 'Medien',
-    help: 'Bilder als Raster, Mosaik oder in bündigen Zeilen. Ein Klick öffnet das Bild groß (Lightbox: Tastatur, Wischen, Esc). Alt-Texte kommen aus dem Medienpool.',
+    group: new Translatable('fluid_block_group_media'),
+    help: new Translatable('fluid_block_gallery_help'),
     variants: [
-        'grid' => 'Raster (gleiches Format)',
-        'masonry' => 'Mosaik (Originalformat, Spalten)',
-        'justified' => 'Zeilen (Originalformat, bündig)',
+        'grid' => new Translatable('fluid_block_gallery_variant_grid'),
+        'masonry' => new Translatable('fluid_block_gallery_variant_masonry'),
+        'justified' => new Translatable('fluid_block_gallery_variant_justified'),
     ],
     nestable: true,
 )]
 final class Gallery extends FluidBlock
 {
     #[Text(
-        'Dachzeile (optional)',
+        new Translatable('fluid_field_eyebrow'),
         maxLength: 60,
         width: 'half',
     )]
     public string $eyebrow = '';
 
     #[Text(
-        'Überschrift',
+        new Translatable('fluid_field_title'),
         maxLength: 110,
         width: 'half',
     )]
     public string $title = '';
 
     #[Textarea(
-        'Einleitung (optional)',
+        new Translatable('fluid_field_intro'),
         maxLength: 400,
         rows: 2,
     )]
     public string $intro = '';
 
     #[Collection(
-        'Bilder',
+        new Translatable('fluid_block_gallery_images'),
         item: GalleryImage::class,
-        itemLabel: 'Bild',
+        itemLabel: new Translatable('fluid_field_image'),
         titleField: 'caption',
         max: 60,
     )]
     public array $images = [];
 
-    #[Choice('Spalten', required: true, width: 'half', choices: ['2' => '2 Spalten', '3' => '3 Spalten', '4' => '4 Spalten', '5' => '5 Spalten'],
-        note: 'Bei „Zeilen“: Zeilenhöhe (mehr Spalten = kleinere Bilder).')]
+    #[Choice(new Translatable('fluid_block_gallery_columns'), required: true, width: 'half', choices: ['2' => new Translatable('fluid_block_gallery_columns_2'), '3' => new Translatable('fluid_block_gallery_columns_3'), '4' => new Translatable('fluid_block_gallery_columns_4'), '5' => new Translatable('fluid_block_gallery_columns_5')],
+        note: new Translatable('fluid_block_gallery_columns_help'))]
     public string $columns = '3';
 
     #[Choice(
-        'Bildformat',
+        new Translatable('fluid_field_ratio'),
         required: true,
         width: 'half',
-        choices: self::RATIOS,
+        choices: self::ratios(...),
         variants: ['grid'],
     )]
     public string $ratio = '4:3';
 
     #[Checkbox(
-        'Bildunterschriften anzeigen',
+        new Translatable('fluid_block_gallery_captions'),
         width: 'half',
     )]
     public bool $captions = true;
 
     #[Checkbox(
-        'Bilder per Klick groß anzeigen (Lightbox)',
+        new Translatable('fluid_block_gallery_lightbox'),
         width: 'half',
     )]
     public bool $lightbox = true;
 
     #[Choice(
-        'Größe bei nur einem Bild',
+        new Translatable('fluid_block_gallery_single_size'),
         required: true,
         width: 'half',
-        choices: ['grid' => 'Wie die Galerie (eine Spalte)', 'medium' => 'Mittel (zentriert)', 'large' => 'Groß (volle Inhaltsbreite)'],
-        note: 'Gilt nur, wenn die Galerie genau ein Bild enthält: „Mittel“ und „Groß“ zeigen es im Originalformat mit Bildunterschrift.',
+        choices: ['grid' => new Translatable('fluid_block_gallery_single_size_grid'), 'medium' => new Translatable('fluid_block_gallery_single_size_medium'), 'large' => new Translatable('fluid_block_gallery_single_size_large')],
+        note: new Translatable('fluid_block_gallery_single_size_help'),
     )]
     public string $singleSize = 'large';
 }

@@ -1,6 +1,7 @@
 <?php
 
 use Klxm\Fluid\Block;
+use Redaxo\Core\Translation\I18n;
 
 /**
  * Features / services. Grid without column count: repeat(auto-fit, minmax(min(100%, min width), 1fr)).
@@ -33,5 +34,5 @@ $tag = fluid_htag($d);
     </li>
     <?php endforeach ?>
   </ul>
-  <?php elseif (is_editing()): ?><p class="empty-hint">Noch keine Einträge – in der Seitenleiste hinzufügen.</p><?php endif ?>
+  <?php elseif (is_editing()): ?><p class="empty-hint"><?= I18n::msg('fluid_kit_empty_features') ?></p><?php endif ?>
 </div>

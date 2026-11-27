@@ -81,7 +81,7 @@ final class Server
         // Protection against DNS rebinding: reject foreign browser origins
         $origin = (string) ($_SERVER['HTTP_ORIGIN'] ?? '');
         if ('' !== $origin && parse_url($origin, PHP_URL_HOST) !== parse_url('//' . ($_SERVER['HTTP_HOST'] ?? ''), PHP_URL_HOST)) {
-            self::rpcError(403, -32000, 'Origin nicht erlaubt.');
+            self::rpcError(403, -32000, 'Origin not allowed.');
         }
 
         $bearer = self::bearer();
@@ -89,7 +89,7 @@ final class Server
             $token = Tokens::check($bearer);
             if (null === $token) {
                 header('WWW-Authenticate: Bearer realm="fluid-mcp", error="invalid_token"');
-                self::rpcError(401, -32001, 'Schlüssel ungültig, abgelaufen oder Benutzer gesperrt.');
+                self::rpcError(401, -32001, 'Key invalid, expired or user locked.');
             }
             $this->access = Access::forToken($token);
             self::limit('t' . $token['id'], self::LIMIT_TOKEN);
@@ -101,7 +101,7 @@ final class Server
             self::limit('ip' . hash('sha256', (string) ($_SERVER['REMOTE_ADDR'] ?? '')), self::LIMIT_PUBLIC);
         } else {
             header('WWW-Authenticate: Bearer realm="fluid-mcp"');
-            self::rpcError(401, -32001, 'Schlüssel nötig: Authorization: Bearer fluid_…');
+            self::rpcError(401, -32001, 'Key required: Authorization: Bearer fluid_…');
         }
         $this->tools = new Tools($this->access);
 
@@ -146,7 +146,7 @@ final class Server
                 'resources/list' => ['resources' => []],
                 'resources/templates/list' => ['resourceTemplates' => []],
                 'prompts/list' => ['prompts' => []],
-                default => throw new DomainException('Methode „' . $method . '“ nicht gefunden', -32601),
+                default => throw new DomainException('Method "' . $method . '" not found', -32601),
             };
 
             return $notification ? null : ['jsonrpc' => '2.0', 'id' => $id, 'result' => $result];
@@ -155,7 +155,7 @@ final class Server
         } catch (Throwable $e) {
             Logger::logException($e);
 
-            return ['jsonrpc' => '2.0', 'id' => $id, 'error' => ['code' => -32603, 'message' => 'Interner Fehler']];
+            return ['jsonrpc' => '2.0', 'id' => $id, 'error' => ['code' => -32603, 'message' => 'Internal error']];
         }
     }
 
@@ -173,16 +173,16 @@ final class Server
         return [
             'protocolVersion' => in_array($req, self::VERSIONS, true) ? $req : self::VERSIONS[1],
             'capabilities' => ['tools' => ['listChanged' => false], 'resources' => ['listChanged' => false, 'subscribe' => false], 'prompts' => ['listChanged' => false], 'logging' => new stdClass()],
-            'serverInfo' => ['name' => 'fluid', 'title' => 'fluid für REDAXO', 'version' => FluidAddon::instance()->getVersion(), 'websiteUrl' => Url::absoluteBase()],
-            'instructions' => 'Website mit REDAXO und fluid (' . Url::absoluteBase() . ").\n"
-                . "- Starte mit site_overview.\n"
+            'serverInfo' => ['name' => 'fluid', 'title' => 'fluid for REDAXO', 'version' => FluidAddon::instance()->getVersion(), 'websiteUrl' => Url::absoluteBase()],
+            'instructions' => 'Website built with REDAXO and fluid (' . Url::absoluteBase() . ").\n"
+                . "- Start with site_overview.\n"
                 . ($public
-                    ? "- Öffentlicher Zugang: nur veröffentlichte Inhalte, nur lesen.\n"
-                    : "- Seiten bestehen aus Blöcken (list_block_types). Änderungen landen im ENTWURF; live geht erst publish_page (falls erlaubt) oder ein Mensch auf der Website. Vorher nachfragen.\n"
-                      . "- Rich-Text als HTML ohne Bilder; Bilder nur über Medienfelder (Dateiname aus dem Medienpool).\n"
-                      . "- Erfinde keine Fakten.\n")
+                    ? "- Public access: published content only, read only.\n"
+                    : "- Pages consist of blocks (list_block_types). Changes go into the DRAFT; they only go live via publish_page (if allowed) or a human on the website. Ask first.\n"
+                      . "- Rich text as HTML without images; images only via media fields (file name from the media pool).\n"
+                      . "- Do not invent facts.\n")
                 . ('' !== $extra ? '- ' . $extra . "\n" : '')
-                . 'Zugang: ' . $this->access->describe() . '.',
+                . 'Access: ' . $this->access->describe() . '.',
         ];
     }
 
@@ -193,11 +193,11 @@ final class Server
         $tools = $this->tools->all();
         if (!isset($tools[$name])) {
             $why = match (true) {
-                $this->access->isPublic() => ' (öffentlich nicht freigegeben)',
-                !$this->access->write => ' (dieser Zugang darf nur lesen)',
+                $this->access->isPublic() => ' (not enabled for public access)',
+                !$this->access->write => ' (this access is read only)',
                 default => '',
             };
-            throw new DomainException('Unbekanntes Werkzeug „' . $name . '“' . $why, -32602);
+            throw new DomainException('Unknown tool "' . $name . '"' . $why, -32602);
         }
         try {
             $result = ($tools[$name]['run'])(is_array($p['arguments'] ?? null) ? $p['arguments'] : []);
@@ -242,7 +242,7 @@ final class Server
         }
         if (++$data['n'] > $max) {
             header('Retry-After: ' . max(1, $data['start'] + self::WINDOW - $now));
-            self::rpcError(429, -32002, 'Zu viele Anfragen – bitte kurz warten.');
+            self::rpcError(429, -32002, 'Too many requests – please wait a moment.');
         }
         @file_put_contents($file, json_encode($data), LOCK_EX);
     }

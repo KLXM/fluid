@@ -12,81 +12,82 @@ use Klxm\Fluid\Field\Text;
 use Klxm\Fluid\Field\Textarea;
 use Klxm\Fluid\Kit\Fluid\FluidBlock;
 use Redaxo\Core\Content\AsModule;
+use Redaxo\Core\Translation\Translatable;
 
-#[AsModule('fluid.posts', 'Beiträge')]
+#[AsModule('fluid.posts', new Translatable('fluid_block_posts'))]
 #[AsBlock(
     icon: 'newspaper',
-    group: 'Website',
-    help: 'Beiträge eines Blogs (Menüseite mit „Blog / News“ in den Seiteneinstellungen): Übersicht mit Blättern und Schlagworten oder die neuesten Beiträge, z. B. auf der Startseite.',
-    variants: ['cards' => 'Karten', 'list' => 'Liste', 'featured' => 'Aufmacher + Karten'],
+    group: new Translatable('fluid_block_group_website'),
+    help: new Translatable('fluid_block_posts_help'),
+    variants: ['cards' => new Translatable('fluid_block_posts_variant_cards'), 'list' => new Translatable('fluid_block_posts_variant_list'), 'featured' => new Translatable('fluid_block_posts_variant_featured')],
     nestable: ['list'],
     reload: true,
 )]
 final class Posts extends FluidBlock
 {
     #[Text(
-        'Dachzeile (optional)',
+        new Translatable('fluid_field_eyebrow'),
         maxLength: 60,
         width: 'half',
     )]
     public string $eyebrow = '';
 
     #[Text(
-        'Überschrift',
+        new Translatable('fluid_field_title'),
         maxLength: 110,
         width: 'half',
     )]
     public string $title = '';
 
     #[Textarea(
-        'Einleitung (optional)',
+        new Translatable('fluid_field_intro'),
         maxLength: 400,
         rows: 2,
     )]
     public string $intro = '';
 
     #[Blog(
-        'Blog',
+        new Translatable('fluid_block_posts_blog'),
         width: 'half',
     )]
     public string $blog = '';
 
     #[Number(
-        'Beiträge je Seite',
+        new Translatable('fluid_block_posts_limit'),
         width: 'half',
     )]
     public int $limit = 9;
 
     #[Checkbox(
-        'Blättern (Seite 2, 3 …)',
+        new Translatable('fluid_field_paging'),
         width: 'half',
     )]
     public bool $pager = true;
 
     #[Checkbox(
-        'Schlagworte zum Filtern zeigen',
+        new Translatable('fluid_block_posts_tags'),
         width: 'half',
     )]
     public bool $tags = false;
 
     #[Choice(
-        'Breite je Eintrag (mindestens)',
+        new Translatable('fluid_field_size'),
         required: true,
-        choices: self::SIZES,
+        choices: self::sizes(...),
         width: 'half',
-        note: 'Wie viele Einträge nebeneinander passen, ergibt sich aus dem verfügbaren Platz – auf jedem Gerät.',
+        note: new Translatable('fluid_field_size_help'),
     )]
     public string $size = 'm';
 
     #[Link(
-        'Link „Alle Beiträge“ (optional)',
+        new Translatable('fluid_block_posts_more'),
         width: 'half',
-        note: 'Für „Neueste Beiträge“ auf anderen Seiten, z. B. zur Blog-Übersicht.',
+        note: new Translatable('fluid_block_posts_more_help'),
     )]
     public string $more = '';
 
     #[Text(
-        'Hinweis ohne Beiträge (optional)',
+        new Translatable('fluid_block_posts_empty_text'),
         maxLength: 200,
     )]
     public string $emptyText = '';

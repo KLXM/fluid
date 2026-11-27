@@ -25,6 +25,7 @@ use Redaxo\Core\Filesystem\Url;
 use Redaxo\Core\Http\Request;
 use Redaxo\Core\Language\Language;
 use Redaxo\Core\Security\CsrfToken;
+use Redaxo\Core\Translation\I18n;
 use Redaxo\Core\View\Component\Section;
 use Redaxo\Core\View\Html;
 use Redaxo\Core\View\Message;
@@ -57,37 +58,37 @@ final class StatusPage
 
         // [status, area, text]; status: ok | warn | info
         $rows = [
-            [$start ? 'ok' : 'warn', 'Startseite', $start ? escape($start->name) . ' – Template ' . escape((string) $start->templateKey) . ('fluid' === $start->templateKey ? '' : ' (nicht das Template von fluid)') : 'Noch keine Seiten – die Website zeigt „Erste Schritte“.'],
-            ['ok', 'Kit', escape($kit->label()) . ' (' . escape($kit->key()) . ')' . (null !== ($parent = $kit->parent()) ? ' – erbt von ' . escape($parent->label()) : '')
-                . (count(Kit::all()) > 1 ? ' · ' . count(Kit::all()) . ' Kits verfügbar, Auswahl unter Website-Einstellungen → Kit' : '')],
-            [Core::getConfig('article_work_version') ? 'ok' : 'warn', 'Arbeitsversion', Core::getConfig('article_work_version') ? 'an – Änderungen erst als Entwurf, dann „Veröffentlichen“' : 'aus – Änderungen gehen sofort live (System → Einstellungen → Arbeitsversion)'],
-            [$routes > 0 ? 'ok' : 'warn', 'Schöne Adressen', $routes . ' Adressen. Der Webserver muss Anfragen ohne Datei an index.php geben (README → Webserver). Test: <a href="' . escape(Url::frontend() . 'sitemap.xml') . '" target="_blank" rel="noopener">sitemap.xml</a>'],
-            [$primary ? 'ok' : 'info', 'Hauptadresse', $primary ? escape($primary->host) : 'nicht festgelegt – Adressen folgen dem Aufruf (Website → Domains)'],
-            ['info', 'Sprachen', count(Language::getAll()) . ' (' . escape(implode(', ', array_map(static fn (Language $l) => $l->code . ($l->isOnline() ? '' : ' offline'), Language::getAll()))) . ')'],
-            [$mail['configured'] && '' !== $mail['from'] ? 'ok' : 'warn', 'Mail', '' !== $mail['error']
-                ? 'nicht eingerichtet: ' . escape($mail['error']) . ' – MAILER_DSN in .env.local setzen'
-                : ($mail['configured'] ? escape($mail['transport']) . ('' !== $mail['from'] ? ' · Absender ' . escape($mail['from']) : ' · REX_MAILER_FROM fehlt') : 'MAILER_DSN „null://“ – Mails werden verworfen')
-                . ($mail['detour'] ? ' · <strong>alle Mails an ' . escape(implode(', ', $mail['detour'])) . '</strong> (REX_MAILER_RECIPIENTS)' : '') . ' – Details unten unter „E-Mail“'],
-            [extension_loaded('pdo_sqlite') ? 'ok' : 'warn', 'Suche', extension_loaded('pdo_sqlite') ? 'Loupe (SQLite) verfügbar' : 'PHP-Erweiterung pdo_sqlite fehlt – Block „Suche“ ohne Treffer'],
-            [Ffmpeg::available() ? 'ok' : 'info', 'Video-Vorschaubilder', Ffmpeg::available() ? 'ffmpeg ' . escape(Ffmpeg::bin()) : 'ffmpeg nicht gefunden – nur gewählte Vorschaubilder (Pfad über FFMPEG_BIN/FFPROBE_BIN)'],
-            [Addon::exists('yform') ? 'ok' : 'info', 'YForm', Addon::exists('yform') ? 'vorhanden – Blöcke „Formular“, „Datenliste“, Postfach' : 'nicht installiert – Formulare und Datenlisten ausgeblendet'],
-            [class_exists(ImageEditorAddon::class) ? 'ok' : 'info', 'Bildbearbeitung', class_exists(ImageEditorAddon::class) ? 'image_editor vorhanden' : 'optional: klxm/image_editor'],
-            [$n404 > 0 ? 'info' : 'ok', '404-Protokoll', $n404 . ' nicht gefundene Adressen in 30 Tagen – auf der Website unter Website → Weiterleitungen'],
+            [$start ? 'ok' : 'warn', I18n::rawMsg('fluid_backend_status_start'), $start ? I18n::rawMsg('fluid_backend_status_start_ok', escape($start->name), escape((string) $start->templateKey)) . ('fluid' === $start->templateKey ? '' : ' ' . I18n::msg('fluid_backend_status_start_not_fluid')) : I18n::msg('fluid_backend_status_start_none')],
+            ['ok', I18n::rawMsg('fluid_backend_status_kit'), escape($kit->label()) . ' (' . escape($kit->key()) . ')' . (null !== ($parent = $kit->parent()) ? ' – ' . I18n::rawMsg('fluid_backend_status_kit_inherits', escape($parent->label())) : '')
+                . (count(Kit::all()) > 1 ? ' · ' . I18n::msg('fluid_backend_status_kit_available', count(Kit::all())) : '')],
+            [Core::getConfig('article_work_version') ? 'ok' : 'warn', I18n::rawMsg('fluid_backend_status_work_version'), Core::getConfig('article_work_version') ? I18n::msg('fluid_backend_status_work_version_on') : I18n::msg('fluid_backend_status_work_version_off')],
+            [$routes > 0 ? 'ok' : 'warn', I18n::rawMsg('fluid_backend_status_routes'), I18n::rawMsg('fluid_backend_status_routes_text', $routes, '<a href="' . escape(Url::frontend() . 'sitemap.xml') . '" target="_blank" rel="noopener">sitemap.xml</a>')],
+            [$primary ? 'ok' : 'info', I18n::rawMsg('fluid_backend_status_primary'), $primary ? escape($primary->host) : I18n::msg('fluid_backend_status_primary_none')],
+            ['info', I18n::rawMsg('fluid_backend_status_languages'), count(Language::getAll()) . ' (' . escape(implode(', ', array_map(static fn (Language $l) => $l->code . ($l->isOnline() ? '' : ' offline'), Language::getAll()))) . ')'],
+            [$mail['configured'] && '' !== $mail['from'] ? 'ok' : 'warn', I18n::rawMsg('fluid_backend_status_mail'), '' !== $mail['error']
+                ? I18n::rawMsg('fluid_backend_status_mail_error', escape($mail['error']))
+                : ($mail['configured'] ? escape($mail['transport']) . ('' !== $mail['from'] ? ' · ' . I18n::rawMsg('fluid_backend_status_mail_from', escape($mail['from'])) : ' · ' . I18n::msg('fluid_backend_status_mail_from_missing')) : I18n::msg('fluid_backend_status_mail_null'))
+                . ($mail['detour'] ? ' · ' . I18n::rawMsg('fluid_backend_status_mail_detour', escape(implode(', ', $mail['detour']))) : '') . ' – ' . I18n::msg('fluid_backend_status_mail_details')],
+            [extension_loaded('pdo_sqlite') ? 'ok' : 'warn', I18n::rawMsg('fluid_backend_status_search'), extension_loaded('pdo_sqlite') ? I18n::msg('fluid_backend_status_search_ok') : I18n::msg('fluid_backend_status_search_missing')],
+            [Ffmpeg::available() ? 'ok' : 'info', I18n::rawMsg('fluid_backend_status_video'), Ffmpeg::available() ? 'ffmpeg ' . escape(Ffmpeg::bin()) : I18n::msg('fluid_backend_status_video_missing')],
+            [Addon::exists('yform') ? 'ok' : 'info', 'YForm', Addon::exists('yform') ? I18n::msg('fluid_backend_status_yform_ok') : I18n::msg('fluid_backend_status_yform_missing')],
+            [class_exists(ImageEditorAddon::class) ? 'ok' : 'info', I18n::rawMsg('fluid_backend_status_image_editor'), class_exists(ImageEditorAddon::class) ? I18n::msg('fluid_backend_status_image_editor_ok') : I18n::msg('fluid_backend_status_image_editor_missing')],
+            [$n404 > 0 ? 'info' : 'ok', I18n::rawMsg('fluid_backend_status_404'), I18n::msg('fluid_backend_status_404_text', $n404)],
         ];
         // Header: summary (traffic light) and link to the website
         $count = array_count_values(array_column($rows, 0)) + ['ok' => 0, 'warn' => 0, 'info' => 0];
         $state = $count['warn'] > 0 ? 'warn' : 'ok';
         $out .= '<div class="fluid-status-hero" data-state="' . $state . '">'
             . '<div class="fluid-status-hero__icon" aria-hidden="true">' . self::icon($state) . '</div>'
-            . '<div class="fluid-status-hero__text"><h2>' . ('warn' === $state ? $count['warn'] . ' ' . (1 === $count['warn'] ? 'Punkt braucht' : 'Punkte brauchen') . ' Aufmerksamkeit' : 'Alles bereit') . '</h2>'
-            . '<p>' . $count['ok'] . ' in Ordnung · ' . $count['info'] . ' ' . (1 === $count['info'] ? 'Hinweis' : 'Hinweise') . ($count['warn'] ? ' · ' . $count['warn'] . ' zu prüfen' : '') . '</p></div>'
-            . '<a class="rex-button" data-variant="primary" href="' . escape($site) . '"><i class="rex-icon fa-solid fa-pen-to-square" aria-hidden="true"></i> Auf der Website bearbeiten</a>'
+            . '<div class="fluid-status-hero__text"><h2>' . ('warn' === $state ? I18n::msg(1 === $count['warn'] ? 'fluid_backend_status_attention_one' : 'fluid_backend_status_attention_many', $count['warn']) : I18n::msg('fluid_backend_status_all_ready')) . '</h2>'
+            . '<p>' . I18n::msg('fluid_backend_status_summary_ok', $count['ok']) . ' · ' . I18n::msg(1 === $count['info'] ? 'fluid_backend_status_summary_info_one' : 'fluid_backend_status_summary_info_many', $count['info']) . ($count['warn'] ? ' · ' . I18n::msg('fluid_backend_status_summary_warn', $count['warn']) : '') . '</p></div>'
+            . '<a class="rex-button" data-variant="primary" href="' . escape($site) . '"><i class="rex-icon fa-solid fa-pen-to-square" aria-hidden="true"></i> ' . I18n::msg('fluid_backend_edit_on_website') . '</a>'
             . '</div>';
 
         // Checks as tiles, warnings first
         $order = ['warn' => 0, 'info' => 1, 'ok' => 2];
         usort($rows, static fn (array $a, array $b) => $order[$a[0]] <=> $order[$b[0]]);
-        $label = ['ok' => 'in Ordnung', 'warn' => 'prüfen', 'info' => 'Hinweis'];
+        $label = ['ok' => I18n::msg('fluid_backend_status_state_ok'), 'warn' => I18n::msg('fluid_backend_status_state_warn'), 'info' => I18n::msg('fluid_backend_status_state_info')];
         $tiles = '<ul class="fluid-status-checks">';
         foreach ($rows as [$st, $name, $text]) {
             $tiles .= '<li class="fluid-status-check" data-state="' . $st . '">'
@@ -95,7 +96,7 @@ final class StatusPage
                 . '<div><h3>' . escape($name) . '</h3><p>' . $text . '</p></div></li>';
         }
         $tiles .= '</ul>';
-        $out .= new Section(title: 'Umgebung', body: Html::raw($tiles))->render();
+        $out .= new Section(title: I18n::rawMsg('fluid_backend_status_environment'), body: Html::raw($tiles))->render();
 
         $csrf = CsrfToken::factory(self::CSRF)->getHiddenField();
         $out .= self::mailSection($mail, $csrf);
@@ -105,11 +106,11 @@ final class StatusPage
             . '<span class="fluid-status-task__icon" aria-hidden="true"><i class="rex-icon fa-solid ' . $icon . '"></i></span><h3>' . escape($title) . '</h3><p>' . escape($help) . '</p>'
             . '<p class="fluid-status-task__action"><button class="rex-button" data-size="sm" name="fluid_do" value="' . $do . '">' . escape($button) . '</button></p></form>';
         $out .= new Section(
-            title: 'Wartung',
-            body: Html::raw('<p class="rex-u-text-muted">Normalerweise nicht nötig – fluid hält das selbst aktuell.</p><div class="fluid-status-tasks">'
-                . $task('routes', 'fa-route', 'Adressen', 'Nach einem Import oder einer kopierten Datenbank.', 'Neu aufbauen')
-                . $task('search', 'fa-magnifying-glass', 'Suchindex', 'Auch per Konsole: fluid:search-index', 'Neu aufbauen')
-                . $task('proxy', 'fa-map-location-dot', 'Karten-Cache', 'Kacheln und Stile der Karten (' . self::size(Path::addonCache('fluid', 'proxy')) . '), werden neu geladen.', 'Leeren')
+            title: I18n::rawMsg('fluid_backend_status_maintenance'),
+            body: Html::raw('<p class="rex-u-text-muted">' . I18n::msg('fluid_backend_status_maintenance_intro') . '</p><div class="fluid-status-tasks">'
+                . $task('routes', 'fa-route', I18n::rawMsg('fluid_backend_status_task_routes'), I18n::rawMsg('fluid_backend_status_task_routes_help'), I18n::rawMsg('fluid_backend_status_rebuild'))
+                . $task('search', 'fa-magnifying-glass', I18n::rawMsg('fluid_backend_status_task_search'), I18n::rawMsg('fluid_backend_status_task_search_help'), I18n::rawMsg('fluid_backend_status_rebuild'))
+                . $task('proxy', 'fa-map-location-dot', I18n::rawMsg('fluid_backend_status_task_proxy'), I18n::rawMsg('fluid_backend_status_task_proxy_help', self::size(Path::addonCache('fluid', 'proxy'))), I18n::rawMsg('fluid_backend_status_task_proxy_button'))
                 . '</div>'),
         )->render();
 
@@ -123,34 +124,34 @@ final class StatusPage
             return '';
         }
         if (!CsrfToken::factory(self::CSRF)->isValid()) {
-            return Message::error('Sitzung abgelaufen – bitte noch einmal.');
+            return Message::error(I18n::msg('fluid_backend_csrf_expired'));
         }
 
         return match ($do) {
             'routes' => (static function () {
                 Routes::rebuild();
 
-                return Message::success('Adressen neu aufgebaut.');
+                return Message::success(I18n::msg('fluid_backend_status_routes_rebuilt'));
             })(),
-            'search' => Message::success(Search::rebuild() . ' Seiten im Suchindex.'),
+            'search' => Message::success(I18n::msg('fluid_backend_status_search_rebuilt', Search::rebuild())),
             'mailtest' => (static function () {
                 $to = trim(Request::post('mail_to', 'string', ''));
                 if (!filter_var($to, FILTER_VALIDATE_EMAIL)) {
-                    return Message::error('Bitte eine gültige E-Mail-Adresse angeben.');
+                    return Message::error(I18n::msg('fluid_backend_status_mail_invalid'));
                 }
                 $err = Mail::test($to);
 
-                return '' === $err ? Message::success('Testmail an ' . escape($to) . ' gesendet.') : Message::error('Testmail nicht gesendet: ' . escape($err));
+                return '' === $err ? Message::success(I18n::msg('fluid_backend_status_mail_sent', $to)) : Message::error(I18n::msg('fluid_backend_status_mail_not_sent', $err));
             })(),
             'resend' => (static function () {
                 $err = Mail::resend(Request::post('mail_file', 'string', ''));
 
-                return '' === $err ? Message::success('Mail erneut gesendet.') : Message::error('Nicht gesendet: ' . escape($err));
+                return '' === $err ? Message::success(I18n::msg('fluid_backend_status_mail_resent')) : Message::error(I18n::msg('fluid_backend_status_mail_resend_failed', $err));
             })(),
             'proxy' => (static function () {
                 Dir::delete(Path::addonCache('fluid', 'proxy'));
 
-                return Message::success('Karten-Cache geleert.');
+                return Message::success(I18n::msg('fluid_backend_status_proxy_cleared'));
             })(),
             default => '',
         };
@@ -165,11 +166,13 @@ final class StatusPage
     {
         $keep = trim((string) Settings::get('mail_keep_days', ''));
         $facts = [
-            'Versand' => '' !== $mail['error'] ? '<span class="rex-u-text-danger">' . escape($mail['error']) . '</span>' : '<code>' . escape($mail['transport']) . '</code>',
-            'Absender' => '' !== $mail['from'] ? escape($mail['from']) : '<span class="rex-u-text-warning">REX_MAILER_FROM fehlt – Mails ohne eigenen Absender scheitern</span>',
-            'Umleitung' => $mail['detour'] ? 'alle Mails an <strong>' . escape(implode(', ', $mail['detour'])) . '</strong>' : 'aus – Mails gehen an die echten Empfänger',
-            'Protokoll' => escape($mail['log']) . ' <span class="rex-u-text-muted">(REX_MAILER_LOG: none, errors, all)</span>',
-            'Archiv' => $mail['archive'] ? 'an – Aufbewahrung ' . ('' === $keep ? Mail::KEEP_DAYS . ' Tage (Standard)' : ('0' === $keep ? 'unbegrenzt' : (int) $keep . ' Tage')) . ', Cronjob „fluid_mail_archive_purge“' : 'aus <span class="rex-u-text-muted">(REX_MAILER_ARCHIVE=1 bewahrt Mails als .eml auf, nicht gesendete lassen sich dann erneut senden)</span>',
+            I18n::rawMsg('fluid_backend_mail_transport') => '' !== $mail['error'] ? '<span class="rex-u-text-danger">' . escape($mail['error']) . '</span>' : '<code>' . escape($mail['transport']) . '</code>',
+            I18n::rawMsg('fluid_backend_mail_from') => '' !== $mail['from'] ? escape($mail['from']) : '<span class="rex-u-text-warning">' . I18n::msg('fluid_backend_mail_from_missing') . '</span>',
+            I18n::rawMsg('fluid_backend_mail_detour') => $mail['detour'] ? I18n::rawMsg('fluid_backend_mail_detour_on', escape(implode(', ', $mail['detour']))) : I18n::msg('fluid_backend_mail_detour_off'),
+            I18n::rawMsg('fluid_backend_mail_log') => escape($mail['log']) . ' <span class="rex-u-text-muted">(REX_MAILER_LOG: none, errors, all)</span>',
+            I18n::rawMsg('fluid_backend_mail_archive') => $mail['archive']
+                ? I18n::msg('fluid_backend_mail_archive_on', '' === $keep ? I18n::rawMsg('fluid_backend_mail_keep_default', Mail::KEEP_DAYS) : ('0' === $keep ? I18n::rawMsg('fluid_backend_mail_keep_unlimited') : I18n::rawMsg('fluid_backend_mail_keep_days', (int) $keep)))
+                : I18n::msg('fluid_backend_mail_archive_off') . ' <span class="rex-u-text-muted">(' . I18n::msg('fluid_backend_mail_archive_off_note') . ')</span>',
         ];
         $body = '<dl class="fluid-status-facts">';
         foreach ($facts as $k => $v) {
@@ -179,31 +182,34 @@ final class StatusPage
 
         $me = (string) (Core::getUser()->email ?? '');
         $body .= '<form method="post" class="fluid-status-mailtest">' . $csrf
-            . '<label class="rex-field-label" for="fluid-mail-to">Testmail senden an</label>'
+            . '<label class="rex-field-label" for="fluid-mail-to">' . I18n::msg('fluid_backend_mail_test_to') . '</label>'
             . '<div class="rex-input-group"><input id="fluid-mail-to" class="rex-input" type="email" name="mail_to" required value="' . escape($me) . '" placeholder="name@example.org">'
-            . '<span class="rex-input-group-actions"><button class="rex-button" data-variant="field" name="fluid_do" value="mailtest"><i class="rex-icon fa-solid fa-paper-plane" aria-hidden="true"></i> Senden</button></span></div></form>';
+            . '<span class="rex-input-group-actions"><button class="rex-button" data-variant="field" name="fluid_do" value="mailtest"><i class="rex-icon fa-solid fa-paper-plane" aria-hidden="true"></i> ' . I18n::msg('fluid_backend_mail_send') . '</button></span></div></form>';
 
-        $table = static function (array $items, string $last, ?Closure $action = null): string {
-            $h = '<table class="rex-table" data-density="compact" data-hover><thead><tr><th class="rex-table-date">Zeit</th><th>An</th><th>Betreff</th><th>' . $last . '</th></tr></thead><tbody>';
+        $time = I18n::msg('fluid_backend_mail_time');
+        $to = I18n::msg('fluid_backend_mail_to');
+        $subject = I18n::msg('fluid_backend_mail_subject');
+        $table = static function (array $items, string $last, ?Closure $action = null) use ($time, $to, $subject): string {
+            $h = '<table class="rex-table" data-density="compact" data-hover><thead><tr><th class="rex-table-date">' . $time . '</th><th>' . $to . '</th><th>' . $subject . '</th><th>' . $last . '</th></tr></thead><tbody>';
             foreach ($items as $m) {
-                $h .= '<tr><td class="rex-table-date rex-u-nowrap" data-title="Zeit">' . escape(date('d.m.Y H:i', $m['time'])) . '</td>'
-                    . '<td data-title="An">' . escape($m['to']) . '</td><td data-title="Betreff">' . escape($m['subject']) . '</td>'
+                $h .= '<tr><td class="rex-table-date rex-u-nowrap" data-title="' . $time . '">' . escape(date('d.m.Y H:i', $m['time'])) . '</td>'
+                    . '<td data-title="' . $to . '">' . escape($m['to']) . '</td><td data-title="' . $subject . '">' . escape($m['subject']) . '</td>'
                     . '<td data-title="' . $last . '">' . ($action ? $action($m) : '<span class="rex-u-text-danger rex-u-small">' . escape($m['error']) . '</span>') . '</td></tr>';
             }
 
             return $h . '</tbody></table>';
         };
         if ($mail['errors']) {
-            $body .= '<h3 class="fluid-status-sub">Letzte Fehler</h3>' . $table($mail['errors'], 'Fehler');
+            $body .= '<h3 class="fluid-status-sub">' . I18n::msg('fluid_backend_mail_last_errors') . '</h3>' . $table($mail['errors'], I18n::msg('fluid_backend_mail_error'));
         }
         $failed = Mail::failed();
         if ($failed) {
-            $body .= '<h3 class="fluid-status-sub">Nicht gesendet (Archiv)</h3><p class="rex-field-note">„Erneut senden“ geht an die ursprünglichen Empfänger, auch Bcc, sofern der Core sie im Archiv vermerkt (X-Envelope-To); bei älteren Mails an An und Kopie.</p>'
-                . $table($failed, 'Aktion', static fn (array $m) => '<form method="post">' . $csrf . '<input type="hidden" name="mail_file" value="' . escape($m['file']) . '">'
-                    . '<button class="rex-button" data-size="xs" name="fluid_do" value="resend">Erneut senden</button></form>');
+            $body .= '<h3 class="fluid-status-sub">' . I18n::msg('fluid_backend_mail_failed') . '</h3><p class="rex-field-note">' . I18n::msg('fluid_backend_mail_failed_note') . '</p>'
+                . $table($failed, I18n::msg('fluid_backend_mail_action'), static fn (array $m) => '<form method="post">' . $csrf . '<input type="hidden" name="mail_file" value="' . escape($m['file']) . '">'
+                    . '<button class="rex-button" data-size="xs" name="fluid_do" value="resend">' . I18n::msg('fluid_backend_mail_resend') . '</button></form>');
         }
 
-        return (string) new Section(title: 'E-Mail', body: Html::raw($body))->render();
+        return (string) new Section(title: I18n::rawMsg('fluid_backend_mail_section'), body: Html::raw($body))->render();
     }
 
     /** Icon per state (ok, warn, info) */

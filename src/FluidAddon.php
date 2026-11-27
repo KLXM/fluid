@@ -34,6 +34,7 @@ use Redaxo\Core\ExtensionPoint\ExtensionPoint;
 use Redaxo\Core\Filesystem\Url;
 use Redaxo\Core\Http\Request;
 use Redaxo\Core\MediaPool\MediaPool;
+use Redaxo\Core\Translation\I18n;
 use Redaxo\Core\View\Asset;
 
 final class FluidAddon extends Addon
@@ -121,9 +122,9 @@ final class FluidAddon extends Addon
         $main = new MainPage('addons', 'fluid', 'fluid');
         $main->setIcon('rex-icon fa-pen-to-square');
         $main->setRequiredPermissions('admin');
-        $main->addSubpage(new Page('status', 'Status'));
-        $main->addSubpage(new Page('mcp', 'MCP'));
-        $main->addSubpage(new Page('help', 'Hilfe'));
+        $main->addSubpage(new Page('status', I18n::msg('fluid_backend_page_status')));
+        $main->addSubpage(new Page('mcp', I18n::msg('fluid_backend_page_mcp')));
+        $main->addSubpage(new Page('help', I18n::msg('fluid_backend_page_help')));
         if (!Core::getUser()?->admin) {
             $main->setHidden();
         }
@@ -184,7 +185,7 @@ final class FluidAddon extends Addon
                 $url = Url::article($article->id, $article->languageId, [Editing::PARAM => 1]);
 
                 return (string) $ep->subject . Links::json($article->languageId) . '<p class="blocks-frontend-link"><a class="rex-button" data-variant="primary" href="' . $url . '" target="_blank" rel="noopener">'
-                    . '<i class="rex-icon fa-solid fa-pen-to-square" aria-hidden="true"></i> Auf der Website bearbeiten</a></p>';
+                    . '<i class="rex-icon fa-solid fa-pen-to-square" aria-hidden="true"></i> ' . I18n::msg('fluid_backend_edit_on_website') . '</a></p>';
             });
         }
 

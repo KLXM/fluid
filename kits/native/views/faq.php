@@ -1,6 +1,7 @@
 <?php
 
 use Klxm\Fluid\Block;
+use Redaxo\Core\Translation\I18n;
 
 /**
  * Questions & answers in the kit „NativeCSS“: native details/summary styled as .ncss-disclosure (without JavaScript;
@@ -18,6 +19,6 @@ $v = 'stacked' === $b->variant() ? 'stacked' : 'split';
       <div class="prose nv-faq__a"<?= $b->edit("items.$i.a", 'rich') ?>><?= rich($it['a']) ?></div>
     </details>
     <?php endforeach ?>
-    <?php if (!$d['items'] && is_editing()): ?><p class="empty-hint">Noch keine Fragen – in der Seitenleiste hinzufügen.</p><?php endif ?>
+    <?php if (!$d['items'] && is_editing()): ?><p class="empty-hint"><?= I18n::msg('fluid_kit_empty_faq') ?></p><?php endif ?>
   </div>
 </div>

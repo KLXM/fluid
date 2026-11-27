@@ -10,48 +10,49 @@ use Klxm\Fluid\Field\Textarea;
 use Klxm\Fluid\Kit\Fluid\FluidBlock;
 use Redaxo\Core\Content\AsModule;
 use Redaxo\Core\MediaPool\Media;
+use Redaxo\Core\Translation\Translatable;
 
-#[AsModule('fluid.compare', 'Vorher/Nachher')]
+#[AsModule('fluid.compare', new Translatable('fluid_block_compare'))]
 #[AsBlock(
     icon: 'square-half',
-    group: 'Medien',
-    help: 'Zwei Bilder übereinander, ein Regler zeigt mehr vom einen oder anderen – für Umbau, Renovierung, Restaurierung, Bildbearbeitung. Beide Bilder im selben Ausschnitt aufnehmen. Ohne JavaScript stehen sie nebeneinander.',
+    group: new Translatable('fluid_block_group_media'),
+    help: new Translatable('fluid_block_compare_help'),
     nestable: true,
 )]
 final class Compare extends FluidBlock
 {
     #[Text(
-        'Dachzeile (optional)',
+        new Translatable('fluid_field_eyebrow'),
         maxLength: 60,
         width: 'half',
     )]
     public string $eyebrow = '';
 
     #[Text(
-        'Überschrift',
+        new Translatable('fluid_field_title'),
         maxLength: 110,
         width: 'half',
     )]
     public string $title = '';
 
     #[Textarea(
-        'Einleitung (optional)',
+        new Translatable('fluid_field_intro'),
         maxLength: 400,
         rows: 2,
     )]
     public string $intro = '';
 
     #[MediaPicker(
-        'Bild vorher',
+        new Translatable('fluid_block_compare_before'),
         required: true,
         width: 'half',
         preview: true,
-        note: 'Beide Bilder brauchen einen Alternativtext im Medienpool, der den Zustand beschreibt, z. B. „Küche vor dem Umbau: alte Fliesen, dunkle Schränke“. Fehlt er, zeigt der Block beim Bearbeiten einen Hinweis.',
+        note: new Translatable('fluid_block_compare_before_help'),
     )]
     public ?Media $before = null;
 
     #[MediaPicker(
-        'Bild nachher',
+        new Translatable('fluid_block_compare_after'),
         required: true,
         width: 'half',
         preview: true,
@@ -59,31 +60,31 @@ final class Compare extends FluidBlock
     public ?Media $after = null;
 
     #[Text(
-        'Beschriftung vorher',
+        new Translatable('fluid_block_compare_label_before'),
         maxLength: 24,
         width: 'half',
-        placeholder: 'Vorher',
+        placeholder: new Translatable('fluid_block_compare_label_before_placeholder'),
     )]
     public string $labelBefore = '';
 
     #[Text(
-        'Beschriftung nachher',
+        new Translatable('fluid_block_compare_label_after'),
         maxLength: 24,
         width: 'half',
-        placeholder: 'Nachher',
+        placeholder: new Translatable('fluid_block_compare_label_after_placeholder'),
     )]
     public string $labelAfter = '';
 
     #[Choice(
-        'Bildformat',
+        new Translatable('fluid_field_ratio'),
         required: true,
-        choices: self::RATIOS,
+        choices: self::ratios(...),
         width: 'half',
     )]
     public string $ratio = '16:9';
 
     #[Text(
-        'Bildunterschrift (optional)',
+        new Translatable('fluid_field_caption_optional'),
         maxLength: 200,
     )]
     public string $caption = '';

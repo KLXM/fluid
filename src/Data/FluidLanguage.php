@@ -25,11 +25,11 @@ final class FluidLanguage extends Choice
     protected function init(): void
     {
         parent::init();
-        $this->label('Sprache');
+        $this->label('translate:fluid_data_language');
         $this->default('');
         $this->filterable();   // list search in the backend: filter by language
         $this->options(static function (): array {
-            $out = ['' => 'Alle Sprachen'];
+            $out = ['' => 'translate:fluid_data_all_languages'];
             foreach (Language::getAll() as $l) {
                 $out[$l->code] = $l->name;
             }

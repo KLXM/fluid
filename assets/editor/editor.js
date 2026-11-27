@@ -16,7 +16,8 @@
   // Texts of the interface in the editor's language (lang files of fluid, keys fluid_js_*): t('key', arg0, arg1 …)
   const t = (key, ...args) => String(cfg.t?.[key] ?? key).replace(/\{(\d+)\}/g, (_, i) => String(args[+i] ?? ''));
   // TipTap speaks the editor's language too, not the page's
-  document.documentElement.dataset.rexTiptapLang = String(cfg.locale || 'de').slice(0, 2);
+  const lang = String(cfg.locale || 'de').slice(0, 2);   // for dates and numbers too
+  document.documentElement.dataset.rexTiptapLang = lang;
   // Action permissions of the core (roles → options); allowed if not specified
   const may = (k) => cfg.can?.[k] !== false;
   const unamp = (u) => String(u).replace(/&amp;/g, '&');
@@ -42,7 +43,7 @@
   async function beforeSave(action) {
     const waits = [];
     document.dispatchEvent(new CustomEvent('cms:before-save', { detail: { action, waitUntil: (p) => waits.push(p) } }));
-    if ((await Promise.all(waits)).some((ok) => ok === false)) throw new Error('Abgebrochen.');
+    if ((await Promise.all(waits)).some((ok) => ok === false)) throw new Error(t('cancelled'));
   }
 
   // Rules of InlineStyle from API responses (the page has them in its head only for the first request): with the page's nonce
@@ -72,10 +73,10 @@
     try {
       res = await fetch(unamp(cfg.api).replace('__action__', action), { method: 'POST', body: fd, credentials: 'same-origin' });
     } catch {
-      throw new Error('Keine Verbindung zum Server.');
+      throw new Error(t('no_connection'));
     }
-    const json = await res.json().catch(() => ({ ok: false, error: `Ungültige Antwort (${res.status}).` }));
-    if (!json.ok) throw new Error(json.error || 'Unbekannter Fehler.');
+    const json = await res.json().catch(() => ({ ok: false, error: t('invalid_response', res.status) }));
+    if (!json.ok) throw new Error(json.error || t('unknown_error'));
     if (json.css) addCss(json.css);
     document.dispatchEvent(new CustomEvent('fluid:api-done', { detail: { action, fd, json } }));
     // Server requests a reload (e.g. first block of a record)
@@ -103,210 +104,214 @@
     return t.content.firstElementChild;
   };
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  // Translated text, escaped for HTML: et('key', …) = esc(t('key', …))
+  const et = (key, ...args) => esc(t(key, ...args));
+  // Same with HTML fragments as arguments (trusted markup, e.g. '<b>…</b>'): the text is escaped, the fragments are inserted as they are
+  const eth = (key, ...html) => esc(t(key, ...html.map((_, i) => '\u0001' + i + '\u0002'))).replace(/\u0001(\d+)\u0002/g, (_, i) => html[+i]);
 
   root.append(h(`<link rel="stylesheet" href="${esc(unamp(cfg.css))}">`));
   // text editor TipTap (klxm/tiptap) also inside this shadow root: its styles here, its fields upgraded by tiptapUp()
   if (cfg.tiptapCss) root.append(h(`<link rel="stylesheet" href="${esc(unamp(cfg.tiptapCss))}">`));
   const bar = h(`
-    <header class="bar" role="toolbar" aria-label="Bearbeiten">
-      ${cfg.guest ? '<span class="brand">R</span>' : `<a class="brand" href="${esc(unamp(cfg.backendUrl))}" title="Im Backend öffnen">R</a>`}
+    <header class="bar" role="toolbar" aria-label="${et('edit')}">
+      ${cfg.guest ? '<span class="brand">R</span>' : `<a class="brand" href="${esc(unamp(cfg.backendUrl))}" title="${et('open_backend')}">R</a>`}
       <div class="title">
-        <span class="kind">Seite</span>
+        <span class="kind">${et('page')}</span>
         <strong class="name">${esc(cfg.article.name)}</strong>
         <button type="button" class="chip" data-chip aria-live="polite"></button>
         ${cfg.presence ? `<span class="cms-presence" role="status"${cfg.presence.here} hidden></span>` : ''}
         ${cfg.notice ? `<span class="gnote" role="note"><span class="gnote__tag">${esc(cfg.notice.tag || '')}</span><span class="gnote__text">${esc(cfg.notice.text || '')}</span>${(cfg.notice.buttons || []).map((b) => `<button type="button" class="gnote__btn" data-notice-event="${esc(b.event)}"${b.hidden ? ' hidden' : ''}>${esc(b.label)}</button>`).join('')}</span>` : ''}
       </div>
-      <nav class="modes" aria-label="Modus">
-        <a href="${esc(unamp(cfg.viewUrl))}" data-mode="view"${cfg.editing ? '' : ' aria-current="page"'}>Ansehen</a>
-        <a href="${esc(unamp(cfg.editUrl))}" data-mode="edit"${cfg.editing ? ' aria-current="page"' : ''}>Bearbeiten</a>
+      <nav class="modes" aria-label="${et('mode')}">
+        <a href="${esc(unamp(cfg.viewUrl))}" data-mode="view"${cfg.editing ? '' : ' aria-current="page"'}>${et('view')}</a>
+        <a href="${esc(unamp(cfg.editUrl))}" data-mode="edit"${cfg.editing ? ' aria-current="page"' : ''}>${et('edit')}</a>
       </nav>
       ${cfg.languages ? `
-      <nav class="modes modes--lang" aria-label="Sprache">
-        ${cfg.languages.map((l) => `<a href="${esc(unamp(l.href))}" hreflang="${esc(l.code)}"${l.current ? ' aria-current="page"' : ''} title="${esc(l.name)}${l.online ? '' : ' (offline)'}${l.empty ? ' – noch ohne Inhalt' : ''}" class="${l.online ? '' : 'is-off'}${l.empty ? ' is-empty' : ''}">${esc(l.code.toUpperCase())}</a>`).join('')}
+      <nav class="modes modes--lang" aria-label="${et('language')}">
+        ${cfg.languages.map((l) => `<a href="${esc(unamp(l.href))}" hreflang="${esc(l.code)}"${l.current ? ' aria-current="page"' : ''} title="${esc(l.name)}${l.online ? '' : ' (offline)'}${l.empty ? ' – ' + et('lang_empty') : ''}" class="${l.online ? '' : 'is-off'}${l.empty ? ' is-empty' : ''}">${esc(l.code.toUpperCase())}</a>`).join('')}
       </nav>` : ''}
       ${!cfg.editing && cfg.state.workVersion && !cfg.guest ? `
-      <nav class="modes modes--version" aria-label="Fassung ansehen">
-        <a href="${esc(unamp(cfg.viewUrl))}"${cfg.viewingDraft ? '' : ' aria-current="page"'} title="Was Besucher sehen">Live</a>
-        <a href="${esc(unamp(cfg.draftUrl))}"${cfg.viewingDraft ? ' aria-current="page"' : ''} title="Arbeitsversion – noch nicht veröffentlicht">Entwurf</a>
+      <nav class="modes modes--version" aria-label="${et('view_version')}">
+        <a href="${esc(unamp(cfg.viewUrl))}"${cfg.viewingDraft ? '' : ' aria-current="page"'} title="${et('live_hint')}">${et('live')}</a>
+        <a href="${esc(unamp(cfg.draftUrl))}"${cfg.viewingDraft ? ' aria-current="page"' : ''} title="${et('draft_hint')}">${et('draft')}</a>
       </nav>` : ''}
       <div class="actions">
         ${cfg.editing ? `
-        <button type="button" class="btn" data-save aria-disabled="true">Speichern</button>
-        <button type="button" class="btn btn--primary" data-publish><span class="lg">Veröffentlichen</span><span class="sm" aria-hidden="true">Live ↑</span></button>` : ''}
-        ${cfg.design ? '<button type="button" class="btn" data-design-open aria-expanded="false">Design</button>' : ''}
+        <button type="button" class="btn" data-save aria-disabled="true">${et('save')}</button>
+        <button type="button" class="btn btn--primary" data-publish><span class="lg">${et('publish')}</span><span class="sm" aria-hidden="true">${et('publish_short')}</span></button>` : ''}
+        ${cfg.design ? `<button type="button" class="btn" data-design-open aria-expanded="false">${et('design')}</button>` : ''}
         <div class="more">
-          <button type="button" class="btn btn--icon" data-more aria-haspopup="menu" aria-expanded="false" title="Weitere">⋯</button>
+          <button type="button" class="btn btn--icon" data-more aria-haspopup="menu" aria-expanded="false" title="${et('more')}">⋯</button>
           <div class="menu" role="menu" hidden>
-            ${cfg.editing && cfg.state.workVersion && !cfg.guest ? '<button type="button" role="menuitem" class="menu-danger" data-discard>Entwurf verwerfen …</button><hr class="menu-sep" role="separator">' : ''}
-            ${cfg.design ? '<button type="button" role="menuitem" class="menu-sm" data-design-menu>Design …</button>' : ''}
-            ${cfg.guest ? '' : '<button type="button" role="menuitem" data-tree-open>Seiten …</button>'}
-            ${cfg.inbox ? `<button type="button" role="menuitem" data-inbox-open>Anfragen …${cfg.inbox.new ? ` <span class="badge">${cfg.inbox.new}</span>` : ''}</button>` : ''}
-            ${cfg.guest ? '' : '<button type="button" role="menuitem" data-history-open>Verlauf & Entwürfe …</button>'}
-            ${cfg.glossary ? '<button type="button" role="menuitem" data-gloss-open>Glossar … <span class="menu-hint">Alt+G</span></button>' : ''}
-            ${cfg.seo ? '<button type="button" role="menuitem" data-seo-open>SEO &amp; KI …</button>' : ''}
-            <button type="button" role="menuitem" data-compact>Kompaktansicht</button>
-            ${may(cfg.article.menu ? 'editCategory' : 'editArticle') ? '<button type="button" role="menuitem" data-page-settings>Seiteneinstellungen …</button>' : ''}
-            ${cfg.site ? '<button type="button" role="menuitem" data-site-open>Website …</button>' : ''}
-            ${cfg.domains ? `<hr class="menu-sep" role="separator"><span class="menu-label">Domain wechseln</span>${cfg.domains.map((d) => `<a role="menuitem" href="${esc(unamp(d.url))}" title="${esc(d.host)}${d.loggedIn ? ' – dort angemeldet' : ' – meldet Sie dort an'}">${esc(d.label)} <span class="menu-hint">${d.loggedIn ? '●' : '○'} ${esc(d.host)}</span></a>`).join('')}<hr class="menu-sep" role="separator">` : ''}
-            ${may('addArticle') || may('addCategory') ? '<button type="button" role="menuitem" data-page-add>Neue Seite …</button>' : ''}
-            ${may('addArticle') ? '<button type="button" role="menuitem" data-template-save>Als Vorlage speichern …</button>' : ''}
-            ${may('addArticle') ? '<button type="button" role="menuitem" data-templates-open>Vorlagen …</button>' : ''}
-            ${cfg.guest ? '' : `<a role="menuitem" href="${esc(unamp(cfg.backendUrl))}">Im Backend öffnen</a>`}
-            <a role="menuitem" href="${esc(unamp(cfg.viewUrl))}" target="_blank" rel="noopener">Live-Ansicht (neuer Tab)</a>
+            ${cfg.editing && cfg.state.workVersion && !cfg.guest ? `<button type="button" role="menuitem" class="menu-danger" data-discard>${et('discard_draft_menu')}</button><hr class="menu-sep" role="separator">` : ''}
+            ${cfg.design ? `<button type="button" role="menuitem" class="menu-sm" data-design-menu>${et('design_menu')}</button>` : ''}
+            ${cfg.guest ? '' : `<button type="button" role="menuitem" data-tree-open>${et('pages_menu')}</button>`}
+            ${cfg.inbox ? `<button type="button" role="menuitem" data-inbox-open>${et('inbox_menu')}${cfg.inbox.new ? ` <span class="badge">${cfg.inbox.new}</span>` : ''}</button>` : ''}
+            ${cfg.guest ? '' : `<button type="button" role="menuitem" data-history-open>${et('history_menu')}</button>`}
+            ${cfg.glossary ? `<button type="button" role="menuitem" data-gloss-open>${et('glossary_menu')} <span class="menu-hint">Alt+G</span></button>` : ''}
+            ${cfg.seo ? `<button type="button" role="menuitem" data-seo-open>${et('seo_menu')}</button>` : ''}
+            <button type="button" role="menuitem" data-compact>${et('compact')}</button>
+            ${may(cfg.article.menu ? 'editCategory' : 'editArticle') ? `<button type="button" role="menuitem" data-page-settings>${et('page_settings_menu')}</button>` : ''}
+            ${cfg.site ? `<button type="button" role="menuitem" data-site-open>${et('site_menu')}</button>` : ''}
+            ${cfg.domains ? `<hr class="menu-sep" role="separator"><span class="menu-label">${et('switch_domain')}</span>${cfg.domains.map((d) => `<a role="menuitem" href="${esc(unamp(d.url))}" title="${esc(d.host)} – ${d.loggedIn ? et('domain_logged_in') : et('domain_login')}">${esc(d.label)} <span class="menu-hint">${d.loggedIn ? '●' : '○'} ${esc(d.host)}</span></a>`).join('')}<hr class="menu-sep" role="separator">` : ''}
+            ${may('addArticle') || may('addCategory') ? `<button type="button" role="menuitem" data-page-add>${et('new_page_menu')}</button>` : ''}
+            ${may('addArticle') ? `<button type="button" role="menuitem" data-template-save>${et('save_as_template_menu')}</button>` : ''}
+            ${may('addArticle') ? `<button type="button" role="menuitem" data-templates-open>${et('templates_menu')}</button>` : ''}
+            ${cfg.guest ? '' : `<a role="menuitem" href="${esc(unamp(cfg.backendUrl))}">${et('open_backend')}</a>`}
+            <a role="menuitem" href="${esc(unamp(cfg.viewUrl))}" target="_blank" rel="noopener">${et('live_new_tab')}</a>
             ${(cfg.notice?.buttons || []).map((b) => `<button type="button" role="menuitem" data-notice-event="${esc(b.event)}">${esc(b.label)} …</button>`).join('')}
-            ${cfg.logout ? `<hr class="menu-sep" role="separator"><button type="button" role="menuitem" data-logout>Abmelden <span class="menu-hint">${esc(cfg.user)}</span></button>` : ''}
+            ${cfg.logout ? `<hr class="menu-sep" role="separator"><button type="button" role="menuitem" data-logout>${et('logout')} <span class="menu-hint">${esc(cfg.user)}</span></button>` : ''}
           </div>
         </div>
       </div>
     </header>`);
   const blockbar = h(`
     <div class="bb" hidden>
-      <button type="button" class="bb__parent" data-bb-parent hidden title="Das Layout auswählen, in dessen Spalte dieser Block steht">Layout ›</button>
-      <span class="bb__label" data-bb-label draggable="true" title="Ziehen zum Verschieben"></span>
-      <span class="bb__lock" data-bb-lock hidden><svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true" focusable="false"><path fill="currentColor" d="M5 7V5a3 3 0 0 1 6 0v2h.5A1.5 1.5 0 0 1 13 8.5v5a1.5 1.5 0 0 1-1.5 1.5h-7A1.5 1.5 0 0 1 3 13.5v-5A1.5 1.5 0 0 1 4.5 7H5Zm1.5 0h3V5a1.5 1.5 0 0 0-3 0v2Z"/></svg><span data-bb-lock-text>Gesperrt</span></span>
-      <button type="button" data-bb-edit class="bb__main">Bearbeiten</button>
-      <button type="button" data-bb-up title="Nach oben" aria-label="Nach oben">↑</button>
-      <button type="button" data-bb-down title="Nach unten" aria-label="Nach unten">↓</button>
-      <button type="button" data-bb-status title="Online/Offline"></button>
-      <button type="button" data-bb-more title="Weitere Aktionen" aria-label="Weitere Aktionen" aria-haspopup="menu" aria-expanded="false">⋯</button>
-      <button type="button" data-bb-delete title="Löschen" aria-label="Löschen" class="bb__danger">✕</button>
+      <button type="button" class="bb__parent" data-bb-parent hidden title="${et('bb_parent_hint')}">${et('bb_parent')} ›</button>
+      <span class="bb__label" data-bb-label draggable="true" title="${et('drag_move')}"></span>
+      <span class="bb__lock" data-bb-lock hidden><svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true" focusable="false"><path fill="currentColor" d="M5 7V5a3 3 0 0 1 6 0v2h.5A1.5 1.5 0 0 1 13 8.5v5a1.5 1.5 0 0 1-1.5 1.5h-7A1.5 1.5 0 0 1 3 13.5v-5A1.5 1.5 0 0 1 4.5 7H5Zm1.5 0h3V5a1.5 1.5 0 0 0-3 0v2Z"/></svg><span data-bb-lock-text>${et('locked')}</span></span>
+      <button type="button" data-bb-edit class="bb__main">${et('edit')}</button>
+      <button type="button" data-bb-up title="${et('move_up')}" aria-label="${et('move_up')}">↑</button>
+      <button type="button" data-bb-down title="${et('move_down')}" aria-label="${et('move_down')}">↓</button>
+      <button type="button" data-bb-status title="${et('online')}/${et('offline')}"></button>
+      <button type="button" data-bb-more title="${et('more_actions')}" aria-label="${et('more_actions')}" aria-haspopup="menu" aria-expanded="false">⋯</button>
+      <button type="button" data-bb-delete title="${et('delete')}" aria-label="${et('delete')}" class="bb__danger">✕</button>
       <div class="bb__menu" role="menu" hidden>
-        <button type="button" role="menuitem" data-bb-op="duplicate">Verdoppeln</button>
-        <button type="button" role="menuitem" data-bb-op="copy">Kopieren</button>
-        <button type="button" role="menuitem" data-bb-op="cut">Ausschneiden</button>
-        <button type="button" role="menuitem" data-bb-op="paste">Einfügen darunter</button>
-        <button type="button" role="menuitem" data-bb-op="left" data-col-only>← In die linke Spalte</button>
-        <button type="button" role="menuitem" data-bb-op="right" data-col-only>→ In die rechte Spalte</button>
-        <button type="button" role="menuitem" data-bb-op="collapse">Einklappen</button>
+        <button type="button" role="menuitem" data-bb-op="duplicate">${et('duplicate')}</button>
+        <button type="button" role="menuitem" data-bb-op="copy">${et('copy')}</button>
+        <button type="button" role="menuitem" data-bb-op="cut">${et('cut')}</button>
+        <button type="button" role="menuitem" data-bb-op="paste">${et('paste_below')}</button>
+        <button type="button" role="menuitem" data-bb-op="left" data-col-only>← ${et('to_left_col')}</button>
+        <button type="button" role="menuitem" data-bb-op="right" data-col-only>→ ${et('to_right_col')}</button>
+        <button type="button" role="menuitem" data-bb-op="collapse">${et('collapse')}</button>
       </div>
     </div>`);
-  const addbtn = h('<button type="button" class="addbtn" hidden title="Block einfügen" aria-label="Block einfügen">+</button>');
+  const addbtn = h(`<button type="button" class="addbtn" hidden title="${et('insert_block')}" aria-label="${et('insert_block')}">+</button>`);
   const panel = h(`
     <aside class="panel" hidden aria-labelledby="blocks-panel-title">
-      <header class="panel__head"><h2 id="blocks-panel-title" data-panel-title>Block</h2><button type="button" class="btn btn--icon" data-panel-close aria-label="Schließen">✕</button></header>
+      <header class="panel__head"><h2 id="blocks-panel-title" data-panel-title>${et('block')}</h2><button type="button" class="btn btn--icon" data-panel-close aria-label="${et('close')}">✕</button></header>
       <div class="panel__vis" data-panel-vis hidden>
-        <label class="vis-switch"><input type="checkbox" role="switch" data-panel-visible><span class="vis-switch__track" aria-hidden="true"></span><span>Auf der Website sichtbar</span></label>
-        <p class="panel__vis-note" data-panel-vis-note hidden>Ausgeblendet – Besucher sehen diesen Block nicht. Sie sehen ihn nur hier im Bearbeiten-Modus.</p>
+        <label class="vis-switch"><input type="checkbox" role="switch" data-panel-visible><span class="vis-switch__track" aria-hidden="true"></span><span>${et('visible_on_site')}</span></label>
+        <p class="panel__vis-note" data-panel-vis-note hidden>${et('hidden_note')}</p>
       </div>
       <form class="panel__body" data-panel-form novalidate></form>
-      <iframe class="panel__frame" data-panel-frame hidden title="Modul bearbeiten"></iframe>
-      <footer class="panel__foot"><button type="button" class="btn" data-panel-cancel>Abbrechen</button><button type="button" class="btn btn--primary" data-panel-apply>Übernehmen</button></footer>
+      <iframe class="panel__frame" data-panel-frame hidden title="${et('edit_module')}"></iframe>
+      <footer class="panel__foot"><button type="button" class="btn" data-panel-cancel>${et('cancel')}</button><button type="button" class="btn btn--primary" data-panel-apply>${et('apply')}</button></footer>
     </aside>`);
   const picker = h(`
-    <div class="picker" hidden role="dialog" aria-modal="true" aria-label="Block einfügen">
+    <div class="picker" hidden role="dialog" aria-modal="true" aria-label="${et('insert_block')}">
       <div class="picker__box">
-        <header class="picker__head"><input type="search" placeholder="Block suchen …" data-picker-q aria-label="Block suchen"><button type="button" class="btn btn--icon" data-picker-close aria-label="Schließen">✕</button></header>
+        <header class="picker__head"><input type="search" placeholder="${et('search_block_ph')}" data-picker-q aria-label="${et('search_block')}"><button type="button" class="btn btn--icon" data-picker-close aria-label="${et('close')}">✕</button></header>
         <div class="picker__list" role="listbox" data-picker-list></div>
       </div>
     </div>`);
   const dialog = h(`
     <div class="dlg" hidden role="alertdialog" aria-modal="true" aria-labelledby="blocks-dlg-t">
       <div class="dlg__box"><h2 id="blocks-dlg-t" data-dlg-title></h2><p data-dlg-body></p>
-      <div class="dlg__actions"><button type="button" class="btn dlg__alt" data-dlg-alt hidden></button><button type="button" class="btn" data-dlg-cancel>Abbrechen</button><button type="button" class="btn btn--primary" data-dlg-ok>OK</button></div></div>
+      <div class="dlg__actions"><button type="button" class="btn dlg__alt" data-dlg-alt hidden></button><button type="button" class="btn" data-dlg-cancel>${et('cancel')}</button><button type="button" class="btn btn--primary" data-dlg-ok>${et('ok')}</button></div></div>
     </div>`);
   const toast = h('<div class="toast" role="status" aria-live="polite" hidden></div>');
   const dpanel = h(`
     <aside class="panel dpanel" hidden aria-labelledby="fluid-design-title">
-      <header class="panel__head"><h2 id="fluid-design-title">Design</h2><button type="button" class="btn btn--icon" data-design-close aria-label="Schließen">✕</button></header>
+      <header class="panel__head"><h2 id="fluid-design-title">${et('design')}</h2><button type="button" class="btn btn--icon" data-design-close aria-label="${et('close')}">✕</button></header>
       <div class="panel__body" data-design-body></div>
       <footer class="panel__foot">
-        <button type="button" class="btn" data-design-reset title="Standard des Kits">Standard</button>
+        <button type="button" class="btn" data-design-reset title="${et('design_reset_hint')}">${et('design_reset')}</button>
         <span class="dpanel__space"></span>
-        <button type="button" class="btn" data-design-cancel>Abbrechen</button>
-        <button type="button" class="btn btn--primary" data-design-save>Speichern</button>
+        <button type="button" class="btn" data-design-cancel>${et('cancel')}</button>
+        <button type="button" class="btn btn--primary" data-design-save>${et('save')}</button>
       </footer>
     </aside>`);
   const ppanel = h(`
     <aside class="panel ppanel" hidden aria-labelledby="fluid-page-title">
-      <header class="panel__head"><h2 id="fluid-page-title">Seiteneinstellungen</h2><button type="button" class="btn btn--icon" data-page-close aria-label="Schließen">✕</button></header>
+      <header class="panel__head"><h2 id="fluid-page-title">${et('page_settings')}</h2><button type="button" class="btn btn--icon" data-page-close aria-label="${et('close')}">✕</button></header>
       <form class="panel__body" data-page-form novalidate></form>
-      <footer class="panel__foot"><span class="dpanel__space"></span><button type="button" class="btn" data-page-cancel>Abbrechen</button><button type="button" class="btn btn--primary" data-page-save>Speichern</button></footer>
+      <footer class="panel__foot"><span class="dpanel__space"></span><button type="button" class="btn" data-page-cancel>${et('cancel')}</button><button type="button" class="btn btn--primary" data-page-save>${et('save')}</button></footer>
     </aside>`);
   const spanel = h(`
     <aside class="panel spanel" hidden aria-labelledby="fluid-site-title">
-      <header class="panel__head"><h2 id="fluid-site-title">Website</h2><button type="button" class="btn btn--icon" data-site-close aria-label="Schließen">✕</button></header>
-      <nav class="spanel__tabs" role="tablist" aria-label="Bereiche" data-site-tabs></nav>
+      <header class="panel__head"><h2 id="fluid-site-title">${et('site')}</h2><button type="button" class="btn btn--icon" data-site-close aria-label="${et('close')}">✕</button></header>
+      <nav class="spanel__tabs" role="tablist" aria-label="${et('sections')}" data-site-tabs></nav>
       <div class="panel__body" data-site-body></div>
     </aside>`);
   const tpanel = h(`
     <aside class="panel tpanel" hidden aria-labelledby="fluid-tree-title">
-      <header class="panel__head"><h2 id="fluid-tree-title">Seiten</h2><button type="button" class="btn btn--icon" data-tree-close aria-label="Schließen">✕</button></header>
-      <div class="panel__body"><p class="tree__intro"${may('moveArticle') || may('moveCategory') ? '' : ' hidden'}>Ziehen am Griff ⠿ sortiert und verschiebt (auf eine Seite fallen lassen = darunter einordnen, nach links ziehen = eine Ebene höher), ohne Ziehen: ↑ ↓ sortieren, ← eine Ebene höher, → unter die Menüseite darüber. <b>Menüpunkte</b> stehen je Ebene vor Seiten ohne Menüeintrag.</p><ul class="tree" role="tree" data-tree${cfg.presence ? cfg.presence.list : ''}></ul></div>
-      <footer class="panel__foot"><button type="button" class="btn" data-tree-new="0">+ Neue Seite (oberste Ebene)</button></footer>
+      <header class="panel__head"><h2 id="fluid-tree-title">${et('pages')}</h2><button type="button" class="btn btn--icon" data-tree-close aria-label="${et('close')}">✕</button></header>
+      <div class="panel__body"><p class="tree__intro"${may('moveArticle') || may('moveCategory') ? '' : ' hidden'}>${et('tree_intro')} ${eth('tree_intro_order', `<b>${et('tree_intro_menus')}</b>`)}</p><ul class="tree" role="tree" data-tree${cfg.presence ? cfg.presence.list : ''}></ul></div>
+      <footer class="panel__foot"><button type="button" class="btn" data-tree-new="0">+ ${et('new_page_top')}</button></footer>
     </aside>`);
   const tdlg = h(`
     <div class="dlg" hidden role="dialog" aria-modal="true" aria-labelledby="fluid-tpl-t">
       <form class="dlg__box newpage" data-tpl-form novalidate>
-        <h2 id="fluid-tpl-t">Als Vorlage speichern</h2>
-        <p class="newpage__hint">Die Blöcke dieser Seite werden zur Vorlage. Neue Seiten können sie als Ausgangspunkt nutzen. Vorlagen bearbeiten Sie wie normale Seiten (Seiten → „Seitenvorlagen“ ist für Besucher unsichtbar).</p>
-        <label class="newpage__field"><span>Name der Vorlage</span><input type="text" name="name" required maxlength="191" autocomplete="off"></label>
-        <div class="dlg__actions"><button type="button" class="btn" data-tpl-cancel>Abbrechen</button><button type="submit" class="btn btn--primary">Speichern</button></div>
+        <h2 id="fluid-tpl-t">${et('save_as_template')}</h2>
+        <p class="newpage__hint">${et('tpl_save_hint')}</p>
+        <label class="newpage__field"><span>${et('tpl_name')}</span><input type="text" name="name" required maxlength="191" autocomplete="off"></label>
+        <div class="dlg__actions"><button type="button" class="btn" data-tpl-cancel>${et('cancel')}</button><button type="submit" class="btn btn--primary">${et('save')}</button></div>
       </form>
     </div>`);
   // Manage templates: rename, edit, delete
   const mdlg = h(`
     <div class="dlg" hidden role="dialog" aria-modal="true" aria-labelledby="fluid-tpls-t">
       <div class="dlg__box newpage tpls">
-        <h2 id="fluid-tpls-t">Vorlagen</h2>
-        <p class="newpage__hint">Vorlagen sind Seiten in „Seitenvorlagen“ – für Besucher unsichtbar. Seiten, die aus einer Vorlage entstanden sind, behalten ihren Inhalt, auch wenn die Vorlage gelöscht wird.</p>
+        <h2 id="fluid-tpls-t">${et('templates')}</h2>
+        <p class="newpage__hint">${et('tpls_hint')}</p>
         <div data-tpls-body></div>
-        <div class="dlg__actions"><button type="button" class="btn" data-tpls-close>Schließen</button></div>
+        <div class="dlg__actions"><button type="button" class="btn" data-tpls-close>${et('close')}</button></div>
       </div>
     </div>`);
   const hpanel = h(`
     <aside class="panel hpanel" hidden aria-labelledby="fluid-hist-title">
-      <header class="panel__head"><h2 id="fluid-hist-title">Verlauf</h2><button type="button" class="btn btn--icon" data-history-close aria-label="Schließen">✕</button></header>
-      <nav class="spanel__tabs" role="tablist" aria-label="Bereiche">
-        <button type="button" role="tab" data-history-tab="versions" aria-selected="true">Versionen dieser Seite</button>
-        <button type="button" role="tab" data-history-tab="drafts" aria-selected="false">Entwürfe</button>
-        <button type="button" role="tab" data-history-tab="activity" aria-selected="false">Aktivität</button>
+      <header class="panel__head"><h2 id="fluid-hist-title">${et('history')}</h2><button type="button" class="btn btn--icon" data-history-close aria-label="${et('close')}">✕</button></header>
+      <nav class="spanel__tabs" role="tablist" aria-label="${et('sections')}">
+        <button type="button" role="tab" data-history-tab="versions" aria-selected="true">${et('history_versions')}</button>
+        <button type="button" role="tab" data-history-tab="drafts" aria-selected="false">${et('drafts')}</button>
+        <button type="button" role="tab" data-history-tab="activity" aria-selected="false">${et('activity')}</button>
       </nav>
       <div class="panel__body" data-history-body></div>
     </aside>`);
   const ipanel = h(`
     <aside class="panel ipanel" hidden aria-labelledby="fluid-inbox-title">
-      <header class="panel__head"><h2 id="fluid-inbox-title">Anfragen</h2><button type="button" class="btn btn--icon" data-inbox-close aria-label="Schließen">✕</button></header>
-      <nav class="spanel__tabs" role="tablist" aria-label="Filter">
-        <button type="button" role="tab" data-inbox-filter="new" aria-selected="true">Neu</button>
-        <button type="button" role="tab" data-inbox-filter="done" aria-selected="false">Erledigt</button>
-        <button type="button" role="tab" data-inbox-filter="all" aria-selected="false">Alle</button>
+      <header class="panel__head"><h2 id="fluid-inbox-title">${et('inbox')}</h2><button type="button" class="btn btn--icon" data-inbox-close aria-label="${et('close')}">✕</button></header>
+      <nav class="spanel__tabs" role="tablist" aria-label="${et('filter')}">
+        <button type="button" role="tab" data-inbox-filter="new" aria-selected="true">${et('inbox_new')}</button>
+        <button type="button" role="tab" data-inbox-filter="done" aria-selected="false">${et('inbox_done')}</button>
+        <button type="button" role="tab" data-inbox-filter="all" aria-selected="false">${et('inbox_all')}</button>
       </nav>
       <div class="panel__body" data-inbox-body></div>
     </aside>`);
   // „SEO & KI“ (klxm/routes Advice): hints for this page and the whole website
   const qpanel = h(`
     <aside class="panel qpanel" hidden aria-labelledby="fluid-seo-title">
-      <header class="panel__head"><h2 id="fluid-seo-title">SEO &amp; KI</h2><button type="button" class="btn btn--icon" data-seo-close aria-label="Schließen">✕</button></header>
-      <nav class="spanel__tabs" role="tablist" aria-label="Umfang">
-        <button type="button" role="tab" data-seo-mode="page" aria-selected="true">Diese Seite</button>
-        <button type="button" role="tab" data-seo-mode="site" aria-selected="false">Ganze Website</button>
+      <header class="panel__head"><h2 id="fluid-seo-title">${et('seo')}</h2><button type="button" class="btn btn--icon" data-seo-close aria-label="${et('close')}">✕</button></header>
+      <nav class="spanel__tabs" role="tablist" aria-label="${et('scope')}">
+        <button type="button" role="tab" data-seo-mode="page" aria-selected="true">${et('this_page')}</button>
+        <button type="button" role="tab" data-seo-mode="site" aria-selected="false">${et('whole_site')}</button>
       </nav>
       <div class="panel__body" data-seo-body></div>
     </aside>`);
   // Quick glossary (Klxm\Fluid\Glossary\Glossary): search terms, create a term from selected text, „Gibt es schon?“
   const gpanel = h(`
     <aside class="panel gpanel" hidden aria-labelledby="fluid-gloss-title">
-      <header class="panel__head"><h2 id="fluid-gloss-title">Glossar</h2><button type="button" class="btn btn--icon" data-gloss-close aria-label="Schließen">✕</button></header>
-      <nav class="spanel__tabs" role="tablist" aria-label="Glossar">
-        <button type="button" role="tab" id="fluid-gloss-tab-search" aria-controls="fluid-gloss-search" aria-selected="true" data-gloss-tab="search">Suchen</button>
-        <button type="button" role="tab" id="fluid-gloss-tab-new" aria-controls="fluid-gloss-new" aria-selected="false" tabindex="-1" data-gloss-tab="new">Neuer Begriff</button>
+      <header class="panel__head"><h2 id="fluid-gloss-title">${et('glossary')}</h2><button type="button" class="btn btn--icon" data-gloss-close aria-label="${et('close')}">✕</button></header>
+      <nav class="spanel__tabs" role="tablist" aria-label="${et('glossary')}">
+        <button type="button" role="tab" id="fluid-gloss-tab-search" aria-controls="fluid-gloss-search" aria-selected="true" data-gloss-tab="search">${et('search')}</button>
+        <button type="button" role="tab" id="fluid-gloss-tab-new" aria-controls="fluid-gloss-new" aria-selected="false" tabindex="-1" data-gloss-tab="new">${et('gloss_new_term')}</button>
       </nav>
       <div class="panel__body">
         <div role="tabpanel" id="fluid-gloss-search" aria-labelledby="fluid-gloss-tab-search" data-gloss-pane="search">
-          <label class="newpage__field"><span>Begriff suchen</span><input type="search" data-gloss-q autocomplete="off" spellcheck="false"></label>
+          <label class="newpage__field"><span>${et('gloss_search')}</span><input type="search" data-gloss-q autocomplete="off" spellcheck="false"></label>
           <p class="site-intro" role="status" data-gloss-status></p>
           <ul class="site-list" role="list" data-gloss-list></ul>
           <p class="site-intro" data-gloss-manage hidden></p>
         </div>
         <form role="tabpanel" id="fluid-gloss-new" aria-labelledby="fluid-gloss-tab-new" data-gloss-pane="new" data-gloss-form hidden novalidate>
-          <label class="newpage__field"><span>Begriff</span><input type="text" name="term" required maxlength="120" autocomplete="off" data-gloss-term></label>
+          <label class="newpage__field"><span>${et('gloss_term')}</span><input type="text" name="term" required maxlength="120" autocomplete="off" data-gloss-term></label>
           <div class="gloss-dupe" data-gloss-dupe aria-live="polite"></div>
-          <label class="newpage__field"><span>Kurztext (Hinweisfenster)</span><textarea name="short" rows="3" required data-gloss-short></textarea><small data-gloss-count aria-live="polite"></small></label>
-          <label class="newpage__field"><span>Schreibweisen (optional)</span><input type="text" name="variants" maxlength="400" autocomplete="off"><small>Mit Komma getrennt, z. B. Mehrzahl oder Abkürzung.</small></label>
-          <label class="newpage__check"><input type="checkbox" name="all_languages" value="1"> In allen Sprachen</label>
-          <p class="site-intro">Die ausführliche Erklärung (Detailseite) pflegen Sie danach in der Glossar-Tabelle oder direkt auf der Detailseite.</p>
-          <div class="dlg__actions"><button type="submit" class="btn btn--primary">Begriff anlegen</button></div>
+          <label class="newpage__field"><span>${et('gloss_short')}</span><textarea name="short" rows="3" required data-gloss-short></textarea><small data-gloss-count aria-live="polite"></small></label>
+          <label class="newpage__field"><span>${et('gloss_variants')}</span><input type="text" name="variants" maxlength="400" autocomplete="off"><small>${et('gloss_variants_hint')}</small></label>
+          <label class="newpage__check"><input type="checkbox" name="all_languages" value="1"> ${et('all_languages')}</label>
+          <p class="site-intro">${et('gloss_detail_hint')}</p>
+          <div class="dlg__actions"><button type="submit" class="btn btn--primary">${et('gloss_create')}</button></div>
         </form>
       </div>
     </aside>`);
@@ -314,19 +319,19 @@
   const newdlg = h(`
     <div class="dlg" hidden role="dialog" aria-modal="true" aria-labelledby="fluid-new-t">
       <form class="dlg__box newpage" data-new-form novalidate>
-        <h2 id="fluid-new-t">Neue Seite</h2>
-        <label class="newpage__field"><span>Titel</span><input type="text" name="name" required maxlength="191" autocomplete="off"></label>
-        <fieldset class="newpage__field"><legend>Art</legend>
-          <label${may('addCategory') ? '' : ' hidden'}><input type="radio" name="kind" value="menu"${may('addCategory') ? ' checked' : ' disabled'}> Menüpunkt <small>erscheint in der Navigation</small></label>
-          <label${may('addArticle') ? '' : ' hidden'}><input type="radio" name="kind" value="page"${may('addCategory') ? '' : ' checked'}${may('addArticle') ? '' : ' disabled'}> Seite ohne Menüeintrag <small>z. B. Impressum, Aktion – nur per Link erreichbar</small></label>
+        <h2 id="fluid-new-t">${et('new_page')}</h2>
+        <label class="newpage__field"><span>${et('title')}</span><input type="text" name="name" required maxlength="191" autocomplete="off"></label>
+        <fieldset class="newpage__field"><legend>${et('kind')}</legend>
+          <label${may('addCategory') ? '' : ' hidden'}><input type="radio" name="kind" value="menu"${may('addCategory') ? ' checked' : ' disabled'}> ${et('kind_menu')} <small>${et('kind_menu_hint')}</small></label>
+          <label${may('addArticle') ? '' : ' hidden'}><input type="radio" name="kind" value="page"${may('addCategory') ? '' : ' checked'}${may('addArticle') ? '' : ' disabled'}> ${et('kind_page')} <small>${et('kind_page_hint')}</small></label>
         </fieldset>
-        <label class="newpage__field"><span>Inhalt</span><select name="from" data-new-from><option value="">Leere Seite</option><option value="copy">Kopie dieser Seite</option></select></label>
-        <fieldset class="newpage__field" data-new-where><legend>Ort</legend>
-          <label><input type="radio" name="where" value="here" checked> ${cfg.article.category ? `Unter „${esc(cfg.article.category)}“` : 'Hier'}</label>
-          <label><input type="radio" name="where" value="root"> Oberste Ebene</label>
+        <label class="newpage__field"><span>${et('content')}</span><select name="from" data-new-from><option value="">${et('empty_page')}</option><option value="copy">${et('copy_of_page')}</option></select></label>
+        <fieldset class="newpage__field" data-new-where><legend>${et('location')}</legend>
+          <label><input type="radio" name="where" value="here" checked> ${cfg.article.category ? et('under_x', cfg.article.category) : et('here')}</label>
+          <label><input type="radio" name="where" value="root"> ${et('top_level')}</label>
         </fieldset>
-        <p class="newpage__hint">Die Seite ist zunächst offline – „Online“ schalten Sie in den Seiteneinstellungen.</p>
-        <div class="dlg__actions"><button type="button" class="btn" data-new-cancel>Abbrechen</button><button type="submit" class="btn btn--primary">Anlegen &amp; bearbeiten</button></div>
+        <p class="newpage__hint">${et('new_page_offline_hint')}</p>
+        <div class="dlg__actions"><button type="button" class="btn" data-new-cancel>${et('cancel')}</button><button type="submit" class="btn btn--primary">${et('create_and_edit')}</button></div>
       </form>
     </div>`);
   // Layer for menus and dialogs in the UI
@@ -355,7 +360,7 @@
   }
 
   /** Confirmation: true (OK), false (cancel, Esc) or 'alt' (third option, e.g. „Verwerfen“) */
-  function ask({ title, body = '', ok = 'OK', cancel = 'Abbrechen', danger = false, alt = '' }) {
+  function ask({ title, body = '', ok = t('ok'), cancel = t('cancel'), danger = false, alt = '' }) {
     return new Promise((resolve) => {
       $('[data-dlg-title]').textContent = title;
       $('[data-dlg-body]').textContent = body;
@@ -407,13 +412,13 @@
 
   function render() {
     const chip = $('[data-chip]');
-    let label = 'Veröffentlicht';
+    let label = t('state_published');
     let cls = 'ok';
-    if (busy) [label, cls] = ['Speichert …', 'busy'];
-    else if (dirty.size) [label, cls] = ['Ungespeichert', 'warn'];
-    else if (state.draft) [label, cls] = [may('publish') ? 'Entwurf – nicht veröffentlicht' : 'Entwurf – wartet auf Freigabe', 'draft'];
-    if (cfg.viewingDraft) [label, cls] = [state.draft ? 'Ansicht: Entwurf (nicht veröffentlicht)' : 'Ansicht: Entwurf = live', 'draft'];
-    if (!cfg.article.online) label += ' · Seite offline';
+    if (busy) [label, cls] = [t('state_saving'), 'busy'];
+    else if (dirty.size) [label, cls] = [t('state_unsaved'), 'warn'];
+    else if (state.draft) [label, cls] = [may('publish') ? t('state_draft') : t('state_draft_review'), 'draft'];
+    if (cfg.viewingDraft) [label, cls] = [state.draft ? t('state_viewing_draft') : t('state_viewing_draft_live'), 'draft'];
+    if (!cfg.article.online) label += ' · ' + t('state_page_offline');
     chip.textContent = label;
     chip.dataset.state = cls;
     const save = $('[data-save]');
@@ -424,8 +429,8 @@
 
   $('[data-chip]').addEventListener('click', () => {
     say(state.workVersion
-      ? 'Änderungen landen zuerst in der Arbeitsversion. „Veröffentlichen“ übernimmt sie auf die Website.'
-      : 'Die Arbeitsversion ist aus – gespeicherte Änderungen sind sofort live.');
+      ? t('chip_work_version')
+      : t('chip_no_work_version'));
   });
 
   // Menu ⋯ – on narrow screens „Design“ is in the menu
@@ -462,7 +467,7 @@
     menu.hidden = true;
     moreBtn.setAttribute('aria-expanded', 'false');
     if (dirty.size) {
-      const r = await ask({ title: 'Ungespeicherte Änderungen', body: 'Vor dem Abmelden speichern?', ok: 'Speichern', cancel: 'Abbrechen', alt: 'Verwerfen' });
+      const r = await ask({ title: t('unsaved_changes'), body: t('logout_save_ask'), ok: t('save'), cancel: t('cancel'), alt: t('discard') });
       if (r === 'alt') dirty.clear();
       else if (r !== true || !(await saveAll())) return;
     }
@@ -482,7 +487,7 @@
     if (!a || !cfg.editing || (!dirty.size && !state.draft)) return;
     e.preventDefault();
     if (dirty.size) {
-      const r = await ask({ title: 'Ungespeicherte Änderungen', body: 'Vor dem Verlassen speichern? „Verwerfen“ nimmt nur die ungespeicherten Änderungen zurück – ein gespeicherter Entwurf bleibt.', ok: 'Speichern', cancel: 'Weiter bearbeiten', alt: 'Verwerfen' });
+      const r = await ask({ title: t('unsaved_changes'), body: t('leave_save_ask'), ok: t('save'), cancel: t('keep_editing'), alt: t('discard') });
       if (r === 'alt') dirty.clear();
       else if (r !== true || !(await saveAll())) return;
     }
@@ -491,12 +496,12 @@
       return;
     }
     if (!may('publish')) {
-      const r = await ask({ title: 'Entwurf gespeichert', body: 'Ihre Änderungen sind als Entwurf gespeichert. Veröffentlichen kann jemand mit Freigaberecht – Besucher sehen bis dahin die bisherige Fassung.', ok: 'Entwurf ansehen', cancel: 'Weiter bearbeiten', alt: 'Live ansehen' });
+      const r = await ask({ title: t('draft_saved'), body: t('draft_saved_review'), ok: t('view_draft'), cancel: t('keep_editing'), alt: t('view_live') });
       if (r === true) location.href = unamp(cfg.draftUrl);
       else if (r === 'alt') location.href = a.href;
       return;
     }
-    const r = await ask({ title: 'Noch nicht veröffentlicht', body: 'Ihre Änderungen sind als Entwurf gespeichert – Besucher sehen sie erst nach dem Veröffentlichen.', ok: 'Veröffentlichen', cancel: 'Weiter bearbeiten', alt: 'Entwurf ansehen' });
+    const r = await ask({ title: t('not_published_yet'), body: t('not_published_body'), ok: t('publish'), cancel: t('keep_editing'), alt: t('view_draft') });
     if (r === 'alt') {
       location.href = unamp(cfg.draftUrl);
     } else if (r === true) {
@@ -543,30 +548,30 @@
     const openBtn = $('[data-design-open]');
     const sw = (c) => `<span class="sw" data-sw="${esc(c)}"></span>`;
 
-    const control = (t) => {
-      const v = values[t.name];
-      const id = 'fd-' + t.name;
-      const help = t.help ? `<p class="help-block">${esc(t.help)}</p>` : '';
+    const control = (tk) => {
+      const v = values[tk.name];
+      const id = 'fd-' + tk.name;
+      const help = tk.help ? `<p class="help-block">${esc(tk.help)}</p>` : '';
       let input = '';
-      if (t.type === 'color') {
-        input = `<span class="dcolor"><input type="color" id="${id}" data-token="${esc(t.name)}" value="${esc(v)}" aria-label="${esc(t.label)} (hell)"><code>${esc(v)}</code>`
-          + (t.dark ? `<input type="color" data-token="${esc(t.name)}@dark" value="${esc(values[t.name + '@dark'] || t.dark)}" title="Im dunklen Farbschema" aria-label="${esc(t.label)} (dunkel)"><span class="dcolor__dark">dunkel</span>` : '') + '</span>';
-      } else if (t.type === 'range') {
-        input = `<span class="drange"><input type="range" id="${id}" data-token="${esc(t.name)}" min="${t.min ?? 0}" max="${t.max ?? 100}" step="${t.step ?? 1}" value="${esc(v)}"><output>${esc(v)}${esc(t.unit || '')}</output></span>`;
-      } else if (t.type === 'choice' || t.type === 'font') {
-        const opts = t.type === 'font' ? Object.fromEntries(Object.entries(D.fonts).map(([k, f]) => [k, f.label])) : t.options;
-        input = `<select class="form-control" id="${id}" data-token="${esc(t.name)}">${Object.entries(opts || {}).map(([k, l]) => `<option value="${esc(k)}"${String(v) === k ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select>`;
-      } else if (t.type === 'bool') {
-        return `<div class="dfield"><label class="blocks-form__check"><input type="checkbox" data-token="${esc(t.name)}"${v ? ' checked' : ''}> ${esc(t.label)}</label>${help}</div>`;
+      if (tk.type === 'color') {
+        input = `<span class="dcolor"><input type="color" id="${id}" data-token="${esc(tk.name)}" value="${esc(v)}" aria-label="${esc(tk.label)} (${et('light')})"><code>${esc(v)}</code>`
+          + (tk.dark ? `<input type="color" data-token="${esc(tk.name)}@dark" value="${esc(values[tk.name + '@dark'] || tk.dark)}" title="${et('dark_scheme')}" aria-label="${esc(tk.label)} (${et('dark')})"><span class="dcolor__dark">${et('dark')}</span>` : '') + '</span>';
+      } else if (tk.type === 'range') {
+        input = `<span class="drange"><input type="range" id="${id}" data-token="${esc(tk.name)}" min="${tk.min ?? 0}" max="${tk.max ?? 100}" step="${tk.step ?? 1}" value="${esc(v)}"><output>${esc(v)}${esc(tk.unit || '')}</output></span>`;
+      } else if (tk.type === 'choice' || tk.type === 'font') {
+        const opts = tk.type === 'font' ? Object.fromEntries(Object.entries(D.fonts).map(([k, f]) => [k, f.label])) : tk.options;
+        input = `<select class="form-control" id="${id}" data-token="${esc(tk.name)}">${Object.entries(opts || {}).map(([k, l]) => `<option value="${esc(k)}"${String(v) === k ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select>`;
+      } else if (tk.type === 'bool') {
+        return `<div class="dfield"><label class="blocks-form__check"><input type="checkbox" data-token="${esc(tk.name)}"${v ? ' checked' : ''}> ${esc(tk.label)}</label>${help}</div>`;
       }
-      return `<div class="dfield"><label class="control-label" for="${id}">${esc(t.label)}</label>${input}${help}</div>`;
+      return `<div class="dfield"><label class="control-label" for="${id}">${esc(tk.label)}</label>${input}${help}</div>`;
     };
 
     const draw = () => {
       const presets = Object.entries(D.presets).map(([k, p]) => `<button type="button" class="dpreset" data-preset="${esc(k)}" title="${esc(p.description)}">
           <span class="dpreset__sw">${sw(p.values.accent || '#000')}${sw(p.values.highlight || '#fff')}${sw(p.values.ink || '#000')}${sw(p.values.background || '#fff')}</span>
           <span class="dpreset__label">${esc(p.label)}</span></button>`).join('');
-      body.innerHTML = `<details class="dgroup" open><summary>Vorlagen</summary><div class="dpresets">${presets}</div></details>`
+      body.innerHTML = `<details class="dgroup" open><summary>${et('design_presets')}</summary><div class="dpresets">${presets}</div></details>`
         + D.groups.map((g, i) => `<details class="dgroup"${i === 0 ? ' open' : ''}><summary>${esc(g.label)}</summary>${g.tokens.map(control).join('')}</details>`).join('')
         + '<div class="dchecks" data-design-checks aria-live="polite"></div>';
     };
@@ -599,7 +604,7 @@
       document.querySelectorAll('footer.ftr').forEach((el) => el.classList.replace([...el.classList].find((c) => c.startsWith('ftr--')) || 'ftr--columns', 'ftr--' + values.footer));
       const checks = $('[data-design-checks]');
       if (checks) checks.innerHTML = res.checks.length
-        ? '<p><strong>Kontrast prüfen:</strong></p><ul>' + res.checks.map((c) => `<li>${esc(D.groups.flatMap((g) => g.tokens).find((t) => t.name === c.token)?.label || c.token)} (${c.mode === 'dark' ? 'dunkel' : 'hell'}): ${String(c.ratio).replace('.', ',')} : 1 – mindestens ${String(c.min).replace('.', ',')} : 1</li>`).join('') + '</ul>'
+        ? `<p><strong>${et('contrast_check')}</strong></p><ul>` + res.checks.map((c) => `<li>${esc(D.groups.flatMap((g) => g.tokens).find((tk) => tk.name === c.token)?.label || c.token)} (${c.mode === 'dark' ? et('dark') : et('light')}): ${et('contrast_ratio', Number(c.ratio).toLocaleString(lang), Number(c.min).toLocaleString(lang))}</li>`).join('') + '</ul>'
         : '';
     };
 
@@ -633,13 +638,13 @@
       body.querySelectorAll('details').forEach((d, i) => (d.open = open[i] ?? d.open));
       body.querySelector(`[data-preset="${CSS.escape(p.dataset.preset)}"]`)?.classList.add('is-active');
       preview();
-      say(`Vorlage „${D.presets[p.dataset.preset].label}“ – Vorschau. ${keepOnly ? '„Übernehmen“ behält sie in Ihrem Browser für alle Seiten.' : 'Speichern übernimmt sie für die Website.'}`);
+      say(t('preset_preview', D.presets[p.dataset.preset].label) + ' ' + (keepOnly ? t('preset_keep_hint') : t('preset_save_hint')));
     });
 
     const close = () => { dpanel.hidden = true; openBtn?.setAttribute('aria-expanded', 'false'); document.documentElement.classList.remove('blocks-panel-open'); };
     openBtn?.addEventListener('click', () => {
       if (!dpanel.hidden) return close();
-      if (!panel.hidden) return say('Bitte zuerst die Seitenleiste des Blocks schließen.', true);
+      if (!panel.hidden) return say(t('panel_close_block_first'), true);
       draw();
       dpanel.hidden = false;
       openBtn.setAttribute('aria-expanded', 'true');
@@ -649,15 +654,15 @@
     $('[data-design-cancel]').addEventListener('click', () => { values = { ...saved }; preview(); close(); });
     $('[data-design-reset]').addEventListener('click', () => { values = { ...D.defaults }; draw(); preview(); });
     if (keepOnly) {
-      $('[data-design-save]').textContent = 'Übernehmen (Vorschau)';
-      $('[data-design-save]').title = 'Gilt für diese Demo in Ihrem Browser – gespeichert wird nichts';
+      $('[data-design-save]').textContent = t('design_keep');
+      $('[data-design-save]').title = t('design_keep_hint');
     }
     if (initial) preview();
     $('[data-design-save]').addEventListener('click', async () => {
       if (keepOnly) {
         saved = { ...values };
         document.dispatchEvent(new CustomEvent('fluid:design-keep', { detail: { values: { ...values } } }));
-        say('Design übernommen – nur in Ihrem Browser. Auf einer echten Website gilt es nach dem Speichern für alle Besucher.');
+        say(t('design_kept'));
         close();
         return;
       }
@@ -678,11 +683,11 @@
     let pageSaved = '';
     const snap = () => new URLSearchParams(new FormData(pform)).toString();
     const close = () => { ppanel.hidden = true; document.documentElement.classList.remove('blocks-panel-open'); };
-    const count = () => pform.querySelectorAll('[data-count]').forEach((t) => {
-      let o = t.parentElement.querySelector('.count');
-      if (!o) { o = document.createElement('span'); o.className = 'count'; t.after(o); }
-      const n = t.value.length, max = +t.dataset.count;
-      o.textContent = `${n} / ${max} Zeichen`;
+    const count = () => pform.querySelectorAll('[data-count]').forEach((el) => {
+      let o = el.parentElement.querySelector('.count');
+      if (!o) { o = document.createElement('span'); o.className = 'count'; el.after(o); }
+      const n = el.value.length, max = +el.dataset.count;
+      o.textContent = t('char_count', n, max);
       o.classList.toggle('is-over', n > max);
     });
     pform.addEventListener('input', (e) => {
@@ -719,9 +724,9 @@
     };
     pform.addEventListener('click', async (e) => {
       const c = e.target.closest('[data-copy]');
-      if (c) { say((await copy(c.dataset.copy)) ? 'Kopiert: ' + c.dataset.copy : c.dataset.copy); return; }
+      if (c) { say((await copy(c.dataset.copy)) ? t('copied', c.dataset.copy) : c.dataset.copy); return; }
       const del = e.target.closest('[data-shortlink-delete]');
-      if (del) { if (await ask({ title: 'Kurzlink löschen?', body: 'Wer ihn danach aufruft, landet auf „nicht gefunden“.', ok: 'Löschen', danger: true })) shortlink('shortlink_delete', { id: del.dataset.shortlinkDelete, path: del.dataset.shortlinkSource || '' }); return; }
+      if (del) { if (await ask({ title: t('shortlink_delete'), body: t('shortlink_delete_body'), ok: t('delete'), danger: true })) shortlink('shortlink_delete', { id: del.dataset.shortlinkDelete, path: del.dataset.shortlinkSource || '' }); return; }
       if (e.target.closest('[data-shortlink-add]')) {
         shortlink('shortlink_add', { path: pform.querySelector('[data-shortlink-path]')?.value || '', expires: pform.querySelector('[data-shortlink-expires]')?.value || '' });
       }
@@ -731,7 +736,7 @@
     });
     $('[data-page-settings]')?.addEventListener('click', async () => {
       menu.hidden = true;
-      if (!panel.hidden || !dpanel.hidden) return say('Bitte zuerst die andere Seitenleiste schließen.', true);
+      if (!panel.hidden || !dpanel.hidden) return say(t('panel_close_first'), true);
       try {
         const res = await api('page');
         pform.innerHTML = res.html;
@@ -744,7 +749,7 @@
       } catch (err) { say(err.message, true); }
     });
     const cancel = async () => {
-      if (snap() !== pageSaved && !(await ask({ title: 'Änderungen verwerfen?', ok: 'Verwerfen', danger: true }))) return;
+      if (snap() !== pageSaved && !(await ask({ title: t('discard_changes'), ok: t('discard'), danger: true }))) return;
       close();
     };
     $('[data-page-close]').addEventListener('click', cancel);
@@ -771,7 +776,7 @@
       sel.querySelectorAll('[data-tpl]').forEach((o) => o.remove());
       try {
         const res = await api('templates', {});
-        for (const t of res.templates || []) sel.insertAdjacentHTML('beforeend', `<option value="${t.id}" data-tpl>Vorlage: ${esc(t.name)}</option>`);
+        for (const t of res.templates || []) sel.insertAdjacentHTML('beforeend', `<option value="${t.id}" data-tpl>${et('template_x', t.name)}</option>`);
       } catch { /* no templates */ }
     });
     $('[data-template-save]')?.addEventListener('click', () => {
@@ -790,14 +795,14 @@
     const drawTpls = (canManage) => {
       tbody.innerHTML = tpls.length ? '<ul class="site-list tpls__list" role="list">' + tpls.map((t, i) => `
         <li class="tpls__item">
-          <label class="tpls__name"><span class="sr-only">Name der Vorlage</span><input type="text" value="${esc(t.name)}" maxlength="191" data-tpls-name="${i}"${canManage ? '' : ' readonly'}></label>
+          <label class="tpls__name"><span class="sr-only">${et('tpl_name')}</span><input type="text" value="${esc(t.name)}" maxlength="191" data-tpls-name="${i}"${canManage ? '' : ' readonly'}></label>
           <span class="tpls__actions">
-            ${canManage ? `<button type="button" class="btn" data-tpls-rename="${i}" hidden>Umbenennen</button>` : ''}
-            <a class="btn" href="${esc(unamp(t.url))}">Bearbeiten</a>
-            ${canManage ? `<button type="button" class="btn tpls__del" data-tpls-delete="${i}" aria-label="${esc(t.name)} löschen">Löschen</button>` : ''}
+            ${canManage ? `<button type="button" class="btn" data-tpls-rename="${i}" hidden>${et('rename')}</button>` : ''}
+            <a class="btn" href="${esc(unamp(t.url))}">${et('edit')}</a>
+            ${canManage ? `<button type="button" class="btn tpls__del" data-tpls-delete="${i}" aria-label="${et('delete_x', t.name)}">${et('delete')}</button>` : ''}
           </span>
         </li>`).join('') + '</ul>'
-        : '<p class="site-intro">Noch keine Vorlagen. Über ⋯ → „Als Vorlage speichern …“ wird die aktuelle Seite zur Vorlage.</p>';
+        : `<p class="site-intro">${et('no_templates')}</p>`;
     };
     const loadTpls = async (action = 'templates', data = {}) => {
       try {
@@ -835,18 +840,18 @@
       }
       const d = e.target.closest('[data-tpls-delete]');
       if (d) {
-        const t = tpls[+d.dataset.tplsDelete];
+        const tpl = tpls[+d.dataset.tplsDelete];
         mdlg.hidden = true;
-        const ok = await ask({ title: `Vorlage „${t.name}“ löschen?`, body: 'Die Vorlage wird gelöscht. Seiten, die aus ihr entstanden sind, bleiben unverändert.', ok: 'Löschen', danger: true });
+        const ok = await ask({ title: t('template_delete', tpl.name), body: t('template_delete_body'), ok: t('delete'), danger: true });
         mdlg.hidden = false;
-        if (ok) loadTpls('template_delete', { id: t.id });
+        if (ok) loadTpls('template_delete', { id: tpl.id });
       }
     });
     $('[data-tpl-form]').addEventListener('submit', async (e) => {
       e.preventDefault();
       const f = e.currentTarget;
       if (!f.reportValidity()) return;
-      if (dirty.size && !(await ask({ title: 'Erst speichern?', body: 'Ungespeicherte Änderungen kommen nicht in die Vorlage. Trotzdem fortfahren?', ok: 'Fortfahren' }))) return;
+      if (dirty.size && !(await ask({ title: t('save_first'), body: t('template_unsaved_body'), ok: t('continue') }))) return;
       try { const res = await api('template_save', new FormData(f)); tdlg.hidden = true; say(res.message); } catch (err) { say(err.message, true); }
     });
     // Record without blocks: „+ Ersten Block einfügen“
@@ -861,12 +866,12 @@
       const nb = e.target.closest('[data-fluid-new-post]');
       if (!nb) return;
       e.preventDefault();
-      if (!may('addArticle')) return say('Dafür fehlt Ihnen das Recht „Artikel anlegen“.', true);
+      if (!may('addArticle')) return say(t('no_perm_add_article'), true);
       nform.reset();
       nform.dataset.parent = nb.dataset.fluidNewPost;
       const page = nform.querySelector('input[name=kind][value=page]');
       if (page) page.checked = true;
-      newdlg.querySelector('#fluid-new-t').textContent = 'Neuer Beitrag';
+      newdlg.querySelector('#fluid-new-t').textContent = t('new_post');
       newdlg.querySelector('[data-new-where]')?.setAttribute('hidden', '');
       newdlg.querySelector('input[name=kind]')?.closest('fieldset')?.setAttribute('hidden', '');
       newdlg.hidden = false;
@@ -876,7 +881,7 @@
     $('[data-page-add]')?.addEventListener('click', () => {
       menu.hidden = true;
       nform.reset();
-      newdlg.querySelector('#fluid-new-t').textContent = 'Neue Seite';
+      newdlg.querySelector('#fluid-new-t').textContent = t('new_page');
       newdlg.querySelector('input[name=kind]')?.closest('fieldset')?.removeAttribute('hidden');
       delete nform.dataset.parent;
       newdlg.querySelector('[data-new-where]')?.removeAttribute('hidden');
@@ -889,7 +894,7 @@
     nform.addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!nform.reportValidity()) return;
-      if (dirty?.size && !(await ask({ title: 'Ungespeicherte Änderungen', body: 'Die Änderungen auf dieser Seite gehen verloren. Trotzdem fortfahren?', ok: 'Fortfahren', danger: true }))) return;
+      if (dirty?.size && !(await ask({ title: t('unsaved_changes'), body: t('unsaved_lost_body'), ok: t('continue'), danger: true }))) return;
       try {
         const fd = new FormData(nform);
         if (nform.dataset.parent !== undefined && nform.dataset.parent !== '') fd.append('parent', nform.dataset.parent);
@@ -929,21 +934,21 @@
     const row = (n, depth, prev = null) => `
       <li role="treeitem" aria-expanded="${n.children?.length ? 'true' : 'false'}" data-id="${n.id}" data-menu="${n.menu ? 1 : 0}" class="tree__item${n.online ? '' : ' is-offline'}${n.id === cfg.article.id ? ' is-current' : ''}">
         <div class="tree__row" data-d="${depth}">
-          ${mv(n) ? '<span class="tree__grip" draggable="true" title="Ziehen zum Sortieren/Verschieben" aria-hidden="true">⠿</span>' : '<span class="tree__grip" aria-hidden="true"></span>'}
+          ${mv(n) ? `<span class="tree__grip" draggable="true" title="${et('drag_sort')}" aria-hidden="true">⠿</span>` : '<span class="tree__grip" aria-hidden="true"></span>'}
           <a class="tree__name" href="${esc(unamp(n.url))}${cfg.editing ? (n.url.includes('?') ? '&' : '?') + 'fluid_edit=1' : ''}">${n.home ? '⌂ ' : ''}${esc(n.name)}</a><span data-presence-slot></span>
-          <span class="tree__badge${n.hidden ? ' is-hidden' : ''}">${n.home ? 'Startseite' : n.menu ? (n.hidden ? 'nicht im Menü' : 'Menü') : 'Seite'}${n.online ? '' : n.status > 1 ? ` · <b class="st-locked">${esc(n.statusLabel || 'gesperrt')}</b>` : ' · offline'}</span>
+          <span class="tree__badge${n.hidden ? ' is-hidden' : ''}">${n.home ? et('home') : n.menu ? (n.hidden ? et('not_in_menu') : et('menu')) : et('page')}${n.online ? '' : n.status > 1 ? ` · <b class="st-locked">${esc(n.statusLabel || t('locked_lc'))}</b>` : ' · ' + et('offline_lc')}</span>
           <span class="tree__tools">
-            ${n.home || !mv(n) ? '' : `<button type="button" class="tree__btn" data-tree-act="up" title="Nach oben" aria-label="${esc(n.name)} nach oben">↑</button>
-            <button type="button" class="tree__btn" data-tree-act="down" title="Nach unten" aria-label="${esc(n.name)} nach unten">↓</button>`}
-            ${depth && mv(n) ? `<button type="button" class="tree__btn" data-tree-act="out" title="Eine Ebene höher" aria-label="${esc(n.name)} eine Ebene höher">←</button>` : ''}
-            ${prev?.menu && !n.home && mv(n) ? `<button type="button" class="tree__btn" data-tree-act="in" title="Unter „${esc(prev.name)}“ einordnen" aria-label="${esc(n.name)} unter ${esc(prev.name)} einordnen">→</button>` : ''}
-            ${!may(n.menu ? 'publishCategory' : 'publishArticle') ? '' : `<button type="button" class="tree__btn tree__st ${n.online ? 'st-on' : n.status > 1 ? 'st-locked' : 'st-off'}" data-tree-act="tree_status" title="${esc(n.online ? 'Online' : n.status > 1 ? (n.statusLabel || 'Gesperrt') : 'Offline')} – ${n.online ? 'offline schalten' : 'online schalten'}" aria-label="${esc(n.name)}: ${n.online ? 'online, offline schalten' : n.status > 1 ? esc(n.statusLabel || 'gesperrt') + ', online schalten' : 'offline, online schalten'}">${n.online || n.status > 1 ? '●' : '○'}</button>`}
-            ${n.home || (!n.menu && !may('article2category')) ? '' : `<button type="button" class="tree__btn${n.hidden ? ' is-off' : ''}" data-tree-act="tree_menu" title="${n.menu ? (n.hidden ? 'Wieder im Menü zeigen' : 'Nicht im Menü zeigen – Seite bleibt online und an ihrer Stelle') : 'Ins Menü aufnehmen'}" aria-label="${esc(n.name)}: ${n.menu ? (n.hidden ? 'wieder im Menü zeigen' : 'nicht im Menü zeigen') : 'ins Menü aufnehmen'}" aria-pressed="${n.menu ? String(!n.hidden) : 'false'}">☰</button>`}
-            ${n.menu && (may('addArticle') || may('addCategory')) ? `<button type="button" class="tree__btn" data-tree-new="${n.id}" title="Unterseite anlegen" aria-label="Unterseite von ${esc(n.name)} anlegen">+</button>` : ''}
-            ${n.home || !may(n.menu ? 'deleteCategory' : 'deleteArticle') ? '' : `<button type="button" class="tree__btn tree__btn--danger" data-tree-act="tree_delete" title="Löschen" aria-label="${esc(n.name)} löschen">✕</button>`}
+            ${n.home || !mv(n) ? '' : `<button type="button" class="tree__btn" data-tree-act="up" title="${et('move_up')}" aria-label="${et('x_up', n.name)}">↑</button>
+            <button type="button" class="tree__btn" data-tree-act="down" title="${et('move_down')}" aria-label="${et('x_down', n.name)}">↓</button>`}
+            ${depth && mv(n) ? `<button type="button" class="tree__btn" data-tree-act="out" title="${et('level_up')}" aria-label="${et('x_level_up', n.name)}">←</button>` : ''}
+            ${prev?.menu && !n.home && mv(n) ? `<button type="button" class="tree__btn" data-tree-act="in" title="${et('place_under', prev.name)}" aria-label="${et('x_place_under', n.name, prev.name)}">→</button>` : ''}
+            ${!may(n.menu ? 'publishCategory' : 'publishArticle') ? '' : `<button type="button" class="tree__btn tree__st ${n.online ? 'st-on' : n.status > 1 ? 'st-locked' : 'st-off'}" data-tree-act="tree_status" title="${esc(n.online ? t('online') : n.status > 1 ? (n.statusLabel || t('locked')) : t('offline'))} – ${n.online ? et('switch_offline') : et('switch_online')}" aria-label="${esc(n.name)}: ${n.online ? et('online_switch_offline') : n.status > 1 ? et('status_switch_online', n.statusLabel || t('locked_lc')) : et('offline_switch_online')}">${n.online || n.status > 1 ? '●' : '○'}</button>`}
+            ${n.home || (!n.menu && !may('article2category')) ? '' : `<button type="button" class="tree__btn${n.hidden ? ' is-off' : ''}" data-tree-act="tree_menu" title="${n.menu ? (n.hidden ? et('menu_show') : et('menu_hide_hint')) : et('menu_add')}" aria-label="${esc(n.name)}: ${n.menu ? (n.hidden ? et('menu_show_lc') : et('menu_hide_lc')) : et('menu_add_lc')}" aria-pressed="${n.menu ? String(!n.hidden) : 'false'}">☰</button>`}
+            ${n.menu && (may('addArticle') || may('addCategory')) ? `<button type="button" class="tree__btn" data-tree-new="${n.id}" title="${et('add_subpage')}" aria-label="${et('add_subpage_of', n.name)}">+</button>` : ''}
+            ${n.home || !may(n.menu ? 'deleteCategory' : 'deleteArticle') ? '' : `<button type="button" class="tree__btn tree__btn--danger" data-tree-act="tree_delete" title="${et('delete')}" aria-label="${et('delete_x', n.name)}">✕</button>`}
           </span>
         </div>
-        ${n.children?.length && n.blog ? `<button type="button" class="tree__more" data-tree-toggle data-d="${depth + 1}" aria-expanded="${open.has(n.id)}">${n.children.length} ${n.children.length === 1 ? 'Beitrag' : 'Beiträge'} ${open.has(n.id) ? '▾' : '▸'}</button>` : ''}
+        ${n.children?.length && n.blog ? `<button type="button" class="tree__more" data-tree-toggle data-d="${depth + 1}" aria-expanded="${open.has(n.id)}">${n.children.length === 1 ? et('posts_1') : et('posts_n', n.children.length)} ${open.has(n.id) ? '▾' : '▸'}</button>` : ''}
         ${n.children?.length ? `<ul role="group"${n.blog && !open.has(n.id) ? ' hidden' : ''}>${n.children.map((c, i, all) => row(c, depth + 1, menuBefore(all, i))).join('')}</ul>` : ''}
       </li>`;
     // Start page always on top (REDAXO sorts each level by menu items first, then pages – the start page comes before them)
@@ -974,7 +979,7 @@
     };
     $('[data-tree-open]')?.addEventListener('click', async () => {
       menu.hidden = true;
-      if (!panel.hidden || !dpanel.hidden || !ppanel.hidden || !spanel.hidden) return say('Bitte zuerst die andere Seitenleiste schließen.', true);
+      if (!panel.hidden || !dpanel.hidden || !ppanel.hidden || !spanel.hidden) return say(t('panel_close_first'), true);
       tpanel.hidden = false;
       document.documentElement.classList.add('blocks-panel-open');
       await run('tree', {});
@@ -996,7 +1001,7 @@
         nform.dataset.parent = nb.dataset.treeNew;
         // in the blog: new post (page without menu entry)
         const isBlog = find(tree, +nb.dataset.treeNew)?.node.blog;
-        newdlg.querySelector('#fluid-new-t').textContent = isBlog ? 'Neuer Beitrag' : 'Neue Seite';
+        newdlg.querySelector('#fluid-new-t').textContent = isBlog ? t('new_post') : t('new_page');
         const kindSet = newdlg.querySelector('input[name=kind]')?.closest('fieldset');
         if (isBlog) { nform.querySelector('input[name=kind][value=page]').checked = true; kindSet?.setAttribute('hidden', ''); } else kindSet?.removeAttribute('hidden');
         newdlg.querySelector('[data-new-where]')?.setAttribute('hidden', '');
@@ -1038,7 +1043,7 @@
         list.querySelector(`[data-id="${id}"] [data-tree-act="${act}"]`)?.focus();
         return;
       }
-      if (act === 'tree_delete' && !(await ask({ title: `„${loc.node.name}“ löschen?`, body: 'Die Seite und ihre Inhalte werden gelöscht. Seiten mit Unterseiten lassen sich erst löschen, wenn diese verschoben oder gelöscht sind.', ok: 'Löschen', danger: true }))) return;
+      if (act === 'tree_delete' && !(await ask({ title: t('delete_named_q', loc.node.name), body: t('page_delete_body'), ok: t('delete'), danger: true }))) return;
       await run(act, { id });
       if (act === 'tree_delete' && id === cfg.article.id) location.href = '/';
     });
@@ -1112,52 +1117,52 @@
   function initHistory() {
     const body = $('[data-history-body]');
     let tab = 'versions';
-    const when = (d) => { const t = new Date(String(d).replace(' ', 'T')); return isNaN(t) ? d : t.toLocaleString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }); };
+    const when = (d) => { const t = new Date(String(d).replace(' ', 'T')); return isNaN(t) ? d : t.toLocaleString(lang, { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }); };
     const editHref = (u) => unamp(u) + (u.includes('?') ? '&' : '?') + 'fluid_edit=1';
     const draw = {
       versions: (res) => {
-        if (!res.versions?.length) return '<p class="site-intro">Noch keine gespeicherten Stände. Sie entstehen beim Speichern und Veröffentlichen.</p>';
-        const item = (v) => `<li class="site-list__item"><span class="site-list__main"><b>${esc(when(v.date))}</b><small>${esc(v.label)} · ${v.blocks} Blöcke${v.user ? ' · ' + esc(v.user) : ''}</small></span>
-              <button type="button" class="btn" data-versions-view="${v.revision}-${esc(String(v.date).replace(/\D/g, ''))}">Ansehen</button>
-              <button type="button" class="btn" data-restore="${esc(v.date)}" data-rev="${v.revision}">Wiederherstellen</button></li>`;
+        if (!res.versions?.length) return `<p class="site-intro">${et('no_versions')}</p>`;
+        const item = (v) => `<li class="site-list__item"><span class="site-list__main"><b>${esc(when(v.date))}</b><small>${esc(v.label)} · ${et('n_blocks', v.blocks)}${v.user ? ' · ' + esc(v.user) : ''}</small></span>
+              <button type="button" class="btn" data-versions-view="${v.revision}-${esc(String(v.date).replace(/\D/g, ''))}">${et('view')}</button>
+              <button type="button" class="btn" data-restore="${esc(v.date)}" data-rev="${v.revision}">${et('restore')}</button></li>`;
         // Draft (intermediate states until going live) and published states (archive) separately
         const draft = res.versions.filter((v) => v.revision), live = res.versions.filter((v) => !v.revision);
-        return `<p class="site-intro">„Wiederherstellen“ holt einen Stand in den <b>Entwurf</b> – live geht er erst mit „Veröffentlichen“, Korrekturen davor sind möglich. Der aktuelle Entwurf wird vorher gesichert.</p>
-            <p><button type="button" class="btn btn--primary" data-versions-view>Zeitleiste mit Vorschau öffnen</button></p>`
-          + (draft.length ? `<h3 class="site-h">Entwurf – Zwischenstände seit dem letzten Veröffentlichen</h3><p class="site-intro">Nie online gewesen. Beim Veröffentlichen werden sie geleert – der veröffentlichte Stand kommt ins Archiv.</p><ul class="site-list" role="list">${draft.map(item).join('')}</ul>` : '')
-          + (live.length ? `<h3 class="site-h">Veröffentlicht – Archiv</h3><p class="site-intro">So war die Seite online, je Veröffentlichung ein Stand.</p><ul class="site-list" role="list">${live.map(item).join('')}</ul>` : '');
+        return `<p class="site-intro">${eth('restore_intro', `<b>${et('draft')}</b>`)}</p>
+            <p><button type="button" class="btn btn--primary" data-versions-view>${et('open_timeline')}</button></p>`
+          + (draft.length ? `<h3 class="site-h">${et('versions_draft_h')}</h3><p class="site-intro">${et('versions_draft_intro')}</p><ul class="site-list" role="list">${draft.map(item).join('')}</ul>` : '')
+          + (live.length ? `<h3 class="site-h">${et('versions_live_h')}</h3><p class="site-intro">${et('versions_live_intro')}</p><ul class="site-list" role="list">${live.map(item).join('')}</ul>` : '');
       },
       drafts: (res) => (res.drafts?.length
-        ? '<p class="site-intro">Seiten mit Änderungen, die noch nicht veröffentlicht sind.</p><ul class="site-list" role="list">'
-          + res.drafts.map((d) => `<li class="site-list__item"><span class="site-list__main"><a href="${esc(editHref(d.url))}"><b>${esc(d.name)}</b></a><small>zuletzt ${esc(when(d.changed))}${d.user ? ' · ' + esc(d.user) : ''}</small></span><a class="btn" href="${esc(editHref(d.url))}">Öffnen</a></li>`).join('') + '</ul>'
-        : '<p class="site-intro">Keine offenen Entwürfe – alles ist veröffentlicht.</p>'),
-      activity: (res) => (cfg.presence ? `<div data-presence-board-box hidden><h3 class="site-h site-h--first">Gerade aktiv</h3><ul class="site-list cms-presence-board"${cfg.presence.board}></ul><h3 class="site-h">Zuletzt</h3></div>` : '') + (res.activity?.length
-        ? '<ul class="site-list" role="list">' + res.activity.map((a) => `<li class="site-list__item"><span class="site-list__main"><span><b>${esc(a.user || 'Jemand')}</b> hat ${a.page ? `<a href="${esc(editHref(a.url))}">${esc(a.page)}</a> ` : ''}${esc(a.action)}</span><small>${esc(when(a.when))}${a.detail ? ' · ' + esc(a.detail) : ''}</small></span></li>`).join('') + '</ul>'
-        : '<p class="site-intro">Noch keine Aktivität.</p>'),
+        ? `<p class="site-intro">${et('drafts_intro')}</p><ul class="site-list" role="list">`
+          + res.drafts.map((d) => `<li class="site-list__item"><span class="site-list__main"><a href="${esc(editHref(d.url))}"><b>${esc(d.name)}</b></a><small>${et('last_changed', when(d.changed))}${d.user ? ' · ' + esc(d.user) : ''}</small></span><a class="btn" href="${esc(editHref(d.url))}">${et('open')}</a></li>`).join('') + '</ul>'
+        : `<p class="site-intro">${et('no_drafts')}</p>`),
+      activity: (res) => (cfg.presence ? `<div data-presence-board-box hidden><h3 class="site-h site-h--first">${et('active_now')}</h3><ul class="site-list cms-presence-board"${cfg.presence.board}></ul><h3 class="site-h">${et('recently')}</h3></div>` : '') + (res.activity?.length
+        ? '<ul class="site-list" role="list">' + res.activity.map((a) => `<li class="site-list__item"><span class="site-list__main"><span>${eth('activity_line', `<b>${esc(a.user || t('someone'))}</b>`, a.page ? `<a href="${esc(editHref(a.url))}">${esc(a.page)}</a>` : '', esc(a.action))}</span><small>${esc(when(a.when))}${a.detail ? ' · ' + esc(a.detail) : ''}</small></span></li>`).join('') + '</ul>'
+        : `<p class="site-intro">${et('no_activity')}</p>`),
     };
-    const load = async (t) => {
-      tab = t;
-      hpanel.querySelectorAll('[data-history-tab]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.historyTab === t)));
-      body.innerHTML = '<p class="site-intro">Lädt …</p>';
-      try { body.innerHTML = draw[t](await api(t, {})); document.dispatchEvent(new CustomEvent('cms:presence-scan')); } catch (err) { body.innerHTML = ''; say(err.message, true); }
+    const load = async (which) => {
+      tab = which;
+      hpanel.querySelectorAll('[data-history-tab]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.historyTab === which)));
+      body.innerHTML = `<p class="site-intro">${et('loading')}</p>`;
+      try { body.innerHTML = draw[which](await api(which, {})); document.dispatchEvent(new CustomEvent('cms:presence-scan')); } catch (err) { body.innerHTML = ''; say(err.message, true); }
     };
     $('[data-history-open]')?.addEventListener('click', () => {
       menu.hidden = true;
-      if (!panel.hidden || !dpanel.hidden || !ppanel.hidden || !spanel.hidden || !tpanel.hidden) return say('Bitte zuerst die andere Seitenleiste schließen.', true);
+      if (!panel.hidden || !dpanel.hidden || !ppanel.hidden || !spanel.hidden || !tpanel.hidden) return say(t('panel_close_first'), true);
       hpanel.hidden = false;
       document.documentElement.classList.add('blocks-panel-open');
       load(tab);
     });
     $('[data-history-close]').addEventListener('click', () => { hpanel.hidden = true; document.documentElement.classList.remove('blocks-panel-open'); });
     hpanel.addEventListener('click', async (e) => {
-      const t = e.target.closest('[data-history-tab]');
-      if (t) return load(t.dataset.historyTab);
+      const tb = e.target.closest('[data-history-tab]');
+      if (tb) return load(tb.dataset.historyTab);
       const vv = e.target.closest('[data-versions-view]');
       if (vv) return openVersions(vv.dataset.versionsView);
       const r = e.target.closest('[data-restore]');
       if (!r) return;
-      if (dirty.size && !(await ask({ title: 'Ungespeicherte Änderungen', body: 'Sie gehen beim Wiederherstellen verloren. Fortfahren?', ok: 'Fortfahren', danger: true }))) return;
-      if (!(await ask({ title: 'Diesen Stand wiederherstellen?', body: 'Er ersetzt den aktuellen Entwurf (der vorher gesichert wird). Live ändert sich erst mit „Veröffentlichen“.', ok: 'Wiederherstellen' }))) return;
+      if (dirty.size && !(await ask({ title: t('unsaved_changes'), body: t('restore_unsaved_body'), ok: t('continue'), danger: true }))) return;
+      if (!(await ask({ title: t('restore_ask'), body: t('restore_ask_body'), ok: t('restore') }))) return;
       try {
         const res = await api('version_restore', { date: r.dataset.restore, revision: r.dataset.rev });
         dirty.clear();
@@ -1176,9 +1181,10 @@
         data: () => api('version_view'),
         css: cfg.versions.css,
         select,
+        t,
         restore: async (key) => {
           // a custom dialog would sit behind the versions view – use the browser's confirmation here
-          if (dirty.size && !confirm('Ungespeicherte Änderungen gehen beim Wiederherstellen verloren. Fortfahren?')) throw new Error('Abgebrochen.');
+          if (dirty.size && !confirm(t('restore_unsaved_confirm'))) throw new Error(t('cancelled'));
           const res = await api('version_restore', { key });
           dirty.clear();
           say(res.message);
@@ -1194,12 +1200,12 @@
   function initSeo() {
     const body = $('[data-seo-body]');
     const load = async (mode) => {
-      body.innerHTML = '<p class="site-intro">Wird geprüft …</p>';
+      body.innerHTML = `<p class="site-intro">${et('checking')}</p>`;
       try { body.innerHTML = (await api('seo_advice', { mode })).html; } catch (err) { say(err.message, true); }
     };
     $('[data-seo-open]').addEventListener('click', () => {
       menu.hidden = true;
-      if ([panel, dpanel, ppanel, spanel, tpanel, hpanel, ipanel, gpanel].some((x) => !x.hidden)) return say('Bitte zuerst die andere Seitenleiste schließen.', true);
+      if ([panel, dpanel, ppanel, spanel, tpanel, hpanel, ipanel, gpanel].some((x) => !x.hidden)) return say(t('panel_close_first'), true);
       qpanel.hidden = false;
       document.documentElement.classList.add('blocks-panel-open');
       qpanel.querySelectorAll('[data-seo-mode]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.seoMode === 'page')));
@@ -1218,7 +1224,7 @@
     const body = $('[data-inbox-body]');
     let filter = 'new';
     let items = [];
-    const when = (d) => { const t = new Date(String(d).replace(' ', 'T')); return d && !isNaN(t) ? t.toLocaleString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : ''; };
+    const when = (d) => { const t = new Date(String(d).replace(' ', 'T')); return d && !isNaN(t) ? t.toLocaleString(lang, { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : ''; };
     const badge = (n) => {
       const b = $('[data-inbox-open]');
       b.querySelector('.badge')?.remove();
@@ -1229,17 +1235,17 @@
       body.innerHTML = items.length ? '<ul class="site-list" role="list">' + items.map((it, i) => `
         <li class="inbox__item${it.state === 'new' ? ' is-new' : ''}">
           <details>
-            <summary><span class="site-list__main"><b>${esc(it.title)}</b><small>${esc(it.tableLabel)}${it.when ? ' · ' + esc(when(it.when)) : ''}${it.state === 'new' ? ' · neu' : ''}</small></span></summary>
+            <summary><span class="site-list__main"><b>${esc(it.title)}</b><small>${esc(it.tableLabel)}${it.when ? ' · ' + esc(when(it.when)) : ''}${it.state === 'new' ? ' · ' + et('new_lc') : ''}</small></span></summary>
             <dl class="inbox__dl">${it.values.map((v) => `<div><dt>${esc(v.label)}</dt><dd>${esc(v.value).replace(/\n/g, '<br>')}</dd></div>`).join('')}</dl>
             <div class="site-actions">
-              ${it.email ? `<a class="btn" href="mailto:${esc(it.email)}">Antworten</a>` : ''}
-              ${it.edit ? `<a class="btn" href="${esc(unamp(it.edit))}" target="_blank" rel="noopener">In YForm öffnen</a>` : ''}
-              ${it.canDelete ? `<button type="button" class="btn" data-inbox-delete="${i}">Löschen</button>` : ''}
-              <button type="button" class="btn btn--primary" data-inbox-state="${i}">${it.state === 'new' ? 'Erledigt' : 'Wieder neu'}</button>
+              ${it.email ? `<a class="btn" href="mailto:${esc(it.email)}">${et('reply')}</a>` : ''}
+              ${it.edit ? `<a class="btn" href="${esc(unamp(it.edit))}" target="_blank" rel="noopener">${et('open_yform')}</a>` : ''}
+              ${it.canDelete ? `<button type="button" class="btn" data-inbox-delete="${i}">${et('delete')}</button>` : ''}
+              <button type="button" class="btn btn--primary" data-inbox-state="${i}">${it.state === 'new' ? et('inbox_done') : et('inbox_reopen')}</button>
             </div>
           </details>
         </li>`).join('') + '</ul>'
-        : `<p class="site-intro">${filter === 'new' ? 'Keine neuen Anfragen.' : 'Keine Anfragen.'}</p>`;
+        : `<p class="site-intro">${filter === 'new' ? et('inbox_none_new') : et('inbox_none')}</p>`;
     };
     const load = async (action = 'inbox', data = {}) => {
       try {
@@ -1252,7 +1258,7 @@
     };
     $('[data-inbox-open]').addEventListener('click', () => {
       menu.hidden = true;
-      if ([panel, dpanel, ppanel, spanel, tpanel, hpanel, gpanel, qpanel].some((x) => !x.hidden)) return say('Bitte zuerst die andere Seitenleiste schließen.', true);
+      if ([panel, dpanel, ppanel, spanel, tpanel, hpanel, gpanel, qpanel].some((x) => !x.hidden)) return say(t('panel_close_first'), true);
       ipanel.hidden = false;
       document.documentElement.classList.add('blocks-panel-open');
       load();
@@ -1273,7 +1279,7 @@
       const del = e.target.closest('[data-inbox-delete]');
       if (del) {
         const it = items[+del.dataset.inboxDelete];
-        if (!(await ask({ title: 'Anfrage löschen?', body: `„${it.title}“ wird endgültig aus „${it.tableLabel}“ gelöscht.`, ok: 'Löschen', danger: true }))) return;
+        if (!(await ask({ title: t('inbox_delete'), body: t('inbox_delete_body', it.title, it.tableLabel), ok: t('delete'), danger: true }))) return;
         return load('inbox_delete', { table: it.table, id: it.id });
       }
     });
@@ -1302,8 +1308,8 @@
     const draw = () => {
       const v = norm(q.value);
       const hits = terms.filter((t) => !v || norm(t.term).includes(v) || t.variants.some((x) => norm(x).includes(v)) || norm(t.short).includes(v));
-      status.textContent = !terms.length ? 'Im Glossar stehen noch keine Begriffe.' : !hits.length ? 'Kein Begriff gefunden.' : hits.length === 1 ? '1 Begriff' : `${hits.length} Begriffe`;
-      list.innerHTML = hits.slice(0, 60).map((t) => `<li class="site-list__item"><span class="site-list__main"><b>${esc(t.term)}</b>${t.online ? '' : ' <small>Entwurf</small>'}<small>${esc(t.short)}</small>${t.variants.length ? `<small>Auch: ${esc(t.variants.join(', '))}</small>` : ''}</span>${t.edit ? `<a class="btn" href="${esc(unamp(t.edit))}" target="_blank" rel="noopener" aria-label="${esc(t.term)} bearbeiten">Bearbeiten</a>` : ''}</li>`).join('');
+      status.textContent = !terms.length ? t('gloss_empty') : !hits.length ? t('gloss_none_found') : hits.length === 1 ? t('gloss_terms_1') : t('gloss_terms_n', hits.length);
+      list.innerHTML = hits.slice(0, 60).map((t) => `<li class="site-list__item"><span class="site-list__main"><b>${esc(t.term)}</b>${t.online ? '' : ` <small>${et('draft')}</small>`}<small>${esc(t.short)}</small>${t.variants.length ? `<small>${et('gloss_also', t.variants.join(', '))}</small>` : ''}</span>${t.edit ? `<a class="btn" href="${esc(unamp(t.edit))}" target="_blank" rel="noopener" aria-label="${et('edit_x', t.term)}">${et('edit')}</a>` : ''}</li>`).join('');
     };
     // „Gibt es schon?“: same term or spelling – otherwise similar terms the text can be assigned to as a spelling
     const dupe = () => {
@@ -1311,9 +1317,9 @@
       const v = norm(gpanel.querySelector('[data-gloss-term]').value);
       if (v.length < 2) { box.innerHTML = ''; return; }
       const same = terms.find((t) => norm(t.term) === v || t.variants.some((x) => norm(x).replace(/^["„“]|["“”]$/g, '') === v));
-      if (same) { box.innerHTML = `<p class="site-intro gloss-warn">Gibt es schon: „${esc(same.term)}“.</p>`; return; }
+      if (same) { box.innerHTML = `<p class="site-intro gloss-warn">${et('gloss_exists', same.term)}</p>`; return; }
       const near = terms.filter((t) => norm(t.term).includes(v) || v.includes(norm(t.term))).slice(0, 3);
-      box.innerHTML = near.map((t) => `<p class="site-intro">Ähnlich: „${esc(t.term)}“ <button type="button" class="btn" data-gloss-variant="${t.id}">Als Schreibweise zu „${esc(t.term)}“ hinzufügen</button></p>`).join('');
+      box.innerHTML = near.map((t) => `<p class="site-intro">${et('gloss_similar', t.term)} <button type="button" class="btn" data-gloss-variant="${t.id}">${et('gloss_add_variant', t.term)}</button></p>`).join('');
     };
     const load = async (data = {}) => {
       const res = await api('glossary', data);
@@ -1326,16 +1332,16 @@
     const count = () => {
       const s = gpanel.querySelector('[data-gloss-short]');
       const n = s.value.trim().length;
-      gpanel.querySelector('[data-gloss-count]').textContent = `${n} von ${G.max} Zeichen` + (n > G.max ? ' – zu lang' : '');
+      gpanel.querySelector('[data-gloss-count]').textContent = t('chars_of', n, G.max) + (n > G.max ? ' – ' + t('too_long') : '');
     };
     const open = (text = '') => {
       menu.hidden = true;
-      if ([panel, dpanel, ppanel, spanel, tpanel, hpanel, ipanel, qpanel].some((x) => x && !x.hidden)) return say('Bitte zuerst die andere Seitenleiste schließen.', true);
+      if ([panel, dpanel, ppanel, spanel, tpanel, hpanel, ipanel, qpanel].some((x) => x && !x.hidden)) return say(t('panel_close_first'), true);
       gpanel.hidden = false;
       document.documentElement.classList.add('blocks-panel-open');
       const manage = gpanel.querySelector('[data-gloss-manage]');
       manage.hidden = !G.manage;
-      if (G.manage) manage.innerHTML = `<a href="${esc(unamp(G.manage))}" target="_blank" rel="noopener">Glossar in YForm verwalten</a>${G.auto ? '' : ' · Automatisches Markieren ist aus (Website → Glossar).'}`;
+      if (G.manage) manage.innerHTML = `<a href="${esc(unamp(G.manage))}" target="_blank" rel="noopener">${et('gloss_manage')}</a>${G.auto ? '' : ' · ' + et('gloss_auto_off')}`;
       load().catch((err) => say(err.message, true));
       if (text) {
         show('new');
@@ -1354,7 +1360,7 @@
       if (e.altKey && !e.ctrlKey && !e.metaKey && (e.code === 'KeyG')) { e.preventDefault(); open(selected()); }
     });
     // Marked text in the content: a small button "Zum Glossar" below the selection (Alt+G does the same)
-    const chip = h('<button type="button" class="gloss-chip" hidden title="Markierten Begriff ins Glossar aufnehmen (Alt+G)">Zum Glossar</button>');
+    const chip = h(`<button type="button" class="gloss-chip" hidden title="${et('gloss_chip_hint')}">${et('gloss_chip')}</button>`);
     root.append(chip);
     let chipText = '';
     const chipHide = () => { chip.hidden = true; chipText = ''; };
@@ -1391,7 +1397,7 @@
     gpanel.querySelector('[data-gloss-form]').addEventListener('submit', async (e) => {
       e.preventDefault();
       const f = e.target;
-      if (!f.term.value.trim() || !f.short.value.trim()) { say('Bitte Begriff und Kurztext angeben.', true); (f.term.value.trim() ? f.short : f.term).focus(); return; }
+      if (!f.term.value.trim() || !f.short.value.trim()) { say(t('gloss_required'), true); (f.term.value.trim() ? f.short : f.term).focus(); return; }
       try {
         await load({ op: 'create', term: f.term.value, short: f.short.value, variants: f.variants.value, all_languages: f.all_languages.checked ? 1 : 0 });
         f.reset();
@@ -1436,7 +1442,7 @@
     };
     $('[data-site-open]').addEventListener('click', () => {
       menu.hidden = true;
-      if (!panel.hidden || !dpanel.hidden || !ppanel.hidden) return say('Bitte zuerst die andere Seitenleiste schließen.', true);
+      if (!panel.hidden || !dpanel.hidden || !ppanel.hidden) return say(t('panel_close_first'), true);
       spanel.hidden = false;
       document.documentElement.classList.add('blocks-panel-open');
       drawTabs(cfg.site.tabs);
@@ -1461,7 +1467,7 @@
         const res = await api(f.dataset.siteForm, fd);
         if (res.reload) reload = true;
         show(res);
-        say(res.message || 'Gespeichert.');
+        say(res.message || t('saved'));
       } catch (err) { say(err.message, true); } finally { if (btn) btn.disabled = false; }
     });
     body.addEventListener('click', async (e) => {
@@ -1473,7 +1479,7 @@
       }
       const act = e.target.closest('[data-site-act]');
       if (act) {
-        if (act.dataset.confirm && !(await ask({ title: act.dataset.confirm, ok: 'Ja', danger: true }))) return;
+        if (act.dataset.confirm && !(await ask({ title: act.dataset.confirm, ok: t('yes'), danger: true }))) return;
         try { const res = await api(act.dataset.siteAct, { id: act.dataset.id, tab }); show(res); say(res.message); } catch (err) { say(err.message, true); }
         return;
       }
@@ -1488,14 +1494,14 @@
         const f = geo.closest('form');
         const val = (n) => f.querySelector(`[name$="[${n}]"]`)?.value?.trim() || '';
         const q = [val('street'), [val('zip'), val('city')].filter(Boolean).join(' '), val('country')].filter(Boolean).join(', ') || val('address');
-        if (!q) return say('Bitte zuerst die Adresse eintragen.', true);
+        if (!q) return say(t('geo_address_first'), true);
         geo.disabled = true;
         try {
           const res = await api('geocode', { q });
           const hit = res.results?.[0];
-          if (!hit) return say('Keinen Ort zu dieser Adresse gefunden.', true);
+          if (!hit) return say(t('geo_not_found'), true);
           geo.closest('.blocks-geo').querySelector('[data-geo]').value = `${hit.lat}, ${hit.lng}`;
-          say(`Gefunden: ${hit.label}`);
+          say(t('geo_found', hit.label));
         } catch (err) { say(err.message, true); } finally { geo.disabled = false; }
       }
     });
@@ -1523,7 +1529,7 @@
       const fresh = [...doc.querySelectorAll('[data-fluid-nav]')];
       const key = (el) => el.dataset.fluidNav;
       // Menu entirely new or entirely gone: that changes the header structure – visible only after a reload
-      if (fresh.map(key).join() !== mine.map(key).join()) { say('Das Menü hat sich geändert – nach dem Neuladen der Seite sichtbar.'); return; }
+      if (fresh.map(key).join() !== mine.map(key).join()) { say(t('menu_changed')); return; }
       mine.forEach((el, i) => { if (el.innerHTML !== fresh[i].innerHTML) el.innerHTML = fresh[i].innerHTML; });
       window.dispatchEvent(new Event('fluid:nav-updated'));
     } catch { /* network: up to date on next load */ }
@@ -1542,8 +1548,8 @@
       const b = document.createElement('button');
       b.type = 'button';
       b.className = 'fluid-mod__btn';
-      b.textContent = `✎ ${el.dataset.label} bearbeiten`;
-      b.title = 'Modul ohne fluid-Felder – sein Formular erscheint in der Seitenleiste';
+      b.textContent = '✎ ' + t('edit_x', el.dataset.label);
+      b.title = t('module_btn_hint');
       el.prepend(b);
     });
   }
@@ -1577,7 +1583,7 @@
     let res;
     try { res = await api('module_new', { module: item.dataset.key, after }); } catch (err) { say(err.message, true); return; }
     modId = 0;
-    $('[data-panel-title]').textContent = item.querySelector('strong')?.textContent || 'Modul';
+    $('[data-panel-title]').textContent = item.querySelector('strong')?.textContent || t('module');
     $('[data-panel-vis]').hidden = true;
     modForm(res.html);
     modNew = { key: item.dataset.key, after };
@@ -1647,7 +1653,7 @@
         } else {
           location.reload();
         }
-        say('Modul hinzugefügt.');
+        say(t('module_added'));
       } catch (err) { say(err.message, true); }
       return;
     }
@@ -1658,15 +1664,15 @@
         await api('module_save', fd);
         await refreshSlice(modId);
         closePanel();
-        say('Modul gespeichert.');
+        say(t('module_saved'));
       } catch (err) { say(err.message, true); }
       return;
     }
     try {
       const btn = modFrame.contentDocument?.querySelector('#REX_FORM [name="btn_save"]');
-      if (!btn) { say('Das Formular ist noch nicht geladen.', true); return; }
+      if (!btn) { say(t('form_not_loaded'), true); return; }
       btn.click();
-    } catch { say('Das Formular ließ sich nicht absenden.', true); }
+    } catch { say(t('form_submit_failed'), true); }
   }
   modFrame.addEventListener('load', async () => {
     if ('frame' !== modMode) return;
@@ -1675,14 +1681,14 @@
     modLoads++;
     const formEl = doc.getElementById('REX_FORM');
     if (1 === modLoads) {
-      if (!formEl) say('Das Formular dieses Moduls ließ sich hier nicht öffnen – bitte im Backend bearbeiten.', true);
+      if (!formEl) say(t('module_form_failed'), true);
       return;
     }
     // Required field or similar: the form comes back with a message – the sidebar stays open
     if (formEl) return;
     await refreshSlice(modId);
     closePanel();
-    say('Modul gespeichert.');
+    say(t('module_saved'));
   });
 
   // ------------------------------------------------------------------ Text directly on the page
@@ -1712,8 +1718,8 @@
       }
       if (el.tagName !== 'BUTTON') el.dataset.blocksEditable = '';
       el.dataset.recReady = '';
-      el.title = text ? `${el.dataset.recLabel} – wird beim Verlassen des Feldes gespeichert`
-        : el.dataset.recKind === 'check' ? `${el.dataset.recLabel}: Klick schaltet um` : `${el.dataset.recLabel} ändern`;
+      el.title = text ? t('rec_text_hint', el.dataset.recLabel)
+        : el.dataset.recKind === 'check' ? t('rec_check_hint', el.dataset.recLabel) : t('rec_change_hint', el.dataset.recLabel);
     });
   }
 
@@ -1727,7 +1733,7 @@
       // Date, image, choice …: the block is rendered again (formatting, image, dependencies such as the meta line)
       if (rerender && sec?.isConnected) apply(await api('render', { slice: sec.dataset.block }), sec);
       else el.innerHTML = r.html;
-      say(`„${el.dataset.recLabel}“ gespeichert.`);
+      say(t('x_saved', el.dataset.recLabel));
       return true;
     } catch (err) {
       say(err.message, true);
@@ -1738,7 +1744,7 @@
   // Small input in place: address, email, date, time, number, choice
   const recPop = h(`<form class="recpop" hidden role="dialog" aria-modal="false" aria-labelledby="fluid-recpop-l">
       <label class="recpop__l" id="fluid-recpop-l"></label><div class="recpop__c"></div>
-      <div class="recpop__a"><button type="button" class="btn" data-rec-cancel>Abbrechen</button><button type="submit" class="btn btn--primary">Speichern</button></div>
+      <div class="recpop__a"><button type="button" class="btn" data-rec-cancel>${et('cancel')}</button><button type="submit" class="btn btn--primary">${et('save')}</button></div>
     </form>`);
   root.append(recPop);
   let recEl = null;
@@ -1871,7 +1877,7 @@
     e.stopPropagation();
     if (e.metaKey || e.ctrlKey) { window.open(a.href, '_blank', 'noopener'); return; }
     if (dirty.size) {
-      const r = await ask({ title: 'Ungespeicherte Änderungen', body: 'Vor dem Wechsel zur anderen Seite speichern?', ok: 'Speichern', cancel: 'Weiter bearbeiten', alt: 'Verwerfen' });
+      const r = await ask({ title: t('unsaved_changes'), body: t('switch_page_save_ask'), ok: t('save'), cancel: t('keep_editing'), alt: t('discard') });
       if (r === 'alt') dirty.clear();
       else if (r !== true || !(await saveAll())) return;
     }
@@ -1897,7 +1903,7 @@
         dirty.delete(id);
         if (sec && !sec.contains(document.activeElement)) apply(res, sec);
       }
-      say('Gespeichert.');
+      say(t('saved'));
       return true;
     } catch (err) {
       say(err.message, true);
@@ -1931,7 +1937,7 @@
     render();
     try {
       const res = await api('publish');
-      say(res.message || 'Veröffentlicht.');
+      say(res.message || t('published'));
     } catch (err) {
       say(err.message, true);
     } finally {
@@ -1941,7 +1947,7 @@
   });
 
   root.querySelector('[data-discard]')?.addEventListener('click', async () => {
-    if (!(await ask({ title: 'Entwurf verwerfen?', body: 'Alle Änderungen seit der letzten Veröffentlichung gehen verloren.', ok: 'Verwerfen', danger: true }))) return;
+    if (!(await ask({ title: t('discard_draft'), body: t('discard_draft_body'), ok: t('discard'), danger: true }))) return;
     dirty.clear();
     await api('discard').catch((err) => say(err.message, true));
     location.reload();
@@ -2017,7 +2023,7 @@
     const col = sec.closest('[data-lay-col]');
     const parentSec = col?.parentElement?.closest('[data-block]') || null;
     const cols = col ? col.parentElement.querySelectorAll(':scope > [data-lay-col]').length : 0;
-    $('[data-bb-label]').textContent = (col ? `Spalte ${col.dataset.layCol}/${cols} · ` : '') + (sec.dataset.label || sec.dataset.type);
+    $('[data-bb-label]').textContent = (col ? t('column_x', col.dataset.layCol, cols) + ' · ' : '') + (sec.dataset.label || sec.dataset.type);
     const pb = $('[data-bb-parent]');
     pb.hidden = !parentSec;
     pb.onclick = parentSec ? () => { select(parentSec); parentSec.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } : null;
@@ -2025,15 +2031,15 @@
     const st = $('[data-bb-status]');
     // Record blocks: no online toggle, no columns
     st.toggleAttribute('data-noperm', sec.hasAttribute('data-record') || !may('publishSlice'));
-    st.textContent = offline ? 'Offline' : 'Online';
+    st.textContent = offline ? t('offline') : t('online');
     st.classList.toggle('is-off', offline);
     // Locked blocks and blocks without module permission (data-readonly, Klxm\Fluid\Lock): visible and movable, not editable
     const ro = sec.dataset.readonly || '';
     const lockEl = $('[data-bb-lock]');
     lockEl.hidden = !ro && !sec.hasAttribute('data-locked');
-    $('[data-bb-lock-text]').textContent = ro === 'perm' ? 'Kein Recht' : 'Gesperrt';
-    lockEl.title = ro === 'perm' ? 'Für diesen Blocktyp fehlt Ihnen das Modulrecht – verschieben geht, ändern nicht.'
-      : ro ? 'Gesperrter Block – verschieben geht, ändern und löschen nur mit dem Recht „Blöcke gestalten und sperren“.' : 'Gesperrter Block – Sie dürfen ihn trotzdem ändern.';
+    $('[data-bb-lock-text]').textContent = ro === 'perm' ? t('no_permission') : t('locked');
+    lockEl.title = ro === 'perm' ? t('lock_perm_hint')
+      : ro ? t('lock_hint') : t('lock_hint_allowed');
     $('[data-bb-edit]').toggleAttribute('data-noperm', !!ro);
     $('[data-bb-delete]').toggleAttribute('data-noperm', !!ro);
     if (ro) st.setAttribute('data-noperm', '');
@@ -2082,7 +2088,7 @@
     try {
       const res = await api('status', { slice: sec.dataset.block });
       apply(res, sec);
-      say(res.online ? 'Block ist online.' : 'Block ist offline – auf der Website nicht sichtbar.');
+      say(res.online ? t('block_online') : t('block_offline'));
     } catch (err) {
       say(err.message, true);
     }
@@ -2091,7 +2097,7 @@
   $('[data-bb-delete]').addEventListener('click', async () => {
     const sec = target();
     if (!sec) return;
-    if (!(await ask({ title: `„${sec.dataset.label}“ löschen?`, body: sec.hasAttribute('data-record') ? 'Der Block wird aus dem Eintrag entfernt – sofort gespeichert.' : 'Der Block wird aus dem Entwurf entfernt.', ok: 'Löschen', danger: true }))) return;
+    if (!(await ask({ title: t('delete_named_q', sec.dataset.label), body: sec.hasAttribute('data-record') ? t('block_delete_record') : t('block_delete_draft'), ok: t('delete'), danger: true }))) return;
     try {
       const res = await api('delete', { slice: sec.dataset.block });
       if (res.reload) { location.reload(); return; }
@@ -2128,10 +2134,10 @@
     const used = Object.keys(cfg.usage || {}).filter((k) => keys.has(k));
     const basics = ['richtext', 'media_text', 'cards', 'hero', 'cta', 'features'].map((t) => mods.find((m) => m.key.endsWith('.' + t))?.key).filter(Boolean);
     const favs = mods.length > 8 ? (used.length >= 3 ? used : [...used, ...basics.filter((k) => !used.includes(k))]).slice(0, 6) : [];
-    const ORDER = ['Kopf', 'Inhalt', 'Medien', 'Layout', 'Daten', 'Navigation', 'Website'];
+    const ORDER = cfg.groupOrder || [];   // block groups in the editor's language (Toolbar)
     const rank = (g) => (ORDER.indexOf(g) + 1) || 99;
     const item = (m, fav = false) => `<button type="button" role="option" class="picker__item${fav ? ' picker__item--fav' : ''}"${m.native ? ' data-native' : ''} data-key="${esc(m.key)}" data-q="${esc((m.label + ' ' + m.help).toLowerCase())}"><strong>${esc(m.label)}</strong>${m.help ? `<span>${esc(m.help)}</span>` : ''}</button>`;
-    list.innerHTML = (favs.length ? '<p class="picker__group picker__group--fav">Häufig verwendet</p>' + favs.map((k) => item(mods.find((m) => m.key === k), true)).join('') : '')
+    list.innerHTML = (favs.length ? `<p class="picker__group picker__group--fav">${et('frequently_used')}</p>` + favs.map((k) => item(mods.find((m) => m.key === k), true)).join('') : '')
       + Object.entries(groups).sort(([a], [b]) => rank(a) - rank(b)).map(([g, ms]) => `<p class="picker__group">${esc(g)}</p>` + ms.map((m) => item(m)).join('')).join('');
     picker.hidden = false;
     const q = $('[data-picker-q]');
@@ -2204,8 +2210,8 @@
       hint.dataset.blocksEmpty = '';
       // in another language: copy the content of a filled language, then translate
       const sources = may('copyContent') ? (cfg.languages || []).filter((l) => !l.current && !l.empty) : [];
-      hint.innerHTML = '<p>Diese Seite hat noch keine Blöcke.</p><button type="button" data-first>+ Ersten Block einfügen</button>'
-        + sources.map((l) => `<button type="button" data-lang-copy="${l.id}">Inhalt aus ${esc(l.name)} übernehmen</button>`).join('');
+      hint.innerHTML = `<p>${et('no_blocks')}</p><button type="button" data-first>+ ${et('insert_first_block')}</button>`
+        + sources.map((l) => `<button type="button" data-lang-copy="${l.id}">${et('copy_content_from', l.name)}</button>`).join('');
       hint.querySelector('[data-first]').addEventListener('click', () => openPicker(null));
       hint.querySelectorAll('[data-lang-copy]').forEach((b) => b.addEventListener('click', async () => {
         b.disabled = true;
@@ -2229,7 +2235,7 @@
       const b = document.createElement('button');
       b.type = 'button';
       b.dataset.blocksColadd = '';
-      b.textContent = '+ Block in diese Spalte';
+      b.textContent = '+ ' + t('block_into_column');
       b.addEventListener('click', (e) => {
         e.stopPropagation();
         const layout = col.closest('[data-layout]');
@@ -2293,7 +2299,7 @@
       original = o.outerHTML;
       showVisibility(sec);
       place();
-      say(res.online ? 'Block ist online.' : 'Block ist offline – auf der Website nicht sichtbar.');
+      say(res.online ? t('block_online') : t('block_offline'));
     } catch (err) {
       e.target.checked = !e.target.checked;
       say(err.message, true);
@@ -2332,7 +2338,7 @@
       const sec = panelBlock;
       closePanel();
       apply(res, sec);
-      say('Gespeichert.');
+      say(t('saved'));
     } catch (err) {
       say(err.message, true);
     } finally {
@@ -2368,10 +2374,10 @@
   // ------------------------------------------------------------------ Edit images (Addon image_editor, optional)
 
   const ieBtn = h(`<div class="iebtn" hidden>
-      <button type="button" data-ie="place" title="Nur an dieser Stelle: Effekt, Darstellung im Rahmen, Ausschnitt">◧ Hier anpassen</button>
-      <button type="button" data-ie="edit" title="Bild im Medienpool bearbeiten – gilt für alle Verwendungen">✎ Bearbeiten</button>
-      <button type="button" data-ie="adjust" title="Farben im Medienpool anpassen – gilt für alle Verwendungen">◐ Anpassen</button>
-      <button type="button" data-ie="crop" title="Zuschnitt für dieses Format im Medienpool – gilt für alle Verwendungen">⬚ Ausschnitt</button>
+      <button type="button" data-ie="place" title="${et('ie_place_hint')}">◧ ${et('ie_place')}</button>
+      <button type="button" data-ie="edit" title="${et('ie_edit_hint')}">✎ ${et('edit')}</button>
+      <button type="button" data-ie="adjust" title="${et('ie_adjust_hint')}">◐ ${et('ie_adjust')}</button>
+      <button type="button" data-ie="crop" title="${et('ie_crop_hint')}">⬚ ${et('ip_crop')}</button>
     </div>`);
   root.append(ieBtn);
   let ieImg = null;
@@ -2434,7 +2440,7 @@
       if (!item) return;
       const res = await api('render', { slice: sec.dataset.block });
       apply(res, sec);
-      say('Bild gespeichert – das Original bleibt im Medienpool erhalten.');
+      say(t('image_saved'));
     } catch (err) {
       say(err.message, true);
     }
@@ -2448,37 +2454,37 @@
   const ipRange = (k, label, min, max) => `<label class="imgpop__r"><span>${label}</span>
       <input type="range" name="${k}" min="${min}" max="${max}" step="${k === 'z' ? 10 : k === 'x' || k === 'y' ? 1 : 10}"><output></output></label>`;
   const ipPop = h(`<form class="recpop imgpop" hidden role="dialog" aria-modal="false" aria-labelledby="fluid-imgpop-l">
-      <strong class="recpop__l" id="fluid-imgpop-l">Bild an dieser Stelle</strong>
-      <div class="imgpop__tabs" role="tablist" aria-label="Einstellung">
-        <button type="button" role="tab" data-ip-tab="fx" aria-selected="true">Effekt</button>
-        <button type="button" role="tab" data-ip-tab="fit" aria-selected="false">Darstellung</button>
-        <button type="button" role="tab" data-ip-tab="crop" aria-selected="false">Ausschnitt</button>
+      <strong class="recpop__l" id="fluid-imgpop-l">${et('ip_title')}</strong>
+      <div class="imgpop__tabs" role="tablist" aria-label="${et('setting')}">
+        <button type="button" role="tab" data-ip-tab="fx" aria-selected="true">${et('ip_effect')}</button>
+        <button type="button" role="tab" data-ip-tab="fit" aria-selected="false">${et('ip_fit')}</button>
+        <button type="button" role="tab" data-ip-tab="crop" aria-selected="false">${et('ip_crop')}</button>
       </div>
       <div data-ip-panel="fx" role="tabpanel">
-        <div class="imgpop__opts" role="radiogroup" aria-label="Effekt">
-          <label><input type="radio" name="fx" value=""> Wie im Medienpool</label>
+        <div class="imgpop__opts" role="radiogroup" aria-label="${et('ip_effect')}">
+          <label><input type="radio" name="fx" value=""> ${et('ip_as_mediapool')}</label>
           ${IP.effects.map(([v, l]) => `<label><input type="radio" name="fx" value="${esc(v)}"> ${esc(l)}</label>`).join('')}
         </div>
-        ${ipRange('s', 'Sättigung', 0, 200)}${ipRange('b', 'Helligkeit', 50, 150)}${ipRange('c', 'Kontrast', 50, 150)}
+        ${ipRange('s', et('ip_saturation'), 0, 200)}${ipRange('b', et('ip_brightness'), 50, 150)}${ipRange('c', et('ip_contrast'), 50, 150)}
       </div>
       <div data-ip-panel="fit" role="tabpanel" hidden>
-        <div class="imgpop__opts" role="radiogroup" aria-label="Darstellung im Rahmen">
+        <div class="imgpop__opts" role="radiogroup" aria-label="${et('ip_fit_frame')}">
           ${IP.fits.map(([v, l]) => `<label><input type="radio" name="fit" value="${esc(v)}"> ${esc(l)}</label>`).join('')}
         </div>
-        <fieldset class="imgpop__bg" data-ip-bg><legend>Hintergrund</legend>
-          <label><input type="radio" name="bg" value=""> Keiner</label>
-          <label><input type="radio" name="bg" value="blur"> Unscharfes Bild</label>
-          <label><input type="radio" name="bg" value="accent"> Akzentfarbe</label>
-          <label><input type="radio" name="bg" value="color"> Farbe <input type="color" name="color" value="#ffffff" aria-label="Farbe"></label>
+        <fieldset class="imgpop__bg" data-ip-bg><legend>${et('ip_background')}</legend>
+          <label><input type="radio" name="bg" value=""> ${et('ip_bg_none')}</label>
+          <label><input type="radio" name="bg" value="blur"> ${et('ip_bg_blur')}</label>
+          <label><input type="radio" name="bg" value="accent"> ${et('ip_bg_accent')}</label>
+          <label><input type="radio" name="bg" value="color"> ${et('ip_bg_color')} <input type="color" name="color" value="#ffffff" aria-label="${et('ip_bg_color')}"></label>
         </fieldset>
       </div>
       <div data-ip-panel="crop" role="tabpanel" hidden>
-        <p class="imgpop__hint" data-ip-noframe hidden>Ein Ausschnitt wirkt nur in Rahmen mit festem Format.</p>
-        <p class="imgpop__hint">Bild ziehen, Regler oder Pfeiltasten.</p>
-        ${ipRange('x', 'Waagerecht', 0, 100)}${ipRange('y', 'Senkrecht', 0, 100)}${ipRange('z', 'Zoom', 100, 300)}
+        <p class="imgpop__hint" data-ip-noframe hidden>${et('ip_noframe')}</p>
+        <p class="imgpop__hint">${et('ip_crop_hint')}</p>
+        ${ipRange('x', et('ip_horizontal'), 0, 100)}${ipRange('y', et('ip_vertical'), 0, 100)}${ipRange('z', et('ip_zoom'), 100, 300)}
       </div>
-      <div class="recpop__a"><button type="button" class="btn imgpop__reset" data-ip-reset>Zurücksetzen</button>
-        <button type="button" class="btn" data-ip-cancel>Abbrechen</button><button type="submit" class="btn btn--primary">Übernehmen</button></div>
+      <div class="recpop__a"><button type="button" class="btn imgpop__reset" data-ip-reset>${et('reset')}</button>
+        <button type="button" class="btn" data-ip-cancel>${et('cancel')}</button><button type="submit" class="btn btn--primary">${et('apply')}</button></div>
     </form>`);
   root.append(ipPop);
   let ip = null;   // { sec, path, before }
@@ -2594,7 +2600,7 @@
     // The server removes values equal to the media pool's (ImagePlace::fromArray) – no own comparison needed
     patchBlock(byId(ip.sec.dataset.block) || ip.sec, `@img:${ip.path}`, JSON.stringify(ipValues()));
     ipClose(false);
-    say('Bild an dieser Stelle geändert – mit „Speichern“ sichern.');
+    say(t('ip_changed'));
   });
   ipPop.querySelector('[data-ip-reset]').addEventListener('click', () => {
     ipFill({});
@@ -2633,13 +2639,13 @@
   const TT = window.RexTiptap;
   // page and media picker of the website for the link dialog (logged-in editors)
   if (TT && window.FrontendPicker) TT.pick = (type, options) => window.FrontendPicker.pick(type, options);
-  const ttLoad = () => (TT?.upgrade ? Promise.resolve() : (TT?.load?.() ?? Promise.reject(new Error('TipTap fehlt'))));
+  const ttLoad = () => (TT?.upgrade ? Promise.resolve() : (TT?.load?.() ?? Promise.reject(new Error(t('tiptap_missing')))));
   // stored links: target from data-link back into href (the link dialog then shows the page, not its address)
   const forEditor = (html) => {
-    const t = document.createElement('template');
-    t.innerHTML = html;
-    t.content.querySelectorAll('a[data-link]').forEach((a) => { a.setAttribute('href', a.dataset.link); a.removeAttribute('data-link'); });
-    return t.innerHTML;
+    const tpl = document.createElement('template');
+    tpl.innerHTML = html;
+    tpl.content.querySelectorAll('a[data-link]').forEach((a) => { a.setAttribute('href', a.dataset.link); a.removeAttribute('data-link'); });
+    return tpl.innerHTML;
   };
   // fields of the sidebar (textarea[data-tiptap]) – the observer of TipTap does not see this shadow root
   function tiptapUp(scope) {
@@ -2654,7 +2660,7 @@
     try {
       await ttLoad();
       const sec = el.closest('[data-block]');
-      const inst = TT.inline(el, 'tiptap.fluid', { value: forEditor(el.innerHTML), label: el.dataset.editLabel || 'Text' });
+      const inst = TT.inline(el, 'tiptap.fluid', { value: forEditor(el.innerHTML), label: el.dataset.editLabel || t('text') });
       if (!inst) return;
       el.removeAttribute('tabindex');
       el.addEventListener('rex-tiptap:change', (e) => {
@@ -2694,10 +2700,10 @@
     const c = clip();
     const paste = bbMenu.querySelector('[data-bb-op="paste"]');
     paste.disabled = !c || inCol;
-    paste.textContent = c ? `${c.cut ? 'Verschieben hierher' : 'Einfügen darunter'}: „${c.label}“` : 'Einfügen darunter';
+    paste.textContent = c ? t(c.cut ? 'move_here_x' : 'paste_below_x', c.label) : t('paste_below');
     bbMenu.querySelector('[data-bb-op="duplicate"]').disabled = inCol;
     bbMenu.querySelector('[data-bb-op="cut"]').hidden = !!sec?.dataset.readonly;   // locked: the original would remain
-    bbMenu.querySelector('[data-bb-op="collapse"]').textContent = sec?.classList.contains('fluid-collapsed') ? 'Aufklappen' : 'Einklappen';
+    bbMenu.querySelector('[data-bb-op="collapse"]').textContent = sec?.classList.contains('fluid-collapsed') ? t('expand') : t('collapse');
   });
   document.addEventListener('click', () => { bbMenu.hidden = true; bbMore.setAttribute('aria-expanded', 'false'); });
   // Remember collapsed blocks per page (in this browser only)
@@ -2720,7 +2726,7 @@
     const secs = [...main.querySelectorAll(':scope section[data-block]')].filter((s) => !s.parentElement.closest('section[data-block]'));
     const on = secs.some((s) => !s.classList.contains('fluid-collapsed'));
     secs.forEach((s) => setFold(s, on));
-    say(on ? 'Kompaktansicht: Blöcke zugeklappt – Klick auf einen Block klappt ihn auf.' : 'Alle Blöcke aufgeklappt.');
+    say(on ? t('compact_on') : t('compact_off'));
     place();
   });
   bbMenu.addEventListener('click', async (e) => {
@@ -2739,7 +2745,7 @@
         const entry = { clip: res.clip, label: res.label };
         if (op === 'cut') entry.cut = { article: cfg.article.id, language: cfg.article.language, slice: +sec.dataset.block };
         localStorage.setItem(CLIP, JSON.stringify(entry));
-        say(op === 'cut' ? `„${res.label}“ ausgeschnitten – an der neuen Stelle über ⋯ → Verschieben hierher.` : `„${res.label}“ kopiert – auf dieser oder einer anderen Seite über ⋯ → Einfügen.`);
+        say(op === 'cut' ? t('block_cut', res.label) : t('block_copied', res.label));
         return;
       }
       if (op === 'left' || op === 'right') {
@@ -2767,7 +2773,7 @@
       document.dispatchEvent(new CustomEvent('fluid:rendered', { detail: { block: el } }));
       el.scrollIntoView({ block: 'center', behavior: 'smooth' });
       select(el);
-      say(op === 'duplicate' ? 'Block verdoppelt.' : 'Block eingefügt.');
+      say(op === 'duplicate' ? t('block_duplicated') : t('block_inserted'));
     } catch (err) { say(err.message, true); }
   });
 
@@ -2781,7 +2787,7 @@
   const label = $('[data-bb-label]');
   label.addEventListener('dragstart', (e) => {
     const sec = target();
-    if (!sec || sec.closest('[data-lay-col]')) { e.preventDefault(); say('Blöcke in Spalten verschieben Sie mit ↑ ↓ bzw. ⋯ → linke/rechte Spalte.', true); return; }
+    if (!sec || sec.closest('[data-lay-col]')) { e.preventDefault(); say(t('col_drag_hint'), true); return; }
     dragSec = sec;
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', sec.dataset.block);
@@ -2812,7 +2818,7 @@
       await api('reorder', { slice: sec.dataset.block, before: dropBefore?.dataset.block || 0 });
       dropBefore ? dropBefore.before(sec) : (sec.hasAttribute('data-record') ? siblings(sec).at(-1) : main.querySelector('section[data-block]:last-of-type'))?.after(sec);
       sec.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-      say('Block verschoben.');
+      say(t('block_moved'));
       place();
     } catch (err) { say(err.message, true); }
   });
@@ -2823,10 +2829,10 @@
   // navigation, FluidAddon). „Speichern“ takes YForm back to the list – then the overlay closes; „Übernehmen“ stays
   // in the form. On close the block is rendered again if something was saved.
   const yfo = h(`<dialog class="yfo" aria-labelledby="fluid-yfo-t">
-      <div class="yfo__bar"><strong class="yfo__t" id="fluid-yfo-t">Datensatz</strong>
-        <a class="yfo__ext" target="_blank" rel="noopener" title="Im Backend öffnen">Backend ↗</a>
-        <button type="button" class="yfo__x" aria-label="Schließen">✕</button></div>
-      <iframe class="yfo__f" title="Datensatz bearbeiten"></iframe>
+      <div class="yfo__bar"><strong class="yfo__t" id="fluid-yfo-t">${et('record')}</strong>
+        <a class="yfo__ext" target="_blank" rel="noopener" title="${et('open_backend')}">${et('backend')} ↗</a>
+        <button type="button" class="yfo__x" aria-label="${et('close')}">✕</button></div>
+      <iframe class="yfo__f" title="${et('edit_record')}"></iframe>
     </dialog>`);
   root.append(yfo);
   const yfoFrame = yfo.querySelector('iframe');
@@ -2839,7 +2845,7 @@
     if (!yfoSaved || !sec?.isConnected) return;
     try {
       apply(await api('render', { slice: sec.dataset.block }), sec);
-      say('Eintrag gespeichert.');
+      say(t('entry_saved'));
     } catch (err) { say(err.message, true); }
   };
   yfo.querySelector('.yfo__x').addEventListener('click', yfoClose);
@@ -2858,8 +2864,8 @@
     doc.querySelectorAll('form').forEach((f) => {
       try { const u = new URL(f.getAttribute('action') || loc.href, loc.href); u.searchParams.set('fluid_frame', '1'); f.action = u.href; } catch { /* foreign target */ }
     });
-    const t = doc.querySelector('h1')?.textContent.trim();
-    if (t) yfo.querySelector('.yfo__t').textContent = t;
+    const h1 = doc.querySelector('h1')?.textContent.trim();
+    if (h1) yfo.querySelector('.yfo__t').textContent = h1;
   });
   main.addEventListener('click', (e) => {
     const a = e.target.closest?.('a.fdl-edit');
@@ -2871,7 +2877,7 @@
     yfoSec = a.closest('[data-block]');
     yfoSaved = false;
     yfoLoads = 0;
-    yfo.querySelector('.yfo__t').textContent = a.textContent.trim() || 'Datensatz';
+    yfo.querySelector('.yfo__t').textContent = a.textContent.trim() || t('record');
     yfoFrame.src = url.href;
     yfo.showModal();
   });
@@ -2902,7 +2908,7 @@
     @media (max-width:760px){.h--split,.h--width{display:none}}`;   /* Phone: image and text are stacked – split/text width has no effect */
   const ICON_Y = '<svg viewBox="0 0 24 24"><path d="M12 3v18M8 7l4-4 4 4M8 17l4 4 4-4"/></svg>';
   const ICON_X = '<svg viewBox="0 0 24 24"><path d="M3 12h18M7 8l-4 4 4 4M17 8l4 4-4 4"/></svg>';
-  const SPACE = { none: 'Kein', small: 'Klein', normal: 'Normal', large: 'Groß' };
+  const SPACE = { none: t('space_none'), small: t('space_small'), normal: t('space_normal'), large: t('space_large') };
 
   function handleHost(parent, css, html) {
     const host = document.createElement('div');
@@ -2952,13 +2958,13 @@
         const p = dirty.get(sec.dataset.block)?.[key];
         return p || values.find((v) => v !== 'normal' && sec.classList.contains(pre + v)) || 'normal';
       };
-      const label = side === 'top' ? 'Abstand oben' : 'Abstand unten';
+      const label = side === 'top' ? t('space_top') : t('space_bottom');
       const sr = handleHost(sec, `position:absolute;left:${side === 'top' ? 116 : 28}px;${side}:-12px;width:72px;height:24px;z-index:30`,
         `<button type="button" class="h h--y" role="slider" aria-orientation="vertical"><span class="g" aria-hidden="true">${ICON_Y}</span><span class="t"></span></button>`);
       const h = sr.querySelector('.h'), tip = sr.querySelector('.t');
       const show = (v) => {
-        tip.textContent = `${label}: ${SPACE[v]} · ↕ ziehen`;
-        h.setAttribute('aria-label', `${label} ziehen – jetzt ${SPACE[v]}. Pfeiltasten: kleiner/größer.`);
+        tip.textContent = t('handle_tip_y', label, SPACE[v]);
+        h.setAttribute('aria-label', t('handle_aria', label, SPACE[v]));
         h.setAttribute('aria-valuenow', String(values.indexOf(v)));
         h.setAttribute('aria-valuemin', '0');
         h.setAttribute('aria-valuemax', '3');
@@ -2973,7 +2979,7 @@
       const sizeBand = () => { band.style.height = getComputedStyle(sec)[prop]; };
       const own = (on) => { if (on) sizeBand(); band.classList.toggle('is-on', on); sec.classList.toggle('fluid-band-owner', on); };
       const preview = (v) => { values.forEach((x) => sec.classList.remove(pre + x)); if (v !== 'normal') sec.classList.add(pre + v); show(v); sizeBand(); };
-      const commit = (v) => { patchBlock(sec, key, v); say(`${label}: ${SPACE[v]} – noch nicht gespeichert.`); };
+      const commit = (v) => { patchBlock(sec, key, v); say(t('handle_unsaved', label, SPACE[v])); };
       show(cur());
       let drag = null;
       h.addEventListener('pointerenter', () => own(true));
@@ -3031,7 +3037,7 @@
       units = w ? [...w] : base.split(',').map(Number);
       apply(units);
       patchBlock(sec, 'widths', w ? w.join(',') : '');
-      say(w ? `Spaltenbreiten: ${label(w)} – noch nicht gespeichert.` : 'Spaltenbreiten zurück zum Raster – noch nicht gespeichert.');
+      say(w ? t('col_widths_unsaved', label(w)) : t('col_widths_reset'));
       cols.forEach((c) => c.querySelector(':scope > .fluid-handle')?.remove());
       requestAnimationFrame(() => colHandles(sec));
     };
@@ -3044,14 +3050,14 @@
         `<button type="button" class="h h--x h--cols" role="separator" aria-orientation="vertical"><span class="g" aria-hidden="true">${ICON_X}</span><span class="t"></span></button>`);
       const h = sr.querySelector('.h'), tip = sr.querySelector('.t');
       const aria = (w) => {
-        tip.textContent = `Spalten: ${label(w)} · ↔ ziehen`;
-        h.setAttribute('aria-label', `Breite von Spalte ${i + 1} und ${i + 2} ziehen – jetzt ${label(w)}. Pfeiltasten: schmaler/breiter, Entf: zurück zum Raster.`);
+        tip.textContent = t('col_tip', label(w));
+        h.setAttribute('aria-label', t('col_aria', i + 1, i + 2, label(w)));
         h.setAttribute('aria-valuenow', String(w[i]));
         h.setAttribute('aria-valuemin', String(MIN));
         h.setAttribute('aria-valuemax', String(w[i] + w[i + 1] - MIN));
       };
       aria(units);
-      h.title = 'Ziehen: Spaltenbreite ändern · Doppelklick: zurück zum Raster';
+      h.title = t('col_handle_hint');
       let drag = null;
       h.addEventListener('pointerdown', (e) => {
         e.preventDefault(); e.stopPropagation();
@@ -3122,15 +3128,15 @@
         host.style.left = `${(leftEdge ? t.left : t.right) - hr.left - 12}px`;
       };
       const show = (v) => {
-        tip.textContent = `${g.label}: ${g.options[v]} · ↔ ziehen`;
-        h.setAttribute('aria-label', `${g.label} ziehen – jetzt ${g.options[v]}. Pfeiltasten: kleiner/größer.`);
+        tip.textContent = t('handle_tip_x', g.label, g.options[v]);
+        h.setAttribute('aria-label', t('handle_aria', g.label, g.options[v]));
         h.setAttribute('aria-valuenow', String(values.indexOf(v)));
         h.setAttribute('aria-valuemin', '0');
         h.setAttribute('aria-valuemax', String(values.length - 1));
         h.setAttribute('aria-valuetext', g.options[v]);
       };
       const preview = (v) => { values.forEach((x) => apply.classList.remove(cls(x))); apply.classList.add(cls(v)); show(v); place(); };
-      const commit = (v) => { patchBlock(sec, g.field, v); say(`${g.label}: ${g.options[v]} – noch nicht gespeichert.`); };
+      const commit = (v) => { patchBlock(sec, g.field, v); say(t('handle_unsaved', g.label, g.options[v])); };
       show(cur());
       requestAnimationFrame(place);
       sec.addEventListener('pointerenter', () => { if (!drag) place(); });
@@ -3214,7 +3220,7 @@
     e.preventDefault();
     e.stopPropagation();
     const text = m[1].trim();
-    const r = await ask({ title: 'Redaktionsnotiz', body: `${text}\n\nNotizen sieht nur die Redaktion. „Als Text übernehmen“ macht daraus normalen, sichtbaren Text.`, ok: 'Als Text übernehmen', alt: 'Notiz löschen' });
+    const r = await ask({ title: t('note_title'), body: `${text}\n\n${t('note_body')}`, ok: t('note_to_text'), alt: t('note_delete') });
     if (!r || !node.isConnected) return;
     const before = node.nodeValue.slice(0, m.index);
     const after = node.nodeValue.slice(m.index + m[0].length);

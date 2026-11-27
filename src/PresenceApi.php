@@ -10,6 +10,7 @@ use Redaxo\Core\Database\Sql;
 use Redaxo\Core\Filesystem\Url;
 use Redaxo\Core\Security\CsrfToken;
 use Redaxo\Core\Security\User;
+use Redaxo\Core\Translation\I18n;
 use Throwable;
 
 use function count;
@@ -55,19 +56,19 @@ final class PresenceApi
     /** Texts for presence.js (formal „Sie“, like the toolbar) */
     public static function texts(): array
     {
-        return ['editing1' => '{names} bearbeitet gerade', 'editingN' => '{names} bearbeiten gerade', 'last' => 'Zuletzt gespeichert: {name}, {ago}',
-            'now' => 'gerade eben', 'min' => 'vor {n} Min.', 'hour' => 'vor {n} Std.', 'day' => 'am {date}',
-            'conflict' => '{name} hat inzwischen gespeichert', 'conflictShort' => 'Inzwischen gespeichert', 'conflictTitle' => 'Inzwischen von {name} gespeichert',
-            'conflictBody' => 'Seit Sie diese Seite geöffnet haben, hat {name} gespeichert ({ago}). Wenn Sie jetzt speichern, kann das diese Änderungen überschreiben – der vorige Stand bleibt als Version erhalten.',
-            'conflictOk' => 'Trotzdem speichern', 'cancel' => 'Abbrechen',
-            // Bearbeitungssperre (EditLock)
-            'locked' => '{name} bearbeitet gerade – nur Ansehen',
-            'lockedNotePage' => '{name} bearbeitet diese Seite gerade. Sie sehen nur die Ansicht – Speichern ist gesperrt, bis {name} fertig ist.',
-            'take' => 'Übernehmen', 'takeAsk' => 'Bearbeitung von {name} übernehmen?',
-            'takeBody' => '{name} kann danach nicht mehr speichern. Nicht gespeicherte Änderungen von {name} gehen nicht verloren, werden aber auch nicht übernommen.',
-            'taken' => '{name} hat die Bearbeitung übernommen',
-            'takenBody' => 'Sie können nicht mehr speichern. Kopieren Sie wichtige, noch nicht gespeicherte Änderungen, bevor Sie die Seite verlassen.',
-            'freeNote' => 'Wieder frei – niemand bearbeitet gerade.', 'editNow' => 'Jetzt bearbeiten', 'ok' => 'Verstanden'];
+        return ['editing1' => I18n::rawMsg('fluid_presence_editing1'), 'editingN' => I18n::rawMsg('fluid_presence_editing_n'), 'last' => I18n::rawMsg('fluid_presence_last'),
+            'now' => I18n::rawMsg('fluid_presence_now'), 'min' => I18n::rawMsg('fluid_presence_min'), 'hour' => I18n::rawMsg('fluid_presence_hour'), 'day' => I18n::rawMsg('fluid_presence_day'),
+            'conflict' => I18n::rawMsg('fluid_presence_conflict'), 'conflictShort' => I18n::rawMsg('fluid_presence_conflict_short'), 'conflictTitle' => I18n::rawMsg('fluid_presence_conflict_title'),
+            'conflictBody' => I18n::rawMsg('fluid_presence_conflict_body'),
+            'conflictOk' => I18n::rawMsg('fluid_presence_conflict_ok'), 'cancel' => I18n::rawMsg('fluid_presence_cancel'),
+            // edit lock (EditLock)
+            'locked' => I18n::rawMsg('fluid_presence_locked'),
+            'lockedNotePage' => I18n::rawMsg('fluid_presence_locked_note_page'),
+            'take' => I18n::rawMsg('fluid_presence_take'), 'takeAsk' => I18n::rawMsg('fluid_presence_take_ask'),
+            'takeBody' => I18n::rawMsg('fluid_presence_take_body'),
+            'taken' => I18n::rawMsg('fluid_presence_taken'),
+            'takenBody' => I18n::rawMsg('fluid_presence_taken_body'),
+            'freeNote' => I18n::rawMsg('fluid_presence_free_note'), 'editNow' => I18n::rawMsg('fluid_presence_edit_now'), 'ok' => I18n::rawMsg('fluid_presence_ok')];
     }
 
     private static function common(): string
@@ -105,7 +106,7 @@ final class PresenceApi
     {
         $user = Editing::user();
         if (!$user || Editing::isGuest()) {   // Guest access (e.g. addon fluid_demo): guests don't appear in the presence
-            self::send(['on' => false, 'error' => 'Keine Berechtigung.'], 403);
+            self::send(['on' => false, 'error' => I18n::rawMsg('fluid_presence_error_perm')], 403);
         }
         if (!self::on()) {
             self::send(['on' => false, 'items' => []]);
@@ -121,13 +122,13 @@ final class PresenceApi
         $csrf = (string) ($_SERVER['HTTP_X_CSRF_TOKEN'] ?? $in['_csrf'] ?? '');
         $_REQUEST[CsrfToken::PARAM] = $csrf;   // The token is masked on every output – checked via the core
         if ('' === $csrf || !CsrfToken::factory(Api::CSRF)->isValid()) {
-            self::send(['on' => true, 'error' => 'Sitzung abgelaufen.'], 419);
+            self::send(['on' => true, 'error' => I18n::rawMsg('fluid_presence_error_session')], 419);
         }
         $type = (string) ($in['type'] ?? '');
         $id = (string) ($in['id'] ?? '');
         $article = self::article($type, $id, $user);
         if (!$article) {
-            self::send(['on' => true, 'error' => 'Unbekannt.'], 404);
+            self::send(['on' => true, 'error' => I18n::rawMsg('fluid_presence_error_unknown')], 404);
         }
         $who = ['site' => self::SITE, 'type' => $type, 'id' => $id, 'user' => $me];
         if (!empty($in['leave'])) {
