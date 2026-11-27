@@ -1366,7 +1366,7 @@
   function initSite() {
     const body = $('[data-site-body]');
     const tabsEl = $('[data-site-tabs]');
-    let tab = 'base';
+    let tab = Object.keys(cfg.site?.tabs || {})[0] || 'base';
     let reload = false;
     const drawTabs = (tabs) => {
       tabsEl.innerHTML = Object.entries(tabs).map(([k, l]) => `<button type="button" role="tab" data-site-tab="${esc(k)}" aria-selected="${k === tab}">${esc(l)}</button>`).join('');

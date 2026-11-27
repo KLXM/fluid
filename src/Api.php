@@ -5,6 +5,15 @@ namespace Klxm\Fluid;
 use DateTimeImmutable;
 use InvalidArgumentException;
 use Klxm\Fluid\Media\ImagePlaces;
+use Klxm\Routes\AddressOptions;
+use Klxm\Routes\Pages;
+use Klxm\Routes\RouteEntry;
+use Klxm\Routes\Router;
+use Klxm\Routes\Routes;
+use Klxm\Routes\RouteSource;
+use Klxm\Routes\Shortlinks;
+use Klxm\Routes\Sources;
+use Klxm\Routes\TableSource;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\ArticleCache;
 use Redaxo\Core\Content\ArticleHandler;
@@ -171,7 +180,7 @@ final class Api
             'delete' => self::delete($article, $user),
             'publish' => self::publish($article),
             'discard' => self::discard($article),
-            'site', 'site_save', 'language_save', 'domain_save', 'domain_delete', 'redirect_save', 'redirect_delete', 'geocode' => SiteAdmin::handle(Request::get(self::PARAM, 'string'), $user),
+            'site', 'site_save', 'site_delete', 'language_save', 'domain_save', 'domain_delete', 'redirect_save', 'redirect_delete', 'redirect_test', 'geocode' => SiteAdmin::handle(Request::get(self::PARAM, 'string'), $user),
             'tree', 'tree_move', 'tree_status', 'tree_menu', 'tree_delete' => Structure::handle(Request::get(self::PARAM, 'string'), $user, $article->languageId),
             'versions' => ['versions' => Versions::list($article->id, $article->languageId), 'work' => Versions::isWorkVersion()],
             'version_view' => Versions::view($article),
@@ -483,11 +492,38 @@ final class Api
             . $f('Beschreibung für Suchmaschinen', '<textarea class="form-control" name="description" rows="3" maxlength="300" data-count="160">' . escape($s['description']) . '</textarea>', 'Etwa 120–160 Zeichen: worum geht es auf dieser Seite?')
             . $f('Bild für soziale Netzwerke', Form\Picker::media('page_image', 'image', $s['image'], true, false), 'Erscheint, wenn die Seite geteilt wird (z. B. 1200 × 630 px).')
             . '<div class="blocks-form__field"><label class="blocks-form__check"><input type="checkbox" name="noindex" value="1"' . ($s['noindex'] ? ' checked' : '') . '> Nicht in Suchmaschinen aufnehmen</label></div>'
+            . self::seoFields($article, $f)
             . self::blogFields($article, $f)
             . self::shortlinkField($article)
             . '</div></div>';
 
         return ['html' => $html, 'label' => 'Seiteneinstellungen'];
+    }
+
+    /** Page settings: advanced SEO of klxm/routes (right routes[seo]) – canonical, page as redirect, sitemap, page type */
+    private static function seoFields(Article $article, callable $f): string
+    {
+        if (!\Klxm\Routes\Perm::has(Core::getUser() ?? BackendLogin::createUser(), \Klxm\Routes\Perm::SEO)) {
+            return '';
+        }
+        $s = Pages::get($article->id, $article->languageId);
+        $codes = '';
+        foreach ([301 => '301 – dauerhaft', 308 => '308 – dauerhaft', 302 => '302 – vorübergehend', 307 => '307 – vorübergehend'] as $c => $l) {
+            $codes .= '<option value="' . $c . '"' . ($s->redirectCode === $c ? ' selected' : '') . '>' . $l . '</option>';
+        }
+        $types = '';
+        foreach (['WebPage' => 'Seite', 'AboutPage' => 'Über uns', 'ContactPage' => 'Kontakt', 'FAQPage' => 'Fragen und Antworten', 'CollectionPage' => 'Übersicht', 'ProfilePage' => 'Profil', 'ItemPage' => 'Einzelnes Element'] as $t => $l) {
+            $types .= '<option value="' . $t . '"' . ($s->type === $t ? ' selected' : '') . '>' . $l . '</option>';
+        }
+
+        return '<details class="blocks-form__more"' . ('' !== $s->canonical || '' !== $s->redirect || $s->nofollow || !$s->sitemap ? ' open' : '') . '><summary>Erweitert (SEO)</summary>'
+            . '<div class="blocks-form__field"><label class="blocks-form__check"><input type="checkbox" name="seo[nofollow]" value="1"' . ($s->nofollow ? ' checked' : '') . '> Links dieser Seite nicht folgen (nofollow)</label></div>'
+            . '<div class="blocks-form__field"><label class="blocks-form__check"><input type="checkbox" name="seo[no_sitemap]" value="1"' . (!$s->sitemap ? ' checked' : '') . '> Nicht in Sitemap und llms.txt</label></div>'
+            . $f('Kanonische Adresse (optional)', Form\Picker::link('seo_canonical', 'seo[canonical]', $s->canonical, false), 'Nur wenn derselbe Inhalt woanders maßgeblich ist. Leer = diese Seite.')
+            . $f('Seite leitet weiter auf (optional)', Form\Picker::link('seo_redirect', 'seo[redirect]', $s->redirect, false), 'Besucher landen dort; Sie selbst sehen die Seite weiter zum Bearbeiten.')
+            . $f('Art der Weiterleitung', '<select class="form-control" name="seo[redirectCode]">' . $codes . '</select>')
+            . $f('Art der Seite (schema.org)', '<select class="form-control" name="seo[type]">' . $types . '</select>', 'Hilft Suchmaschinen und KI, die Seite einzuordnen.')
+            . '</details>';
     }
 
     /** Page settings: menu page → „Blog / News“, post → date, author, tags */
@@ -514,7 +550,7 @@ final class Api
      * Entry of a routing source the page currently shows (from the editor: cfg.route = „source:id“) –
      * [source, entry] or null.
      *
-     * @return array{0: Routing\RouteSource, 1: Routing\RouteEntry}|null
+     * @return array{0: RouteSource, 1: RouteEntry}|null
      */
     private static function routeEntry(Article $article): ?array
     {
@@ -523,12 +559,12 @@ final class Api
             return null;
         }
         [$src, $id] = explode(':', $key, 2);
-        $source = Routing\Sources::get($src);
-        $path = Routing\Routes::entryPath($src, $id, $article->languageId);
-        if (null === $source || null === $path || Routing\Routes::entryArticle($src, $id, $article->languageId) !== $article->id) {
+        $source = Sources::get($src);
+        $path = Routes::entryPath($src, $id, $article->languageId);
+        if (null === $source || null === $path || Routes::entryArticle($src, $id, $article->languageId) !== $article->id) {
             return null;
         }
-        $entry = Routing\Routes::findEntry($path, $article->languageId);
+        $entry = Routes::findEntry($path, $article->languageId);
 
         return null !== $entry ? [$source, $entry] : null;
     }
@@ -564,7 +600,7 @@ final class Api
         }
         [$source, $entry] = $re;
         $values = array_map(static fn ($v) => trim((string) $v), $values);
-        $table = $source instanceof Routing\TableSource && class_exists(Table::class) ? Data\YFormBridge::table($source->table()->table) : null;
+        $table = $source instanceof TableSource && class_exists(Table::class) ? Data\YFormBridge::table($source->config()->table) : null;
         if (null !== $table) {
             if (Editing::isGuest() || !Data\RecordBlocks::canEdit($user, $table)) {
                 self::fail('Dafür fehlt Ihnen das Recht, diese YForm-Tabelle zu bearbeiten.', 403);
@@ -580,7 +616,7 @@ final class Api
             } catch (ValidationException $e) {
                 self::fail(implode(' ', $e->errors->all()) ?: 'Ein Wert ist nicht gültig.');
             }
-            Routing\Routes::rebuildSource($source->key());
+            Routes::rebuildSource($source->key());
         } else {
             if (Editing::isGuest()) {
                 self::fail('Gäste können Einträge nicht ändern.', 403);
@@ -589,7 +625,20 @@ final class Api
         }
         Activity::log('page_settings', $article->id, $source->label() . ' ' . $entry->id);
 
-        return Routing\Router::urlFor($source->key(), $entry->id, $article->languageId) ?: null;
+        return Router::urlFor($source->key(), $entry->id, $article->languageId) ?: null;
+    }
+
+    /** @return array<string, mixed> advanced SEO settings from the request – only with the right routes[seo] */
+    private static function seoValues(User $user): array
+    {
+        if (!\Klxm\Routes\Perm::has($user, \Klxm\Routes\Perm::SEO) || !Request::post('seo_form', 'bool', false) && [] === (array) Request::post('seo', 'array', [])) {
+            return [];
+        }
+        $v = (array) Request::post('seo', 'array', []);
+        $link = static fn (string $t): string => preg_match('~^\d+$~', trim($t)) ? 'redaxo://' . trim($t) : trim($t);
+
+        return ['nofollow' => !empty($v['nofollow']), 'sitemap' => empty($v['no_sitemap']), 'canonical' => $link((string) ($v['canonical'] ?? '')),
+            'redirect' => $link((string) ($v['redirect'] ?? '')), 'redirectCode' => (int) ($v['redirectCode'] ?? 301), 'type' => (string) ($v['type'] ?? 'WebPage')];
     }
 
     private static function pageSave(Article $article, User $user): array
@@ -603,8 +652,9 @@ final class Api
         PageSettings::save($article, Request::post('name', 'string', ''), Request::post('online', 'bool', false),
             Request::post('description', 'string', ''), Request::post('image', 'string', ''), Request::post('noindex', 'bool', false),
             Request::post('seo_title', 'string', ''), Request::post('slug', 'string', null),
-            new Routing\AddressOptions(ownPath: Request::post('own_path', 'bool', false), hidden: Request::post('hide_in_children', 'bool', false)));
-        Routing\Routes::rebuild();
+            new AddressOptions(ownPath: Request::post('own_path', 'bool', false), hidden: Request::post('hide_in_children', 'bool', false)),
+            self::seoValues($user));
+        Routes::rebuild();
 
         // New address: switch to it (offline there is no redirect for the old one)
         return ['message' => 'Seiteneinstellungen gespeichert.', 'reload' => true, 'url' => $entryUrl ?? Url::article($article->id, $article->languageId)];
@@ -618,18 +668,18 @@ final class Api
      */
     private static function addressField(Article $article, callable $f): string
     {
-        $options = Routing\Routes::options($article->id, $article->languageId);
-        $own = Routing\Routes::prefix($article->languageId) . '/';
+        $options = Routes::options($article->id, $article->languageId);
+        $own = Router::prefix($article->languageId) . '/';
         $tree = self::parentPath($article);
         $html = $f(I18n::rawMsg('fluid_address'), '<div class="blocks-slug"><span class="blocks-slug__base" data-slug-base data-tree="' . escape($tree) . '" data-own="' . escape($own) . '">'
             . escape($options->ownPath ? $own : $tree) . '</span><input class="form-control" type="text" name="slug" value="'
-            . escape((string) Routing\Routes::slug($article->id, $article->languageId)) . '" maxlength="120" pattern="' . ($options->ownPath ? '[a-z0-9\\-\\/]*' : '[a-z0-9\\-]*') . '" spellcheck="false" data-slug></div>',
+            . escape((string) Routes::slug($article->id, $article->languageId)) . '" maxlength="120" pattern="' . ($options->ownPath ? '[a-z0-9\\-\\/]*' : '[a-z0-9\\-]*') . '" spellcheck="false" data-slug></div>',
             I18n::rawMsg('fluid_address_help'))
             . '<div class="blocks-form__field"><label class="blocks-form__check"><input type="checkbox" name="own_path" value="1" data-own-path' . ($options->ownPath ? ' checked' : '') . '> '
             . I18n::msg('fluid_address_own') . '</label></div>';
         if ($article->isStartArticle() && $article->categoryId) {
-            $prefix = Routing\Routes::prefix($article->languageId) . '/';
-            $path = (string) Routing\Routes::path($article->id, $article->languageId);
+            $prefix = Router::prefix($article->languageId) . '/';
+            $path = (string) Routes::path($article->id, $article->languageId);
             $parent = false !== ($pos = strrpos($path, '/')) ? substr($path, 0, $pos + 1) : '';
             $html .= '<div class="blocks-form__field"><label class="blocks-form__check"><input type="checkbox" name="hide_in_children" value="1"' . ($options->hidden ? ' checked' : '') . '> '
                 . I18n::msg('fluid_address_hide') . '</label><p class="help-block">'
@@ -643,8 +693,8 @@ final class Api
     private static function shortlinkField(Article $article): string
     {
         $items = '';
-        foreach (Routing\Shortlinks::forTarget(self::shortlinkTarget($article)) as $link) {
-            $url = Routing\Router::absolute(Routing\Router::base() . $link->path);
+        foreach (Shortlinks::forTarget(self::shortlinkTarget($article)) as $link) {
+            $url = Router::absolute(Router::base() . $link->path);
             $meta = I18n::msg('fluid_shortlink_hits', $link->hits)
                 . (null !== $link->expires ? ' · ' . I18n::msg($link->isExpired() ? 'fluid_shortlink_expired' : 'fluid_shortlink_until', $link->expires->format('d.m.Y')) : '');
             $items .= '<li class="shortlinks__item' . ($link->isExpired() ? ' is-expired' : '') . '"><span><code>' . escape($url) . '</code><small>' . $meta . '</small></span>'
@@ -654,7 +704,7 @@ final class Api
 
         return '<div class="blocks-form__field shortlinks" data-shortlinks><span class="control-label">' . I18n::msg('fluid_shortlinks') . '</span>'
             . ('' !== $items ? '<ul class="shortlinks__list" role="list">' . $items . '</ul>' : '')
-            . '<div class="shortlinks__add"><span class="blocks-slug__base">' . escape(Routing\Routes::prefix($article->languageId) . '/') . '</span>'
+            . '<div class="shortlinks__add"><span class="blocks-slug__base">' . escape(Router::prefix($article->languageId) . '/') . '</span>'
             . '<input class="form-control" type="text" data-shortlink-path maxlength="60" spellcheck="false" placeholder="' . I18n::msg('fluid_shortlink_placeholder') . '" aria-label="' . I18n::msg('fluid_shortlink_path') . '">'
             . '<input class="form-control" type="date" data-shortlink-expires aria-label="' . I18n::msg('fluid_shortlink_expires') . '" title="' . I18n::msg('fluid_shortlink_expires') . '">'
             . '<button type="button" class="btn" data-shortlink-add>' . I18n::msg('fluid_shortlink_add') . '</button></div>'
@@ -667,8 +717,8 @@ final class Api
         $target = self::shortlinkTarget($article);
         if ('shortlink_delete' === $action) {
             $path = Request::post('path', 'string', '');
-            $id = '' !== $path ? Routing\Shortlinks::find($path, $target)?->id ?? 0 : Request::post('id', 'int', 0);
-            Routing\Shortlinks::delete($id, $target);
+            $id = '' !== $path ? Shortlinks::find($path, $target)?->id ?? 0 : Request::post('id', 'int', 0);
+            Shortlinks::delete($id, $target);
 
             return ['html' => self::shortlinkField($article), 'message' => I18n::rawMsg('fluid_shortlink_deleted')];
         }
@@ -679,15 +729,15 @@ final class Api
         }
         $wish = trim(Request::post('path', 'string', ''), "/ \t");
         try {
-            $link = Routing\Shortlinks::create('' === $wish ? '' : Routing\Routes::prefix($article->languageId) . '/' . $wish, $target, $date);
+            $link = Shortlinks::create('' === $wish ? '' : Router::prefix($article->languageId) . '/' . $wish, $target, $date);
         } catch (InvalidArgumentException $e) {
             self::fail(I18n::rawMsg('fluid_shortlink_taken', $e->getMessage()));
         }
 
-        $url = Routing\Router::absolute(Routing\Router::base() . $link->path);
+        $url = Router::absolute(Router::base() . $link->path);
 
         // wish: the address without language prefix – repeating the action gives the same shortlink (fluid_demo)
-        $wish = ltrim((string) substr($link->path, strlen(Routing\Routes::prefix($article->languageId))), '/');
+        $wish = ltrim((string) substr($link->path, strlen(Router::prefix($article->languageId))), '/');
 
         return ['html' => self::shortlinkField($article), 'message' => I18n::rawMsg('fluid_shortlink_created', $url), 'copy' => $url, 'wish' => $wish];
     }
@@ -700,10 +750,10 @@ final class Api
     /** Address of the parent pages (shown before the slug), e.g. „/leistungen/“ */
     private static function parentPath(Article $article): string
     {
-        $path = (string) Routing\Routes::path($article->id, $article->languageId);
+        $path = (string) Routes::path($article->id, $article->languageId);
         $pos = strrpos($path, '/');
 
-        return Routing\Routes::prefix($article->languageId) . '/' . (false === $pos ? '' : substr($path, 0, $pos + 1));
+        return Router::prefix($article->languageId) . '/' . (false === $pos ? '' : substr($path, 0, $pos + 1));
     }
 
     /** New page: menu item (category) or page without menu (article) – here or on the top level, offline at first */

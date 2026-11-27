@@ -2,7 +2,8 @@
 
 namespace Klxm\Fluid;
 
-use Klxm\Fluid\Routing\Router;
+use Klxm\Routes\Router;
+use Klxm\Routes\Routes;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\ArticleHandler;
 use Redaxo\Core\Core;
@@ -108,7 +109,7 @@ final class Welcome
         }
         Core::setConfig('start_article_id', $id);
         Core::setConfig('notfound_article_id', $id);
-        Routing\Routes::rebuild();
+        Routes::rebuild();
         Activity::log('page_add', $id, 'Startseite angelegt');
     }
 
@@ -120,6 +121,6 @@ final class Welcome
         if (0 !== $code) {
             throw new RuntimeException(trim(strip_tags($out->fetch())) ?: 'Beispielseiten konnten nicht angelegt werden.');
         }
-        Routing\Routes::rebuild();
+        Routes::rebuild();
     }
 }

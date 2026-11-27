@@ -2,7 +2,7 @@
 
 namespace Klxm\Fluid\Media;
 
-use Klxm\Fluid\Routing\Attribute\AsEndpoint;
+use Klxm\Routes\Attribute\AsEndpoint;
 use Redaxo\Core\Core;
 use Redaxo\Core\Filesystem\Path;
 use Redaxo\Core\Language\Language;

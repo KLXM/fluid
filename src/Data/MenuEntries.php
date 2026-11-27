@@ -2,7 +2,7 @@
 
 namespace Klxm\Fluid\Data;
 
-use Klxm\Fluid\Routing\Router;
+use Klxm\Routes\Router;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\ExtensionPoint\Extension;
 use Redaxo\Core\ExtensionPoint\ExtensionPoint;

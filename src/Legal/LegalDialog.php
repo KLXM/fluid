@@ -4,8 +4,8 @@ namespace Klxm\Fluid\Legal;
 
 use Klxm\Fluid\BlockModule;
 use Klxm\Fluid\FluidAddon;
-use Klxm\Fluid\Routing\Attribute\AsEndpoint;
-use Klxm\Fluid\Routing\Router;
+use Klxm\Routes\Attribute\AsEndpoint;
+use Klxm\Routes\Router;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\ArticleRevision;
 use Redaxo\Core\Database\Sql;

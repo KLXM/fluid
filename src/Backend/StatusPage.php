@@ -7,12 +7,12 @@ use FilesystemIterator;
 use Klxm\Fluid\Kit;
 use Klxm\Fluid\Mail\Mail;
 use Klxm\Fluid\Media\Ffmpeg;
-use Klxm\Fluid\Routing\Domains;
-use Klxm\Fluid\Routing\Redirects;
-use Klxm\Fluid\Routing\Routes;
 use Klxm\Fluid\Search\Search;
 use Klxm\Fluid\Settings;
 use Klxm\ImageEditor\ImageEditorAddon;
+use Klxm\Routes\Redirects;
+use Klxm\Routes\Routes;
+use Klxm\Routes\Sites;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Redaxo\Core\Addon\Addon;
@@ -51,7 +51,7 @@ final class StatusPage
         $kit = Kit::active();
         $routes = (int) (Sql::factory()->getArray('SELECT COUNT(*) AS n FROM ' . Routes::TABLE)[0]['n'] ?? 0);
         $n404 = (int) (Sql::factory()->getArray('SELECT COUNT(*) AS n FROM ' . Redirects::TABLE_404 . ' WHERE last_seen > NOW() - INTERVAL 30 DAY')[0]['n'] ?? 0);
-        $primary = Domains::primary();
+        $primary = Sites::primary(Sites::main());
         $mail = Mail::status();
         $site = $start ? $start->getUrl(['fluid_edit' => 1]) : Url::frontend();
 

@@ -2,7 +2,8 @@
 
 namespace Klxm\Fluid;
 
-use Klxm\Fluid\Routing\Attribute\AsEndpoint;
+use Klxm\Routes\Attribute\AsEndpoint;
+use Klxm\Routes\Router;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\ArticleRevision;
 use Redaxo\Core\Content\ArticleSlice;
@@ -142,7 +143,7 @@ final class Live
     /** Adresse des Streams */
     public static function endpoint(): string
     {
-        return Routing\Router::base() . '/' . self::PATH;
+        return Router::base() . '/' . self::PATH;
     }
 
     /** @param list<string> $channels Attributes for the element (subscription, version, optional reload URL) – empty while editing */

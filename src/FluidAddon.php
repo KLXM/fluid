@@ -3,6 +3,9 @@
 namespace Klxm\Fluid;
 
 use Klxm\NavigationArray\ExtensionPoint\NavigationStart;
+use Klxm\Routes\ExtensionPoint\RobotsTxt;
+use Klxm\Routes\Router;
+use Klxm\Routes\Sitemap;
 use Override;
 use Redaxo\Core\Addon\Addon;
 use Redaxo\Core\Addon\OwnedSchema;
@@ -34,6 +37,9 @@ use Redaxo\Core\View\Asset;
 
 final class FluidAddon extends Addon
 {
+    /** Tables of fluid's former routing (until 1.0.0-beta.16) – moved to klxm/routes, removed in a later release */
+    public const array LEGACY_ROUTING_TABLES = ['rex_fluid_route', 'rex_fluid_route_entry', 'rex_fluid_domain', 'rex_fluid_redirect', 'rex_fluid_404'];
+
     #[Override]
     public function install(): void
     {
@@ -69,8 +75,6 @@ final class FluidAddon extends Addon
             ->ensureIndex(new Index('token_hash', ['token_hash'], Index::UNIQUE))
             ->ensure();
 
-        // Pretty URLs, entries of the sources, domains, redirects (Routing\*)
-        Routing\Schema::install();
         Table::get(Activity::TABLE)
             ->ensurePrimaryIdColumn()
             ->ensureColumn(new Column('created', 'datetime', true))
@@ -106,7 +110,7 @@ final class FluidAddon extends Addon
     #[Override]
     public function getOwnedSchema(): OwnedSchema
     {
-        return new OwnedSchema(tables: [PageSettings::TABLE, ...Routing\Schema::TABLES, Activity::TABLE, Data\Inbox::TABLE, Mcp\Tokens::TABLE, Data\ListTemplates::TABLE]);
+        return new OwnedSchema(tables: [PageSettings::TABLE, ...self::LEGACY_ROUTING_TABLES, Activity::TABLE, Data\Inbox::TABLE, Mcp\Tokens::TABLE, Data\ListTemplates::TABLE]);
     }
 
     /** Backend: AddOns → fluid (status, help) – admins only */
@@ -134,11 +138,11 @@ final class FluidAddon extends Addon
         // Design permissions (role → options) and locked blocks in the backend
         Perm::register();
         Lock::boot();
-        // navigation_array: start of the website (navigation without start) = subpages of a landing domain with its own page tree
+        // navigation_array: start of the navigation = start point of the current website (klxm/routes: websites and domains)
         Extension::register(NavigationStart::class, static function (NavigationStart $ep): mixed {
-            $landing = Routing\Router::landing();
+            $site = Router::site();
 
-            return $landing && $landing->subtree && null !== $landing->articleId ? $landing->articleId : $ep->subject;
+            return !$site->isMain() && !$site->single && $site->root > 0 ? $site->root : $ep->subject;
         });
         // Seiten des AddOns (Status, MCP …)
         if (Core::isBackend() && str_starts_with(Request::get('page', 'string'), 'fluid')) {
@@ -201,11 +205,9 @@ final class FluidAddon extends Addon
         Search\Search::boot();
         Welcome::boot();
         // fluid core: editor parameters, „nicht indexieren“, custom robots.txt text
-        Routing\Router::keep(Api::PARAM, Editing::PARAM);
-        Routing\Sitemap::exclude(static fn (int $id, int $lang): bool => PageSettings::noindex($id, $lang));
-        Routing\Sitemap::images(PageSettings::sitemapImages(...));
-        Routing\Robots::allowPreviews((bool) Settings::get('robots_previews', false));
-        Extension::register(Routing\ExtensionPoint\RobotsTxt::class, static function (Routing\ExtensionPoint\RobotsTxt $ep): string {
+        Router::keep(Api::PARAM, Editing::PARAM);
+        Sitemap::images(PageSettings::sitemapImages(...));
+        Extension::register(RobotsTxt::class, static function (RobotsTxt $ep): string {
             if ('rules' !== $ep->part) {
                 return (string) $ep->subject;
             }
@@ -213,11 +215,9 @@ final class FluidAddon extends Addon
 
             return '' !== $own ? $own : (string) $ep->subject . "\nDisallow: /*?" . Editing::PARAM . '=';
         });
-        // Pretty URLs: asset URLs from the base path. URL → page, ArticleUrl and rebuild after
-        // structure changes hook into the router via #[AsExtension] (Routing\Router::handleRequest …).
+        // Addresses, websites, domains, SEO and GEO: klxm/routes (installs and boots itself)
         Tiptap\FluidTiptap::boot();   // text editor: plugin of fluid for klxm/tiptap (profile as class: Tiptap\FluidProfile)
         Seo\Addresses::boot();   // ending chosen on the website, unless the project sets Router::$config
-        Routing\Router::boot();
 
         // Search index: every content change in the core (adding, deleting, moving blocks, online/offline, copying content –
         // backend and website) marks it; the next search rebuilds it

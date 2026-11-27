@@ -6,10 +6,11 @@ use Klxm\Fluid\BlockModule;
 use Klxm\Fluid\Data\MenuEntries;
 use Klxm\Fluid\Data\YFormBridge;
 use Klxm\Fluid\Kit;
-use Klxm\Fluid\Routing\Router;
 use Klxm\Fluid\VideoLinks;
 use Klxm\NavigationArray\Navigation;
 use Klxm\NavigationArray\NavigationItem;
+use Klxm\Routes\Router;
+use Klxm\Routes\Sites;
 use Override;
 use Redaxo\Core\Content\ArticleContent;
 use Redaxo\Core\Content\AsTemplate;
@@ -19,6 +20,8 @@ use Redaxo\Core\Content\Template;
 use Redaxo\Core\Language\Language;
 use Redaxo\Core\View\HasView;
 use Redaxo\Core\View\Renderer;
+
+use function in_array;
 
 /**
  * Page frame of fluid: header with menu from the structure, content (blocks), footer – styled by the selected kit.
@@ -58,13 +61,14 @@ final class FluidTemplate extends Template
      */
     public static function menu(int $depth = 2): array
     {
-        // Landing domain: menu limited to the landing page (subpages of the start page, otherwise none)
+        // another website (klxm/routes): menu from its start point; a single page (landing page) has none
         $start = 0;
-        if ($landing = Router::landing()) {
-            if (!$landing->subtree || !Category::get((int) $landing->articleId)) {
+        $site = Router::site();
+        if (!$site->isMain()) {
+            if ($site->single || !Category::get($site->root)) {
                 return [];
             }
-            $start = (int) $landing->articleId;
+            $start = $site->root;
         }
         // navigation_array: depth counts the levels below the first
         $map = static function (NavigationItem $i) use (&$map): array {
@@ -73,6 +77,9 @@ final class FluidTemplate extends Template
 
         // Navigation omits menu items „nicht im Menü“ (meta field of navigation_array, page tree) including subpages
         $menu = array_map($map, new Navigation(start: $start, depth: $depth - 1)->items());
+        // pages of other websites don't belong into this menu
+        $foreign = Sites::foreignRoots($site);
+        $menu = [] !== $foreign ? array_values(array_filter($menu, static fn (array $m): bool => !in_array($m['id'], $foreign, true))) : $menu;
 
         // Entries in the menu (data list with detail view → „Einträge im Menü zeigen“): virtual sub-items of the overview
         return YFormBridge::available() ? MenuEntries::extend($menu, Language::getCurrentId()) : $menu;

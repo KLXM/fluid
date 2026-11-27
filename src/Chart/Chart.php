@@ -5,7 +5,7 @@ namespace Klxm\Fluid\Chart;
 use Klxm\Fluid\Chart\Attribute\AsChartEngine;
 use Klxm\Fluid\Chart\Attribute\AsChartSource;
 use Klxm\Fluid\FluidAddon;
-use Klxm\Fluid\Routing\Router;
+use Klxm\Routes\Router;
 use Redaxo\Core\ClassDiscovery;
 use Redaxo\Core\Language\Language;
 use Throwable;

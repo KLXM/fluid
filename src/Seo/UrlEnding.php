@@ -3,7 +3,7 @@
 namespace Klxm\Fluid\Seo;
 
 use InvalidArgumentException;
-use Klxm\Fluid\Routing\UrlFormat;
+use Klxm\Routes\UrlFormat;
 use Redaxo\Core\Translation\I18n;
 
 /**

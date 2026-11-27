@@ -4,8 +4,8 @@ namespace Klxm\Fluid;
 
 use Klxm\Fluid\Data\Detail;
 use Klxm\Fluid\Data\YFormBridge;
-use Klxm\Fluid\Routing\Router;
-use Klxm\Fluid\Routing\Routes;
+use Klxm\Routes\Router;
+use Klxm\Routes\Routes;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\StructurePermission;
 use Redaxo\Core\Language\Language;
@@ -179,7 +179,7 @@ final class TargetEdit
     private static function language(string $path): array
     {
         foreach (Language::getAll() as $language) {
-            $prefix = trim(Routes::prefix($language->id), '/');
+            $prefix = trim(Router::prefix($language->id), '/');
             if ('' !== $prefix && ($path === $prefix || str_starts_with($path, $prefix . '/'))) {
                 return [trim(substr($path, strlen($prefix)), '/'), $language->id];
             }

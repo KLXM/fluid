@@ -3,9 +3,9 @@
 namespace Klxm\Fluid;
 
 use Klxm\Fluid\Data\Detail;
-use Klxm\Fluid\Routing\Router;
-use Klxm\Fluid\Routing\Routes;
-use Klxm\Fluid\Routing\Sources;
+use Klxm\Routes\Router;
+use Klxm\Routes\Routes;
+use Klxm\Routes\Sources;
 use Override;
 use Redaxo\Core\ApiFunction\ApiFunction;
 use Redaxo\Core\ApiFunction\AsApiFunction;

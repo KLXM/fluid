@@ -4,6 +4,14 @@ namespace Klxm\Fluid;
 
 use InvalidArgumentException;
 use Klxm\Fluid\Data\ListTemplates;
+use Klxm\Routes\ExtensionPoint\RedirectMatched;
+use Klxm\Routes\ExtensionPoint\ShortlinkAdded;
+use Klxm\Routes\ExtensionPoint\ShortlinkDeleted;
+use Klxm\Routes\ExtensionPoint\ShortlinkPath;
+use Klxm\Routes\Redirects;
+use Klxm\Routes\Router;
+use Klxm\Routes\Routes;
+use Klxm\Routes\Shortlinks;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\ExtensionPoint\Extension;
 use Redaxo\Core\ExtensionPoint\ExtensionPoint;
@@ -148,17 +156,17 @@ final class FeatureSelfTest
 
             return false;
         })(), true);
-        $this->eq('Page target with language', Routing\Redirects::parseTarget('redaxo://5@2#top'), ['type' => 'page', 'id' => '5', 'source' => '', 'lang' => 2, 'anchor' => '#top']);
-        $this->eq('Page target without language', Routing\Redirects::parseTarget('redaxo://5'), ['type' => 'page', 'id' => '5', 'source' => '', 'lang' => null, 'anchor' => '']);
-        $this->eq('Entry target', Routing\Redirects::parseTarget('route://news/12@1'), ['type' => 'entry', 'id' => '12', 'source' => 'news', 'lang' => 1, 'anchor' => '']);
-        $this->eq('Start language without prefix', Routing\Routes::splitLanguage('/a/b/'), [Language::getStartId(), 'a/b']);
+        $this->eq('Page target with language', Redirects::parseTarget('redaxo://5@2#top'), ['type' => 'page', 'id' => '5', 'source' => '', 'lang' => 2, 'anchor' => '#top']);
+        $this->eq('Page target without language', Redirects::parseTarget('redaxo://5'), ['type' => 'page', 'id' => '5', 'source' => '', 'lang' => null, 'anchor' => '']);
+        $this->eq('Entry target', Redirects::parseTarget('route://news/12@1'), ['type' => 'entry', 'id' => '12', 'source' => 'news', 'lang' => 1, 'anchor' => '']);
+        $this->eq('Start language without prefix', Router::splitLanguage('/a/b/'), [Language::getStartId(), 'a/b']);
         foreach (Language::getAll() as $l) {
             if ($l->id !== Language::getStartId()) {
-                $this->eq('Language prefix ' . $l->code, Routing\Routes::splitLanguage('/' . strtoupper($l->code) . '/a'), [$l->id, 'a']);
+                $this->eq('Language prefix ' . $l->code, Router::splitLanguage('/' . strtoupper($l->code) . '/a'), [$l->id, 'a']);
             }
         }
-        $this->eq('Slug with umlauts and accents', Routing\Routes::slugify('Café Müller – Łódź'), 'cafe-mueller-lodz');
-        $this->eq('Own address with slash', Routing\Routes::slugifyPath(' Angebot / Sommer 2027 /'), 'angebot/sommer-2027');
+        $this->eq('Slug with umlauts and accents', Routes::slugify('Café Müller – Łódź'), 'cafe-mueller-lodz');
+        $this->eq('Own address with slash', Routes::slugifyPath(' Angebot / Sommer 2027 /'), 'angebot/sommer-2027');
         $this->eq('Choices in the site panel', substr_count(Seo\Addresses::render(), 'name="ending"'), count(Seo\UrlEnding::cases()));
     }
 
@@ -183,37 +191,37 @@ final class FeatureSelfTest
         $target = 'redaxo://' . $home . '@' . Language::getStartId();
         $events = [];
         $suppress = false;
-        Extension::register(Routing\ExtensionPoint\ShortlinkPath::class, static fn (Routing\ExtensionPoint\ShortlinkPath $ep): string => '/selftest' . $ep->subject);
-        Extension::register(Routing\ExtensionPoint\ShortlinkAdded::class, static function (Routing\ExtensionPoint\ShortlinkAdded $ep) use (&$events): void {
+        Extension::register(ShortlinkPath::class, static fn (ShortlinkPath $ep): string => '/selftest' . $ep->subject);
+        Extension::register(ShortlinkAdded::class, static function (ShortlinkAdded $ep) use (&$events): void {
             $events[] = 'added ' . $ep->shortlink->path;
         });
-        Extension::register(Routing\ExtensionPoint\ShortlinkDeleted::class, static function (Routing\ExtensionPoint\ShortlinkDeleted $ep) use (&$events): void {
+        Extension::register(ShortlinkDeleted::class, static function (ShortlinkDeleted $ep) use (&$events): void {
             $events[] = 'deleted ' . $ep->shortlink->path;
         });
-        Extension::register(Routing\ExtensionPoint\RedirectMatched::class, static function (Routing\ExtensionPoint\RedirectMatched $ep) use (&$suppress): ?string {
+        Extension::register(RedirectMatched::class, static function (RedirectMatched $ep) use (&$suppress): ?string {
             return $suppress && 'short' === $ep->rule['origin'] ? '' : null;
         });
-        $link = Routing\Shortlinks::create('Probe Link', $target);
+        $link = Shortlinks::create('Probe Link', $target);
         try {
             $this->eq('Path from the extension point', $link->path, '/selftest/probe-link');
             $this->eq('Taken address rejected', (static function () use ($target): bool {
                 try {
-                    Routing\Shortlinks::create('probe-link', $target);
+                    Shortlinks::create('probe-link', $target);
                 } catch (InvalidArgumentException) {
                     return true;
                 }
 
                 return false;
             })(), true);
-            $match = Routing\Redirects::match($link->path);
+            $match = Redirects::match($link->path);
             $this->eq('Leads to the page with 302', [$match['code'] ?? null, $match['location'] ?? null], [302, Url::article($home)]);
             $suppress = true;
-            $this->eq('RedirectMatched can suppress', Routing\Redirects::match($link->path), null);
+            $this->eq('RedirectMatched can suppress', Redirects::match($link->path), null);
         } finally {
-            Routing\Shortlinks::delete($link->id, $target);
+            Shortlinks::delete($link->id, $target);
         }
         $this->eq('Events', $events, ['added /selftest/probe-link', 'deleted /selftest/probe-link']);
-        $this->eq('Deleted', Routing\Redirects::exists($link->path), false);
+        $this->eq('Deleted', Redirects::exists($link->path), false);
     }
 
     // ------------------------------------------------------------------ Menu

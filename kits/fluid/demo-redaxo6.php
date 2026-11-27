@@ -261,12 +261,12 @@ $code = [
         php bin/console migrate:cleanup    # Daten entfernter AddOns löschen (nach dem Umschalten)
         CODE,
     'rconfig' => <<<'CODE'
-        use Klxm\Fluid\Routing\Router;
-        use Klxm\Fluid\Routing\RoutingConfig;
-        use Klxm\Fluid\Routing\Seo\Head;
-        use Klxm\Fluid\Routing\Seo\HeadConfig;
-        use Klxm\Fluid\Routing\Seo\HeadTag;
-        use Klxm\Fluid\Routing\UrlFormat;
+        use Klxm\Routes\Router;
+        use Klxm\Routes\RoutingConfig;
+        use Klxm\Routes\Seo\Head;
+        use Klxm\Routes\Seo\HeadConfig;
+        use Klxm\Routes\Seo\HeadTag;
+        use Klxm\Routes\UrlFormat;
 
         public function configure(): void
         {
@@ -361,9 +361,9 @@ $code = [
         }
         CODE,
     'rshort' => <<<'CODE'
-        use Klxm\Fluid\Routing\ExtensionPoint\RedirectMatched;
-        use Klxm\Fluid\Routing\ExtensionPoint\ShortlinkPath;
-        use Klxm\Fluid\Routing\Shortlinks;
+        use Klxm\Routes\ExtensionPoint\RedirectMatched;
+        use Klxm\Routes\ExtensionPoint\ShortlinkPath;
+        use Klxm\Routes\Shortlinks;
         use Redaxo\Core\ExtensionPoint\AsExtension;
 
         final class Campaigns

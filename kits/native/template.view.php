@@ -17,8 +17,8 @@ use Klxm\Fluid\Kit;
 use Klxm\Fluid\Kit\Fluid\FluidTemplate;
 use Klxm\Fluid\Kit\Native\NativeKit;
 use Klxm\Fluid\KitHead;
-use Klxm\Fluid\Routing\Router;
 use Klxm\Fluid\Settings;
+use Klxm\Routes\Router;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\ArticleContent;
 use Redaxo\Core\Language\Language;
@@ -29,9 +29,9 @@ return static function (ArticleContent $content): void {
     $main = $content->renderContent();
     $article = $content->article;
     $name = Settings::name();
-    $landing = Router::landing();
-    $home = $landing ? (Article::get((int) $landing->articleId)?->getUrl() ?? '/') : (Article::getSiteStartArticle()?->getUrl() ?? '/');
-    $isHome = $landing ? $article->id === $landing->articleId : $article->id === Article::getSiteStartArticleId();
+    $homeId = Router::home(Router::site());
+    $home = Article::get($homeId)?->getUrl() ?? '/';
+    $isHome = $article->id === $homeId;
     $menu = FluidTemplate::menu();
     if ('' !== ($searchHref = trim((string) setting('search_page', '')))) {
         $searchHref = rtrim((string) parse_url(link_href($searchHref), PHP_URL_PATH), '/');

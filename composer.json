@@ -35,7 +35,8 @@
         "loupe/loupe": "^1.1",
         "klxm/navigation_array": "^1.0@dev",
         "klxm/klxm_meta": "^1.0@dev",
-        "klxm/tiptap": "^1.0@dev"
+        "klxm/tiptap": "^1.0@dev",
+        "klxm/routes": "^1.0@dev"
     },
     "require-dev": {
         "redaxo/php-cs-fixer-config": "^3.1"

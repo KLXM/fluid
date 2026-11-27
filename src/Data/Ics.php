@@ -4,8 +4,8 @@ namespace Klxm\Fluid\Data;
 
 use DateTimeImmutable;
 use DateTimeZone;
-use Klxm\Fluid\Routing\Attribute\AsEndpoint;
-use Klxm\Fluid\Routing\Router;
+use Klxm\Routes\Attribute\AsEndpoint;
+use Klxm\Routes\Router;
 use Redaxo\Core\Http\Request;
 use Redaxo\Core\Language\Language;
 use Throwable;

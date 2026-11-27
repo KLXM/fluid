@@ -8,7 +8,7 @@ use Klxm\Fluid\Data\FluidBlocks;
 use Klxm\Fluid\Data\RecordBlocks;
 use Klxm\Fluid\Data\YFormBridge;
 use Klxm\Fluid\Editing;
-use Klxm\Fluid\Routing\Routes;
+use Klxm\Routes\Routes;
 use Redaxo\Core\Security\User;
 use Throwable;
 use Yakamara\YForm\Data\Query;

@@ -2,8 +2,8 @@
 
 namespace Klxm\Fluid;
 
-use Klxm\Fluid\Routing\Routes;
 use Klxm\NavigationArray\NavigationMeta;
+use Klxm\Routes\Routes;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\ArticleHandler;
 use Redaxo\Core\Content\Category;

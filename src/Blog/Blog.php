@@ -3,13 +3,13 @@
 namespace Klxm\Fluid\Blog;
 
 use Klxm\Fluid\PageSettings;
-use Klxm\Fluid\Routing\ExtensionPoint\PageMetaResolved;
-use Klxm\Fluid\Routing\RouteMatch;
-use Klxm\Fluid\Routing\Router;
-use Klxm\Fluid\Routing\Routes;
-use Klxm\Fluid\Routing\Seo\HeadTag;
-use Klxm\Fluid\Routing\Seo\PageMeta;
 use Klxm\Fluid\Settings;
+use Klxm\Routes\ExtensionPoint\PageMetaResolved;
+use Klxm\Routes\RouteMatch;
+use Klxm\Routes\Router;
+use Klxm\Routes\Routes;
+use Klxm\Routes\Seo\HeadTag;
+use Klxm\Routes\Seo\PageMeta;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\Category;
 use Redaxo\Core\Database\Sql;

@@ -6,11 +6,17 @@ use InvalidArgumentException;
 use Klxm\Fluid\Form\FieldForm;
 use Klxm\Fluid\Form\Picker;
 use Klxm\Fluid\Maps\Maps;
-use Klxm\Fluid\Routing\DomainRole;
-use Klxm\Fluid\Routing\Domains;
-use Klxm\Fluid\Routing\Redirects;
-use Klxm\Fluid\Routing\Routes;
-use Klxm\Fluid\Routing\Shortlinks;
+use Klxm\Routes\Domain;
+use Klxm\Routes\DomainRole;
+use Klxm\Routes\IndexNow;
+use Klxm\Routes\Perm as RoutesPerm;
+use Klxm\Routes\Redirects;
+use Klxm\Routes\Router;
+use Klxm\Routes\Routes;
+use Klxm\Routes\Shortlinks;
+use Klxm\Routes\Site;
+use Klxm\Routes\Sites;
+use Klxm\Routes\SiteSettings;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Database\Sql;
 use Redaxo\Core\Http\Request;
@@ -25,8 +31,8 @@ use function in_array;
 use function Redaxo\Core\View\escape;
 
 /**
- * Sidebar „Website“ on the website (admins only): tabs of the website settings (Settings::schema),
- * domains (main address, further domains, landing domains) and redirects with 404 log.
+ * Sidebar „Website“ on the website: tabs of the website settings (Settings::schema, admins), websites and domains
+ * (klxm/routes, right routes[sites]) and redirects with 404 log (routes[redirects]).
  * Each action responds with the tab's HTML – the editor only replaces the content of the sidebar.
  *
  * @internal
@@ -34,37 +40,68 @@ use function Redaxo\Core\View\escape;
 final class SiteAdmin
 {
     /** @return array<string, string> tabs: key => label */
-    public static function tabs(): array
+    public static function tabs(?User $user = null): array
     {
         $tabs = [];
-        foreach (Settings::schema() as $k => $g) {
-            $tabs[$k] = $g['label'];
+        if (null === $user || $user->admin) {
+            foreach (Settings::schema() as $k => $g) {
+                $tabs[$k] = $g['label'];
+            }
+            $tabs += ['languages' => 'Sprachen', 'addresses' => I18n::rawMsg('fluid_addresses_tab')];
+        }
+        if (RoutesPerm::has($user, RoutesPerm::SITES) || null === $user) {
+            $tabs['domains'] = 'Websites & Domains';
+        }
+        if (RoutesPerm::has($user, RoutesPerm::REDIRECTS) || null === $user) {
+            $tabs['redirects'] = 'Weiterleitungen';
         }
 
-        return $tabs + ['languages' => 'Sprachen', 'addresses' => I18n::rawMsg('fluid_addresses_tab'), 'domains' => 'Domains', 'redirects' => 'Weiterleitungen'];
+        return $tabs;
     }
 
     public static function handle(string $action, User $user): array
     {
-        if (!$user->admin) {
-            throw new ApiError('Die Website-Einstellungen dürfen nur Admins ändern.');
+        $need = match (true) {
+            in_array($action, ['site_save', 'site_delete', 'domain_save', 'domain_delete'], true) || in_array(Request::post('tab', 'string', ''), ['domains'], true) && 'site' === $action => RoutesPerm::SITES,
+            in_array($action, ['redirect_save', 'redirect_delete', 'redirect_test'], true) || 'redirects' === Request::post('tab', 'string', '') && 'site' === $action => RoutesPerm::REDIRECTS,
+            default => null,
+        };
+        if (null !== $need ? !RoutesPerm::has($user, $need) : !$user->admin) {
+            throw new ApiError('Dafür fehlt Ihnen das Recht.');
         }
         $tab = Request::post('tab', 'string', 'base');
         $msg = '';
         switch ($action) {
             case 'site_save':
+                if ('domains' === $tab) {
+                    $msg = self::siteSave();
+                    break;
+                }
                 Settings::save($tab, (array) Request::post('site', 'array', []), Request::post('lang', 'int', 0) ?: null);
                 $msg = 'Gespeichert.';
+                break;
+            case 'site_delete':
+                try {
+                    Sites::delete(Request::post('id', 'string', ''));
+                } catch (Throwable $e) {
+                    throw new ApiError($e->getMessage());
+                }
+                $msg = 'Website entfernt.';
+                $tab = 'domains';
                 break;
             case 'domain_save':
                 $msg = self::domainSave();
                 $tab = 'domains';
                 break;
             case 'domain_delete':
-                Sql::factory()->setQuery('DELETE FROM ' . Domains::TABLE . ' WHERE id = ?', [Request::post('id', 'int', 0)]);
-                Domains::reset();
+                Sites::deleteDomain(Request::post('id', 'int', 0));
                 $msg = 'Domain entfernt.';
                 $tab = 'domains';
+                break;
+            case 'redirect_test':
+                $hit = Redirects::explain(Request::post('address', 'string', ''), Request::post('site', 'string', Site::MAIN));
+                $msg = null === $hit ? 'Keine Weiterleitung greift – die Adresse ist eine Seite oder 404.' : 'Greift: ' . $hit['rule']['source'] . ' → ' . (410 === $hit['code'] ? 'gelöscht (410)' : $hit['location']) . ' (' . $hit['code'] . ('code' === ($hit['rule']['origin'] ?? '') ? ', aus dem Code' : '') . ')';
+                $tab = 'redirects';
                 break;
             case 'addresses_save':
                 $msg = Seo\Addresses::save(Request::post('ending', 'string', ''), Request::post('suffix', 'string', ''));
@@ -87,7 +124,7 @@ final class SiteAdmin
                 return ['results' => Maps::geocode(Request::post('q', 'string', ''))];
         }
 
-        return ['html' => self::render($tab, Request::post('lang', 'int', 0) ?: Language::getStartId()), 'tab' => $tab, 'tabs' => self::tabs(), 'message' => $msg, 'reload' => in_array($action, ['site_save', 'language_save', 'addresses_save'], true)];
+        return ['html' => self::render($tab, Request::post('lang', 'int', 0) ?: Language::getStartId()), 'tab' => $tab, 'tabs' => self::tabs($user), 'message' => $msg, 'reload' => in_array($action, ['site_save', 'language_save', 'addresses_save'], true)];
     }
 
     public static function render(string $tab, int $lang = 0): string
@@ -177,72 +214,133 @@ final class SiteAdmin
         return $id ? 'Sprache gespeichert.' : 'Sprache „' . $name . '“ angelegt – Seitennamen sind übernommen, Seiten zunächst offline.';
     }
 
-    // ------------------------------------------------------------------ Domains
+    // ------------------------------------------------------------------ Websites & domains (klxm/routes)
 
     private static function domains(): string
     {
-        $roles = ['primary' => 'Hauptadresse', 'alias' => 'Weitere Domain (→ Hauptadresse)', 'landing' => 'Landing-Domain (eigene Seite)'];
-        $row = static function (array $d) use ($roles): string {
-            $id = (int) ($d['id'] ?? 0);
-            $sel = '';
-            foreach ($roles as $k => $l) {
-                $sel .= '<option value="' . $k . '"' . ($k === ($d['role'] ?? 'alias') ? ' selected' : '') . '>' . escape($l) . '</option>';
+        $h = '<p class="site-intro">Eine Installation kann mehrere <b>Websites</b> haben – jede mit Startpunkt im Seitenbaum, eigenen Sprachen, 404-Seite und Domains. '
+            . 'Je Website eine <b>Hauptdomain</b> (wahlweise je Sprache, z. B. <code>example.com</code> für Englisch ohne Präfix), <b>Varianten</b> ohne Weiterleitung '
+            . '(Stage, lokal – nie indexiert) und <b>Aliase</b>, die per 301 zur Hauptdomain leiten. Eine Website übernimmt ihre Seiten erst, wenn sie eine Domain hat. '
+            . 'Alle Domains müssen im Hosting auf diese Installation zeigen.</p>';
+        foreach (Sites::all() as $site) {
+            $h .= self::siteCard($site);
+        }
+
+        return $h . '<h3 class="site-h">Neue Website</h3>' . self::siteCard(null);
+    }
+
+    private static function siteCard(?Site $site): string
+    {
+        $key = $site->key ?? '';
+        $main = null !== $site && $site->isMain();
+        $code = null !== $site && $site->isCode();
+        $s = $site->settings ?? new SiteSettings();
+        $dis = $code ? ' disabled' : '';
+        $langs = '';
+        foreach (Language::getAll() as $l) {
+            $on = null === $site || [] === $site->languages || in_array($l->id, $site->languages, true);
+            $langs .= '<label class="blocks-form__check"><input type="checkbox" name="languages[]" value="' . $l->id . '"' . ($on ? ' checked' : '') . $dis . '> ' . escape($l->name) . '</label> ';
+        }
+        $ai = '';
+        foreach (['allow' => 'Alle erlauben (beste Sichtbarkeit in KI-Antworten)', 'training' => 'KI-Training sperren, KI-Antworten erlauben', 'all' => 'Alle KI-Crawler sperren'] as $v => $l) {
+            $ai .= '<option value="' . $v . '"' . ($s->ai->value === $v ? ' selected' : '') . '>' . $l . '</option>';
+        }
+        $check = static fn (string $name, bool $on, string $label): string => '<label class="blocks-form__check"><input type="checkbox" name="' . $name . '" value="1"' . ($on ? ' checked' : '') . $dis . '> ' . $label . '</label>';
+        $f = '<form class="site-card" data-site-form="site_save" data-tab="domains"><input type="hidden" name="key" value="' . escape($key) . '">'
+            . '<div class="blocks-form__grid">'
+            . (null === $site ? '<div class="blocks-form__field is-half"><label class="control-label">Kennung</label><input class="form-control" name="new_key" required pattern="[a-z0-9][a-z0-9_-]{0,63}" placeholder="shop"></div>' : '')
+            . '<div class="blocks-form__field is-half"><label class="control-label">Name' . ($main ? ' (Haupt-Website)' : '') . '</label><input class="form-control" name="name" value="' . escape($site->name ?? '') . '" maxlength="191"' . $dis . '></div>'
+            . ($main ? '' : '<div class="blocks-form__field"><label class="control-label">Startpunkt im Seitenbaum</label>' . Picker::link('site_root_' . $key, 'root', null !== $site && $site->root ? 'redaxo://' . $site->root : '', false) . '</div>'
+                . '<div class="blocks-form__field">' . $check('single', $site->single ?? false, 'Nur diese Seite (Landing-Page, ohne Unterseiten)') . ' ' . $check('mirror', $site->mirror ?? false, 'Spiegel – Seiten bleiben kanonisch auf der Haupt-Website') . '</div>')
+            . '<div class="blocks-form__field"><label class="control-label">404-Seite</label>' . Picker::link('site_nf_' . $key, 'notfound', null !== $site?->notFound ? 'redaxo://' . $site->notFound : '', false) . '<p class="help-block">Leer = die des Systems.</p></div>'
+            . '<div class="blocks-form__field"><label class="control-label">Sprachen</label><div>' . $langs . '</div><p class="help-block">Die erste gewählte Sprache hat kein Präfix.</p></div>'
+            . '</div><details class="site-more"><summary>SEO &amp; KI</summary><div class="blocks-form__grid">'
+            . '<div class="blocks-form__field"><label class="control-label">Titel-Vorlage</label><input class="form-control" name="s[title]" value="' . escape($s->title) . '"' . $dis . '><p class="help-block">{title} {sep} {site} {parent} – der Zusatz entfällt, wenn der Titel länger als 60 Zeichen würde.</p></div>'
+            . '<div class="blocks-form__field"><label class="control-label">Kurzbeschreibung der Website</label><textarea class="form-control" name="s[description]" rows="2" maxlength="1000"' . $dis . '>' . escape($s->description) . '</textarea><p class="help-block">Für llms.txt und schema.org (WebSite).</p></div>'
+            . '<div class="blocks-form__field"><label class="control-label">KI-Crawler</label><select class="form-control" name="s[ai]"' . $dis . '>' . $ai . '</select></div>'
+            . '<div class="blocks-form__field">' . $check('s[llms]', $s->llms, '/llms.txt für KI-Assistenten') . ' ' . $check('s[llmsFull]', $s->llmsFull, '/llms-full.txt mit Text') . ' ' . $check('s[markdown]', $s->markdown, 'Markdown-Fassung jeder Seite (/seite.md)') . '</div>'
+            . '<div class="blocks-form__field">' . $check('s[locked]', $s->locked, 'Website für Suchmaschinen sperren (vor dem Start)') . ' ' . $check('s[previews]', $s->previews, 'Linkvorschau beim Teilen trotzdem erlauben') . '</div>'
+            . '<div class="blocks-form__field">' . $check('s[flat]', $s->flat, 'Alle Seiten auf einer Ebene (/seite statt /bereich/seite)') . '</div>'
+            . '<div class="blocks-form__field is-half"><label class="control-label">Kategorien überspringen</label><select class="form-control" name="s[skipCategories]"' . $dis . '>'
+            . '<option value="0"' . (0 === $s->skipCategories ? ' selected' : '') . '>nie</option><option value="1"' . (1 === $s->skipCategories ? ' selected' : '') . '>wenn ohne Inhalt</option><option value="2"' . (2 === $s->skipCategories ? ' selected' : '') . '>immer</option></select></div>'
+            . '<div class="blocks-form__field">' . $check('s[indexNow]', $s->indexNow, 'Änderungen an IndexNow melden (Bing, Yandex …)') . '</div>'
+            . '<div class="blocks-form__field"><label class="control-label">Eigene Zeilen in robots.txt</label><textarea class="form-control" name="s[robots]" rows="3"' . $dis . ' placeholder="Disallow: /intern/">' . escape($s->robots) . '</textarea></div>'
+            . '</div></details>'
+            . '<div class="site-actions">' . ($code ? '<span class="help-block">Im Code festgelegt (' . escape((string) $site->class) . ') – nur lesbar.</span>'
+                : (null !== $site && !$main ? '<button type="button" class="btn" data-site-act="site_delete" data-id="' . escape($key) . '" data-confirm="Website entfernen? Ihre Seiten gehören dann wieder zur Haupt-Website.">Entfernen</button>' : '')
+                . '<button type="submit" class="btn btn--primary">' . (null === $site ? 'Website anlegen' : 'Speichern') . '</button>') . '</div></form>';
+        if (null === $site) {
+            return $f;
+        }
+        foreach (Sites::domainsOf($site) as $d) {
+            $f .= self::domainCard($site, $d);
+        }
+
+        return '<section class="site-group"><h3 class="site-h">' . escape('' !== $site->name ? $site->name : $site->key) . '</h3>' . $f
+            . ($code ? '' : '<details class="site-more"><summary>Domain hinzufügen</summary>' . self::domainCard($site, null) . '</details>') . '</section>';
+    }
+
+    private static function domainCard(Site $site, ?Domain $d): string
+    {
+        $dis = $site->isCode() ? ' disabled' : '';
+        $roles = '';
+        foreach (['primary' => 'Hauptdomain', 'variant' => 'Variante (Stage, lokal)', 'alias' => 'Alias (→ Hauptdomain)'] as $v => $l) {
+            $roles .= '<option value="' . $v . '"' . (($d->role->value ?? 'primary') === $v ? ' selected' : '') . '>' . $l . '</option>';
+        }
+        $langs = '<option value="">alle Sprachen (mit Präfix)</option>';
+        foreach (Language::getAll() as $l) {
+            if ($site->hasLanguage($l->id)) {
+                $langs .= '<option value="' . $l->id . '"' . ($d?->languageId === $l->id ? ' selected' : '') . '>nur ' . escape($l->name) . ' (ohne Präfix)</option>';
             }
+        }
 
-            return '<form class="site-card" data-site-form="domain_save" data-tab="domains"><input type="hidden" name="id" value="' . $id . '">'
-                . '<div class="blocks-form__grid">'
-                . '<div class="blocks-form__field is-half"><label class="control-label">Domain</label><input class="form-control" name="host" value="' . escape((string) ($d['host'] ?? '')) . '" placeholder="www.beispiel.de" required></div>'
-                . '<div class="blocks-form__field is-half"><label class="control-label">Rolle</label><select class="form-control" name="role" data-domain-role>' . $sel . '</select></div>'
-                . '<div class="blocks-form__field" data-landing-only><label class="control-label">Seite der Landing-Domain</label>'
-                . Picker::link('dom_page_' . $id, 'page', $d['article_id'] ? 'redaxo://' . (int) $d['article_id'] : '', false) . '</div>'
-                . '<div class="blocks-form__field is-half" data-landing-only><label class="blocks-form__check"><input type="checkbox" name="subtree" value="1"' . (!empty($d['subtree']) ? ' checked' : '') . '> mit Unterseiten</label></div>'
-                . '<div class="blocks-form__field is-half" data-landing-only><label class="control-label">Canonical</label><select class="form-control" name="canonical">'
-                . '<option value="own"' . ('mirror' !== ($d['canonical'] ?? 'own') ? ' selected' : '') . '>Landing-Domain ist maßgeblich</option>'
-                . '<option value="mirror"' . ('mirror' === ($d['canonical'] ?? '') ? ' selected' : '') . '>Spiegel (Hauptadresse maßgeblich)</option></select></div>'
-                . '</div><div class="site-actions">' . ($id ? '<button type="button" class="btn" data-site-act="domain_delete" data-id="' . $id . '" data-confirm="Domain entfernen?">Entfernen</button>' : '')
-                . '<button type="submit" class="btn btn--primary">' . ($id ? 'Speichern' : 'Domain hinzufügen') . '</button></div></form>';
-        };
-        $h = '<p class="site-intro">Die <b>Hauptadresse</b> nutzen Canonical, Sitemap und Links von außen. <b>Weitere Domains</b> leiten per 301 dorthin. '
-            . 'Eine <b>Landing-Domain</b> zeigt eine Seite (auf Wunsch mit Unterseiten) unter eigener Adresse. Alle Domains müssen im Hosting auf diese Installation zeigen.</p>';
+        return '<form class="site-card site-card--sub" data-site-form="domain_save" data-tab="domains"><input type="hidden" name="id" value="' . ($d->id ?? 0) . '"><input type="hidden" name="site" value="' . escape($site->key) . '">'
+            . '<div class="blocks-form__grid">'
+            . '<div class="blocks-form__field is-half"><label class="control-label">Domain</label><input class="form-control" name="host" value="' . escape($d->host ?? '') . '" placeholder="www.beispiel.de" required' . $dis . '></div>'
+            . '<div class="blocks-form__field is-half"><label class="control-label">Rolle</label><select class="form-control" name="role"' . $dis . '>' . $roles . '</select></div>'
+            . '<div class="blocks-form__field is-half"><label class="control-label">Sprache</label><select class="form-control" name="language"' . $dis . '>' . $langs . '</select></div>'
+            . '<div class="blocks-form__field is-half"><label class="blocks-form__check"><input type="checkbox" name="https" value="1"' . (($d->https ?? true) ? ' checked' : '') . $dis . '> https erzwingen</label></div>'
+            . '</div>' . ($site->isCode() ? '' : '<div class="site-actions">' . (null !== $d ? '<button type="button" class="btn" data-site-act="domain_delete" data-id="' . $d->id . '" data-confirm="Domain entfernen?">Entfernen</button>' : '')
+                . '<button type="submit" class="btn btn--primary">' . (null !== $d ? 'Speichern' : 'Domain hinzufügen') . '</button></div>') . '</form>';
+    }
+
+    private static function siteSave(): string
+    {
+        $key = Request::post('key', 'string', '') ?: trim(Request::post('new_key', 'string', ''));
+        $old = Sites::get($key);
+        $page = static fn (string $name): ?int => ($id = (int) preg_replace('~\D~', '', Request::post($name, 'string', ''))) && Article::get($id) ? $id : null;
+        $root = $page('root') ?? 0;
+        if (Site::MAIN !== $key && $root < 1) {
+            throw new ApiError('Bitte den Startpunkt der Website im Seitenbaum wählen.');
+        }
+        $languages = array_values(array_filter(array_map('intval', (array) Request::post('languages', 'array', [])), Language::exists(...)));
+        $languages = count($languages) === Language::count() && (null === $old || [] === $old->languages) ? [] : $languages;
+        $raw = (array) Request::post('s', 'array', []);
+        $settings = SiteSettings::fromArray([...($old?->settings ?? new SiteSettings())->toArray(), ...$raw,
+            ...array_fill_keys(array_diff(['llms', 'llmsFull', 'markdown', 'locked', 'previews', 'flat', 'indexNow'], array_keys($raw)), false)]);
+        if ($settings->indexNow && '' === $settings->indexNowKey) {
+            $settings = SiteSettings::fromArray([...$settings->toArray(), 'indexNowKey' => IndexNow::newKey()]);
+        }
         try {
-            $rows = Sql::factory()->getArray('SELECT * FROM ' . Domains::TABLE . ' ORDER BY FIELD(role, "primary", "alias", "landing"), host');
-        } catch (Throwable) {
-            $rows = [];
-        }
-        foreach ($rows as $r) {
-            $h .= $row($r);
+            Sites::save(new Site($key, trim(Request::post('name', 'string', '')), $root, Request::post('single', 'bool', false), Request::post('mirror', 'bool', false),
+                $page('notfound'), $languages, $settings));
+        } catch (Throwable $e) {
+            throw new ApiError($e->getMessage());
         }
 
-        return $h . '<h3 class="site-h">Neue Domain</h3>' . $row(['role' => Domains::primary() ? 'alias' : 'primary', 'article_id' => null]);
+        return null === $old ? 'Website angelegt – sie übernimmt ihre Seiten, sobald sie eine Domain hat.' : 'Website gespeichert.';
     }
 
     private static function domainSave(): string
     {
-        $host = Domains::host(Request::post('host', 'string', ''));
-        if (!preg_match('~^[a-z0-9.-]+\.[a-z]{2,}$|^localhost$|^[0-9.]+$~', $host)) {
-            throw new ApiError('Bitte eine Domain wie „www.beispiel.de“ angeben.');
+        $lang = Request::post('language', 'string', '');
+        try {
+            Sites::saveDomain(new Domain(Request::post('host', 'string', ''), Request::post('site', 'string', Site::MAIN),
+                DomainRole::tryFrom(Request::post('role', 'string', 'primary')) ?? DomainRole::Primary, '' !== $lang ? (int) $lang : null,
+                Request::post('https', 'bool', false), Request::post('id', 'int', 0)));
+        } catch (Throwable $e) {
+            throw new ApiError($e->getMessage());
         }
-        $role = DomainRole::tryFrom(Request::post('role', 'string', 'alias')) ?? DomainRole::Alias;
-        $page = (int) preg_replace('~\D~', '', Request::post('page', 'string', ''));
-        if (DomainRole::Landing === $role && !Article::get($page)) {
-            throw new ApiError('Bitte die Seite der Landing-Domain wählen.');
-        }
-        $id = Request::post('id', 'int', 0);
-        $sql = Sql::factory();
-        if (DomainRole::Primary === $role) {
-            $sql->setQuery('UPDATE ' . Domains::TABLE . ' SET role = "alias" WHERE role = "primary" AND id <> ?', [$id]);   // only one main address
-        }
-        $dup = $sql->getArray('SELECT id FROM ' . Domains::TABLE . ' WHERE host = ? AND id <> ?', [$host, $id]);
-        if ($dup) {
-            throw new ApiError('Diese Domain ist schon eingetragen.');
-        }
-        $sql->setTable(Domains::TABLE)->setValues([
-            'host' => $host, 'role' => $role->value, 'article_id' => DomainRole::Landing === $role ? $page : null,
-            'subtree' => DomainRole::Landing === $role ? (int) Request::post('subtree', 'bool', false) : 0,
-            'canonical' => 'mirror' === Request::post('canonical', 'string', 'own') ? 'mirror' : 'own',
-        ]);
-        $id ? $sql->setWhere(['id' => $id])->update() : $sql->insert();
-        Domains::reset();
 
         return 'Domain gespeichert.';
     }
@@ -256,9 +354,17 @@ final class SiteAdmin
             . '<form class="site-card" data-site-form="redirect_save" data-tab="redirects"><div class="blocks-form__grid">'
             . '<div class="blocks-form__field"><label class="control-label">Alte Adresse</label><input class="form-control" name="source" placeholder="/alte-seite oder /alt/*" required data-redirect-source></div>'
             . '<div class="blocks-form__field"><label class="control-label">Ziel</label>' . Picker::link('redirect_target', 'target', '', false) . '<p class="help-block">Seite, /pfad oder https://…</p></div>'
-            . '<div class="blocks-form__field is-half"><label class="control-label">Art</label><select class="form-control" name="code"><option value="301">301 – dauerhaft</option><option value="302">302 – vorübergehend</option><option value="410">410 – gelöscht (ohne Ziel)</option><option value="short">' . I18n::msg('fluid_shortlink_option') . '</option></select></div>'
+            . '<div class="blocks-form__field is-half"><label class="control-label">Art</label><select class="form-control" name="code"><option value="301">301 – dauerhaft</option><option value="308">308 – dauerhaft, Methode bleibt</option>'
+            . '<option value="302">302 – vorübergehend</option><option value="307">307 – vorübergehend, Methode bleibt</option><option value="303">303 – siehe andere Seite</option>'
+            . '<option value="410">410 – gelöscht (ohne Ziel)</option><option value="short">' . I18n::msg('fluid_shortlink_option') . '</option></select></div>'
+            . self::siteSelect('is-half')
+            . '<div class="blocks-form__field is-half"><label class="control-label">Gültig bis (optional)</label><input class="form-control" type="date" name="expires"></div>'
             . '<div class="blocks-form__field is-half"><label class="control-label">Notiz (optional)</label><input class="form-control" name="note" maxlength="190"></div>'
-            . '</div><div class="site-actions"><button type="submit" class="btn btn--primary">Weiterleitung anlegen</button></div></form>';
+            . '<div class="blocks-form__field"><label class="blocks-form__check"><input type="checkbox" name="keep_query" value="1" checked> Parameter der Anfrage übernehmen (?…)</label></div>'
+            . '</div><div class="site-actions"><button type="submit" class="btn btn--primary">Weiterleitung anlegen</button></div></form>'
+            . '<form class="site-card" data-site-form="redirect_test" data-tab="redirects"><div class="blocks-form__grid">'
+            . '<div class="blocks-form__field"><label class="control-label">Adresse testen</label><input class="form-control" name="address" placeholder="/alte-seite?x=1" required></div>'
+            . self::siteSelect('') . '</div><div class="site-actions"><button type="submit" class="btn">Testen</button></div></form>';
         try {
             $rules = Sql::factory()->getArray('SELECT * FROM ' . Redirects::TABLE . ' ORDER BY updated DESC, id DESC LIMIT 200');
             $nf = Sql::factory()->getArray('SELECT path, hits, last_seen FROM ' . Redirects::TABLE_404 . ' ORDER BY hits DESC, last_seen DESC LIMIT 20');
@@ -270,8 +376,8 @@ final class SiteAdmin
             foreach ($rules as $r) {
                 $target = (string) $r['target'];
                 $internal = Redirects::parseTarget($target);
-                if ('page' === ($internal['type'] ?? '') && ($a = Article::get((int) $internal['id'], $internal['lang'] ?? Routes::splitLanguage((string) $r['source'])[0]))) {
-                    $target = $a->name . ' (' . (Routes::prefix($a->languageId) . '/' . Routes::path($a->id, $a->languageId)) . ')';
+                if ('page' === ($internal['type'] ?? '') && ($a = Article::get((int) $internal['id'], $internal['lang'] ?? Router::splitLanguage((string) $r['source'])[0]))) {
+                    $target = $a->name . ' (' . (Router::prefix($a->languageId) . '/' . Routes::path($a->id, $a->languageId)) . ')';
                 }
                 $h .= '<li class="site-list__item"><span class="site-list__main"><code>' . escape((string) $r['source']) . '</code> → ' . escape(410 === (int) $r['code'] ? 'gelöscht (410)' : $target)
                     . '<small>' . (int) $r['code'] . ' · ' . match ((string) $r['origin']) {
@@ -310,15 +416,35 @@ final class SiteAdmin
         }
         if ($short) {
             try {
-                Shortlinks::create($source, $target, null, Request::post('note', 'string', ''));
+                Shortlinks::create($source, $target, null, Request::post('note', 'string', ''), Request::post('site', 'string', '') ?: Site::MAIN);
             } catch (InvalidArgumentException $e) {
                 throw new ApiError(I18n::rawMsg('fluid_shortlink_taken', $e->getMessage()));
             }
 
             return I18n::rawMsg('fluid_shortlink_saved', $source);
         }
-        Redirects::save(['source' => $source, 'target' => 410 === $code ? '' : $target, 'code' => $code, 'note' => Request::post('note', 'string', '')]);
+        try {
+            Redirects::save(['source' => $source, 'target' => 410 === $code ? '' : $target, 'code' => $code, 'note' => Request::post('note', 'string', ''),
+                'site' => Request::post('site', 'string', ''), 'keep_query' => Request::post('keep_query', 'bool', false) ? 1 : 0,
+                'expires' => Request::post('expires', 'string', '') ?: null]);
+        } catch (InvalidArgumentException $e) {
+            throw new ApiError($e->getMessage());
+        }
 
         return 'Weiterleitung angelegt.';
+    }
+
+    /** Choice of the website (only with several) */
+    private static function siteSelect(string $class): string
+    {
+        if (count(Sites::all()) < 2) {
+            return '';
+        }
+        $o = '<option value="">alle Websites</option>';
+        foreach (Sites::all() as $site) {
+            $o .= '<option value="' . escape($site->key) . '">' . escape('' !== $site->name ? $site->name : $site->key) . '</option>';
+        }
+
+        return '<div class="blocks-form__field ' . $class . '"><label class="control-label">Website</label><select class="form-control" name="site">' . $o . '</select></div>';
     }
 }

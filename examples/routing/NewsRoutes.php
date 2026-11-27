@@ -2,14 +2,14 @@
 
 namespace Project\Routing;
 
-use Klxm\Fluid\Routing\Attribute\AsRouteSource;
-use Klxm\Fluid\Routing\Attribute\Description;
-use Klxm\Fluid\Routing\Attribute\FromTable;
-use Klxm\Fluid\Routing\Attribute\Image;
-use Klxm\Fluid\Routing\Attribute\Modified;
-use Klxm\Fluid\Routing\Attribute\Slug;
-use Klxm\Fluid\Routing\Attribute\Title;
-use Klxm\Fluid\Routing\TableSource;
+use Klxm\Routes\Attribute\AsRouteSource;
+use Klxm\Routes\Attribute\Description;
+use Klxm\Routes\Attribute\FromTable;
+use Klxm\Routes\Attribute\Image;
+use Klxm\Routes\Attribute\Modified;
+use Klxm\Routes\Attribute\Slug;
+use Klxm\Routes\Attribute\Title;
+use Klxm\Routes\TableSource;
 
 /**
  * News from a table below the page „Aktuelles“ (ID 12): /aktuelles/sommerfest-im-garten.

@@ -4,8 +4,8 @@ namespace Klxm\Fluid\Data;
 
 use DateTimeImmutable;
 use Klxm\Fluid\Mail\Mail;
-use Klxm\Fluid\Routing\Router;
-use Klxm\Fluid\Routing\Routes;
+use Klxm\Routes\Router;
+use Klxm\Routes\Routes;
 use Redaxo\Core\Content\Article;
 use Yakamara\YForm\Attribute\AsForm;
 use Yakamara\YForm\Data\Record;

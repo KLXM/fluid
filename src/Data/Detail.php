@@ -3,11 +3,11 @@
 namespace Klxm\Fluid\Data;
 
 use Klxm\Fluid\BlockModule;
-use Klxm\Fluid\Routing\RouteMatch;
-use Klxm\Fluid\Routing\Router;
-use Klxm\Fluid\Routing\Routes;
-use Klxm\Fluid\Routing\Seo\PageMeta;
-use Klxm\Fluid\Routing\Sitemap;
+use Klxm\Routes\RouteMatch;
+use Klxm\Routes\Router;
+use Klxm\Routes\Routes;
+use Klxm\Routes\Seo\PageMeta;
+use Klxm\Routes\Sitemap;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\ArticleRevision;
 use Redaxo\Core\Database\Sql;

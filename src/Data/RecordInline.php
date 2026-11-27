@@ -4,7 +4,7 @@ namespace Klxm\Fluid\Data;
 
 use Klxm\Fluid\ApiError;
 use Klxm\Fluid\Editing;
-use Klxm\Fluid\Routing\Router;
+use Klxm\Routes\Router;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Http\Request;
 use Redaxo\Core\Security\User;

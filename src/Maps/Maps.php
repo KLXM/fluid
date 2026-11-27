@@ -4,8 +4,8 @@ namespace Klxm\Fluid\Maps;
 
 use Klxm\Fluid\Editing;
 use Klxm\Fluid\FluidAddon;
-use Klxm\Fluid\Routing\Router;
 use Klxm\Fluid\Settings;
+use Klxm\Routes\Router;
 use Redaxo\Core\ExtensionPoint\Extension;
 use Redaxo\Core\ExtensionPoint\ExtensionPoint;
 

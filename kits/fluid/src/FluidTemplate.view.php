@@ -4,8 +4,8 @@ use Klxm\Fluid\Blog\Blog;
 use Klxm\Fluid\Kit;
 use Klxm\Fluid\Kit\Fluid\FluidTemplate;
 use Klxm\Fluid\KitHead;
-use Klxm\Fluid\Routing\Router;
 use Klxm\Fluid\Settings;
+use Klxm\Routes\Router;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\ArticleContent;
 use Redaxo\Core\Language\Language;
@@ -17,10 +17,10 @@ return static function (ArticleContent $content): void {
     $article = $content->article;
     $name = Settings::name();
     $isHome = $article->id === Article::getSiteStartArticleId();
-    // landing domain: entry page of the landing page instead of the start page of the website
-    $landing = Router::landing();
-    $home = $landing ? (Article::get((int) $landing->articleId)?->getUrl() ?? '/') : (Article::getSiteStartArticle()?->getUrl() ?? '/');
-    $isHome = $landing ? $article->id === $landing->articleId : $isHome;
+    // start page of the current website (klxm/routes: websites and domains)
+    $homeId = Router::home(Router::site());
+    $home = Article::get($homeId)?->getUrl() ?? '/';
+    $isHome = $article->id === $homeId;
     $menu = FluidTemplate::menu();
     // search page with magnifier in the header: not again as a menu item (the magnifier already leads there)
     if ('' !== ($searchHref = trim((string) setting('search_page', '')))) {

@@ -3,12 +3,13 @@
 namespace Klxm\Fluid\Seo;
 
 use Klxm\Fluid\Editing;
-use Klxm\Fluid\Routing\ExtensionPoint\PageMetaResolved;
-use Klxm\Fluid\Routing\Router;
-use Klxm\Fluid\Routing\Seo\PageMeta;
 use Klxm\Fluid\Settings;
 use Klxm\ImageEditor\ImageEditor;
 use Klxm\Meta\Alt;
+use Klxm\Routes\ExtensionPoint\PageMetaResolved;
+use Klxm\Routes\ExtensionPoint\StructuredGraph;
+use Klxm\Routes\Router;
+use Klxm\Routes\Seo\PageMeta;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\ExtensionPoint\AsExtension;
 use Redaxo\Core\Language\Language;
@@ -17,7 +18,7 @@ use Redaxo\Core\MediaPool\Media;
 use const FILTER_VALIDATE_EMAIL;
 
 /**
- * fluid's data for the routing's page head (Routing\Seo\Head): image for social networks with image_editor
+ * fluid's data for the routing's page head (\Klxm\Routes\Seo\Head): image for social networks with image_editor
  * (1200 × 630 as JPEG around the focal point) and schema.org (StructuredData). Components add their own nodes via
  * FLUID_STRUCTURED_DATA, custom tags via the routing's extension point PageMetaResolved.
  */
@@ -37,11 +38,23 @@ final class Head
             $m->imageWidth = 1200;
             $m->imageHeight = 630;
         }
-        if (!Editing::active()) {
-            $m->jsonLd = [...(array) (StructuredData::graph($ep->article, $m)['@graph'] ?? []), ...$m->jsonLd];
+        return $m;
+    }
+
+    /**
+     * @internal schema.org of fluid (organization from the website settings, blocks, blog, maps, glossary …) instead of
+     * the basic graph of klxm/routes
+     *
+     * @return list<array<string, mixed>>
+     */
+    #[AsExtension]
+    public static function graph(StructuredGraph $ep): array
+    {
+        if (Editing::active()) {
+            return [];
         }
 
-        return $m;
+        return array_values((array) (StructuredData::graph($ep->article, $ep->meta)['@graph'] ?? $ep->subject));
     }
 
     /** schema.org node of the organization: name, logo, address, phone, email, geo, opening hours, social media */

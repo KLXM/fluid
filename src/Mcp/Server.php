@@ -6,7 +6,7 @@ use DomainException;
 use Klxm\Fluid\ApiError;
 use Klxm\Fluid\Editing;
 use Klxm\Fluid\FluidAddon;
-use Klxm\Fluid\Routing\Attribute\AsEndpoint;
+use Klxm\Routes\Attribute\AsEndpoint;
 use Redaxo\Core\Core;
 use Redaxo\Core\Exception\UserMessageException;
 use Redaxo\Core\Filesystem\Url;

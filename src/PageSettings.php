@@ -2,6 +2,14 @@
 
 namespace Klxm\Fluid;
 
+use Klxm\Routes\AddressOptions;
+use Klxm\Routes\ExtensionPoint\ArticleMeta;
+use Klxm\Routes\Pages;
+use Klxm\Routes\PageSettings as RoutesPageSettings;
+use Klxm\Routes\Router;
+use Klxm\Routes\Routes;
+use Klxm\Routes\Seo\Head;
+use Klxm\Routes\Seo\PageMeta;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\ArticleCache;
 use Redaxo\Core\Content\ArticleHandler;
@@ -9,38 +17,30 @@ use Redaxo\Core\Content\ArticleRevision;
 use Redaxo\Core\Content\CategoryHandler;
 use Redaxo\Core\Database\Sql;
 use Redaxo\Core\ExtensionPoint\AsExtension;
+use Redaxo\Core\ExtensionPoint\ExtensionLevel;
 use Redaxo\Core\MediaPool\Media;
 
 /**
- * Page settings on the website: title and online status (core) plus description, social image and „nicht indexieren“
- * (table rex_fluid_page – deliberately no meta schema, in REDAXO 6 that belongs to the project).
+ * Page settings on the website: title and online status (core) plus the SEO settings of klxm/routes ({@see Pages}:
+ * title, description, image, noindex/nofollow, canonical, page as redirect, sitemap, page type).
  */
 final class PageSettings
 {
+    /** Old table (until 1.0.0-beta.16) – taken over by the migration into rex_routes_page */
     public const string TABLE = 'rex_fluid_page';
 
-    /** @var array<string, true>|null Pages set to „nicht indexieren“ (article|language) */
-    private static ?array $noindex = null;
-
-    /** Is the page set to „nicht indexieren“? (sitemap, one query per request) */
+    /** Is the page set to „nicht indexieren“? */
     public static function noindex(int $articleId, int $languageId): bool
     {
-        if (null === self::$noindex) {
-            self::$noindex = [];
-            foreach (Sql::factory()->getArray('SELECT article_id, language_id FROM ' . self::TABLE . ' WHERE noindex = 1') as $r) {
-                self::$noindex[$r['article_id'] . '|' . $r['language_id']] = true;
-            }
-        }
-
-        return isset(self::$noindex[$articleId . '|' . $languageId]);
+        return Pages::get($articleId, $languageId)->noindex;
     }
 
     /** @return array{description: string, image: string, noindex: bool, title: string} */
     public static function get(int $articleId, int $languageId): array
     {
-        $row = Sql::factory()->getArray('SELECT description, image, noindex, title FROM ' . self::TABLE . ' WHERE article_id = ? AND language_id = ?', [$articleId, $languageId])[0] ?? [];
+        $s = Pages::get($articleId, $languageId);
 
-        return ['description' => (string) ($row['description'] ?? ''), 'image' => (string) ($row['image'] ?? ''), 'noindex' => !empty($row['noindex']), 'title' => (string) ($row['title'] ?? '')];
+        return ['description' => $s->description, 'image' => $s->image, 'noindex' => $s->noindex, 'title' => $s->title];
     }
 
     /**
@@ -50,27 +50,22 @@ final class PageSettings
      */
     public static function override(array $values): void
     {
-        Routing\Seo\Head::override($values);
+        Head::override($values);
     }
 
     /**
-     * @internal The page's SEO fields (page settings) and the website's defaults into the routing's meta data:
-     * custom SEO title = title in the browser tab and og:title, description (else the website's default), image, „nicht indexieren“
+     * @internal Defaults of the website settings for the page head: name of the website, description if the page has
+     * none (the page's own settings are applied by klxm/routes)
      */
-    #[AsExtension]
-    public static function articleMeta(Routing\ExtensionPoint\ArticleMeta $ep): Routing\Seo\PageMeta
+    #[AsExtension(level: ExtensionLevel::Late)]
+    public static function articleMeta(ArticleMeta $ep): PageMeta
     {
         $m = $ep->subject;
-        $a = $ep->article;
-        $s = self::get($a->id, $a->languageId);
-        $m->siteName = Settings::name();
-        if ('' !== $s['title']) {
-            $m->title = $m->documentTitle = $s['title'];
+        if (Router::site()->isMain()) {
+            $m->siteName = Settings::name();
         }
-        $m->description = '' !== $s['description'] ? $s['description'] : (trim((string) Settings::get('default_meta_description', '')) ?: null);
-        $m->image = '' !== $s['image'] ? $s['image'] : $m->image;
-        if ($s['noindex']) {
-            $m->noindex = $m->nofollow = true;
+        if (null === $m->description || '' === $m->description) {
+            $m->description = trim((string) Settings::get('default_meta_description', '')) ?: null;
         }
 
         return $m;
@@ -79,11 +74,15 @@ final class PageSettings
     /** Title in the browser tab and in search results: custom SEO title or „Seite – Website“ (start page: website) */
     public static function title(Article $article, string $siteName = ''): string
     {
-        return Routing\Seo\Head::title($article);
+        return Head::title($article);
     }
 
-    /** Saves title, status and settings */
-    public static function save(Article $article, string $name, bool $online, string $description, string $image, bool $noindex, string $title = '', ?string $slug = null, ?Routing\AddressOptions $address = null): void
+    /**
+     * Saves title, status and settings.
+     *
+     * @param array<string, mixed> $seo further SEO settings (nofollow, canonical, redirect, redirectCode, sitemap, type)
+     */
+    public static function save(Article $article, string $name, bool $online, string $description, string $image, bool $noindex, string $title = '', ?string $slug = null, ?AddressOptions $address = null, array $seo = []): void
     {
         $name = trim($name);
         if ('' === $name) {
@@ -102,22 +101,20 @@ final class PageSettings
                 ArticleHandler::changeStatus($article->id, $article->languageId, $online ? 1 : 0);
             }
         }
-        Sql::factory()->setQuery(
-            'INSERT INTO ' . self::TABLE . ' (article_id, language_id, description, image, noindex, title) VALUES (?, ?, ?, ?, ?, ?)'
-            . ' ON DUPLICATE KEY UPDATE description = VALUES(description), image = VALUES(image), noindex = VALUES(noindex), title = VALUES(title)',
-            [$article->id, $article->languageId, mb_substr(trim($description), 0, 300), '' !== $image && Media::get($image) ? $image : '', $noindex ? 1 : 0, mb_substr(trim($title), 0, 191)],
-        );
+        $before = Pages::get($article->id, $article->languageId)->toArray();
+        Pages::save($article->id, $article->languageId, RoutesPageSettings::fromArray([...$before, ...$seo,
+            'description' => mb_substr(trim($description), 0, 300), 'image' => '' !== $image && Media::get($image) ? $image : '', 'noindex' => $noindex, 'title' => trim($title)]));
         // URL: custom slug (empty = from the title); the start page always has „/“
         if (null !== $slug && $article->id !== Article::getSiteStartArticleId()) {
-            $before = Routing\Routes::options($article->id, $article->languageId);
+            $before = Routes::options($article->id, $article->languageId);
             $ownPath = $address->ownPath ?? $before->ownPath;
             $want = '' !== trim($slug) ? trim($slug) : $name;
-            $normalized = $ownPath ? Routing\Routes::slugifyPath($want) : Routing\Routes::slugify($want);
-            if ($normalized !== Routing\Routes::slug($article->id, $article->languageId) || $ownPath !== $before->ownPath) {
-                Routing\Routes::setAddress($article->id, $article->languageId, $want, $ownPath);
+            $normalized = $ownPath ? Routes::slugifyPath($want) : Routes::slugify($want);
+            if ($normalized !== Routes::slug($article->id, $article->languageId) || $ownPath !== $before->ownPath) {
+                Routes::setAddress($article->id, $article->languageId, $want, $ownPath);
             }
             if (null !== $address && $article->isStartArticle() && $article->categoryId && $address->hidden !== $before->hidden) {
-                Routing\Routes::setHidden($article->id, $address->hidden);
+                Routes::setHidden($article->id, $address->hidden);
             }
         }
         ArticleCache::delete($article->id, $article->languageId);
@@ -126,7 +123,7 @@ final class PageSettings
     /** Page head for the template (description, robots, canonical, hreflang, Open Graph, JSON-LD) – shorthand for Seo\Head::render() */
     public static function head(Article $article, string $siteName = ''): string
     {
-        return Routing\Seo\Head::render($article);
+        return Head::render($article);
     }
 
     /**

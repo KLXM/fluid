@@ -5,6 +5,7 @@ namespace Klxm\Fluid;
 use Klxm\Fluid\Media\ImageEffect;
 use Klxm\Fluid\Media\ImageFit;
 use Klxm\ImageEditor\ImageEditorAddon;
+use Klxm\Routes\Router;
 use Klxm\Tiptap\Tiptap;
 use Klxm\Tiptap\TiptapAddon;
 use Redaxo\Core\Content\Article;
@@ -92,8 +93,8 @@ final class Toolbar
             'api' => Url::article($article->id, $article->languageId, [Api::PARAM => '__action__']),
             'csrf' => CsrfToken::factory(Api::CSRF)->getValue(),
             'entry' => null !== $entryTitle ? $entry : 0,   // detail view: to the API so blocks are re-rendered with the entry
-            // Entry of a source (Routing\RouteSource) at this address: its fields in the page settings
-            'route' => Routing\Router::current()?->entry?->key() ?? '',
+            // Entry of a source (\Klxm\Routes\RouteSource) at this address: its fields in the page settings
+            'route' => Router::current()?->entry?->key() ?? '',
             'editUrl' => $here([Editing::PARAM => 1]),
             'viewUrl' => $here(),
             // View of the working version (REDAXO core: rex_version=1, only with backend login)
@@ -109,7 +110,7 @@ final class Toolbar
             'design' => $user->admin || $guest ? self::designSchema($article) : null,
             'designSave' => $user->admin && !$guest,
             // Website settings (sidebar „Website“): admins only
-            'site' => $user->admin && !$guest ? ['tabs' => SiteAdmin::tabs()] : null,
+            'site' => !$guest && [] !== ($siteTabs = SiteAdmin::tabs($user)) ? ['tabs' => $siteTabs] : null,
             // Action permissions of the core (roles → options) – the bar only shows what is allowed
             // Guests: only edit blocks – creating pages, page settings etc. are off
             'can' => $guest ? ['editArticle' => false, 'editCategory' => false, 'addArticle' => false, 'addCategory' => false] + Perm::flags($user) : Perm::flags($user),
@@ -122,7 +123,7 @@ final class Toolbar
             'languages' => count(Language::getAll()) > 1 ? array_map(static fn (array $l) => $l + [
                 'href' => Url::article($article->id, $l['id'], $editing ? [Editing::PARAM => 1] : []),
                 'empty' => !Sql::factory()->getArray('SELECT id FROM rex_article_slice WHERE article_id = ? AND language_id = ? LIMIT 1', [$article->id, $l['id']]),
-            ], Routing\Router::alternates($article, !$guest)) : null,   // guests: only languages in which the page is online
+            ], Router::alternates($article, !$guest)) : null,   // guests: only languages in which the page is online
             // Inquiry inbox: only if there are forms with YForm tables
             'inbox' => !$guest && [] !== Data\Inbox::tables($user) ? ['new' => Data\Inbox::countNew($user)] : null,
             // Quick glossary (menu ⋯ → Glossar, Alt+G): only with permission on the glossary's data source

@@ -9,7 +9,7 @@ use Klxm\Fluid\Block;
 use Klxm\Fluid\Editing;
 use Klxm\Fluid\Glossary\Glossary;
 use Klxm\Fluid\Kit;
-use Klxm\Fluid\Routing\Router;
+use Klxm\Routes\Router;
 use Redaxo\Core\Language\Language;
 
 if (!Glossary::available()) {

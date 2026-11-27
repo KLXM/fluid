@@ -3,8 +3,8 @@
 namespace Klxm\Fluid;
 
 use Klxm\Fluid\Data\Detail;
-use Klxm\Fluid\Routing\Router;
 use Klxm\Fluid\Tiptap\FluidProfile;
+use Klxm\Routes\Router;
 use Klxm\Tiptap\Tiptap;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Language\Language;

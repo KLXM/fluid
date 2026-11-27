@@ -2,7 +2,8 @@
 
 namespace Klxm\Fluid;
 
-use Klxm\Fluid\Routing\Attribute\AsEndpoint;
+use Klxm\Routes\Attribute\AsEndpoint;
+use Klxm\Routes\Router;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\StructurePermission;
 use Redaxo\Core\Database\Sql;
@@ -48,7 +49,7 @@ final class PresenceApi
 
     public static function endpoint(): string
     {
-        return Routing\Router::base() . '/' . self::PATH;
+        return Router::base() . '/' . self::PATH;
     }
 
     /** Texts for presence.js (formal „Sie“, like the toolbar) */
