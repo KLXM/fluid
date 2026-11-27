@@ -9,6 +9,31 @@
 }
 
 html.blocks-has-bar body { padding-top: var(--blocks-bar-h); }
+
+/* TipTap on the page (floating toolbar, link bar, menus, dialogs): colors, radii and font of the fluid interface
+   (same values as editor.shadow.css) instead of the page's – a white, rounded bar like the block bar */
+html.blocks-has-bar {
+  --rex-tiptap-bg: #fff; --rex-tiptap-surface: #fff; --rex-tiptap-raised: #fff;
+  --rex-tiptap-text: #1d2230; --rex-tiptap-muted: #5d6475;
+  --rex-tiptap-border: #dfe2e8; --rex-tiptap-border-soft: #dfe2e8;
+  --rex-tiptap-accent: var(--blocks-accent); --rex-tiptap-accent-subtle: color-mix(in srgb, var(--blocks-accent) 12%, #fff);
+  --rex-tiptap-hover: #f5f6f8; --rex-tiptap-focus: var(--blocks-accent);
+  --rex-tiptap-radius: 8px; --rex-tiptap-float-radius: 12px;
+  --rex-tiptap-float-max: 720px;
+}
+@media (prefers-color-scheme: dark) {
+  html.blocks-has-bar {
+    --rex-tiptap-bg: #1c1f27; --rex-tiptap-surface: #1c1f27; --rex-tiptap-raised: #252935;
+    --rex-tiptap-text: #eceef3; --rex-tiptap-muted: #a3a9b8;
+    --rex-tiptap-border: #353b4a; --rex-tiptap-border-soft: #353b4a;
+    --rex-tiptap-accent: #8a96ff; --rex-tiptap-accent-subtle: color-mix(in srgb, #8a96ff 18%, #1c1f27);
+    --rex-tiptap-hover: #252935; --rex-tiptap-focus: #8a96ff;
+  }
+}
+.rex-tiptap-float, .rex-tiptap-bubble--fixed, .rex-tiptap-dialog {
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --rex-shadow-md: 0 10px 30px rgb(0 0 0 / .15);
+}
 /* Sticky headers of the kits move below the bar */
 html.blocks-has-bar [data-header],
 html.blocks-has-bar .hdr { top: var(--blocks-bar-h); }

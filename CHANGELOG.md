@@ -1,5 +1,10 @@
 # Changelog
 
+## Unveröffentlicht
+
+- Text direkt auf der Seite: Die Werkzeugleiste von TipTap sieht aus wie die übrige fluid-Oberfläche (weiß, abgerundet,
+  Farben, Schrift, dunkler Modus), bleibt einzeilig und zeigt seltene Werkzeuge hinter „⋯“ (TipTap 1.0.0-beta.3).
+
 ## 1.0.0-beta.13 – 2026-11-27
 
 - Schraffur beim Abstand-Ziehen mit weißen Linien – auch auf dunklen Abschnitten gut zu sehen.
