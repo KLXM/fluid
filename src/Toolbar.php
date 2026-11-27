@@ -5,6 +5,8 @@ namespace Klxm\Fluid;
 use Klxm\Fluid\Media\ImageEffect;
 use Klxm\Fluid\Media\ImageFit;
 use Klxm\ImageEditor\ImageEditorAddon;
+use Klxm\Tiptap\Tiptap;
+use Klxm\Tiptap\TiptapAddon;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\ArticleRevision;
 use Redaxo\Core\Content\Category;
@@ -131,7 +133,8 @@ final class Toolbar
                 'fits' => array_map(static fn (ImageFit $f) => [$f->value, $f->label()], ImageFit::cases()),
             ],
             'css' => $addon->getAssetsUrl('editor/editor.shadow.css') . '?v=' . self::version('editor/editor.shadow.css'),
-            'rteCss' => $addon->getAssetsUrl('rte.css') . '?v=' . self::version('rte.css'),
+            // text editor TipTap (klxm/tiptap): styles for the shadow root of the interface
+            'tiptapCss' => TiptapAddon::instance()->assetUrl('tiptap.css'),
             // Versionen-Ansicht (Zeitleiste, Vorschau, Vergleich) – lädt erst beim Öffnen
             // Präsenz der Redaktion: wer arbeitet gerade wo (PresenceApi, assets/editor/presence.js)
             'presence' => $guest ? null : PresenceApi::toolbar($article, $editing),
@@ -147,7 +150,8 @@ final class Toolbar
             // Medien- und Seitenauswahl (Picker\FrontendPicker, auch für andere AddOns); Gäste haben keine Backend-Sitzung
             . ($guest ? '' : Picker\FrontendPicker::head($article->languageId))
             . '<script src="' . escape($addon->getAssetsUrl('form.js') . '?v=' . self::version('form.js')) . '" defer></script>'
-            . '<script src="' . escape($addon->getAssetsUrl('rte.js') . '?v=' . self::version('rte.js')) . '" defer></script>'
+            // TipTap: loader, plugins (fluid: tiptap-fluid.js) and profiles – before editor.js, which uses RexTiptap
+            . Tiptap::assets(true)
             . '<script src="' . escape($addon->getAssetsUrl('editor/editor.js') . '?v=' . self::version('editor/editor.js')) . '" defer></script>'
             . (null !== ($config['presence'] ?? null) ? '<script type="module" src="' . escape((string) $config['presence']['js']) . '"></script>' : '');
 

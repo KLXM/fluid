@@ -4,7 +4,7 @@ Technische Doku zu fluid für REDAXO 6. Einstieg und Installation: [README](../R
 
 ## Inhalt
 
-- [Ein eigener Block](#ein-eigener-block) · [Eigenes Template](#eigenes-template) · [Eigene Kits](#eigene-kits)
+- [Ein eigener Block](#ein-eigener-block) · [Eigenes Template](#eigenes-template) · [Text-Editor (TipTap)](#text-editor-tiptap) · [Eigene Kits](#eigene-kits)
 - [Extension Points](#extension-points)
 - [YForm: Formulare und Datenlisten](#yform-formulare-und-datenlisten) · [Listen-Vorlagen](#listen-vorlagen) · [Einträge im Menü](#einträge-im-menü) · [Glossar](#glossar) · [Wissensbereich](#wissensbereich)
 - [Blöcke in YForm-Tabellen](#blöcke-in-yform-tabellen-feld-fluid-blöcke)
@@ -57,7 +57,7 @@ final class Teaser extends FluidBlock
 ```
 
 - `$this->edit('feld')` macht ein Feld direkt auf der Seite bearbeitbar (`'lines'` mehrzeilig, `'rich'` mit
-  Formatierung; in Listen `items.0.title`). `$this->context()` ist der Block mit Darstellung (`variant()`) und Abschnitt.
+  Formatierung mit TipTap, siehe [Text-Editor](#text-editor-tiptap); in Listen `items.0.title`). `$this->context()` ist der Block mit Darstellung (`variant()`) und Abschnitt.
 - Ohne eigenes `output()` gibt der Block die View seines Kits aus: `views/{typ}.php` mit `$b` (Block), `$d` (Werte als
   Array, mit Standardwerten) und `$m` (das Modul mit den typisierten Eigenschaften). So haben die Blöcke von fluid ihre
   Ausgabe im Kit, damit jedes Kit sie anders gestalten kann. Den Abschnitt (`<section>`) legt fluid um die Ausgabe.
@@ -787,6 +787,26 @@ Extension::register('FLUID_SITE_TRANSLATIONS', static function (ExtensionPoint $
   `--hx-vt-border-width`, `--hx-vt-radius`, `--hx-vt-x`, `--hx-vt-y`, `--hx-vt-focus`, `--hx-vt-focus-halo`,
   `--hx-vt-focus-width`, `--hx-vt-font-size`.
 
+## Text-Editor (TipTap)
+
+Formatierter Text (`#[RichText]`, Ausgabe mit `rich()` bzw. `RichText::html()`) läuft mit dem AddOn
+[TipTap](https://github.com/KLXM/tiptap) (`klxm/tiptap`, kommt mit fluid) – in der Seitenleiste wie jedes TipTap-Feld,
+direkt auf der Seite im Inline-Modus von TipTap (`RexTiptap.inline()`): Klick in den Text startet den Editor an der
+Stelle, die Werkzeugleiste schwebt darüber, Änderungen landen wie bei allen Feldern im Entwurf.
+
+- **Profil als Klasse:** `Klxm\Fluid\Tiptap\FluidProfile` – `#[AsProfile('tiptap.fluid', …)]`. Formate wie bisher:
+  Absatzstile `p.t-lead|t-small|t-note|t-tip|t-warn|t-kicker|t-center`, Farben `span.c-accent|muted|success|warning|danger`,
+  Häkchen-Liste `ul.check`, Überschriften h2–h4, Markieren, Hoch-/Tiefstellen, Zitat. Ein Projekt passt es an wie jedes
+  Profil: eigene Klasse mit demselben Namen (`tiptap.fluid`) – Code im Projekt geht vor.
+- **Plugin** `fluid` (`Tiptap\FluidTiptap`, `assets/tiptap-fluid.js`): behält Anker an Überschriften (`id`) und die
+  Video-Lightbox an Links (`data-video-lb`).
+- **Links:** TipTap schreibt das Ziel in `href` (`redaxo://12`, `redaxo://12-2#anker`); gespeichert und ausgegeben wird es
+  wie zuvor als `data-link` mit aktueller Adresse in `href` (`RichText::html()`). fluids eigene Formate `media://`,
+  `detail://` und `route://` erlaubt das Profil über `link.schemes`. Auf der Website wählen Redakteure Seiten und Dateien
+  mit der Auswahl von fluid (`FrontendPicker`, an TipTap als `RexTiptap.pick`).
+- **Seitenleiste im Shadow DOM:** fluid lädt `tiptap.css` in seinen Shadow Root und wandelt `textarea[data-tiptap]`
+  nach dem Einfügen um (`RexTiptap.upgrade()`).
+
 ## Bild an dieser Stelle
 
 Im Bearbeiten-Modus hat jedes Bild aus `img()` den Knopf „Hier anpassen“: Effekt (`Media\ImageEffect`), Sättigung,
@@ -1272,7 +1292,7 @@ Addon-Klasse, `Schema::TABLES` in `getOwnedSchema()`; alles andere hängt schon 
 | `kits/fluid/` | das Grund-Kit: `src/Module/` (Blockklassen mit Feld-Attributen), `views/` (Ausgaben), `kit.php` (Assets, Hintergründe), `design.php` (Design-Tokens, Vorlagen), `functions.php`, `lang/` |
 | `src/Kit.php`, `src/AsKit.php` | Kits: Anmeldung, Auswahl (`Kit::active()`), Vererbung, Assets |
 | `kits/native/` | Kit „NativeCSS“: `template.view.php`, `views/`, `kit.php`, `assets/css/native.css`, NativeCSS in `assets/ncss/`, `src/NcssUpdate.php` (Aktualisierung) |
-| `assets/` | Editor (`editor/`), Formulare (`form.js`, `rte.js`), Kit-CSS/JS (`kits/fluid/`), Schriften, MapLibre |
+| `assets/` | Editor (`editor/`), Formulare (`form.js`), Text-Editor-Plugin für TipTap (`tiptap-fluid.js`), Kit-CSS/JS (`kits/fluid/`), Schriften, MapLibre |
 | `examples/` | Vorlagen für eigene Blöcke und YForm-Tabellen |
 | `pages/` | Backend-Seite AddOns → fluid |
 | `tools/video/` | Aufnahme von Demo-Video und Trailer (Playwright + ffmpeg) |

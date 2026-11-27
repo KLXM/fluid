@@ -12,6 +12,8 @@ use Klxm\Fluid\FluidAddon;
 use Klxm\Fluid\Hotspots;
 use Klxm\Fluid\Lock;
 use Klxm\Fluid\Perm;
+use Klxm\Fluid\RichText;
+use Klxm\Fluid\Tiptap\FluidProfile;
 use Redaxo\Core\Core;
 use Redaxo\Core\Filesystem\Url;
 use Redaxo\Core\MediaPool\MediaCategory;
@@ -175,7 +177,7 @@ final class FieldForm
 
         $input = match ($type) {
             'textarea' => '<textarea class="rex-input" id="' . $id . '" name="' . $n . '" rows="' . (int) ($f['rows'] ?? 3) . '"' . $req . $max . $ph . '>' . escape((string) $value) . '</textarea>',
-            'richtext' => '<textarea class="rex-input blocks-rich" id="' . $id . '" name="' . $n . '" rows="8" data-blocks-rich' . $req . '>' . escape((string) $value) . '</textarea>',
+            'richtext' => '<textarea class="rex-input" id="' . $id . '" name="' . $n . '" rows="8" data-tiptap="' . FluidProfile::NAME . '"' . $req . '>' . escape(RichText::forEditor((string) $value)) . '</textarea>',
             'select' => !empty($f['multiple'])
                 ? self::select($name . '[]', (array) ($f['options'] ?? []), is_array($value) ? array_map('strval', $value) : [], ['id' => $id, 'multiple' => ''])
                 : self::select($name, (array) ($f['options'] ?? []), (string) $value, ['id' => $id], !$req || isset($f['placeholder']), (string) ($f['placeholder'] ?? '–')),

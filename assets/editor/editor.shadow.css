@@ -213,18 +213,13 @@ textarea.form-control, textarea.rex-input { resize: vertical; }
 }
 .toast.is-error { background: var(--danger); color: #fff; }
 
-/* ------------------------------------------------------------ Formatierung (Studio-Editor: rte.css) */
-.cms-inline-bar { z-index: 2147483050; }
-.rte { border: 1px solid var(--line); border-radius: 7px; }
-
-/* Medienpool und Linkmap (Picker) */
+/* ------------------------------------------------------------ Medienpool und Linkmap (Picker) */
 .blocks-pick__row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 .blocks-pick__row .form-control, .blocks-pick__row .rex-input { flex: 1 1 180px; min-width: 0; }
 .blocks-pick__btns { display: flex; flex-wrap: wrap; gap: 4px; }
 .blocks-pick__thumb img { display: block; width: 40px; height: 40px; object-fit: cover; border-radius: 6px; }
 .blocks-pick__name { display: block; margin-top: 4px; color: var(--muted); font-size: 12px; }
 .blocks-pick__name:empty { display: none; }
-textarea[data-blocks-rte] { display: none !important; }
 
 /* ------------------------------------------------------------ Style-Editor */
 .dpanel .panel__body { padding-top: 6px; }

@@ -51,7 +51,8 @@ fluid läuft auch ohne.
 
 **Für Redakteure** – alles auf der Website, über eine Leiste oben:
 
-- **Texte direkt auf der Seite** ändern, mit Formatierungsleiste; alle Felder eines Blocks in der Seitenleiste
+- **Texte direkt auf der Seite** ändern – formatierter Text mit [TipTap](https://github.com/KLXM/tiptap) (kommt mit fluid,
+  eigenes Profil `tiptap.fluid` als Klasse); alle Felder eines Blocks in der Seitenleiste
 - **Blöcke** einfügen, verschieben (ziehen oder ↑ ↓), verdoppeln, kopieren, online/offline – 30 Blöcke im Kit,
   vom Einstieg über Text + Bild, Zahlen, Fragen & Antworten, Preise und Karten bis zu Video & Audio, Vorher/Nachher und
   **Interaktives Bild** (Markierungen als Punkt, Kreis, Rechteck oder Fläche – im Bild setzen, ziehen, mit Pfeiltasten schieben)
@@ -244,7 +245,8 @@ Installation neu auf (Ordner und Datenbank löschen, Skript erneut starten).
 ## fluid in ein bestehendes Projekt einbauen
 
 Du hast schon ein REDAXO-6-Projekt (`composer create-project redaxo/project:6.x-dev`)? Dann reichen drei Schritte.
-fluid, navigation_array (Menü) und klxm_meta (Alternativtexte) kommen von Packagist, YForm 6 direkt von GitHub:
+fluid, navigation_array (Menü), klxm_meta (Alternativtexte) und TipTap (Text-Editor) kommen von Packagist, YForm 6
+direkt von GitHub:
 
 ```bash
 composer config repositories.yform '{"type": "vcs", "url": "https://github.com/yakamara/yform", "no-api": true}'

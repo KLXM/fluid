@@ -158,18 +158,14 @@ final class FluidAddon extends Addon
         }
         if (Core::isBackend() && str_starts_with(Request::get('page', 'string'), 'yform')) {
             Asset::addCssFile($this->getAssetsUrl('form.css'));
-            Asset::addCssFile($this->getAssetsUrl('rte.css'));
             Asset::addCssFile($this->getAssetsUrl('blocks-field.css'));
             Asset::addJsFile($this->getAssetsUrl('form.js'));
-            Asset::addJsFile($this->getAssetsUrl('rte.js'));
             Asset::addJsFile($this->getAssetsUrl('blocks-field.js'));
         }
         if (Core::isBackend() && str_starts_with(Request::get('page', 'string'), 'content')) {
             Backend\SliceGrid::boot();   // Blöcke eines Layouts nebeneinander in ihren Spalten
             Asset::addCssFile($this->getAssetsUrl('form.css'));
-            Asset::addCssFile($this->getAssetsUrl('rte.css'));
             Asset::addJsFile($this->getAssetsUrl('form.js'));
-            Asset::addJsFile($this->getAssetsUrl('rte.js'));
             // Absprung „Auf der Website bearbeiten“ über den Slices – nur bei Artikeln mit Block-Template
             Extension::register(ContentPageBeforeSlices::class, static function (ContentPageBeforeSlices $ep): string {
                 $article = $ep->article;
@@ -219,6 +215,7 @@ final class FluidAddon extends Addon
         });
         // Schöne Adressen: Asset-Adressen ab dem Basis-Pfad. Adresse → Seite, ArticleUrl und Neuaufbau nach
         // Strukturänderungen hängen per #[AsExtension] am Router (Routing\Router::handleRequest …).
+        Tiptap\FluidTiptap::boot();   // text editor: plugin of fluid for klxm/tiptap (profile as class: Tiptap\FluidProfile)
         Seo\Addresses::boot();   // ending chosen on the website, unless the project sets Router::$config
         Routing\Router::boot();
 

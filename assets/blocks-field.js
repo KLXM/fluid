@@ -61,7 +61,7 @@
         li.append(box);
         open = { index: i, box, isNew };
         window.BlocksForm?.init(box, () => {});
-        window.BlocksRich?.initFields(box);
+        window.RexTiptap?.upgrade?.(box);   // text fields (TipTap); its observer does the same for later fields
         // Skripte des Cores (Widgets, Auswahllisten …) kennen das neue Markup erst durch „rex:ready“
         window.rex?.ready?.(box);
         box.querySelector('input, select, textarea, [contenteditable]')?.focus();

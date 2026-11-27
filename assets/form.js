@@ -303,7 +303,7 @@
       for (const [k, val] of Object.entries(vals)) {
         const el = inp(row, k);
         if (!el) continue;
-        if (k === 'text') { const a = el.parentElement?.querySelector('.rte-area'); if (a) a.innerHTML = val; }
+        if (k === 'text') window.RexTiptap?.get?.(el)?.setValue(val);   // text editor (TipTap) shows the new value
         el.value = typeof val === 'number' ? String(r2(val)) : val;
         el.dispatchEvent(new Event('input', { bubbles: true }));
       }

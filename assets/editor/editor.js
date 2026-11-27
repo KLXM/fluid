@@ -101,7 +101,8 @@
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
   root.append(h(`<link rel="stylesheet" href="${esc(unamp(cfg.css))}">`));
-  root.append(h(`<link rel="stylesheet" href="${esc(unamp(cfg.rteCss))}">`));
+  // text editor TipTap (klxm/tiptap) also inside this shadow root: its styles here, its fields upgraded by tiptapUp()
+  if (cfg.tiptapCss) root.append(h(`<link rel="stylesheet" href="${esc(unamp(cfg.tiptapCss))}">`));
   const bar = h(`
     <header class="bar" role="toolbar" aria-label="Bearbeiten">
       ${cfg.guest ? '<span class="brand">R</span>' : `<a class="brand" href="${esc(unamp(cfg.backendUrl))}" title="Im Backend öffnen">R</a>`}
@@ -312,7 +313,7 @@
         <div class="dlg__actions"><button type="button" class="btn" data-new-cancel>Abbrechen</button><button type="submit" class="btn btn--primary">Anlegen &amp; bearbeiten</button></div>
       </form>
     </div>`);
-  // Ebene für Menüs und Dialoge der Formatierungsleiste (Studio-Editor, assets/rte.js)
+  // Ebene für Menüs und Dialoge in der Oberfläche
   const layer = h('<div class="layer"></div>');
   root.append(bar, blockbar, addbtn, panel, dpanel, ppanel, spanel, tpanel, hpanel, ipanel, gpanel, picker, dialog, newdlg, tdlg, mdlg, toast, layer);
   document.body.append(host);
@@ -1523,7 +1524,7 @@
     form.hidden = false;
     form.innerHTML = html;
     window.BlocksForm?.init(form, () => {});
-    Rich?.initFields(form);
+    tiptapUp(form);
     panel.hidden = false;
     form.querySelectorAll('textarea.rex-input').forEach(grow);
     form.querySelector('input:not([type=hidden]),textarea,select')?.focus({ preventScroll: true });
@@ -1649,9 +1650,14 @@
   function initEditables(scope) {
     scope.querySelectorAll('[data-edit]').forEach((el) => {
       if (el.closest('[data-blocks-ignore]')) return;
-      const rich = el.dataset.editMode === 'rich';
-      el.contentEditable = rich ? 'true' : 'plaintext-only';
-      if (el.contentEditable !== (rich ? 'true' : 'plaintext-only')) el.contentEditable = 'true';
+      if (el.dataset.editMode === 'rich') {
+        // TipTap starts on the first click or focus (richMount) – until then the element is focusable
+        if (!el.classList.contains('rex-tiptap-inline')) el.tabIndex = 0;
+        el.dataset.blocksEditable = '';
+        return;
+      }
+      el.contentEditable = 'plaintext-only';
+      if (el.contentEditable !== 'plaintext-only') el.contentEditable = 'true';
       el.spellcheck = true;
       el.dataset.blocksEditable = '';
       if (el.tagName === 'A' || el.closest('a')) el.closest('a')?.addEventListener('click', (e) => e.preventDefault());
@@ -1784,7 +1790,8 @@
     const sec = el?.closest('[data-block]');
     if (!el || !sec) return;
     const mode = el.dataset.editMode || 'plain';
-    const value = mode === 'rich' ? el.innerHTML : mode === 'lines' ? el.innerText.replace(/\n{3,}/g, '\n\n') : el.innerText.replace(/\s*\n\s*/g, ' ');
+    if (mode === 'rich') return;   // TipTap reports its value (rex-tiptap:change)
+    const value = mode === 'lines' ? el.innerText.replace(/\n{3,}/g, '\n\n') : el.innerText.replace(/\s*\n\s*/g, ' ');
     const patch = dirty.get(sec.dataset.block) || {};
     patch[el.dataset.edit] = value;
     dirty.set(sec.dataset.block, patch);
@@ -1809,7 +1816,7 @@
 
   main.addEventListener('paste', (e) => {
     const el = e.target.closest?.('[data-edit]');
-    if (!el) return;
+    if (!el || el.dataset.editMode === 'rich') return;
     e.preventDefault();
     const text = e.clipboardData.getData('text/plain');
     document.execCommand('insertText', false, el.dataset.editMode ? text : text.replace(/\s*\n\s*/g, ' '));
@@ -1903,6 +1910,7 @@
   // ------------------------------------------------------------------ Blockleiste und „+“
 
   function replace(sec, html) {
+    sec.querySelectorAll('.rex-tiptap-inline').forEach((n) => window.RexTiptap?.get?.(n)?.destroy());
     const el = h(html);
     const ids = [sec, ...sec.querySelectorAll('[data-block]')].map((x) => x.dataset.block);
     sec.replaceWith(el);
@@ -2211,7 +2219,7 @@
       showVisibility(sec);
       form.innerHTML = res.html;
       window.BlocksForm?.init(form, schedulePreview);
-      Rich?.initFields(form);
+      tiptapUp(form);
       panel.hidden = false;
       form.querySelectorAll('textarea.rex-input, textarea.form-control').forEach(grow);   // erst sichtbar hat das Feld eine Höhe
       document.documentElement.classList.add('blocks-panel-open');
@@ -2315,7 +2323,7 @@
 
   form.addEventListener('input', (e) => { if (e.target.matches?.('textarea.rex-input, textarea.form-control')) grow(e.target); schedulePreview(); });
   form.addEventListener('change', () => schedulePreview());
-  form.addEventListener('click', (e) => e.target.closest('[data-blocks-add]') && setTimeout(() => Rich?.initFields(form)));
+  form.addEventListener('click', (e) => e.target.closest('[data-blocks-add]') && setTimeout(() => tiptapUp(form)));
 
   // ------------------------------------------------------------------ Bilder bearbeiten (Addon image_editor, optional)
 
@@ -2580,20 +2588,55 @@
     addEventListener('pointerup', up);
   });
 
-  // ------------------------------------------------------------------ Formatierung (Studio-Editor, assets/rte.js)
+  // ------------------------------------------------------------------ Text editor: TipTap (klxm/tiptap, profile tiptap.fluid)
 
-  const Rich = window.BlocksRich;
-  Rich?.setLayer(layer);
-  const inline = Rich?.inlineBar({ minTop: () => bar.offsetHeight });
+  const TT = window.RexTiptap;
+  // page and media picker of the website for the link dialog (logged-in editors)
+  if (TT && window.FrontendPicker) TT.pick = (type, options) => window.FrontendPicker.pick(type, options);
+  const ttLoad = () => (TT?.upgrade ? Promise.resolve() : (TT?.load?.() ?? Promise.reject(new Error('TipTap fehlt'))));
+  // stored links: target from data-link back into href (the link dialog then shows the page, not its address)
+  const forEditor = (html) => {
+    const t = document.createElement('template');
+    t.innerHTML = html;
+    t.content.querySelectorAll('a[data-link]').forEach((a) => { a.setAttribute('href', a.dataset.link); a.removeAttribute('data-link'); });
+    return t.innerHTML;
+  };
+  // fields of the sidebar (textarea[data-tiptap]) – the observer of TipTap does not see this shadow root
+  function tiptapUp(scope) {
+    if (!scope.querySelector('textarea[data-tiptap]')) return;
+    ttLoad().then(() => TT.upgrade(scope)).catch((err) => say(err.message, true));
+  }
+  // rich text on the page: TipTap inline on the element, started on the first click or focus – the caret goes where
+  // the click was
+  async function richMount(el, at = null) {
+    if (el.classList.contains('rex-tiptap-inline') || el.dataset.ttLoading) return;
+    el.dataset.ttLoading = '';
+    try {
+      await ttLoad();
+      const sec = el.closest('[data-block]');
+      const inst = TT.inline(el, 'tiptap.fluid', { value: forEditor(el.innerHTML), label: el.dataset.editLabel || 'Text' });
+      if (!inst) return;
+      el.removeAttribute('tabindex');
+      el.addEventListener('rex-tiptap:change', (e) => {
+        const patch = dirty.get(sec.dataset.block) || {};
+        patch[el.dataset.edit] = e.detail.value;
+        dirty.set(sec.dataset.block, patch);
+        render();
+      });
+      const view = inst.editor.view;
+      const pos = at ? view.posAtCoords({ left: at.x, top: at.y }) : null;
+      inst.editor.chain().focus(pos ? pos.pos : 'end').run();
+    } catch (err) { say(err.message, true); } finally { delete el.dataset.ttLoading; }
+  }
+  main.addEventListener('pointerdown', (e) => {
+    const el = e.target.closest?.('[data-edit][data-edit-mode="rich"]');
+    if (el && !el.classList.contains('rex-tiptap-inline')) { e.preventDefault(); richMount(el, { x: e.clientX, y: e.clientY }); }
+  });
   main.addEventListener('focusin', (e) => {
     const el = e.target.closest?.('[data-edit][data-edit-mode="rich"]');
-    if (el && inline) inline.show(el, 'rich');
+    if (el && e.target === el && !el.classList.contains('rex-tiptap-inline')) richMount(el);
   });
-  main.addEventListener('focusout', (e) => {
-    if (e.target.closest?.('[data-edit][data-edit-mode="rich"]')) inline?.hideSoon();
-  });
-  ['keyup', 'mouseup'].forEach((ev) => main.addEventListener(ev, () => inline?.update()));
-
+  if (main.querySelector('[data-edit-mode="rich"]')) ttLoad().catch(() => {});   // bundle ready before the first click
 
   // ------------------------------------------------------------------ Blöcke: Menü ⋯, Ziehen, Zwischenablage, Einklappen
 

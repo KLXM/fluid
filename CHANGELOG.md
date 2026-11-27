@@ -36,6 +36,13 @@
   nutzen `KitHead` – Ausgabe unverändert (verglichen für beide Kits).
 - Website-Texte: „Ein Element ist ein REDAXO-Modul mit kleinen Extras“; Seite „Module und Templates“ mit Beispiel für ein
   eigenes Template.
+- **Text-Editor: TipTap** (`klxm/tiptap`, jetzt Abhängigkeit) statt der eigenen Formatierungsleiste – in der Seitenleiste
+  und direkt auf der Seite (Inline-Modus von TipTap, Klick setzt die Schreibmarke an die Stelle). Profil als Klasse
+  `Tiptap\FluidProfile` (`tiptap.fluid`) mit denselben Formaten wie bisher, Plugin für Anker an Überschriften und die
+  Video-Lightbox an Links; Seiten und Dateien wählen Redakteure auf der Website mit der Auswahl von fluid. Bestehende Texte
+  bleiben unverändert (Rundlauf geprüft). Entfernt: `assets/rte.js`, `rte.css` und ihre Quellen.
+- Fix: Der Core ersetzt `redaxo://ID` in der ganzen Ausgabe eines Slices – auch im `data-link` von Links; beim Bearbeiten
+  auf der Seite ging so die feste Verbindung zur Seite verloren. `data-link` steht jetzt als Entität in der Ausgabe.
 - **Gewöhnliche REDAXO-Module auf der Website hinzufügen:** Die Auswahl zeigt sie unter „REDAXO-Module“ (wenn ihr Formular
   vollständig in der Seitenleiste geht, Modulrecht, Template und Kategorie erlauben es). Erst das Formular, nach
   „Übernehmen“ der Slice – geprüft wie im Backend. Neu: `ModuleForm::addable()/newForm()/create()`, API `module_new`/`module_add`.
