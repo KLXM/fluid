@@ -56,7 +56,7 @@ final class Api
     public const string CSRF = 'fluid_editor';
 
     /** Aktionen, die die Seite ändern – gesperrt, solange jemand anderes sie bearbeitet (EditLock) */
-    private const array LOCKED = ['save', 'module_save', 'add', 'move', 'reorder', 'col_move', 'paste', 'duplicate', 'status', 'delete',
+    private const array LOCKED = ['save', 'module_save', 'module_add', 'add', 'move', 'reorder', 'col_move', 'paste', 'duplicate', 'status', 'delete',
         'publish', 'discard', 'page_save', 'lang_copy', 'version_restore'];
 
     public static function handle(): never
@@ -242,6 +242,8 @@ final class Api
             'glossary' => Glossary\Glossary::api($user, $article),   // Quick-Glossar: suchen, anlegen, Schreibweise hinzufügen   // Listen-Vorlagen verwalten (Seitenleiste, Perm::DESIGN_FULL)
             // gewöhnliche REDAXO-Module (keine fluid-Blöcke) in der Seitenleiste; html null = Formular des Cores im Rahmen
             'module_form' => ['html' => ModuleForm::form(self::plainSlice($article, $user))],
+            'module_new' => self::moduleAdd($article, $user, false),
+            'module_add' => self::moduleAdd($article, $user, true),
             'module_save' => (static function () use ($article, $user): array {
                 ModuleForm::save(self::plainSlice($article, $user), (array) Request::post('m', 'array', []));
                 return [];
@@ -249,7 +251,7 @@ final class Api
             default => self::fail('Unbekannte Aktion.', 400),
         });
         // Aktivitätsprotokoll (Speichern, Veröffentlichen, Verwerfen und Wiederherstellen protokollieren die Aktionen selbst)
-        $log = ['add' => 'block_add', 'delete' => 'block_delete', 'paste' => 'block_add', 'duplicate' => 'block_add', 'page_add' => 'page_add', 'page_save' => 'page_settings',
+        $log = ['add' => 'block_add', 'module_add' => 'block_add', 'delete' => 'block_delete', 'paste' => 'block_add', 'duplicate' => 'block_add', 'page_add' => 'page_add', 'page_save' => 'page_settings',
             'design_save' => 'design', 'site_save' => 'site', 'domain_save' => 'site', 'redirect_save' => 'site', 'tree_move' => 'tree', 'tree_status' => 'tree',
             'tree_menu' => 'tree', 'tree_delete' => 'tree', 'template_save' => 'page_add', 'template_rename' => 'tree', 'template_delete' => 'tree'][Request::get(self::PARAM, 'string')] ?? null;
         if ($log) {
@@ -331,22 +333,11 @@ final class Api
         if (!Template::checkModuleAllowed((string) $article->templateKey, 1, $key)) {
             self::fail('Dieser Block ist im Template der Seite nicht erlaubt.', 403);
         }
-        $after = Request::post('after', 'int', 0);
         $col = max(0, min(4, Request::post('col', 'int', 0)));
         if ($col > 0 && !$module::nestable()) {
             self::fail('Dieser Block kann nicht in einer Spalte stehen.');
         }
-        $priority = 1;
-        if ($after > 0) {
-            $prev = ArticleSlice::getArticleSliceById($after, $article->languageId, FluidAddon::revision());
-            // Hinter einem Layout auf oberster Ebene bzw. „in diese Spalte“ des Layouts: ans Ende seiner Gruppe
-            if ($prev && ((0 === $col && (Layout::isLayout($prev) || null !== Layout::parentOf($prev))) || ($col > 0 && Layout::isLayout($prev)))) {
-                $group = Layout::isLayout($prev) ? $prev : Layout::parentOf($prev);
-                $kids = Layout::children($group);
-                $prev = $kids ? end($kids) : $group;
-            }
-            $priority = $prev ? $prev->priority + 1 : 1;
-        }
+        $priority = self::position($article, $col);
         // Standardwerte der Felder (Variante, Auswahlfelder …) gleich mit speichern
         $data = Form\FieldForm::withDefaults($module::fields(), [], $module::variants());
         $tunes = isset($module::definition()['background']) && 0 === $col ? ['background' => $module::definition()['background']] : [];
@@ -814,6 +805,46 @@ final class Api
      *
      * @return array{html: string, target: int}
      */
+    /** Priority of a new slice after the slice in "after" (0 = top); in a column (col > 0) or behind a whole layout */
+    private static function position(Article $article, int $col): int
+    {
+        $after = Request::post('after', 'int', 0);
+        if ($after <= 0) {
+            return 1;
+        }
+        $prev = ArticleSlice::getArticleSliceById($after, $article->languageId, FluidAddon::revision());
+        // Hinter einem Layout auf oberster Ebene bzw. „in diese Spalte“ des Layouts: ans Ende seiner Gruppe
+        if ($prev && ((0 === $col && (Layout::isLayout($prev) || null !== Layout::parentOf($prev))) || ($col > 0 && Layout::isLayout($prev)))) {
+            $group = Layout::isLayout($prev) ? $prev : Layout::parentOf($prev);
+            $kids = Layout::children($group);
+            $prev = $kids ? end($kids) : $group;
+        }
+
+        return $prev ? $prev->priority + 1 : 1;
+    }
+
+    /**
+     * Ordinary REDAXO module from the block library: "module_new" returns its form, "module_add" adds the slice only once
+     * the input is valid. Never in a column (no section options).
+     *
+     * @return array<string, mixed>
+     */
+    private static function moduleAdd(Article $article, User $user, bool $create): array
+    {
+        $key = Request::post('module', 'string', '');
+        self::requireModulePerm($user, $key);
+        if (!ModuleForm::addable($key, $article)) {
+            self::fail('Dieses Modul lässt sich hier nicht hinzufügen.', 403);
+        }
+        if (!$create) {
+            return ['html' => ModuleForm::newForm($key, $article)];
+        }
+        $slice = ModuleForm::create($key, $article, (array) Request::post('m', 'array', []), self::position($article, 0));
+        BlockOps::place($slice, $slice->priority);
+
+        return ['slice' => $slice->id];
+    }
+
     private static function render(Article $article, int $id, bool $wholeLayout): array
     {
         $slice = self::reload($article, $id);

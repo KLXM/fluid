@@ -34,7 +34,7 @@
   // ------------------------------------------------------------------ Server
 
   // Schreibende Aktionen: vorher „cms:before-save“ (z. B. Präsenz: jemand anderes hat inzwischen gespeichert → Rückfrage)
-  const WRITES = new Set(['save', 'module_save', 'add', 'move', 'reorder', 'col_move', 'paste', 'duplicate', 'status', 'delete', 'publish', 'discard', 'page_save', 'lang_copy', 'version_restore']);
+  const WRITES = new Set(['save', 'module_save', 'module_add', 'add', 'move', 'reorder', 'col_move', 'paste', 'duplicate', 'status', 'delete', 'publish', 'discard', 'page_save', 'lang_copy', 'version_restore']);
   async function beforeSave(action) {
     const waits = [];
     document.dispatchEvent(new CustomEvent('cms:before-save', { detail: { action, waitUntil: (p) => waits.push(p) } }));
@@ -1472,6 +1472,7 @@
   // „Block speichern“ schließt die Leiste, „Block übernehmen“ lässt sie offen; die Ausgabe auf der Seite wird erneuert.
   const modFrame = panel.querySelector('[data-panel-frame]');
   let modId = 0, modLoads = 0, modMode = false;   // modMode: 'native' (Formular von fluid) oder 'frame' (Formular des Cores)
+  let modNew = null;   // ordinary module being added from the block library: { key, after } – the slice exists only after „Übernehmen“
   function initModules(scope) {
     scope.querySelectorAll('[data-fluid-slice]').forEach((el) => {
       if (el.querySelector(':scope > .fluid-mod__btn')) return;
@@ -1487,10 +1488,36 @@
   function modReset() {
     if (modMode) form.innerHTML = '';
     modMode = false;
+    modNew = null;
     modFrame.hidden = true;
     modFrame.src = 'about:blank';
     form.hidden = false;
     main.querySelector('.fluid-mod.is-editing')?.classList.remove('is-editing');
+  }
+  // form of an ordinary module (fields of the core) in the sidebar
+  function modForm(html) {
+    modMode = 'native';
+    modFrame.hidden = true;
+    form.hidden = false;
+    form.innerHTML = html;
+    window.BlocksForm?.init(form, () => {});
+    Rich?.initFields(form);
+    panel.hidden = false;
+    form.querySelectorAll('textarea.rex-input').forEach(grow);
+    form.querySelector('input:not([type=hidden]),textarea,select')?.focus({ preventScroll: true });
+    document.documentElement.classList.add('blocks-panel-open');
+  }
+  // ordinary module from the block library: form first, the slice is added with „Übernehmen“
+  async function modOpenNew(item) {
+    if (!panel.hidden) await cancelPanel();
+    const after = insertAfter?.dataset.block || insertAfter?.dataset.fluidSlice || 0;
+    let res;
+    try { res = await api('module_new', { module: item.dataset.key, after }); } catch (err) { say(err.message, true); return; }
+    modId = 0;
+    $('[data-panel-title]').textContent = item.querySelector('strong')?.textContent || 'Modul';
+    $('[data-panel-vis]').hidden = true;
+    modForm(res.html);
+    modNew = { key: item.dataset.key, after };
   }
   async function refreshSlice(id) {
     try {
@@ -1520,15 +1547,7 @@
     let res = null;
     try { res = await api('module_form', { slice: modId }); } catch (err) { say(err.message, true); el.classList.remove('is-editing'); return; }
     if (res.html) {
-      modMode = 'native';
-      modFrame.hidden = true;
-      form.hidden = false;
-      form.innerHTML = res.html;
-      window.BlocksForm?.init(form, () => {});
-      Rich?.initFields(form);
-      panel.hidden = false;
-      form.querySelectorAll('textarea.rex-input').forEach(grow);
-      form.querySelector('input:not([type=hidden]),textarea,select')?.focus({ preventScroll: true });
+      modForm(res.html);
     } else {
       modMode = 'frame';
       const u = new URL(unamp(cfg.backendUrl), location.href);
@@ -1548,6 +1567,27 @@
   });
   // „Übernehmen“ der Seitenleiste: Formular des Cores absenden („Block speichern“)
   async function modApply() {
+    if ('native' === modMode && modNew) {
+      const fd = new FormData(form);
+      fd.append('module', modNew.key);
+      fd.append('after', String(modNew.after));
+      try {
+        const res = await api('module_add', fd);
+        const page = new DOMParser().parseFromString(await (await fetch(location.href, { credentials: 'same-origin' })).text(), 'text/html');
+        const el = page.querySelector(`[data-fluid-slice="${res.slice}"]`);
+        closePanel();
+        if (el) {
+          const node = document.adoptNode(el);
+          placeNew(node);
+          initModules(node.parentElement);
+          node.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        } else {
+          location.reload();
+        }
+        say('Modul hinzugefügt.');
+      } catch (err) { say(err.message, true); }
+      return;
+    }
     if ('native' === modMode) {
       const fd = new FormData(form);
       fd.append('slice', String(modId));
@@ -2020,13 +2060,24 @@
     const favs = mods.length > 8 ? (used.length >= 3 ? used : [...used, ...basics.filter((k) => !used.includes(k))]).slice(0, 6) : [];
     const ORDER = ['Kopf', 'Inhalt', 'Medien', 'Layout', 'Daten', 'Navigation', 'Website'];
     const rank = (g) => (ORDER.indexOf(g) + 1) || 99;
-    const item = (m, fav = false) => `<button type="button" role="option" class="picker__item${fav ? ' picker__item--fav' : ''}" data-key="${esc(m.key)}" data-q="${esc((m.label + ' ' + m.help).toLowerCase())}"><strong>${esc(m.label)}</strong>${m.help ? `<span>${esc(m.help)}</span>` : ''}</button>`;
+    const item = (m, fav = false) => `<button type="button" role="option" class="picker__item${fav ? ' picker__item--fav' : ''}"${m.native ? ' data-native' : ''} data-key="${esc(m.key)}" data-q="${esc((m.label + ' ' + m.help).toLowerCase())}"><strong>${esc(m.label)}</strong>${m.help ? `<span>${esc(m.help)}</span>` : ''}</button>`;
     list.innerHTML = (favs.length ? '<p class="picker__group picker__group--fav">Häufig verwendet</p>' + favs.map((k) => item(mods.find((m) => m.key === k), true)).join('') : '')
       + Object.entries(groups).sort(([a], [b]) => rank(a) - rank(b)).map(([g, ms]) => `<p class="picker__group">${esc(g)}</p>` + ms.map((m) => item(m)).join('')).join('');
     picker.hidden = false;
     const q = $('[data-picker-q]');
     q.value = '';
     q.focus();
+  }
+  // new element where „+“ was pressed: in the column, behind the block (section) or at the top
+  function placeNew(el) {
+    if (insertInto && insertAfter?.parentElement === insertInto) insertAfter.after(el);
+    else if (insertInto) {
+      const btn = insertInto.querySelector(':scope > [data-blocks-coladd]');
+      if (btn) btn.before(el); else insertInto.append(el);
+    }
+    else if (insertAfter?.isConnected) (insertAfter.closest('section[data-block], .fluid-mod') || insertAfter).after(el);
+    else main.prepend(el);
+    insertInto?.classList.remove('lay-col--empty');
   }
   function closePicker() {
     picker.hidden = true;
@@ -2052,18 +2103,16 @@
     const item = e.target.closest('.picker__item');
     if (!item) return;
     closePicker();
+    if (item.hasAttribute('data-native')) {
+      try { await saveAll(); } catch (err) { say(err.message, true); return; }
+      modOpenNew(item);
+      return;
+    }
     try {
       await saveAll();
       const res = await api('add', { module: item.dataset.key, after: insertAfter?.dataset.block || insertAfter?.dataset.recordAdd || 0, col: insertCol });
       const el = h(res.html);
-      if (insertInto && insertAfter?.parentElement === insertInto) insertAfter.after(el);
-      else if (insertInto) {
-        const btn = insertInto.querySelector(':scope > [data-blocks-coladd]');
-        if (btn) btn.before(el); else insertInto.append(el);
-      }
-      else if (insertAfter?.isConnected) (insertAfter.closest('section[data-block]') || insertAfter).after(el);
-      else main.prepend(el);
-      insertInto?.classList.remove('lay-col--empty');
+      placeNew(el);
       initEditables(el);
       emptyHint();
       el.scrollIntoView({ block: 'center', behavior: 'smooth' });

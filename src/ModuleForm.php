@@ -3,13 +3,16 @@
 namespace Klxm\Fluid;
 
 use Klxm\Fluid\Form\FieldForm;
-use ReflectionMethod;
+use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\ArticleSlice;
 use Redaxo\Core\Content\ContentHandler;
 use Redaxo\Core\Content\Module;
+use Redaxo\Core\Content\Template;
 use Redaxo\Core\Form\Form;
 use Redaxo\Core\Form\FormSchema;
 use Redaxo\Core\Translation\Translatable;
+use Redaxo\Core\View\Renderable;
+use ReflectionMethod;
 use Throwable;
 
 use function array_values;
@@ -26,6 +29,8 @@ use function trim;
  * Felder von fluid. Werte: `Field::toRaw()` des Cores; Speichern über das Formular des Cores (`Form::submit()` wandelt um
  * und prüft wie im Backend), `Module::validate()` und `ContentHandler::editSlice()`. Module mit eigenem `input()` und
  * Mehrfachauswahl von Medien bzw. Seiten öffnen weiter das Formular des Cores im Rahmen (null von {@see self::fields()}).
+ * Module, deren Felder das Formular vollständig zeigt, lassen sich auf der Website auch hinzufügen (Blockauswahl, Gruppe
+ * „REDAXO-Module“): erst das Formular, dann der Slice ({@see self::create()}).
  */
 final class ModuleForm
 {
@@ -88,12 +93,82 @@ final class ModuleForm
      */
     public static function save(ArticleSlice $slice, array $input): void
     {
-        $class = Module::getClass($slice->moduleKey);
+        [$class, $fields] = self::schema($slice->moduleKey);
+        $module = Module::of($slice);
+        self::submit($module, $fields, $input);
+        $module->beforeSave();
+        // afterSave() auf einer frischen Instanz des gespeicherten Slices (wie im Backend)
+        Module::of(ContentHandler::editSlice($slice->id, FormSchema::of($class)->encode($module)))->afterSave();
+    }
+
+    /**
+     * Can this module be added on the website? An ordinary module (no fluid element) whose fields the form of fluid shows
+     * completely, allowed in the template and category of the page.
+     */
+    public static function addable(string $key, Article $article): bool
+    {
+        $class = Module::getClass($key);
+
+        return null !== $class && null === BlockModule::classFor($key) && null !== self::fields($class)
+            && Template::checkModuleAllowed((string) $article->templateKey, 1, $key)
+            && $class::isAllowedInCategory($article->getCategory());
+    }
+
+    /** API "module_new": empty form of a module that is not on the page yet (defaults of its fields) */
+    public static function newForm(string $key, Article $article): string
+    {
+        [$class, $fields] = self::schema($key);
+        $module = Module::of(ArticleSlice::forNewSlice($article->id, $article->languageId, 1, $key, 1, FluidAddon::revision()));
+        $raw = [];
+        foreach (FormSchema::of($class)->fields as $prop => $definition) {
+            $raw[$prop] = $definition->field->toRaw($definition->getValue($module));
+        }
+
+        return FieldForm::standalone($fields, self::formValues($fields, $raw), 'm');
+    }
+
+    /**
+     * API "module_add": checks the input like the backend and only then adds the slice – no empty slices with missing
+     * required fields.
+     *
+     * @param array<string, mixed> $input
+     */
+    public static function create(string $key, Article $article, array $input, int $priority): ArticleSlice
+    {
+        [$class, $fields] = self::schema($key);
+        $module = Module::of(ArticleSlice::forNewSlice($article->id, $article->languageId, 1, $key, $priority, FluidAddon::revision()));
+        self::submit($module, $fields, $input);
+        $module->beforeSave();
+        $slice = ContentHandler::addSlice($article->id, $article->languageId, 1, $key, FormSchema::of($class)->encode($module), $priority, FluidAddon::revision());
+        Module::of($slice)->afterSave();
+
+        return $slice;
+    }
+
+    /**
+     * Class and fields of a module the form of fluid can show.
+     *
+     * @return array{0: class-string<Module>, 1: list<array<string, mixed>>}
+     */
+    private static function schema(string $key): array
+    {
+        $class = Module::getClass($key);
         $fields = null !== $class ? self::fields($class) : null;
-        if (null === $fields) {
+        if (null === $class || null === $fields) {
             throw new ApiError('Dieses Modul lässt sich nur im Formular des Backends bearbeiten.');
         }
-        $module = Module::of($slice);
+
+        return [$class, $fields];
+    }
+
+    /**
+     * Submits the input into the form of the core (converts and checks like the backend) and runs validate().
+     *
+     * @param list<array<string, mixed>> $fields
+     * @param array<string, mixed> $input
+     */
+    private static function submit(Module $module, array $fields, array $input): void
+    {
         $form = new Form($module, name: 'fluid_module', csrf: false);
         if (!$form->submit(self::rawValues($fields, $input))) {
             $labels = [];
@@ -110,9 +185,6 @@ final class ModuleForm
         if (null !== $error) {
             throw new ApiError(self::text($error));
         }
-        $module->beforeSave();
-        // afterSave() auf einer frischen Instanz des gespeicherten Slices (wie im Backend)
-        Module::of(ContentHandler::editSlice($slice->id, FormSchema::of($class)->encode($module)))->afterSave();
     }
 
     /**
@@ -168,7 +240,7 @@ final class ModuleForm
             return match (true) {
                 $v instanceof Translatable => $v->translate(),
                 is_string($v) => $v,
-                $v instanceof \Redaxo\Core\View\Renderable => trim(strip_tags((string) $v->render())),
+                $v instanceof Renderable => trim(strip_tags((string) $v->render())),
                 default => (string) $v,
             };
         } catch (Throwable) {

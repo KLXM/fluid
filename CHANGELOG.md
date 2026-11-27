@@ -36,6 +36,9 @@
   nutzen `KitHead` – Ausgabe unverändert (verglichen für beide Kits).
 - Website-Texte: „Ein Element ist ein REDAXO-Modul mit kleinen Extras“; Seite „Module und Templates“ mit Beispiel für ein
   eigenes Template.
+- **Gewöhnliche REDAXO-Module auf der Website hinzufügen:** Die Auswahl zeigt sie unter „REDAXO-Module“ (wenn ihr Formular
+  vollständig in der Seitenleiste geht, Modulrecht, Template und Kategorie erlauben es). Erst das Formular, nach
+  „Übernehmen“ der Slice – geprüft wie im Backend. Neu: `ModuleForm::addable()/newForm()/create()`, API `module_new`/`module_add`.
 - Fix: Automatische Weiterleitungen nach geänderten Adressen führten aus einer weiteren Sprache auf die Seite der Startsprache
   (`/en/alt` → `/neu` statt `/en/new`). Neue Regeln speichern die Sprache (`redaxo://ID@Sprache`), bestehende nehmen die Sprache der
   aufgerufenen Adresse – ohne Migration.

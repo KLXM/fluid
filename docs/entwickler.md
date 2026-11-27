@@ -155,6 +155,12 @@ Eingebaut (1.0.0-beta.9): Text + Bild `valign` = `center`, Bildergalerie `single
 und die Felder von fluid) in seinem Formular und speichert über das Formular des Cores – mit dessen Prüfungen und
 `validate()`. Nur Module mit eigenem `input()` und Mehrfachauswahlen von Medien bzw. Seiten öffnen das Formular des Cores.
 
+**Gewöhnliche Module hinzufügen:** Module, deren Felder das Formular von fluid vollständig zeigt, stehen auch in der Auswahl
+auf der Website (Gruppe „REDAXO-Module“) – mit Modulrecht, erlaubt im Template (`isModuleAllowed()`) und in der Kategorie
+(`isAllowedInCategory()`). Zuerst öffnet ihr Formular (Standardwerte, `ArticleSlice::forNewSlice()`), erst „Übernehmen“
+legt den Slice an – geprüft wie im Backend (`ModuleForm::create()`), es entstehen keine leeren Slices. Nicht in
+Layout-Spalten und nicht für Gäste der Demo.
+
 ## Eigenes Template
 
 fluid braucht kein eigenes Template. **Bearbeiten auf der Website und normale Module funktionieren mit jedem Template:**

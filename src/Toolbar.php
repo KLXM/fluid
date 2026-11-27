@@ -4,16 +4,29 @@ namespace Klxm\Fluid;
 
 use Klxm\Fluid\Media\ImageEffect;
 use Klxm\Fluid\Media\ImageFit;
+use Klxm\ImageEditor\ImageEditorAddon;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\ArticleRevision;
+use Redaxo\Core\Content\Category;
 use Redaxo\Core\Content\Module;
 use Redaxo\Core\Content\ModulePermission;
 use Redaxo\Core\Content\Template;
+use Redaxo\Core\Database\Sql;
+use Redaxo\Core\ExtensionPoint\Extension;
+use Redaxo\Core\ExtensionPoint\ExtensionPoint;
 use Redaxo\Core\Filesystem\Url;
 use Redaxo\Core\Http\Request;
+use Redaxo\Core\Language\Language;
 use Redaxo\Core\Security\CsrfToken;
 
+use function count;
+use function is_array;
 use function Redaxo\Core\View\escape;
+
+use const JSON_HEX_AMP;
+use const JSON_HEX_TAG;
+use const JSON_UNESCAPED_SLASHES;
+use const JSON_UNESCAPED_UNICODE;
 
 /**
  * Leiste und Editor für die angemeldete Redaktion – wird per OUTPUT_FILTER eingefügt, nur wenn ein Backend-Benutzer
@@ -59,11 +72,19 @@ final class Toolbar
             ];
         }
 
+        // ordinary REDAXO modules whose fields the form of fluid shows completely: also in the block library (form first)
+        foreach (Module::getAll() as $key => $class) {
+            if ($guest || !ModuleForm::addable($key, $article) || !$perm instanceof ModulePermission || !$perm->hasPerm($key)) {
+                continue;
+            }
+            $modules[] = ['key' => $key, 'label' => $class::name(), 'group' => 'REDAXO-Module', 'help' => 'Gewöhnliches Modul – Felder in der Seitenleiste', 'nestable' => false, 'drags' => [], 'native' => true];
+        }
+
         $config = [
             'editing' => $editing,
             // Blockauswahl „Häufig verwendet“: Vorkommen je Blocktyp auf der Website (veröffentlichte Fassung)
             'usage' => self::usage(),
-            'article' => ['id' => $article->id, 'name' => $article->name, 'language' => $article->languageId, 'online' => $article->isOnline(), 'category' => $article->getCategory()->name ?? '', 'menu' => $article->isStartArticle() && null !== \Redaxo\Core\Content\Category::get($article->id)],
+            'article' => ['id' => $article->id, 'name' => $article->name, 'language' => $article->languageId, 'online' => $article->isOnline(), 'category' => $article->getCategory()->name ?? '', 'menu' => $article->isStartArticle() && null !== Category::get($article->id)],
             'api' => Url::article($article->id, $article->languageId, [Api::PARAM => '__action__']),
             'csrf' => CsrfToken::factory(Api::CSRF)->getValue(),
             'entry' => null !== $entryTitle ? $entry : 0,   // Detailansicht: an die API, damit Blöcke mit dem Eintrag neu ausgegeben werden
@@ -94,16 +115,16 @@ final class Toolbar
             // weitere Skripte von AddOns (FLUID_EDITOR_CONFIG), laufen vor dem Editor; window.fluidEditorWait: Promises, auf die der Editor wartet
             'scripts' => [],
             // Sprachwahl (ab zwei Sprachen): Seite in anderer Sprache im selben Modus öffnen; „leer“ = noch keine Blöcke
-            'languages' => \count(\Redaxo\Core\Language\Language::getAll()) > 1 ? array_map(static fn (array $l) => $l + [
+            'languages' => count(Language::getAll()) > 1 ? array_map(static fn (array $l) => $l + [
                 'href' => Url::article($article->id, $l['id'], $editing ? [Editing::PARAM => 1] : []),
-                'empty' => !\Redaxo\Core\Database\Sql::factory()->getArray('SELECT id FROM rex_article_slice WHERE article_id = ? AND language_id = ? LIMIT 1', [$article->id, $l['id']]),
+                'empty' => !Sql::factory()->getArray('SELECT id FROM rex_article_slice WHERE article_id = ? AND language_id = ? LIMIT 1', [$article->id, $l['id']]),
             ], Routing\Router::alternates($article, !$guest)) : null,   // Gäste: nur Sprachen, in denen die Seite online ist
             // Anfragen-Postfach: nur, wenn es Formulare mit YForm-Tabellen gibt
             'inbox' => !$guest && [] !== Data\Inbox::tables($user) ? ['new' => Data\Inbox::countNew($user)] : null,
             // Quick-Glossar (Menü ⋯ → Glossar, Alt+G): nur mit Recht auf die Datenquelle des Glossars
             'glossary' => $guest ? null : Glossary\Glossary::toolbar($user),
             // Addon image_editor (optional): Bilder auf der Website bearbeiten
-            'imageEditor' => !$guest && class_exists(\Klxm\ImageEditor\ImageEditorAddon::class) ? \Klxm\ImageEditor\ImageEditorAddon::config() : null,
+            'imageEditor' => !$guest && class_exists(ImageEditorAddon::class) ? ImageEditorAddon::config() : null,
             // Bild an dieser Stelle (Effekt, Darstellung, Ausschnitt): Auswahl mit Beschriftungen aus lang/
             'imagePlace' => [
                 'effects' => array_map(static fn (ImageEffect $e) => [$e->value, $e->label()], ImageEffect::cases()),
@@ -119,7 +140,7 @@ final class Toolbar
 
         $head = '<link rel="stylesheet" href="' . escape($addon->getAssetsUrl('editor/editor.css') . '?v=' . self::version('editor/editor.css')) . '" data-blocks-editor>';
         // FLUID_EDITOR_CONFIG: Einstellungen des Editors ändern (z. B. Blöcke ausblenden, Menüpunkte abschalten)
-        $config = (array) \Redaxo\Core\ExtensionPoint\Extension::dispatch(new \Redaxo\Core\ExtensionPoint\ExtensionPoint('FLUID_EDITOR_CONFIG', $config, ['article' => $article, 'user' => $user]));
+        $config = (array) Extension::dispatch(new ExtensionPoint('FLUID_EDITOR_CONFIG', $config, ['article' => $article, 'user' => $user]));
         $body = '<script type="application/json" id="blocks-editor-config">' . json_encode($config, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) . '</script>'
             . ($editing ? Links::json($article->languageId) : '')
             . implode('', array_map(static fn ($src) => '<script src="' . escape((string) $src) . '" defer></script>', (array) ($config['scripts'] ?? [])))
@@ -140,7 +161,7 @@ final class Toolbar
     private static function usage(): array
     {
         $out = [];
-        foreach (\Redaxo\Core\Database\Sql::factory()->getArray('SELECT module, COUNT(*) AS n FROM rex_article_slice WHERE revision = ? GROUP BY module ORDER BY n DESC', [ArticleRevision::LIVE]) as $r) {
+        foreach (Sql::factory()->getArray('SELECT module, COUNT(*) AS n FROM rex_article_slice WHERE revision = ? GROUP BY module ORDER BY n DESC', [ArticleRevision::LIVE]) as $r) {
             $out[(string) $r['module']] = (int) $r['n'];
         }
 
