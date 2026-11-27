@@ -30,6 +30,12 @@
 - `fluid:demo`: Seiten mit `'renamed_from' => ['Alter Titel']` werden mit `--update` umbenannt statt neu angelegt (neue
   Adresse, alte leitet weiter). Fix: Beim Übersetzen bekam bei Menüpunkten nur die Kategorie den Titel – `<title>` blieb
   in der Startsprache.
+- **Eigenes Template mit den Elementen von fluid:** `KitHead::htmlAttributes()` und `KitHead::render()` – Titel, SEO,
+  Styles und Skripte des aktiven Kits, geschrieben am Ende der Anfrage (nur Styles der genutzten Elemente, Kopf darf vor
+  dem Inhalt stehen). Der Kopf gehört jetzt dem Kit (`Kit::head()`, NativeKit mit Cascade Layers); beide Seitenrahmen
+  nutzen `KitHead` – Ausgabe unverändert (verglichen für beide Kits).
+- Website-Texte: „Ein Element ist ein REDAXO-Modul mit kleinen Extras“; Seite „Module und Templates“ mit Beispiel für ein
+  eigenes Template.
 - Fix: Automatische Weiterleitungen nach geänderten Adressen führten aus einer weiteren Sprache auf die Seite der Startsprache
   (`/en/alt` → `/neu` statt `/en/new`). Neue Regeln speichern die Sprache (`redaxo://ID@Sprache`), bestehende nehmen die Sprache der
   aufgerufenen Adresse – ohne Migration.

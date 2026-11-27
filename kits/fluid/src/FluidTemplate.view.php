@@ -1,12 +1,13 @@
 <?php
 
-use Klxm\Fluid\Editing;
+use Klxm\Fluid\Blog\Blog;
 use Klxm\Fluid\Kit;
 use Klxm\Fluid\Kit\Fluid\FluidTemplate;
-use Klxm\Fluid\PageSettings;
+use Klxm\Fluid\KitHead;
+use Klxm\Fluid\Routing\Router;
+use Klxm\Fluid\Settings;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\ArticleContent;
-use Redaxo\Core\Core;
 use Redaxo\Core\Language\Language;
 
 return static function (ArticleContent $content): void {
@@ -14,10 +15,10 @@ return static function (ArticleContent $content): void {
     // Inhalt zuerst: so ist bekannt, welche Blöcke (und damit welches CSS) die Seite braucht
     $main = $content->renderContent();
     $article = $content->article;
-    $name = \Klxm\Fluid\Settings::name();
+    $name = Settings::name();
     $isHome = $article->id === Article::getSiteStartArticleId();
     // Landing-Domain: Einstiegsseite der Landingpage statt Startseite der Website
-    $landing = \Klxm\Fluid\Routing\Router::landing();
+    $landing = Router::landing();
     $home = $landing ? (Article::get((int) $landing->articleId)?->getUrl() ?? '/') : (Article::getSiteStartArticle()?->getUrl() ?? '/');
     $isHome = $landing ? $article->id === $landing->articleId : $isHome;
     $menu = FluidTemplate::menu();
@@ -27,29 +28,20 @@ return static function (ArticleContent $content): void {
         $menu = array_values(array_filter($menu, static fn (array $m) => rtrim((string) parse_url((string) $m['href'], PHP_URL_PATH), '/') !== $searchHref || !empty($m['children'])));
     }
     // Sprachwahl: Sprachen, in denen diese Seite online ist
-    $langs = \Klxm\Fluid\Routing\Router::alternates($article);
-    $title = PageSettings::title($article, $name);
+    $langs = Router::alternates($article);
     $design = $kit->design();
     // Blog-Beitrag: Kopf (Titel, Datum, Bild) und „Älterer/Neuerer Beitrag“ aus dem Template
-    $isPost = null !== \Klxm\Fluid\Blog\Blog::blogOf($article);
+    $isPost = null !== Blog::blogOf($article);
     if ($isPost) {
         $kit->markUsed('@post');
     }
-    // CSS eines abgeleiteten Kits (kit.php → 'css') zuletzt, damit es Grund- und Block-CSS des Eltern-Kits überschreiben kann
+    // Kopf (Titel, SEO, CSS und Skripte des Kits, Design): KitHead – wie in eigenen Templates.
     // Website → „Darstellungs-Knopf für Besucher anzeigen“: <ncss-preferences> von NativeCSS (Skripte und Bedienfeld-CSS aus dem
     // Kit „NativeCSS“), Tokens und Wirkung auf fluid in css/prefs.css, Klassen-Brücke js/prefs-theme.js
-    $prefs = (bool) setting('visitor_prefs', false) && null !== ($ncss = Kit::get('native'));
+    $prefs = KitHead::visitorPreferences();
     $prefsFonts = $prefs && (bool) setting('visitor_prefs_fonts', true);
-    $prefsCss = $prefs ? [$ncss->assetUrl('ncss/components/preferences.css'), ...($prefsFonts ? [$ncss->assetUrl('ncss/components/preferences-fonts.css')] : []), $kit->assetUrl('css/prefs.css')] : [];
     $prefsEl = static fn (string $class): string => '<ncss-preferences class="' . $class . '" settings="'
         . e(implode(' ', array_filter([$design->get('dark') ? 'theme' : '', 'contrast', 'motion', 'text', $prefsFonts ? 'font' : '', 'spacing', 'links', 'focus']))) . '"></ncss-preferences>';
-    $css = [$kit->assetUrl('css/site.css'), ...$kit->designCss(), ...$kit->blockCss(Editing::active()), ...$kit->kitCss(), ...$prefsCss];
-    $designClasses = $design->classes();
-    // dunkler Grundton bzw. Serifen-Überschriften (wie fluid_html_class in Studio)
-    $bg = (string) $design->get('background');
-    $rgb = sscanf($bg, '#%02x%02x%02x') ?: [255, 255, 255];
-    $extra = (0.2126 * $rgb[0] + 0.7152 * $rgb[1] + 0.0722 * $rgb[2]) / 255 < 0.18 ? ' is-darkbase' : '';
-    $extra .= in_array((string) $design->get('font_head'), ['fraunces', 'newsreader', 'instrument-serif', 'roboto-slab'], true) ? ' head-serif' : '';
     $header = (string) $design->get('header') ?: 'inline';
     $footer = (string) $design->get('footer') ?: 'columns';
     $navItem = static function (array $m): string {
@@ -113,68 +105,50 @@ return static function (ArticleContent $content): void {
         return $h;
     };
 ?><!doctype html>
-<html lang="<?= e(Language::getCurrent()->code) ?>" class="no-js <?= e($designClasses . $extra) ?>" data-fluid-classes="<?= e($designClasses) ?>">
+<html lang="<?= e(Language::getCurrent()->code) ?>" <?= KitHead::htmlAttributes() ?>>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title><?= e($title) ?></title>
-<meta name="color-scheme" content="light dark">
-<?= PageSettings::head($article, $name) ?>
-<?php if ($prefs): ?><script src="<?= e($ncss->assetUrl('ncss/js/preferences-early.js')) ?>"></script>
-<script src="<?= e($kit->assetUrl('js/prefs-theme.js')) ?>"></script>
-<?php endif; ?>
-<?php foreach ($css as $href): ?><link rel="stylesheet" href="<?= e($href) ?>"<?= str_contains($href, '/opt-') ? ' data-fluid-opt' : '' ?>>
-<?php endforeach; ?>
-<?= $design->head($prefs) ?>
-<?php if ($prefs): ?><script src="<?= e($ncss->assetUrl('ncss/js/preferences.js')) ?>" defer></script>
-<?php endif; ?>
-<?php if (!Editing::active() && 'morph' === ($kit->design()->values()['transition'] ?? '')): ?><script src="<?= e($kit->assetUrl('js/vt.js')) ?>"></script>
-<?php endif; ?>
-<?php if (!Editing::active()): ?><script src="<?= e($kit->assetUrl('js/site.js')) ?>" defer></script>
-<?php foreach ($kit->blockJs() as $js): ?><script src="<?= e($js) ?>" defer></script>
-<?php endforeach; ?>
-<?php // Skripte von NativeCSS (ohne Abhängigkeiten), die auch dieses Kit nutzt – nur auf Seiten mit diesen Funktionen
-foreach (['@tablesort' => 'ncss/js/table-sort.js', '@filter' => 'ncss/js/filter.js'] as $key => $file): if ($kit->used($key) && null !== ($nk = Kit::get('native'))): ?><script src="<?= e($nk->assetUrl($file)) ?>" defer></script>
-<?php endif; endforeach; ?>
-<?php endif; ?>
+<?= KitHead::render() ?>
 </head>
 <body class="<?= $isHome ? 'is-home' : 'is-sub' ?>">
 <a class="skip" id="top" href="#main"><?= e(lt('Zum Inhalt springen')) ?></a>
 <div class="page">
-<?php if ('' !== $notice): ?><div class="topnote" role="note"><div class="wrap"><?= fluid_title($notice) ?></div></div><?php endif; ?>
+<?php if ('' !== $notice): ?><div class="topnote" role="note"><div class="wrap"><?= fluid_title($notice) ?></div></div><?php endif ?>
 <header class="hdr hdr--<?= e($header) ?> fit-60" data-header>
-  <?php if ('' !== $topbar && 'off' !== $topbar): $mText = trim((string) setting('topbar_text', '')); $mTel = fluid_phone_href(); ?>
+  <?php if ('' !== $topbar && 'off' !== $topbar): $mText = trim((string) setting('topbar_text', ''));
+  $mTel = fluid_phone_href() ?>
   <div class="hdr__meta"><div class="hdr__meta-in">
-    <?php if ('' !== $mText): ?><p class="hdr__meta-text"><?= fluid_title($mText) ?></p><?php endif; ?>
+    <?php if ('' !== $mText): ?><p class="hdr__meta-text"><?= fluid_title($mText) ?></p><?php endif ?>
     <ul class="hdr__meta-list" role="list">
-      <?php if ($mTel && '' !== fluid_phone()): ?><li><a href="<?= e($mTel) ?>"><?= icon('phone') ?><span><?= e(fluid_phone()) ?></span></a></li><?php endif; ?>
-      <?php if ('' !== fluid_email()): ?><li class="hdr__meta-mail"><a href="mailto:<?= e(fluid_email()) ?>"><?= icon('envelope-simple') ?><span><?= e(fluid_email()) ?></span></a></li><?php endif; ?>
-      <?php foreach ($social as $so): ?><li class="hdr__meta-social"><a href="<?= e($so['url']) ?>" target="_blank" rel="noopener me"><?= e($so['label']) ?></a></li><?php endforeach; ?>
+      <?php if ($mTel && '' !== fluid_phone()): ?><li><a href="<?= e($mTel) ?>"><?= icon('phone') ?><span><?= e(fluid_phone()) ?></span></a></li><?php endif ?>
+      <?php if ('' !== fluid_email()): ?><li class="hdr__meta-mail"><a href="mailto:<?= e(fluid_email()) ?>"><?= icon('envelope-simple') ?><span><?= e(fluid_email()) ?></span></a></li><?php endif ?>
+      <?php foreach ($social as $so): ?><li class="hdr__meta-social"><a href="<?= e($so['url']) ?>" target="_blank" rel="noopener me"><?= e($so['label']) ?></a></li><?php endforeach ?>
     </ul>
   </div></div>
-  <?php endif; ?>
+  <?php endif ?>
   <div class="hdr__bar">
     <?= $brand('hdr__brand') ?>
     <?php if ($menu): ?>
     <div class="hdr__nav"><nav class="hnav" aria-label="<?= e(lt('Hauptnavigation')) ?>"><ul class="hnav__list" role="list" data-fluid-nav="main"><?= implode('', array_map($navItem, $menu)) ?></ul></nav></div>
-    <?php endif; ?>
+    <?php endif ?>
     <div class="hdr__tools">
       <?= $prefs ? $prefsEl($menu ? 'hdr__prefs' : 'hdr__prefs hdr__prefs--always') : '' ?>
-      <?php if (\count($langs) > 2): $curLang = array_values(array_filter($langs, static fn ($l) => $l['current']))[0] ?? $langs[0]; // ab drei Sprachen: Menü (Popover) statt Leiste ?>
+      <?php if (count($langs) > 2): $curLang = array_values(array_filter($langs, static fn ($l) => $l['current']))[0] ?? $langs[0]; // ab drei Sprachen: Menü (Popover) statt Leiste?>
       <div class="langmenu">
         <button type="button" class="langmenu__btn" popovertarget="langmenu" aria-haspopup="true" aria-label="<?= e(lt('Sprache')) ?>: <?= e($curLang['name']) ?>"><span lang="<?= e($curLang['code']) ?>"><?= e(strtoupper($curLang['code'])) ?></span><?= icon('caret-down', ['class' => 'langmenu__chev']) ?></button>
-        <ul id="langmenu" class="langmenu__list" popover role="list" aria-label="<?= e(lt('Sprache')) ?>"><?php foreach ($langs as $l): ?><li><a href="<?= e($l['url']) ?>" hreflang="<?= e($l['code']) ?>" lang="<?= e($l['code']) ?>"<?= $l['current'] ? ' aria-current="true"' : '' ?>><span><?= e($l['name']) ?></span><span class="langmenu__code" aria-hidden="true"><?= e(strtoupper($l['code'])) ?></span></a></li><?php endforeach; ?></ul>
+        <ul id="langmenu" class="langmenu__list" popover role="list" aria-label="<?= e(lt('Sprache')) ?>"><?php foreach ($langs as $l): ?><li><a href="<?= e($l['url']) ?>" hreflang="<?= e($l['code']) ?>" lang="<?= e($l['code']) ?>"<?= $l['current'] ? ' aria-current="true"' : '' ?>><span><?= e($l['name']) ?></span><span class="langmenu__code" aria-hidden="true"><?= e(strtoupper($l['code'])) ?></span></a></li><?php endforeach ?></ul>
       </div>
-      <?php elseif (\count($langs) > 1): ?>
-      <ul class="langswitch" role="list" aria-label="<?= e(lt('Sprache')) ?>"><?php foreach ($langs as $l): ?><li><a href="<?= e($l['url']) ?>" hreflang="<?= e($l['code']) ?>" lang="<?= e($l['code']) ?>" title="<?= e($l['name']) ?>"<?= $l['current'] ? ' aria-current="true"' : '' ?>><?= e(strtoupper($l['code'])) ?></a></li><?php endforeach; ?></ul>
-      <?php endif; ?>
-      <?php if ('' !== ($searchPage = trim((string) setting('search_page', '')))): ?><a class="hdr__search" href="<?= e(link_href($searchPage)) ?>" title="<?= e(lt('Suche')) ?>"><?= icon('magnifying-glass') ?><span class="sr-only"><?= e(lt('Suche')) ?></span></a><?php endif; ?>
-      <?php if ($cta): ?><a class="btn btn--primary hdr__cta" <?= fluid_link_attrs($cta['link']) ?>><?= e($cta['label']) ?></a><?php endif; ?>
+      <?php elseif (count($langs) > 1): ?>
+      <ul class="langswitch" role="list" aria-label="<?= e(lt('Sprache')) ?>"><?php foreach ($langs as $l): ?><li><a href="<?= e($l['url']) ?>" hreflang="<?= e($l['code']) ?>" lang="<?= e($l['code']) ?>" title="<?= e($l['name']) ?>"<?= $l['current'] ? ' aria-current="true"' : '' ?>><?= e(strtoupper($l['code'])) ?></a></li><?php endforeach ?></ul>
+      <?php endif ?>
+      <?php if ('' !== ($searchPage = trim((string) setting('search_page', '')))): ?><a class="hdr__search" href="<?= e(link_href($searchPage)) ?>" title="<?= e(lt('Suche')) ?>"><?= icon('magnifying-glass') ?><span class="sr-only"><?= e(lt('Suche')) ?></span></a><?php endif ?>
+      <?php if ($cta): ?><a class="btn btn--primary hdr__cta" <?= fluid_link_attrs($cta['link']) ?>><?= e($cta['label']) ?></a><?php endif ?>
       <?php if ($menu): ?>
       <button type="button" class="menu-btn" popovertarget="mnav" aria-controls="mnav" aria-haspopup="dialog">
         <span class="menu-btn__bars" aria-hidden="true"></span><span class="menu-btn__label"><?= e(lt('Menü')) ?></span>
       </button>
-      <?php endif; ?>
+      <?php endif ?>
     </div>
   </div>
 </header>
@@ -190,51 +164,51 @@ foreach (['@tablesort' => 'ncss/js/table-sort.js', '@filter' => 'ncss/js/filter.
     <div class="ftr__statement">
       <p class="ftr__big"><?= fluid_title($statement) ?></p>
       <?php if ($ftrCta): ?><?= $ftrBtn($ftrCta, 'ftr__cta') ?>
-      <?php elseif ($cta): ?><a class="btn btn--primary ftr__cta" <?= fluid_link_attrs($cta['link']) ?>><?= e($cta['label']) ?><?= icon('arrow-right') ?></a><?php endif; ?>
+      <?php elseif ($cta): ?><a class="btn btn--primary ftr__cta" <?= fluid_link_attrs($cta['link']) ?>><?= e($cta['label']) ?><?= icon('arrow-right') ?></a><?php endif ?>
     </div>
-  <?php endif; ?>
+  <?php endif ?>
   <?php if ('simple' === $footer || 'centered' === $footer): ?>
     <div class="ftr__row">
       <?= $brand('brand--footer') ?>
-      <?php if ('' !== $tagline): ?><p class="ftr__tagline"><?= fluid_title($tagline) ?></p><?php endif; ?>
-      <?php if ($menu): ?><nav aria-label="<?= e(lt('Seiten')) ?>" class="ftr__inline"><ul class="cluster" role="list" data-fluid-nav="footer"><?= $pageList() ?></ul></nav><?php endif; ?>
-      <?php if ($ftrCta): ?><?= $ftrBtn($ftrCta, 'ftr__btn') ?><?php endif; ?>
+      <?php if ('' !== $tagline): ?><p class="ftr__tagline"><?= fluid_title($tagline) ?></p><?php endif ?>
+      <?php if ($menu): ?><nav aria-label="<?= e(lt('Seiten')) ?>" class="ftr__inline"><ul class="cluster" role="list" data-fluid-nav="footer"><?= $pageList() ?></ul></nav><?php endif ?>
+      <?php if ($ftrCta): ?><?= $ftrBtn($ftrCta, 'ftr__btn') ?><?php endif ?>
     </div>
-    <?php if ('' !== $ftrText): ?><p class="ftr__text"><?= nl2br(fluid_title($ftrText), false) ?></p><?php endif; ?>
+    <?php if ('' !== $ftrText): ?><p class="ftr__text"><?= nl2br(fluid_title($ftrText), false) ?></p><?php endif ?>
   <?php else: ?>
     <div class="ftr__grid">
       <div class="ftr__about">
         <?= $brand('brand--footer') ?>
-        <?php if ('' !== $tagline): ?><p class="ftr__tagline"><?= fluid_title($tagline) ?></p><?php endif; ?>
-        <?php if ('' !== $ftrText): ?><p class="ftr__text"><?= nl2br(fluid_title($ftrText), false) ?></p><?php endif; ?>
-        <?php if ($ftrCta && 'statement' !== $footer): ?><p class="ftr__action"><?= $ftrBtn($ftrCta, 'ftr__btn') ?></p><?php endif; ?>
+        <?php if ('' !== $tagline): ?><p class="ftr__tagline"><?= fluid_title($tagline) ?></p><?php endif ?>
+        <?php if ('' !== $ftrText): ?><p class="ftr__text"><?= nl2br(fluid_title($ftrText), false) ?></p><?php endif ?>
+        <?php if ($ftrCta && 'statement' !== $footer): ?><p class="ftr__action"><?= $ftrBtn($ftrCta, 'ftr__btn') ?></p><?php endif ?>
       </div>
       <?php if ($address || '' !== fluid_phone() || '' !== fluid_email()): ?>
       <div class="ftr__col">
         <h2 class="ftr__h"><?= e(lt('Kontakt')) ?></h2>
         <?php if ($address && $compact): ?><address class="ftr__address ftr__address--line"><?= implode(' ', array_map(static fn ($l) => '<span>' . e($l) . '</span>', $address)) ?></address>
-        <?php elseif ($address): ?><address class="ftr__address"><?= implode('<br>', array_map('e', $address)) ?></address><?php endif; ?>
+        <?php elseif ($address): ?><address class="ftr__address"><?= implode('<br>', array_map('e', $address)) ?></address><?php endif ?>
         <?= fluid_quick_contact('ftr__list') ?>
       </div>
-      <?php endif; ?>
+      <?php endif ?>
       <?php if ($menu): ?>
       <nav class="ftr__col" aria-labelledby="ftr-pages">
         <h2 class="ftr__h" id="ftr-pages"><?= e(lt('Seiten')) ?></h2>
         <ul class="ftr__list" role="list" data-fluid-nav="footer"><?= $pageList() ?></ul>
       </nav>
-      <?php endif; ?>
+      <?php endif ?>
       <?php if ($social): ?>
       <div class="ftr__col">
         <h2 class="ftr__h"><?= e(lt('Folgen Sie uns')) ?></h2>
         <ul class="ftr__list" role="list"><?= $socialList() ?></ul>
       </div>
-      <?php endif; ?>
+      <?php endif ?>
     </div>
-  <?php endif; ?>
+  <?php endif ?>
     <div class="ftr__bottom">
       <p class="ftr__copy">© <?= e(date('Y')) ?> <?= e($name) ?></p>
-      <?php if ($legal): ?><nav aria-label="<?= e(lt('Rechtliches')) ?>"><ul class="cluster ftr__legal" role="list"><?php foreach ($legal as $l): ?><li><a href="<?= e($l['href']) ?>"><?= e($l['label']) ?></a></li><?php endforeach; ?></ul></nav><?php endif; ?>
-      <?php if (('simple' === $footer || 'centered' === $footer) && $social): ?><ul class="cluster ftr__legal" role="list" aria-label="<?= e(lt('Social Media')) ?>"><?= $socialList() ?></ul><?php endif; ?>
+      <?php if ($legal): ?><nav aria-label="<?= e(lt('Rechtliches')) ?>"><ul class="cluster ftr__legal" role="list"><?php foreach ($legal as $l): ?><li><a href="<?= e($l['href']) ?>"><?= e($l['label']) ?></a></li><?php endforeach ?></ul></nav><?php endif ?>
+      <?php if (('simple' === $footer || 'centered' === $footer) && $social): ?><ul class="cluster ftr__legal" role="list" aria-label="<?= e(lt('Social Media')) ?>"><?= $socialList() ?></ul><?php endif ?>
     </div>
   </div>
 </footer>
@@ -248,9 +222,9 @@ foreach (['@tablesort' => 'ncss/js/table-sort.js', '@filter' => 'ncss/js/filter.
   </div>
   <nav class="mnav__nav" aria-label="<?= e(lt('Hauptnavigation')) ?>" data-fluid-nav="sheet"><?= fluid_nav_sheet($menu) ?></nav>
   <?= $prefs ? $prefsEl('mnav__prefs') : '' ?>
-  <?php if (\count($langs) > 1): ?><ul class="langswitch langswitch--wide" role="list" aria-label="<?= e(lt('Sprache')) ?>"><?php foreach ($langs as $l): ?><li><a href="<?= e($l['url']) ?>" hreflang="<?= e($l['code']) ?>" lang="<?= e($l['code']) ?>"<?= $l['current'] ? ' aria-current="true"' : '' ?>><?= e($l['name']) ?></a></li><?php endforeach; ?></ul><?php endif; ?>
+  <?php if (count($langs) > 1): ?><ul class="langswitch langswitch--wide" role="list" aria-label="<?= e(lt('Sprache')) ?>"><?php foreach ($langs as $l): ?><li><a href="<?= e($l['url']) ?>" hreflang="<?= e($l['code']) ?>" lang="<?= e($l['code']) ?>"<?= $l['current'] ? ' aria-current="true"' : '' ?>><?= e($l['name']) ?></a></li><?php endforeach ?></ul><?php endif ?>
 </div>
-<?php endif; ?>
+<?php endif ?>
 <link rel="stylesheet" href="<?= e($kit->assetUrl('css/overlay.css')) ?>">
 </body>
 </html>

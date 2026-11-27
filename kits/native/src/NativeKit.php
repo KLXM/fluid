@@ -3,8 +3,16 @@
 namespace Klxm\Fluid\Kit\Native;
 
 use Klxm\Fluid\AsKit;
+use Klxm\Fluid\Editing;
 use Klxm\Fluid\Kit;
+use Klxm\Fluid\Settings;
 use Override;
+use Redaxo\Core\Content\Article;
+use Redaxo\Core\Http\Response;
+
+use function array_map;
+use function dirname;
+use function Redaxo\Core\View\escape;
 
 /**
  * Kit „NativeCSS“: Seitenrahmen und Blöcke auf Basis von NativeCSS (https://github.com/skerbis/nativecss, MIT) –
@@ -14,6 +22,48 @@ use Override;
 #[AsKit('native', 'NativeCSS')]
 final class NativeKit extends Kit
 {
+    /**
+     * Head with cascade layers: tokens < reset < base (NativeCSS) < fluid (base styles of fluid for the elements, imported as
+     * layer) < helpers < components < native. Styles without layer – design values, element styles, design options – come on top.
+     */
+    #[Override]
+    public function head(Article $article): string
+    {
+        $prefs = (bool) Settings::get('visitor_prefs', false);
+        $prefsCss = $prefs ? ['css/ncss-preferences.css', ...((bool) Settings::get('visitor_prefs_fonts', true) ? ['css/ncss-preferences-fonts.css'] : [])] : [];
+        $css = [$this->assetUrl('css/ncss-base.css'), ...array_map($this->assetUrl(...), $prefsCss), ...$this->designCss(), ...$this->blockCss(Editing::active()), ...$this->kitCss()];
+        $fluidCss = Kit::get(Kit::DEFAULT)?->assetUrl('css/site.css') ?? '';
+
+        $h = self::titleTags($article);
+        if ($prefs) {
+            $h .= self::script($this->assetUrl('ncss/js/preferences-early.js')) . self::script($this->assetUrl('js/prefs-theme.js'));
+        }
+        $h .= '<style nonce="' . escape(Response::getNonce()) . '">@layer wa-native, wa-base, wa-utilities, wa-color-palette, wa-color-variant, wa-theme, wa-theme-dimension, wa-theme-overrides, tokens, reset, base, fluid, helpers, components, webawesome-bridge, browser-fixes, native;' . "\n"
+            . ('' !== $fluidCss ? '@import url("' . escape($fluidCss) . '") layer(fluid);' : '') . '</style>' . "\n"
+            . self::stylesheets($css)
+            . $this->design()->head()
+            . self::script($this->assetUrl('ncss/js/command-fallback.js'), true)
+            . self::script($this->assetUrl('ncss/js/dialog-light-dismiss.js'), true);
+        if ($prefs) {
+            $h .= self::script($this->assetUrl('ncss/js/preferences.js'), true);
+        }
+        $h .= self::script($this->assetUrl('ncss/js/nav.js'), true);
+        if (!Editing::active()) {
+            $h .= self::script($this->assetUrl('js/site.js'), true);
+            foreach ($this->blockJs() as $js) {
+                $h .= self::script($js, true);
+            }
+        }
+
+        return $h;
+    }
+
+    #[Override]
+    public function htmlClass(): string
+    {
+        return 'kit-native';
+    }
+
     #[Override]
     public function path(string $file = ''): string
     {

@@ -46,6 +46,7 @@ final class FeatureSelfTest
             'Wissen' => static fn () => new self()->run('knowledge'),
             'Adressen' => static fn () => new self()->run('addresses'),
             'Kurzlinks' => static fn () => new self()->run('shortlinks'),
+            'Template-Kopf' => static fn () => new self()->run('kitHead'),
         ];
     }
 
@@ -157,6 +158,19 @@ final class FeatureSelfTest
         $this->eq('Slug with umlauts and accents', Routing\Routes::slugify('Café Müller – Łódź'), 'cafe-mueller-lodz');
         $this->eq('Own address with slash', Routing\Routes::slugifyPath(' Angebot / Sommer 2027 /'), 'angebot/sommer-2027');
         $this->eq('Choices in the site panel', substr_count(Seo\Addresses::render(), 'name="ending"'), count(Seo\UrlEnding::cases()));
+    }
+
+    // ------------------------------------------------------------------ KitHead (own templates)
+
+    private function kitHead(): void
+    {
+        $marker = KitHead::render();
+        $html = '<html><head>' . $marker . '</head><body>' . $marker . '</body></html>';
+        $out = KitHead::replace($html);
+        $this->eq('Marker replaced once (first one)', [substr_count($out, $marker), str_contains($out, '</head><body>' . $marker)], [1, true]);
+        $attrs = KitHead::htmlAttributes();
+        $this->eq('html attributes', [str_starts_with($attrs, 'class="no-js '), str_contains($attrs, 'data-fluid-classes="')], [true, true]);
+        $this->eq('Native kit class', Kit::get('native')?->htmlClass() ?? 'kit-native', 'kit-native');
     }
 
     // ------------------------------------------------------------------ Shortlinks (with their extension points)

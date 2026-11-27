@@ -465,6 +465,10 @@ final class Teaser extends FluidBlock
 `$this->edit('feld')` macht das Feld direkt auf der Website bearbeitbar – fertig ist der Block, mit Seitenleiste,
 Entwurf, Rechten und Historie.
 
+**Eigenes Template:** Bearbeiten auf der Website und normale Module funktionieren mit jedem Template. Für die Elemente
+und das Design von fluid kommen zwei Zeilen dazu – `<html <?= KitHead::htmlAttributes() ?>>` und im Kopf
+`<?= KitHead::render() ?>` (Titel, SEO, Styles und Skripte des Kits; Entwickler-Referenz → „Eigenes Template“).
+
 **Navigation:** fluid baut sein Menü mit [navigation_array](https://github.com/KLXM/navigation_array)
 (Branch 6.x) – im eigenen Template genauso nutzbar. Für Landing-Domains mit eigenem Seitenbaum liefert fluid den Start
 über den Extension Point `NavigationStart`.

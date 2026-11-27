@@ -3,25 +3,28 @@
 namespace Klxm\Fluid;
 
 use Klxm\Fluid\Kit\Fluid\FluidKit;
-use ReflectionClass;
 use Redaxo\Core\ClassDiscovery;
+use Redaxo\Core\Content\Article;
 use Redaxo\Core\ExtensionPoint\Extension;
 use Redaxo\Core\ExtensionPoint\ExtensionPoint;
 use Redaxo\Core\Filesystem\Dir;
 use Redaxo\Core\Filesystem\File;
 use Redaxo\Core\Filesystem\Path;
 use Redaxo\Core\Filesystem\Url;
+use ReflectionClass;
 
 use function array_key_exists;
 use function dirname;
 use function in_array;
 use function is_dir;
 use function is_file;
+use function Redaxo\Core\View\escape;
+use function str_contains;
 
 /**
  * Ein Kit: Gestaltung (Template, CSS, JS) und die Ausgaben der Blöcke (deren Felder stehen in den Blockklassen).
  *
- * Aufbau eines Kits (Ordner, {@see path()}):
+ * Aufbau eines Kits (Ordner, {@see Path()}):
  *   kit.php           Definition: label, backgrounds, assets (CSS je Blocktyp), blocks (Ergänzungen je Blocktyp, z. B. Varianten),
  *                     css (weitere Stylesheets für jede Seite), design (Style-Editor)
  *   functions.php     Hilfsfunktionen der Ausgaben (wird einmal geladen)
@@ -434,6 +437,78 @@ abstract class Kit
     }
 
     /** Style-Editor des Kits (eigene Werte je Kit) */
+    /**
+     * Head of a page in this kit: title, SEO tags, styles (base, design, used elements), design and scripts – written by
+     * {@see KitHead} once the page is rendered. Kits with their own page frame override it (NativeKit: cascade layers).
+     */
+    public function head(Article $article): string
+    {
+        $design = $this->design();
+        $ncss = self::get('native');
+        $prefs = KitHead::visitorPreferences() && null !== $ncss;
+        $prefsFonts = $prefs && (bool) Settings::get('visitor_prefs_fonts', true);
+        // styles of a derived kit (kit.php → 'css') last, so they can override base and element styles of the parent kit
+        $css = [$this->assetUrl('css/site.css'), ...$this->designCss(), ...$this->blockCss(Editing::active()), ...$this->kitCss()];
+        if ($prefs) {
+            $css = [...$css, $ncss->assetUrl('ncss/components/preferences.css'), ...($prefsFonts ? [$ncss->assetUrl('ncss/components/preferences-fonts.css')] : []), $this->assetUrl('css/prefs.css')];
+        }
+        $h = self::titleTags($article);
+        if ($prefs) {
+            $h .= self::script($ncss->assetUrl('ncss/js/preferences-early.js')) . self::script($this->assetUrl('js/prefs-theme.js'));
+        }
+        $h .= self::stylesheets($css) . $design->head($prefs);
+        if ($prefs) {
+            $h .= self::script($ncss->assetUrl('ncss/js/preferences.js'), true);
+        }
+        if (!Editing::active()) {
+            if ('morph' === ($design->values()['transition'] ?? '')) {
+                $h .= self::script($this->assetUrl('js/vt.js'));
+            }
+            $h .= self::script($this->assetUrl('js/site.js'), true);
+            foreach ($this->blockJs() as $js) {
+                $h .= self::script($js, true);
+            }
+            // scripts of NativeCSS (without dependencies) that this kit uses too – only on pages with these features
+            foreach (['@tablesort' => 'ncss/js/table-sort.js', '@filter' => 'ncss/js/filter.js'] as $key => $file) {
+                if ($this->used($key) && null !== $ncss) {
+                    $h .= self::script($ncss->assetUrl($file), true);
+                }
+            }
+        }
+
+        return $h;
+    }
+
+    /** Class of this kit on <html> (e.g. kit-native), empty by default */
+    public function htmlClass(): string
+    {
+        return '';
+    }
+
+    /** <title>, color scheme and SEO tags (canonical, hreflang, Open Graph, JSON-LD) */
+    final protected static function titleTags(Article $article): string
+    {
+        return '<title>' . escape(PageSettings::title($article)) . '</title>' . "\n"
+            . '<meta name="color-scheme" content="light dark">' . "\n"
+            . PageSettings::head($article);
+    }
+
+    /** @param list<string> $hrefs */
+    final protected static function stylesheets(array $hrefs): string
+    {
+        $h = '';
+        foreach ($hrefs as $href) {
+            $h .= '<link rel="stylesheet" href="' . escape($href) . '"' . (str_contains($href, '/opt-') ? ' data-fluid-opt' : '') . '>' . "\n";
+        }
+
+        return $h;
+    }
+
+    final protected static function script(string $src, bool $defer = false): string
+    {
+        return '<script src="' . escape($src) . '"' . ($defer ? ' defer' : '') . '></script>' . "\n";
+    }
+
     final public function design(): Design
     {
         return Design::for($this);

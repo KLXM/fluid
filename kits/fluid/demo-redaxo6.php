@@ -445,6 +445,27 @@ return static function (ArticleContent $content): void { ?>
     </html>
 <?php };
 CODE,
+    'kithead' => <<<'CODE'
+<?php
+
+use Klxm\Fluid\KitHead;
+use Redaxo\Core\Content\ArticleContent;
+
+return static function (ArticleContent $content): void { ?>
+    <!DOCTYPE html>
+    <html lang="de" <?= KitHead::htmlAttributes() ?>>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <?= KitHead::render() ?>
+    </head>
+    <body>
+        <main id="main"><?= $content->renderContent(1) ?></main>
+        <aside><?= $content->renderContent(2) ?></aside>
+    </body>
+    </html>
+<?php };
+CODE,
     'project' => <<<'CODE'
 <?php
 
@@ -867,8 +888,8 @@ return [
                     'size' => 'm',
                     'items' => [
                         ['icon' => 'puzzle-piece', 'title' => 'Normale REDAXO-Module', 'text' => 'Module von REDAXO 6 laufen ohne Änderung mit – auf der Website bearbeitet in derselben Seitenleiste wie die Elemente.', 'link_label' => 'Native Module', 'link' => '/native-module'],
-                        ['icon' => 'code', 'title' => 'Eigene Elemente', 'text' => 'Ein Element ist eine PHP-Klasse: Felder als Attribute, Ausgabe in output(). Für Text direkt auf der Seite genügt $this->edit(\'feld\').', 'link_label' => 'Elemente ansehen', 'link' => '/elemente'],
-                        ['icon' => 'layout', 'title' => 'Eigenes Template', 'text' => 'Bearbeiten auf der Website klappt mit jedem Template. Für die Elemente und das Design von fluid bindet es die Styles des Kits ein – oder nimmt das Template von fluid.', 'link_label' => 'Module und Templates', 'link' => '/module-templates'],
+                        ['icon' => 'code', 'title' => 'Elemente sind Module', 'text' => 'Ein Element ist ein ganz normales REDAXO-Modul mit kleinen Extras von fluid: Text direkt auf der Seite bearbeiten ($this->edit(\'feld\')), Darstellungen zur Auswahl, Hintergrund und Abstände je Abschnitt.', 'link_label' => 'Elemente ansehen', 'link' => '/elemente'],
+                        ['icon' => 'layout', 'title' => 'Eigenes Template', 'text' => 'Bearbeiten auf der Website klappt mit jedem Template. Für die Elemente und das Design von fluid kommen zwei Zeilen dazu: KitHead::htmlAttributes() und KitHead::render().', 'link_label' => 'Module und Templates', 'link' => '/module-templates'],
                         ['icon' => 'plugs-connected', 'title' => 'Erweitern wie im Core', 'text' => 'Gestaltung als austauschbares Kit, Erweiterungen über Extension Points und Attribute – so, wie REDAXO 6 selbst erweitert wird.', 'link_label' => 'Eigenes Kit', 'link' => '/eigenes-kit'],
                     ],
                 ]],
@@ -1250,6 +1271,10 @@ vollständig: Module, Templates, Schema'],
                         $c('template', 'src/Template/PageTemplate.php', 'php'),
                         $c('view', 'src/Template/PageTemplate.view.php', 'php'),
                     ]]],
+                ['type' => 'code', 'data' => ['eyebrow' => 'Mit fluid', 'title' => 'Eigenes Template mit den Elementen von fluid', 'intro' => 'Zwei Zeilen genügen: KitHead schreibt Titel, SEO-Angaben, Styles und Skripte des Kits – erst wenn die Seite fertig ist, also nur für die Elemente, die sie wirklich nutzt.', 'note' => 'Ohne KitHead funktionieren Bearbeiten auf der Website und normale Module trotzdem.',
+                    'items' => [
+                        $c('kithead', 'src/Template/PageTemplate.view.php', 'php'),
+                    ]]],
                 ['type' => 'code', 'data' => ['eyebrow' => '', 'title' => 'Standard-Template festlegen', 'intro' => 'Die Klasse Project ist der Einstieg ins eigene Projekt – für Konfiguration, Start und eigene Tabellen.', 'note' => '',
                     'items' => [
                         $c('project', 'src/Project.php', 'php'),
@@ -1420,7 +1445,7 @@ vollständig: Module, Templates, Schema'],
             'slug' => 'elemente', 'title' => 'Elemente', 'renamed_from' => ['Bausteine'], 'menu' => true, 'parent' => 'fluid',
             'blocks' => [
                 ['type' => 'hero', 'tunes' => ['background' => 'muted'], 'data' => ['variant' => 'compact', 'eyebrow' => 'Kit fluid',
-                    'title' => 'Elemente für jede Seite', 'text' => 'Jeder Abschnitt ist ein Element mit Feldschema – ein echter REDAXO-Slice. Modular: eigene Elemente kommen als PHP-Klasse dazu, gewöhnliche REDAXO-Module laufen mit.']],
+                    'title' => 'Elemente für jede Seite', 'text' => 'Jeder Abschnitt ist ein Element – ein REDAXO-Modul mit kleinen Extras von fluid, gespeichert als echter Slice. Eigene Elemente sind Modulklassen, gewöhnliche Module laufen mit.']],
                 ['type' => 'logos', 'data' => ['variant' => 'marquee', 'eyebrow' => '', 'title' => 'Gebaut auf bewährter Technik', 'items' => [
                     ['name' => 'REDAXO', 'link' => '', 'image' => null], ['name' => 'PHP 8.5', 'link' => '', 'image' => null],
                     ['name' => 'Composer', 'link' => '', 'image' => null], ['name' => 'Symfony', 'link' => '', 'image' => null],

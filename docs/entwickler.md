@@ -4,7 +4,7 @@ Technische Doku zu fluid für REDAXO 6. Einstieg und Installation: [README](../R
 
 ## Inhalt
 
-- [Ein eigener Block](#ein-eigener-block) · [Eigene Kits](#eigene-kits)
+- [Ein eigener Block](#ein-eigener-block) · [Eigenes Template](#eigenes-template) · [Eigene Kits](#eigene-kits)
 - [Extension Points](#extension-points)
 - [YForm: Formulare und Datenlisten](#yform-formulare-und-datenlisten) · [Listen-Vorlagen](#listen-vorlagen) · [Einträge im Menü](#einträge-im-menü) · [Glossar](#glossar) · [Wissensbereich](#wissensbereich)
 - [Blöcke in YForm-Tabellen](#blöcke-in-yform-tabellen-feld-fluid-blöcke)
@@ -18,7 +18,7 @@ Technische Doku zu fluid für REDAXO 6. Einstieg und Installation: [README](../R
 
 ## Ein eigener Block
 
-Ein Block ist ein Modul des Cores mit anderer Basisklasse: die Felder als Attribute an Eigenschaften, die Ausgabe in
+Ein Block – auf der Website „Element“ – ist ein ganz normales Modul des Cores mit kleinen Extras, nur mit anderer Basisklasse: die Felder als Attribute an Eigenschaften, die Ausgabe in
 `output()`. Der Core befüllt die Eigenschaften, speichert und prüft wie bei jedem Modul; fluid gibt Bearbeiten auf der
 Website, Abschnitt (Hintergrund, Abstände, Sprungmarke), Darstellungen, Layout-Spalten und das Kit dazu. Im Projekt,
 ohne das Kit zu ändern (`examples/block/`):
@@ -155,6 +155,47 @@ Eingebaut (1.0.0-beta.9): Text + Bild `valign` = `center`, Bildergalerie `single
 und die Felder von fluid) in seinem Formular und speichert über das Formular des Cores – mit dessen Prüfungen und
 `validate()`. Nur Module mit eigenem `input()` und Mehrfachauswahlen von Medien bzw. Seiten öffnen das Formular des Cores.
 
+## Eigenes Template
+
+fluid braucht kein eigenes Template. **Bearbeiten auf der Website und normale Module funktionieren mit jedem Template:**
+die Leiste hängt sich per `OUTPUT_FILTER` an jede Seite, Module erscheinen in der Seitenleiste, sofern das Template sie
+erlaubt (`isModuleAllowed()`).
+
+Für die **Elemente und das Design von fluid** (Styles des Kits, Design-Leiste, Schriften, Skripte der Elemente) und den
+**Seitenkopf** (Titel, Canonical, hreflang, Open Graph, JSON-LD) kommen zwei Zeilen dazu – `Klxm\Fluid\KitHead`:
+
+```php
+<?php
+
+use Klxm\Fluid\KitHead;
+use Redaxo\Core\Content\ArticleContent;
+
+return static function (ArticleContent $content): void { ?>
+    <!DOCTYPE html>
+    <html lang="de" <?= KitHead::htmlAttributes() ?>>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <?= KitHead::render() ?>
+    </head>
+    <body>
+        <main id="main"><?= $content->renderContent() ?></main>
+    </body>
+    </html>
+<?php };
+```
+
+- `KitHead::render()` setzt nur eine Markierung. Ersetzt wird sie am Ende der Anfrage (`OUTPUT_FILTER`, früh), wenn bekannt
+  ist, welche Elemente die Seite nutzt – geladen werden nur deren Styles – und welche SEO-Angaben sie setzen
+  (`PageSettings::override()`). Der Kopf darf also vor dem Inhalt stehen. Kein eigenes `<title>`: das schreibt `render()`.
+- `KitHead::htmlAttributes()` – Klassen des Designs an `<html>` (Palette, Kopf, Knöpfe …) und `data-fluid-classes` für die
+  Vorschau der Design-Leiste.
+- Was im Kopf steht, bestimmt das aktive Kit: `Kit::head()` (Kit fluid), überschrieben vom Kit „NativeCSS“ (Cascade
+  Layers). Ein eigenes Kit überschreibt `head()` nur, wenn es einen anderen Aufbau braucht; die Helfer `titleTags()`,
+  `stylesheets()` und `script()` stehen bereit. Beide mitgelieferten Seitenrahmen nutzen `KitHead` selbst.
+- Kopf, Menü und Fuß des Kits gibt es nur im Template von fluid; im eigenen Template baut man sie selbst (Menü z. B. mit
+  navigation_array, siehe README).
+
 ## Eigene Kits
 
 Ein Kit bestimmt die Gestaltung der ganzen Website: Seitenrahmen, CSS, Ausgabe der Blöcke, Design-Optionen. fluid bringt
@@ -195,6 +236,7 @@ Jede Datei im Kit-Ordner ersetzt die gleichnamige des Eltern-Kits, alles andere 
 - `views/{typ}.php` – Ausgabe eines Blocktyps (`$b` = Block, `$d` = Daten, wie beim eigenen Block); die Felder stehen
   in den Blockklassen (`kits/fluid/src/Module/`)
 - `template.view.php` – Seitenrahmen (Kopf, Menü, Fuß); Vorlage ist `kits/fluid/src/FluidTemplate.view.php`
+- `head()` in der Kit-Klasse – Inhalt des Seitenkopfs (Styles, Skripte), siehe [Eigenes Template](#eigenes-template)
 - `assets/…` – einzelne Dateien, z. B. `assets/css/b-cards.css` statt der des Eltern-Kits
 - `functions.php` – zusätzliche Hilfsfunktionen (die des Eltern-Kits sind schon geladen)
 - `kit.php` – Definition, über die des Eltern-Kits gelegt:

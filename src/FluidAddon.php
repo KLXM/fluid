@@ -311,6 +311,9 @@ final class FluidAddon extends Addon
             return str_replace(' AND rex_article_slice.status = 1', '', (string) $ep->subject);
         }, ExtensionLevel::Late);
 
+        // KitHead::render() in a template: write the head once the page is rendered (elements and SEO values are known)
+        Extension::register('OUTPUT_FILTER', static fn (ExtensionPoint $ep): string => KitHead::replace((string) $ep->subject), ExtensionLevel::Early);
+
         // Leiste und Editor nur für angemeldete Redaktion – Besucher bekommen kein zusätzliches Markup
         Extension::register('OUTPUT_FILTER', static function (ExtensionPoint $ep): string {
             $html = (string) $ep->subject;
