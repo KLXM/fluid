@@ -364,6 +364,32 @@ $code = [
             }
         }
         CODE,
+    'tiptapProfile' => <<<'CODE'
+use Klxm\Tiptap\AsProfile;
+use Klxm\Tiptap\ProfileDefinition;
+
+#[AsProfile('tiptap.fluid', 'fluid')]
+final class FluidProfile extends ProfileDefinition
+{
+    public function config(): array
+    {
+        return [
+            'toolbar' => [
+                ['heading', 'blockStyle'],
+                ['bold', 'italic', 'highlight', 'inlineStyle'],
+                ['link', 'unlink'],
+                ['bulletList', 'orderedList', 'listStyle', 'blockquote'],
+            ],
+            'blockStyles' => [
+                ['label' => 'Hervorgehoben', 'class' => 't-lead', 'element' => 'p'],
+                ['label' => 'Hinweis-Box', 'class' => 't-note', 'element' => 'p'],
+            ],
+            'inlineStyles' => [['label' => 'Akzentfarbe', 'class' => 'c-accent']],
+            'listStyles' => [['label' => 'Häkchen-Liste', 'class' => 'check', 'list' => 'ul']],
+        ];
+    }
+}
+CODE,
     'rendpoint' => <<<'CODE'
         final class Calendar
         {
@@ -874,6 +900,12 @@ return [
                     'button2_label' => 'Bearbeiten auf der Website', 'button2_link' => '/bearbeiten',
                     'points' => "Seit 2004 · MIT-Lizenz\nModule als PHP-Klassen\nBearbeiten im Kontext",
                 ]],
+                ['type' => 'media_text', 'tunes' => ['background' => 'tint'], 'data' => ['variant' => 'right', 'eyebrow' => 'Neu · TipTap', 'title' => 'TipTap meets fluid',
+                    'text' => '<p>Texte schreibt fluid jetzt mit TipTap – direkt auf der Seite, in der Seitenleiste und im Backend derselbe moderne Editor. Klick in den Text, die Leiste schwebt darüber, Formate erscheinen in der echten Gestaltung.</p>',
+                    'list' => "Ein Editor für Website, Backend und YForm\nProfile als PHP-Klassen – versioniert im Git\nBestehende Texte bleiben, wie sie sind",
+                    'button_label' => 'Zur Meldung', 'button_link' => '/tiptap-meets-fluid',
+                    'button2_label' => 'TipTap auf GitHub', 'button2_link' => 'https://github.com/KLXM/tiptap',
+                    'image' => 'fluid-tiptap-seite.jpg', 'ratio' => '16:9', 'split' => 'media']],
                 // Trailer direkt unter dem Einstieg (nur wenn die Datei im Medienpool liegt – sie gehört nicht zum Kit: fluid:demo --media-dir=…)
                 ...(is_file(Path::media('fluid-trailer-redaxo6.mp4')) ? [
                     ['type' => 'video', 'tunes' => ['background' => 'dark'], 'data' => ['variant' => 'cinema', 'eyebrow' => 'Trailer',
@@ -1940,6 +1972,38 @@ vollständig: Module, Templates, Schema'],
             'slug' => 'neuigkeiten', 'title' => 'Neuigkeiten', 'menu' => true, 'blog' => true,
             'blocks' => [
                 ['type' => 'posts', 'data' => ['variant' => 'featured', 'eyebrow' => '', 'title' => '', 'intro' => '', 'blog' => '', 'limit' => 6, 'pager' => true, 'tags' => true, 'size' => 'm', 'more' => '', 'empty_text' => '']],
+            ],
+        ],
+
+        [
+            'slug' => 'tiptap-meets-fluid', 'title' => 'TipTap meets fluid', 'parent' => 'neuigkeiten',
+            'post' => ['date' => '2026-11-27', 'author' => 'KLXM Crossmedia', 'tags' => 'TipTap, Editor, REDAXO 6', 'image' => 'fluid-tiptap-seite.jpg',
+                'excerpt' => 'Der Text-Editor von fluid ist jetzt TipTap: direkt auf der Seite, in der Seitenleiste und im Backend derselbe moderne Editor – mit Profilen als PHP-Klassen.'],
+            'blocks' => [
+                ['type' => 'richtext', 'data' => ['variant' => 'article', 'eyebrow' => '', 'title' => '', 'intro' => '', 'measure' => 'normal', 'meta' => '', 'dropcap' => false, 'toc' => false, 'reveal' => 'off', 'scrollspy' => 'off',
+                    'text' => '<p class="t-lead">Ein Editor für alles: fluid schreibt Texte jetzt mit <strong>TipTap</strong> – dem Editor, den REDAXO 6 auch im Backend, in YForm und in Modulen nutzt.</p><p>Bisher hatte fluid eine eigene Formatierungsleiste. Sie war gut, aber eben nur in fluid. Jetzt arbeitet überall derselbe Editor: wer ihn im Backend kennt, kennt ihn auf der Website – und umgekehrt. Alles, was TipTap kann, kann fluid ab sofort auch.</p>']],
+                ['type' => 'media_text', 'data' => ['variant' => 'right', 'eyebrow' => 'Direkt auf der Seite', 'title' => 'Schreiben, wo der Text steht',
+                    'text' => '<p>Ein Klick in einen Text, und TipTap startet genau an dieser Stelle. Die Werkzeugleiste schwebt darüber, Hinweis-Box, Dachzeile oder Akzentfarbe erscheinen sofort in der echten Gestaltung der Website – so, wie Besucher sie sehen.</p>',
+                    'list' => "Schreibmarke genau dort, wo man klickt\nFormate in der echten Gestaltung des Kits\nSeiten und Dateien verlinken mit der Auswahl von fluid",
+                    'image' => 'fluid-tiptap-seite.jpg', 'ratio' => '16:9', 'split' => 'media']],
+                ['type' => 'features', 'tunes' => ['background' => 'muted'], 'data' => ['variant' => 'cards', 'eyebrow' => 'Warum das sinnvoll ist', 'title' => 'Sechs gute Gründe', 'intro' => '', 'size' => 'm',
+                    'items' => [
+                        ['icon' => 'pencil-simple', 'title' => 'Ein Editor für alles', 'text' => 'Backend, YForm, Module und Website: überall derselbe TipTap. Einmal lernen, überall schreiben.', 'link_label' => '', 'link' => ''],
+                        ['icon' => 'code', 'title' => 'Profile als PHP-Klassen', 'text' => 'Das Profil von fluid ist eine Klasse. Ein Projekt überschreibt es mit einer eigenen – versioniert im Git, ohne Abgleich der Datenbank zwischen Stage und Live.', 'link_label' => '', 'link' => ''],
+                        ['icon' => 'shield-check', 'title' => 'Sauberes HTML', 'text' => 'Formate sind CSS-Klassen, nie style-Attribute – die Content-Security-Policy bleibt streng. Der Server bereinigt jede Eingabe nach dem Profil.', 'link_label' => '', 'link' => ''],
+                        ['icon' => 'check-circle', 'title' => 'Nichts geht verloren', 'text' => 'Bestehende Texte bleiben, wie sie sind: Absatzstile, Farben, Häkchen-Listen, Anker an Überschriften und Links auf Seiten.', 'link_label' => '', 'link' => ''],
+                        ['icon' => 'puzzle-piece', 'title' => 'Erweiterbar', 'text' => 'Plugins, eigene Link-Formate, eigene Seiten- und Medienauswahl – fluid nutzt genau die Schnittstellen, die jedes AddOn nutzen kann.', 'link_label' => '', 'link' => ''],
+                        ['icon' => 'users-three', 'title' => 'Gut für alle', 'text' => 'Was fluid brauchte, steckt jetzt in TipTap selbst: Bearbeiten direkt auf der Seite, Shadow DOM, Auswahl auf der Website. Davon profitiert jedes REDAXO-6-Projekt.', 'link_label' => '', 'link' => ''],
+                    ],
+                ]],
+                ['type' => 'media_text', 'data' => ['variant' => 'left', 'eyebrow' => 'In der Seitenleiste', 'title' => 'Derselbe Editor für längere Texte',
+                    'text' => '<p>Alle Felder eines Elements stehen in der Seitenleiste – formatierter Text mit der vollen Leiste von TipTap, samt Quelltext und Vollbild. Markdown einfügen wird zu Formatierung, Rechtsklick öffnet Menüs für Listen und Links.</p>',
+                    'list' => '', 'image' => 'fluid-tiptap-seitenleiste.jpg', 'ratio' => '16:9', 'split' => 'media']],
+                ['type' => 'code', 'data' => ['eyebrow' => 'Für Entwickler', 'title' => 'Das Profil von fluid – eine Klasse', 'intro' => 'Eine Klasse mit #[AsProfile] im Projekt mit demselben Namen geht vor: so passt jede Website die Formate an.', 'note' => 'Mehr in der Entwickler-Referenz von fluid, Abschnitt „Text-Editor (TipTap)“.',
+                    'items' => [
+                        $c('tiptapProfile', 'src/Tiptap/FluidProfile.php', 'php'),
+                    ]]],
+                $cta,
             ],
         ],
 

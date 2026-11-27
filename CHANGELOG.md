@@ -36,6 +36,8 @@
   nutzen `KitHead` – Ausgabe unverändert (verglichen für beide Kits).
 - Website-Texte: „Ein Element ist ein REDAXO-Modul mit kleinen Extras“; Seite „Module und Templates“ mit Beispiel für ein
   eigenes Template.
+- Demo „REDAXO 6“: Meldung „TipTap meets fluid“ (Neuigkeiten, mit Screenshots, sechs Gründe, Profil als Klasse) und Hinweis
+  darauf auf der Startseite.
 - **Text-Editor: TipTap** (`klxm/tiptap`, jetzt Abhängigkeit) statt der eigenen Formatierungsleiste – in der Seitenleiste
   und direkt auf der Seite (Inline-Modus von TipTap, Klick setzt die Schreibmarke an die Stelle). Profil als Klasse
   `Tiptap\FluidProfile` (`tiptap.fluid`) mit denselben Formaten wie bisher, Plugin für Anker an Überschriften und die
