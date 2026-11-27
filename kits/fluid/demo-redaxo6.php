@@ -134,7 +134,12 @@ $code = [
             public string $headline = '';
 
             /** @var list<Slide> */
-            #[Collection('Slides', item: Slide::class, min: 1, max: 8)]
+            #[Collection(
+                'Slides',
+                item: Slide::class,
+                min: 1,
+                max: 8,
+            )]
             public array $slides = [];
 
             public function output(): string
@@ -164,10 +169,18 @@ $code = [
         /** Ein Eintrag der Wiederholgruppe – eine kleine Klasse mit eigenen Feldern */
         final class Slide
         {
-            #[Text('Titel', required: true, maxLength: 80)]
+            #[Text(
+                'Titel',
+                required: true,
+                maxLength: 80,
+            )]
             public string $title = '';
 
-            #[MediaPicker('Bild', types: ['jpg', 'png', 'webp'], preview: true)]
+            #[MediaPicker(
+                'Bild',
+                types: ['jpg', 'png', 'webp'],
+                preview: true,
+            )]
             public ?Media $image = null;
 
             #[ArticlePicker('Link (optional)')]
@@ -193,13 +206,23 @@ $code = [
         #[AsModule('teaser', 'Teaser')]
         final class TeaserModule extends Module
         {
-            #[Text('Überschrift', required: true, maxLength: 120)]
+            #[Text(
+                'Überschrift',
+                required: true,
+                maxLength: 120,
+            )]
             public string $headline = '';
 
-            #[Textarea('Text', rows: 4)]
+            #[Textarea(
+                'Text',
+                rows: 4,
+            )]
             public string $text = '';
 
-            #[MediaPicker('Bild', types: ['jpg', 'png', 'webp'])]
+            #[MediaPicker(
+                'Bild',
+                types: ['jpg', 'png', 'webp'],
+            )]
             public ?Media $image = null;
 
             #[ArticlePicker('Weiterlesen auf')]
@@ -630,13 +653,22 @@ $code = [
         #[AsModule('hero', 'Einstieg')]
         final class HeroModule extends Module
         {
-            #[Text('Überschrift', required: true)]
+            #[Text(
+                'Überschrift',
+                required: true,
+            )]
             public string $headline = '';
 
             #[Text('Unterzeile')]
             public string $subline = '';
 
-            #[Choice('Hintergrund', ['light' => 'hell', 'dark' => 'dunkel'])]
+            #[Choice(
+
+                'Hintergrund',
+
+                choices: ['light' => 'hell', 'dark' => 'dunkel'],
+
+            )]
             public string $background = 'light';
 
             // Eigene Anordnung: Überschrift und Unterzeile ab mittlerer Breite nebeneinander, der Rest darunter

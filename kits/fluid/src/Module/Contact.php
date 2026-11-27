@@ -19,19 +19,37 @@ use Redaxo\Core\Content\AsModule;
 )]
 final class Contact extends FluidBlock
 {
-    #[Text('Dachzeile (optional)', maxLength: 60, width: 'half')]
+    #[Text(
+        'Dachzeile (optional)',
+        maxLength: 60,
+        width: 'half',
+    )]
     public string $eyebrow = '';
 
-    #[Text('Überschrift', maxLength: 110, width: 'half')]
+    #[Text(
+        'Überschrift',
+        maxLength: 110,
+        width: 'half',
+    )]
     public string $title = '';
 
-    #[Textarea('Einleitung (optional)', maxLength: 400, rows: 2)]
+    #[Textarea(
+        'Einleitung (optional)',
+        maxLength: 400,
+        rows: 2,
+    )]
     public string $intro = '';
 
-    #[Checkbox('Öffnungszeiten anzeigen (falls eingetragen)', width: 'half')]
+    #[Checkbox(
+        'Öffnungszeiten anzeigen (falls eingetragen)',
+        width: 'half',
+    )]
     public bool $showHours = true;
 
-    #[Checkbox('Karte anzeigen (falls Standort eingetragen)', width: 'half')]
+    #[Checkbox(
+        'Karte anzeigen (falls Standort eingetragen)',
+        width: 'half',
+    )]
     public bool $showMap = true;
 
     #[YFormForm(
@@ -40,7 +58,11 @@ final class Contact extends FluidBlock
     )]
     public string $form = '';
 
-    #[Text('Überschrift über dem Formular', maxLength: 80, placeholder: 'z. B. Schreiben Sie uns')]
+    #[Text(
+        'Überschrift über dem Formular',
+        maxLength: 80,
+        placeholder: 'z. B. Schreiben Sie uns',
+    )]
     public string $formTitle = '';
 
     #[Text('Hinweis unten (optional)')]

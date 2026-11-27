@@ -35,6 +35,12 @@ final class CodeItem
     )]
     public string $lang = 'php';
 
-    #[Textarea('Code', required: true, maxLength: 12000, rows: 12, search: false)]
+    #[Textarea(
+        'Code',
+        required: true,
+        maxLength: 12000,
+        rows: 12,
+        search: false,
+    )]
     public string $code = '';
 }

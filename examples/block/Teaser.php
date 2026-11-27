@@ -21,10 +21,17 @@ use function Redaxo\Core\View\escape;
 #[AsBlock(icon: 'star', group: 'Inhalt', nestable: true, help: 'Beispiel für einen eigenen Block im Projekt.')]
 final class Teaser extends FluidBlock
 {
-    #[Text('Überschrift', required: true, maxLength: 80)]
+    #[Text(
+        'Überschrift',
+        required: true,
+        maxLength: 80,
+    )]
     public string $title = '';
 
-    #[Textarea('Text', rows: 3)]
+    #[Textarea(
+        'Text',
+        rows: 3,
+    )]
     public string $text = '';
 
     #[Link('Link')]

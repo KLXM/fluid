@@ -26,16 +26,33 @@ use Redaxo\Core\Content\AsModule;
 )]
 final class Chart extends FluidBlock
 {
-    #[Text('Dachzeile (optional)', maxLength: 60, width: 'half')]
+    #[Text(
+        'Dachzeile (optional)',
+        maxLength: 60,
+        width: 'half',
+    )]
     public string $eyebrow = '';
 
-    #[Text('Überschrift', maxLength: 110, width: 'half')]
+    #[Text(
+        'Überschrift',
+        maxLength: 110,
+        width: 'half',
+    )]
     public string $title = '';
 
-    #[Textarea('Einleitung (optional)', maxLength: 600, rows: 3)]
+    #[Textarea(
+        'Einleitung (optional)',
+        maxLength: 600,
+        rows: 3,
+    )]
     public string $intro = '';
 
-    #[Choice('Art', choices: Charts::TYPE_LABELS, required: true, width: 'half')]
+    #[Choice(
+        'Art',
+        choices: Charts::TYPE_LABELS,
+        required: true,
+        width: 'half',
+    )]
     public string $chartType = 'bar';
 
     #[Choice('Daten', choices: static function (): array { return Charts::sourceChoices(); }, width: 'half',
@@ -46,19 +63,43 @@ final class Chart extends FluidBlock
         note: 'Nur bei „Werte von Hand eingeben“.')]
     public string $labels = '';
 
-    #[Collection('Reihen', item: ChartSeries::class, itemLabel: 'Reihe', titleField: 'name', max: 8)]
+    #[Collection(
+        'Reihen',
+        item: ChartSeries::class,
+        itemLabel: 'Reihe',
+        titleField: 'name',
+        max: 8,
+    )]
     public array $series = [];
 
-    #[Choice('Zahlen', choices: Charts::FORMATS, required: true, width: 'half')]
+    #[Choice(
+        'Zahlen',
+        choices: Charts::FORMATS,
+        required: true,
+        width: 'half',
+    )]
     public string $format = 'number';
 
-    #[Text('Einheit (optional)', maxLength: 12, placeholder: 'z. B. €, kg', width: 'half')]
+    #[Text(
+        'Einheit (optional)',
+        maxLength: 12,
+        placeholder: 'z. B. €, kg',
+        width: 'half',
+    )]
     public string $unit = '';
 
-    #[Checkbox('Reihen stapeln (Balken, Fläche)', width: 'half')]
+    #[Checkbox(
+        'Reihen stapeln (Balken, Fläche)',
+        width: 'half',
+    )]
     public bool $stacked = false;
 
-    #[Choice('Höhe', choices: Charts::HEIGHTS, required: true, width: 'half')]
+    #[Choice(
+        'Höhe',
+        choices: Charts::HEIGHTS,
+        required: true,
+        width: 'half',
+    )]
     public string $height = '320';
 
     #[Choice('Tabelle unter dem Diagramm', choices: Charts::TABLE_VIEWS, width: 'half',

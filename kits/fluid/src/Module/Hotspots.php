@@ -26,19 +26,39 @@ use Redaxo\Core\MediaPool\Media;
 )]
 final class Hotspots extends FluidBlock
 {
-    #[Text('Dachzeile (optional)', maxLength: 60, width: 'half')]
+    #[Text(
+        'Dachzeile (optional)',
+        maxLength: 60,
+        width: 'half',
+    )]
     public string $eyebrow = '';
 
-    #[Text('Überschrift', maxLength: 110, width: 'half', note: 'Benennt das Bild auch für Screenreader („Interaktives Bild: …“).')]
+    #[Text(
+        'Überschrift',
+        maxLength: 110,
+        width: 'half',
+        note: 'Benennt das Bild auch für Screenreader („Interaktives Bild: …“).',
+    )]
     public string $title = '';
 
-    #[Textarea('Einleitung (optional)', maxLength: 400, rows: 2)]
+    #[Textarea(
+        'Einleitung (optional)',
+        maxLength: 400,
+        rows: 2,
+    )]
     public string $intro = '';
 
-    #[MediaPicker('Bild', preview: true, note: 'Alt-Text im Medienpool pflegen. Auch Grafiken (SVG) sind möglich.')]
+    #[MediaPicker(
+        'Bild',
+        preview: true,
+        note: 'Alt-Text im Medienpool pflegen. Auch Grafiken (SVG) sind möglich.',
+    )]
     public ?Media $image = null;
 
-    #[HotspotsField('Markierungen', image: 'image')]
+    #[HotspotsField(
+        'Markierungen',
+        image: 'image',
+    )]
     public array $hotspots = [];
 
     #[Choice(
@@ -50,6 +70,11 @@ final class Hotspots extends FluidBlock
     )]
     public string $list = 'auto';
 
-    #[Choice('Breite', required: true, choices: ['normal' => 'Inhaltsbreite', 'text' => 'Textbreite (wie Fließtext)'], width: 'half')]
+    #[Choice(
+        'Breite',
+        required: true,
+        choices: ['normal' => 'Inhaltsbreite', 'text' => 'Textbreite (wie Fließtext)'],
+        width: 'half',
+    )]
     public string $width = 'normal';
 }

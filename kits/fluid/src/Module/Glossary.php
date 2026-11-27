@@ -18,18 +18,36 @@ use Redaxo\Core\Content\AsModule;
 )]
 final class Glossary extends FluidBlock
 {
-    #[Text('Dachzeile (optional)', maxLength: 60, width: 'half')]
+    #[Text(
+        'Dachzeile (optional)',
+        maxLength: 60,
+        width: 'half',
+    )]
     public string $eyebrow = '';
 
-    #[Text('Überschrift', maxLength: 110, width: 'half')]
+    #[Text(
+        'Überschrift',
+        maxLength: 110,
+        width: 'half',
+    )]
     public string $title = '';
 
-    #[Textarea('Einleitung (optional)', maxLength: 400, rows: 2)]
+    #[Textarea(
+        'Einleitung (optional)',
+        maxLength: 400,
+        rows: 2,
+    )]
     public string $intro = '';
 
-    #[Checkbox('Suchfeld anzeigen', width: 'half')]
+    #[Checkbox(
+        'Suchfeld anzeigen',
+        width: 'half',
+    )]
     public bool $search = true;
 
-    #[Checkbox('Buchstaben A–Z anzeigen', width: 'half')]
+    #[Checkbox(
+        'Buchstaben A–Z anzeigen',
+        width: 'half',
+    )]
     public bool $letters = true;
 }

@@ -37,19 +37,35 @@ use Redaxo\Core\MediaPool\Media;
 )]
 final class MediaText extends FluidBlock
 {
-    #[Text('Dachzeile (optional)', maxLength: 60, width: 'half')]
+    #[Text(
+        'Dachzeile (optional)',
+        maxLength: 60,
+        width: 'half',
+    )]
     public string $eyebrow = '';
 
-    #[Text('Überschrift', required: true, maxLength: 110, width: 'half')]
+    #[Text(
+        'Überschrift',
+        required: true,
+        maxLength: 110,
+        width: 'half',
+    )]
     public string $title = '';
 
     #[RichText('Text')]
     public string $text = '';
 
-    #[Textarea('Aufzählung mit Häkchen (ein Punkt pro Zeile, optional)', rows: 3)]
+    #[Textarea(
+        'Aufzählung mit Häkchen (ein Punkt pro Zeile, optional)',
+        rows: 3,
+    )]
     public string $list = '';
 
-    #[Text('Button 1 – Beschriftung', maxLength: 32, width: 'half')]
+    #[Text(
+        'Button 1 – Beschriftung',
+        maxLength: 32,
+        width: 'half',
+    )]
     public string $buttonLabel = '';
 
     #[Link(
@@ -59,16 +75,33 @@ final class MediaText extends FluidBlock
     )]
     public string $buttonLink = '';
 
-    #[Text('Button 2 – Beschriftung', maxLength: 32, width: 'half')]
+    #[Text(
+        'Button 2 – Beschriftung',
+        maxLength: 32,
+        width: 'half',
+    )]
     public string $button2Label = '';
 
-    #[Link('Button 2 – Link', width: 'half')]
+    #[Link(
+        'Button 2 – Link',
+        width: 'half',
+    )]
     public string $button2Link = '';
 
-    #[MediaPicker('Bild', width: 'half', note: 'Min. 1200 px breit.', preview: true)]
+    #[MediaPicker(
+        'Bild',
+        width: 'half',
+        note: 'Min. 1200 px breit.',
+        preview: true,
+    )]
     public ?Media $image = null;
 
-    #[Choice('Bildformat', required: true, choices: self::RATIOS, width: 'half')]
+    #[Choice(
+        'Bildformat',
+        required: true,
+        choices: self::RATIOS,
+        width: 'half',
+    )]
     public string $ratio = '4:3';
 
     #[Choice(

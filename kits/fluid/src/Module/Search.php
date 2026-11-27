@@ -18,21 +18,45 @@ use Redaxo\Core\Content\AsModule;
 )]
 final class Search extends FluidBlock
 {
-    #[Text('Dachzeile (optional)', maxLength: 60, width: 'half')]
+    #[Text(
+        'Dachzeile (optional)',
+        maxLength: 60,
+        width: 'half',
+    )]
     public string $eyebrow = '';
 
-    #[Text('Überschrift', maxLength: 110, width: 'half')]
+    #[Text(
+        'Überschrift',
+        maxLength: 110,
+        width: 'half',
+    )]
     public string $title = '';
 
-    #[Textarea('Einleitung (optional)', maxLength: 400, rows: 2)]
+    #[Textarea(
+        'Einleitung (optional)',
+        maxLength: 400,
+        rows: 2,
+    )]
     public string $intro = '';
 
-    #[Text('Platzhalter im Suchfeld', maxLength: 60, placeholder: 'Wonach suchen Sie?', width: 'half')]
+    #[Text(
+        'Platzhalter im Suchfeld',
+        maxLength: 60,
+        placeholder: 'Wonach suchen Sie?',
+        width: 'half',
+    )]
     public string $placeholder = '';
 
-    #[Number('Höchstens Treffer', width: 'half')]
+    #[Number(
+        'Höchstens Treffer',
+        width: 'half',
+    )]
     public int $limit = 20;
 
-    #[Text('Hinweis ohne Treffer (optional)', maxLength: 200, placeholder: 'z. B. Rufen Sie uns gern an.')]
+    #[Text(
+        'Hinweis ohne Treffer (optional)',
+        maxLength: 200,
+        placeholder: 'z. B. Rufen Sie uns gern an.',
+    )]
     public string $emptyText = '';
 }

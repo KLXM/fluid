@@ -25,13 +25,24 @@ use function Redaxo\Core\View\escape;
 #[AsModule('hinweis', 'Hinweis (Beispiel)')]
 final class HinweisModule extends Module
 {
-    #[Text('Überschrift', required: true, maxLength: 120)]
+    #[Text(
+        'Überschrift',
+        required: true,
+        maxLength: 120,
+    )]
     public string $headline = '';
 
-    #[Textarea('Text', rows: 4)]
+    #[Textarea(
+        'Text',
+        rows: 4,
+    )]
     public string $text = '';
 
-    #[Choice('Art', ['info' => 'Information', 'warn' => 'Warnung', 'ok' => 'Erledigt'])]
+    #[Choice(
+        'Art',
+
+        choices: ['info' => 'Information', 'warn' => 'Warnung', 'ok' => 'Erledigt'],
+    )]
     public string $kind = 'info';
 
     #[Checkbox('Hervorheben')]
@@ -40,7 +51,10 @@ final class HinweisModule extends Module
     #[DatePicker('Gültig bis')]
     public ?DateTimeImmutable $until = null;
 
-    #[MediaPicker('Bild', types: ['jpg', 'jpeg', 'png', 'webp'])]
+    #[MediaPicker(
+        'Bild',
+        types: ['jpg', 'jpeg', 'png', 'webp'],
+    )]
     public ?Media $image = null;
 
     #[ArticlePicker('Mehr dazu')]

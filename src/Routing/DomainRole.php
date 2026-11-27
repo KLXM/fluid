@@ -3,7 +3,7 @@
 namespace Klxm\Fluid\Routing;
 
 /**
- * Rolle einer Domain (siehe Domains)
+ * Rolle einer Domain (siehe Domains).
  *
  * @internal
  */

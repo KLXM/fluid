@@ -18,10 +18,17 @@ use function Redaxo\Core\View\escape;
 #[AsModule('hinweis_eigen', 'Hinweis mit eigenem Formular (Beispiel)')]
 final class HinweisEigenesFormularModule extends Module
 {
-    #[Text('Titel', required: true, maxLength: 120)]
+    #[Text(
+        'Titel',
+        required: true,
+        maxLength: 120,
+    )]
     public string $title = '';
 
-    #[Textarea('Text', rows: 3)]
+    #[Textarea(
+        'Text',
+        rows: 3,
+    )]
     public string $text = '';
 
     public function input(Form $form): string

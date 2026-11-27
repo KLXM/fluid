@@ -12,21 +12,43 @@ use Redaxo\Core\MediaPool\Media;
 /** Entry of „Einträge“ in the block Features */
 final class FeaturesItem
 {
-    #[Icon('Symbol', width: 'half')]
+    #[Icon(
+        'Symbol',
+        width: 'half',
+    )]
     public string $icon = '';
 
-    #[MediaPicker('oder Bild (3:2)', width: 'half', preview: true)]
+    #[MediaPicker(
+        'oder Bild (3:2)',
+        width: 'half',
+        preview: true,
+    )]
     public ?Media $image = null;
 
-    #[Text('Titel', required: true, maxLength: 70)]
+    #[Text(
+        'Titel',
+        required: true,
+        maxLength: 70,
+    )]
     public string $title = '';
 
-    #[Textarea('Text', maxLength: 320, rows: 3)]
+    #[Textarea(
+        'Text',
+        maxLength: 320,
+        rows: 3,
+    )]
     public string $text = '';
 
-    #[Text('Link – Beschriftung (optional)', maxLength: 32, width: 'half')]
+    #[Text(
+        'Link – Beschriftung (optional)',
+        maxLength: 32,
+        width: 'half',
+    )]
     public string $linkLabel = '';
 
-    #[Link('Link', width: 'half')]
+    #[Link(
+        'Link',
+        width: 'half',
+    )]
     public string $link = '';
 }

@@ -26,13 +26,27 @@ abstract class LayoutBlock extends BlockModule
         note: 'Weniger Spalten als bisher: Die Blöcke der wegfallenden Spalten wandern in die letzte Spalte – es geht nichts verloren.')]
     public string $preset = '1-1';
 
-    #[Choice('Ausrichtung vertikal', choices: ['top' => 'Oben', 'center' => 'Mitte', 'bottom' => 'Unten', 'stretch' => 'Gestreckt (gleich hoch)'], required: true, width: 'half')]
+    #[Choice(
+        'Ausrichtung vertikal',
+        choices: ['top' => 'Oben', 'center' => 'Mitte', 'bottom' => 'Unten', 'stretch' => 'Gestreckt (gleich hoch)'],
+        required: true,
+        width: 'half',
+    )]
     public string $valign = 'top';
 
-    #[Choice('Abstand zwischen den Spalten', choices: ['small' => 'Klein', 'normal' => 'Normal', 'large' => 'Groß'], required: true, width: 'half')]
+    #[Choice(
+        'Abstand zwischen den Spalten',
+        choices: ['small' => 'Klein', 'normal' => 'Normal', 'large' => 'Groß'],
+        required: true,
+        width: 'half',
+    )]
     public string $gap = 'normal';
 
-    #[Choice('Auf schmalen Bildschirmen', choices: ['default' => 'Untereinander (unter ca. 768 px)', 'tablet' => 'Schon auf Tablets untereinander (unter ca. 1024 px)'], required: true)]
+    #[Choice(
+        'Auf schmalen Bildschirmen',
+        choices: ['default' => 'Untereinander (unter ca. 768 px)', 'tablet' => 'Schon auf Tablets untereinander (unter ca. 1024 px)'],
+        required: true,
+    )]
     public string $stack = 'default';
 
     #[Checkbox('Reihenfolge mobil umkehren (letzte Spalte zuerst)')]

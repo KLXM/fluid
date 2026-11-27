@@ -5,7 +5,7 @@ namespace Klxm\Fluid;
 use RuntimeException;
 
 /**
- * Error of an editor endpoint: message for the editors, code = HTTP status
+ * Error of an editor endpoint: message for the editors, code = HTTP status.
  *
  * @internal
  */

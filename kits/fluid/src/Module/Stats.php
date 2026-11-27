@@ -24,15 +24,33 @@ use Redaxo\Core\Content\AsModule;
 )]
 final class Stats extends FluidBlock
 {
-    #[Text('Dachzeile (optional)', maxLength: 60, width: 'half')]
+    #[Text(
+        'Dachzeile (optional)',
+        maxLength: 60,
+        width: 'half',
+    )]
     public string $eyebrow = '';
 
-    #[Text('Überschrift', maxLength: 110, width: 'half')]
+    #[Text(
+        'Überschrift',
+        maxLength: 110,
+        width: 'half',
+    )]
     public string $title = '';
 
-    #[Textarea('Einleitung (optional)', maxLength: 400, rows: 2)]
+    #[Textarea(
+        'Einleitung (optional)',
+        maxLength: 400,
+        rows: 2,
+    )]
     public string $intro = '';
 
-    #[Collection('Kennzahlen', item: StatsItem::class, itemLabel: 'Kennzahl', titleField: 'value', max: 6)]
+    #[Collection(
+        'Kennzahlen',
+        item: StatsItem::class,
+        itemLabel: 'Kennzahl',
+        titleField: 'value',
+        max: 6,
+    )]
     public array $items = [];
 }

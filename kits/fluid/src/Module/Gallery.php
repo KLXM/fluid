@@ -26,29 +26,59 @@ use Redaxo\Core\Content\AsModule;
 )]
 final class Gallery extends FluidBlock
 {
-    #[Text('Dachzeile (optional)', maxLength: 60, width: 'half')]
+    #[Text(
+        'Dachzeile (optional)',
+        maxLength: 60,
+        width: 'half',
+    )]
     public string $eyebrow = '';
 
-    #[Text('Überschrift', maxLength: 110, width: 'half')]
+    #[Text(
+        'Überschrift',
+        maxLength: 110,
+        width: 'half',
+    )]
     public string $title = '';
 
-    #[Textarea('Einleitung (optional)', maxLength: 400, rows: 2)]
+    #[Textarea(
+        'Einleitung (optional)',
+        maxLength: 400,
+        rows: 2,
+    )]
     public string $intro = '';
 
-    #[Collection('Bilder', item: GalleryImage::class, itemLabel: 'Bild', titleField: 'caption', max: 60)]
+    #[Collection(
+        'Bilder',
+        item: GalleryImage::class,
+        itemLabel: 'Bild',
+        titleField: 'caption',
+        max: 60,
+    )]
     public array $images = [];
 
     #[Choice('Spalten', required: true, width: 'half', choices: ['2' => '2 Spalten', '3' => '3 Spalten', '4' => '4 Spalten', '5' => '5 Spalten'],
         note: 'Bei „Zeilen“: Zeilenhöhe (mehr Spalten = kleinere Bilder).')]
     public string $columns = '3';
 
-    #[Choice('Bildformat', required: true, width: 'half', choices: self::RATIOS, variants: ['grid'])]
+    #[Choice(
+        'Bildformat',
+        required: true,
+        width: 'half',
+        choices: self::RATIOS,
+        variants: ['grid'],
+    )]
     public string $ratio = '4:3';
 
-    #[Checkbox('Bildunterschriften anzeigen', width: 'half')]
+    #[Checkbox(
+        'Bildunterschriften anzeigen',
+        width: 'half',
+    )]
     public bool $captions = true;
 
-    #[Checkbox('Bilder per Klick groß anzeigen (Lightbox)', width: 'half')]
+    #[Checkbox(
+        'Bilder per Klick groß anzeigen (Lightbox)',
+        width: 'half',
+    )]
     public bool $lightbox = true;
 
     #[Choice(

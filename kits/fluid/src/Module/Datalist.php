@@ -26,40 +26,86 @@ use Redaxo\Core\Content\AsModule;
 )]
 final class Datalist extends FluidBlock
 {
-    #[Text('Dachzeile (optional)', maxLength: 60, width: 'half')]
+    #[Text(
+        'Dachzeile (optional)',
+        maxLength: 60,
+        width: 'half',
+    )]
     public string $eyebrow = '';
 
-    #[Text('Überschrift', maxLength: 110, width: 'half')]
+    #[Text(
+        'Überschrift',
+        maxLength: 110,
+        width: 'half',
+    )]
     public string $title = '';
 
-    #[Textarea('Einleitung (optional)', maxLength: 400, rows: 2)]
+    #[Textarea(
+        'Einleitung (optional)',
+        maxLength: 400,
+        rows: 2,
+    )]
     public string $intro = '';
 
-    #[YFormTable('YForm-Tabelle', required: true)]
+    #[YFormTable(
+        'YForm-Tabelle',
+        required: true,
+    )]
     public string $table = '';
 
-    #[ListTemplate('Vorlage', note: 'Eine Vorlage legt Darstellung, Felder, Sortierung, Filter und Breite fest – Änderungen an der Vorlage gelten überall, wo sie gewählt ist.')]
+    #[ListTemplate(
+        'Vorlage',
+        note: 'Eine Vorlage legt Darstellung, Felder, Sortierung, Filter und Breite fest – Änderungen an der Vorlage gelten überall, wo sie gewählt ist.',
+    )]
     public string $template = '';
 
-    #[YFormField('Titel', width: 'half', note: 'Leer = erstes Textfeld')]
+    #[YFormField(
+        'Titel',
+        width: 'half',
+        note: 'Leer = erstes Textfeld',
+    )]
     public string $titleField = '';
 
-    #[YFormField('Bild', width: 'half', note: 'Leer = erstes Medienfeld')]
+    #[YFormField(
+        'Bild',
+        width: 'half',
+        note: 'Leer = erstes Medienfeld',
+    )]
     public string $imageField = '';
 
-    #[YFormField('Text', width: 'half', note: 'Leer = erstes mehrzeiliges Feld')]
+    #[YFormField(
+        'Text',
+        width: 'half',
+        note: 'Leer = erstes mehrzeiliges Feld',
+    )]
     public string $textField = '';
 
-    #[YFormField('Zusatzangabe (z. B. Datum, Ort)', width: 'half')]
+    #[YFormField(
+        'Zusatzangabe (z. B. Datum, Ort)',
+        width: 'half',
+    )]
     public string $metaField = '';
 
-    #[YFormField('Nur Einträge, bei denen …', width: 'half', note: 'z. B. „Online“')]
+    #[YFormField(
+        'Nur Einträge, bei denen …',
+        width: 'half',
+        note: 'z. B. „Online“',
+    )]
     public string $filterField = '';
 
-    #[Text('… gleich ist', maxLength: 100, placeholder: '1', width: 'half')]
+    #[Text(
+        '… gleich ist',
+        maxLength: 100,
+        placeholder: '1',
+        width: 'half',
+    )]
     public string $filterValue = '';
 
-    #[YFormField('Sortieren nach', width: 'half', note: 'Leer = Einstellung der Tabelle')]
+    #[YFormField(
+        'Sortieren nach',
+        width: 'half',
+        note: 'Leer = Einstellung der Tabelle',
+    )]
     public string $sortField = '';
 
     #[Choice(
@@ -70,16 +116,33 @@ final class Datalist extends FluidBlock
     )]
     public string $sortDir = 'asc';
 
-    #[Checkbox('Spalten zum Sortieren anklickbar (bei „Tabelle“)', width: 'half', variants: ['table'], note: 'Sortiert die Einträge dieser Seite.')]
+    #[Checkbox(
+        'Spalten zum Sortieren anklickbar (bei „Tabelle“)',
+        width: 'half',
+        variants: ['table'],
+        note: 'Sortiert die Einträge dieser Seite.',
+    )]
     public bool $tableSort = false;
 
-    #[YFormField('Filter für Besucher nach … (bei „Karten“ und „Liste“)', width: 'half', variants: ['cards', 'list'], note: 'z. B. Kategorie – Besucher filtern die Einträge dieser Seite mit Knöpfen über der Liste.')]
+    #[YFormField(
+        'Filter für Besucher nach … (bei „Karten“ und „Liste“)',
+        width: 'half',
+        variants: ['cards', 'list'],
+        note: 'z. B. Kategorie – Besucher filtern die Einträge dieser Seite mit Knöpfen über der Liste.',
+    )]
     public string $visitorFilter = '';
 
-    #[Number('Höchstens bzw. je Seite (0 = alle)', width: 'half')]
+    #[Number(
+        'Höchstens bzw. je Seite (0 = alle)',
+        width: 'half',
+    )]
     public int $limit = 0;
 
-    #[Checkbox('Blättern (Seite 2, 3 …)', width: 'half', note: 'Mit „Höchstens“ als Anzahl je Seite.')]
+    #[Checkbox(
+        'Blättern (Seite 2, 3 …)',
+        width: 'half',
+        note: 'Mit „Höchstens“ als Anzahl je Seite.',
+    )]
     public bool $pager = false;
 
     #[Choice(
@@ -105,7 +168,12 @@ final class Datalist extends FluidBlock
     )]
     public string $menuEntries = '';
 
-    #[Number('Höchstens im Menü (je Ebene)', min: 1, max: 50, width: 'half')]
+    #[Number(
+        'Höchstens im Menü (je Ebene)',
+        min: 1,
+        max: 50,
+        width: 'half',
+    )]
     public int $menuLimit = 12;
 
     #[Choice(

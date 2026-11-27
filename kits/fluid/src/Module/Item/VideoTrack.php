@@ -10,10 +10,20 @@ use Redaxo\Core\MediaPool\Media;
 /** Entry of „Untertitel und Kapitel (eigene Videodatei)“ in the block Video */
 final class VideoTrack
 {
-    #[MediaPicker('Datei (.vtt oder .srt)', required: true, types: ['vtt', 'srt'])]
+    #[MediaPicker(
+        'Datei (.vtt oder .srt)',
+        required: true,
+        types: ['vtt', 'srt'],
+    )]
     public ?Media $file = null;
 
-    #[Text('Sprache (Kürzel)', required: true, maxLength: 10, placeholder: 'de', width: 'half')]
+    #[Text(
+        'Sprache (Kürzel)',
+        required: true,
+        maxLength: 10,
+        placeholder: 'de',
+        width: 'half',
+    )]
     public string $lang = '';
 
     #[Choice(
@@ -27,6 +37,10 @@ final class VideoTrack
     )]
     public string $kind = 'subtitles';
 
-    #[Text('Bezeichnung im Player (optional)', maxLength: 40, placeholder: 'automatisch, z. B. „Deutsch“')]
+    #[Text(
+        'Bezeichnung im Player (optional)',
+        maxLength: 40,
+        placeholder: 'automatisch, z. B. „Deutsch“',
+    )]
     public string $label = '';
 }

@@ -11,22 +11,44 @@ use Klxm\Fluid\Field\Textarea;
 /** Eintrag von „Felder des eigenen Formulars“ im Block Form */
 final class FormField
 {
-    #[Choice('Art', required: true, choices: static function (): array { return YFormBridge::builderTypes(); }, width: 'half')]
+    #[Choice(
+        'Art',
+        required: true,
+        choices: static function (): array { return YFormBridge::builderTypes(); },
+        width: 'half',
+    )]
     public string $type = 'text';
 
-    #[Checkbox('Pflichtfeld', width: 'half')]
+    #[Checkbox(
+        'Pflichtfeld',
+        width: 'half',
+    )]
     public bool $required = false;
 
-    #[Text('Bezeichnung (bei „Neuer Schritt“: Titel, bei Hinweis: Text)', maxLength: 300)]
+    #[Text(
+        'Bezeichnung (bei „Neuer Schritt“: Titel, bei Hinweis: Text)',
+        maxLength: 300,
+    )]
     public string $label = '';
 
-    #[Textarea('Auswahl: eine Möglichkeit je Zeile', rows: 3)]
+    #[Textarea(
+        'Auswahl: eine Möglichkeit je Zeile',
+        rows: 3,
+    )]
     public string $options = '';
 
-    #[Text('Platzhalter (optional)', maxLength: 120, width: 'half')]
+    #[Text(
+        'Platzhalter (optional)',
+        maxLength: 120,
+        width: 'half',
+    )]
     public string $placeholder = '';
 
-    #[Text('Hilfetext (optional)', maxLength: 200, width: 'half')]
+    #[Text(
+        'Hilfetext (optional)',
+        maxLength: 200,
+        width: 'half',
+    )]
     public string $help = '';
 
     #[Text(

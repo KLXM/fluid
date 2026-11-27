@@ -8,7 +8,11 @@ use Klxm\Fluid\Field\Textarea;
 /** Entry of „Vergleichszeilen (bei „Vergleichstabelle“)“ in the block Pricing */
 final class PricingRow
 {
-    #[Text('Merkmal', required: true, maxLength: 80)]
+    #[Text(
+        'Merkmal',
+        required: true,
+        maxLength: 80,
+    )]
     public string $label = '';
 
     #[Textarea(

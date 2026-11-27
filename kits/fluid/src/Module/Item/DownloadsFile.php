@@ -9,10 +9,17 @@ use Redaxo\Core\MediaPool\Media;
 /** Entry of „Dateien (bei „Einzelne Dateien“)“ in the block Downloads */
 final class DownloadsFile
 {
-    #[Text('Bezeichnung', width: 'half', note: 'Leer = Titel der Datei')]
+    #[Text(
+        'Bezeichnung',
+        width: 'half',
+        note: 'Leer = Titel der Datei',
+    )]
     public string $label = '';
 
-    #[MediaPicker('Datei', width: 'half')]
+    #[MediaPicker(
+        'Datei',
+        width: 'half',
+    )]
     public ?Media $file = null;
 
     #[Text('Hinweis (optional)')]

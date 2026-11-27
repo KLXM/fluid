@@ -26,16 +26,31 @@ use Redaxo\Core\Content\AsModule;
 )]
 final class Form extends FluidBlock
 {
-    #[Text('Dachzeile (optional)', maxLength: 60, width: 'half')]
+    #[Text(
+        'Dachzeile (optional)',
+        maxLength: 60,
+        width: 'half',
+    )]
     public string $eyebrow = '';
 
-    #[Text('Überschrift', maxLength: 110, width: 'half')]
+    #[Text(
+        'Überschrift',
+        maxLength: 110,
+        width: 'half',
+    )]
     public string $title = '';
 
-    #[Textarea('Einleitung (optional)', maxLength: 400, rows: 2)]
+    #[Textarea(
+        'Einleitung (optional)',
+        maxLength: 400,
+        rows: 2,
+    )]
     public string $intro = '';
 
-    #[YFormForm('Formular aus dem Projekt (optional)', note: 'Leer = eigenes Formular aus den Feldern unten.')]
+    #[YFormForm(
+        'Formular aus dem Projekt (optional)',
+        note: 'Leer = eigenes Formular aus den Feldern unten.',
+    )]
     public string $form = '';
 
     #[Collection(
@@ -69,7 +84,12 @@ final class Form extends FluidBlock
     )]
     public string $mode = 'save_mail';
 
-    #[Text('E-Mail an (mehrere mit Komma)', maxLength: 300, placeholder: 'info@example.org', width: 'half')]
+    #[Text(
+        'E-Mail an (mehrere mit Komma)',
+        maxLength: 300,
+        placeholder: 'info@example.org',
+        width: 'half',
+    )]
     public string $mailTo = '';
 
     #[Text(
@@ -87,13 +107,23 @@ final class Form extends FluidBlock
     )]
     public string $target = '';
 
-    #[Checkbox('Bestätigung an den Absender (an das E-Mail-Feld)', width: 'half')]
+    #[Checkbox(
+        'Bestätigung an den Absender (an das E-Mail-Feld)',
+        width: 'half',
+    )]
     public bool $confirm = false;
 
-    #[Checkbox('Angaben in die Bestätigung kopieren', width: 'half')]
+    #[Checkbox(
+        'Angaben in die Bestätigung kopieren',
+        width: 'half',
+    )]
     public bool $confirmCopy = false;
 
-    #[Text('Betreff der Bestätigung', maxLength: 150, placeholder: 'Ihre Nachricht ist angekommen')]
+    #[Text(
+        'Betreff der Bestätigung',
+        maxLength: 150,
+        placeholder: 'Ihre Nachricht ist angekommen',
+    )]
     public string $confirmSubject = '';
 
     #[Textarea(
@@ -103,10 +133,20 @@ final class Form extends FluidBlock
     )]
     public string $confirmText = '';
 
-    #[Text('Beschriftung des Buttons', maxLength: 40, placeholder: 'Absenden', width: 'half')]
+    #[Text(
+        'Beschriftung des Buttons',
+        maxLength: 40,
+        placeholder: 'Absenden',
+        width: 'half',
+    )]
     public string $submit = '';
 
-    #[Text('Name im Postfach', maxLength: 80, placeholder: 'z. B. Kontakt, Anmeldung', width: 'half')]
+    #[Text(
+        'Name im Postfach',
+        maxLength: 80,
+        placeholder: 'z. B. Kontakt, Anmeldung',
+        width: 'half',
+    )]
     public string $formName = '';
 
     #[Textarea(
@@ -120,7 +160,10 @@ final class Form extends FluidBlock
     #[Link('Stattdessen weiter zu Seite (optional)')]
     public string $redirect = '';
 
-    #[Text('Titel des ersten Schritts (bei Schritten)', maxLength: 80)]
+    #[Text(
+        'Titel des ersten Schritts (bei Schritten)',
+        maxLength: 80,
+    )]
     public string $firstStep = '';
 
     #[Textarea(

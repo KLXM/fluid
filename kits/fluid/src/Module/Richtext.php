@@ -33,13 +33,25 @@ use Redaxo\Core\Content\AsModule;
 )]
 final class Richtext extends FluidBlock
 {
-    #[Text('Dachzeile (optional)', maxLength: 60, width: 'half')]
+    #[Text(
+        'Dachzeile (optional)',
+        maxLength: 60,
+        width: 'half',
+    )]
     public string $eyebrow = '';
 
-    #[Text('Überschrift', maxLength: 110, width: 'half')]
+    #[Text(
+        'Überschrift',
+        maxLength: 110,
+        width: 'half',
+    )]
     public string $title = '';
 
-    #[Textarea('Einleitung (optional)', maxLength: 400, rows: 2)]
+    #[Textarea(
+        'Einleitung (optional)',
+        maxLength: 400,
+        rows: 2,
+    )]
     public string $intro = '';
 
     #[RichTextField('Text')]
@@ -62,10 +74,16 @@ final class Richtext extends FluidBlock
     )]
     public string $meta = '';
 
-    #[Checkbox('Initiale (großer erster Buchstabe)', width: 'half')]
+    #[Checkbox(
+        'Initiale (großer erster Buchstabe)',
+        width: 'half',
+    )]
     public bool $dropcap = false;
 
-    #[Checkbox('Inhaltsverzeichnis anzeigen (bei „Artikel“)', width: 'half')]
+    #[Checkbox(
+        'Inhaltsverzeichnis anzeigen (bei „Artikel“)',
+        width: 'half',
+    )]
     public bool $toc = true;
 
     #[Choice(

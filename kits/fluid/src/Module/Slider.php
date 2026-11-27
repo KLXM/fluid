@@ -25,16 +25,34 @@ use Redaxo\Core\Content\AsModule;
 )]
 final class Slider extends FluidBlock
 {
-    #[Text('Dachzeile (optional)', maxLength: 60, width: 'half')]
+    #[Text(
+        'Dachzeile (optional)',
+        maxLength: 60,
+        width: 'half',
+    )]
     public string $eyebrow = '';
 
-    #[Text('Überschrift', maxLength: 110, width: 'half')]
+    #[Text(
+        'Überschrift',
+        maxLength: 110,
+        width: 'half',
+    )]
     public string $title = '';
 
-    #[Textarea('Einleitung (optional)', maxLength: 400, rows: 2)]
+    #[Textarea(
+        'Einleitung (optional)',
+        maxLength: 400,
+        rows: 2,
+    )]
     public string $intro = '';
 
-    #[Collection('Folien', item: Slide::class, itemLabel: 'Folie', titleField: 'title', max: 12)]
+    #[Collection(
+        'Folien',
+        item: Slide::class,
+        itemLabel: 'Folie',
+        titleField: 'title',
+        max: 12,
+    )]
     public array $slides = [];
 
     #[Choice('Format / Höhe', required: true, width: 'half', choices: [
@@ -42,19 +60,33 @@ final class Slider extends FluidBlock
     ])]
     public string $height = '16:9';
 
-    #[Checkbox('Endlos (nach der letzten Folie wieder die erste)', width: 'half')]
+    #[Checkbox(
+        'Endlos (nach der letzten Folie wieder die erste)',
+        width: 'half',
+    )]
     public bool $loop = true;
 
-    #[Checkbox('Pfeile anzeigen', width: 'half')]
+    #[Checkbox(
+        'Pfeile anzeigen',
+        width: 'half',
+    )]
     public bool $arrows = true;
 
-    #[Checkbox('Punkte anzeigen', width: 'half')]
+    #[Checkbox(
+        'Punkte anzeigen',
+        width: 'half',
+    )]
     public bool $dots = true;
 
     #[Checkbox('Automatisch weiterblättern', width: 'half',
         note: 'Mit Pause-Knopf; hält bei Maus und Fokus an und bleibt bei „Bewegung reduzieren“ aus.')]
     public bool $autoplay = false;
 
-    #[Choice('Anzeigedauer je Folie', required: true, width: 'half', choices: ['4' => '4 Sekunden', '6' => '6 Sekunden', '8' => '8 Sekunden', '10' => '10 Sekunden'])]
+    #[Choice(
+        'Anzeigedauer je Folie',
+        required: true,
+        width: 'half',
+        choices: ['4' => '4 Sekunden', '6' => '6 Sekunden', '8' => '8 Sekunden', '10' => '10 Sekunden'],
+    )]
     public string $interval = '6';
 }

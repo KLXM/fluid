@@ -19,18 +19,40 @@ use Redaxo\Core\Content\AsModule;
 )]
 final class Code extends FluidBlock
 {
-    #[Text('Dachzeile (optional)', maxLength: 60, width: 'half')]
+    #[Text(
+        'Dachzeile (optional)',
+        maxLength: 60,
+        width: 'half',
+    )]
     public string $eyebrow = '';
 
-    #[Text('Überschrift', maxLength: 110, width: 'half')]
+    #[Text(
+        'Überschrift',
+        maxLength: 110,
+        width: 'half',
+    )]
     public string $title = '';
 
-    #[Textarea('Einleitung (optional)', maxLength: 400, rows: 2)]
+    #[Textarea(
+        'Einleitung (optional)',
+        maxLength: 400,
+        rows: 2,
+    )]
     public string $intro = '';
 
-    #[Collection('Dateien', item: CodeItem::class, itemLabel: 'Datei', titleField: 'file', min: 1, max: 6)]
+    #[Collection(
+        'Dateien',
+        item: CodeItem::class,
+        itemLabel: 'Datei',
+        titleField: 'file',
+        min: 1,
+        max: 6,
+    )]
     public array $items = [];
 
-    #[Text('Hinweis unter dem Code (optional)', maxLength: 240)]
+    #[Text(
+        'Hinweis unter dem Code (optional)',
+        maxLength: 240,
+    )]
     public string $note = '';
 }

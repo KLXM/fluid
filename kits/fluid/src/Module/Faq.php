@@ -21,15 +21,33 @@ use Redaxo\Core\Content\AsModule;
 )]
 final class Faq extends FluidBlock
 {
-    #[Text('Dachzeile (optional)', maxLength: 60, width: 'half')]
+    #[Text(
+        'Dachzeile (optional)',
+        maxLength: 60,
+        width: 'half',
+    )]
     public string $eyebrow = '';
 
-    #[Text('Überschrift', required: true, maxLength: 110, width: 'half')]
+    #[Text(
+        'Überschrift',
+        required: true,
+        maxLength: 110,
+        width: 'half',
+    )]
     public string $title = '';
 
-    #[Textarea('Einleitung (optional)', maxLength: 400, rows: 2)]
+    #[Textarea(
+        'Einleitung (optional)',
+        maxLength: 400,
+        rows: 2,
+    )]
     public string $intro = '';
 
-    #[Collection('Fragen', item: FaqItem::class, itemLabel: 'Frage', titleField: 'q')]
+    #[Collection(
+        'Fragen',
+        item: FaqItem::class,
+        itemLabel: 'Frage',
+        titleField: 'q',
+    )]
     public array $items = [];
 }

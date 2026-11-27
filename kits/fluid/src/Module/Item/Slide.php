@@ -12,22 +12,46 @@ use Redaxo\Core\MediaPool\Media;
 /** Folie im Block „Slider“ */
 final class Slide
 {
-    #[MediaPicker('Bild', required: true, types: ['jpg', 'jpeg', 'png', 'webp', 'avif'], preview: true)]
+    #[MediaPicker(
+        'Bild',
+        required: true,
+        types: ['jpg', 'jpeg', 'png', 'webp', 'avif'],
+        preview: true,
+    )]
     public ?Media $image = null;
 
-    #[Text('Dachzeile (optional)', maxLength: 60, width: 'half')]
+    #[Text(
+        'Dachzeile (optional)',
+        maxLength: 60,
+        width: 'half',
+    )]
     public string $eyebrow = '';
 
-    #[Text('Titel (optional)', maxLength: 90, width: 'half')]
+    #[Text(
+        'Titel (optional)',
+        maxLength: 90,
+        width: 'half',
+    )]
     public string $title = '';
 
-    #[Textarea('Text (optional)', maxLength: 300, rows: 2)]
+    #[Textarea(
+        'Text (optional)',
+        maxLength: 300,
+        rows: 2,
+    )]
     public string $text = '';
 
-    #[Text('Button – Beschriftung', maxLength: 32, width: 'half')]
+    #[Text(
+        'Button – Beschriftung',
+        maxLength: 32,
+        width: 'half',
+    )]
     public string $buttonLabel = '';
 
-    #[Link('Button – Link', width: 'half')]
+    #[Link(
+        'Button – Link',
+        width: 'half',
+    )]
     public string $buttonLink = '';
 
     #[Choice('Textposition', required: true, width: 'half', choices: [

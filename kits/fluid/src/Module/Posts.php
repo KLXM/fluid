@@ -24,25 +24,49 @@ use Redaxo\Core\Content\AsModule;
 )]
 final class Posts extends FluidBlock
 {
-    #[Text('Dachzeile (optional)', maxLength: 60, width: 'half')]
+    #[Text(
+        'Dachzeile (optional)',
+        maxLength: 60,
+        width: 'half',
+    )]
     public string $eyebrow = '';
 
-    #[Text('Überschrift', maxLength: 110, width: 'half')]
+    #[Text(
+        'Überschrift',
+        maxLength: 110,
+        width: 'half',
+    )]
     public string $title = '';
 
-    #[Textarea('Einleitung (optional)', maxLength: 400, rows: 2)]
+    #[Textarea(
+        'Einleitung (optional)',
+        maxLength: 400,
+        rows: 2,
+    )]
     public string $intro = '';
 
-    #[Blog('Blog', width: 'half')]
+    #[Blog(
+        'Blog',
+        width: 'half',
+    )]
     public string $blog = '';
 
-    #[Number('Beiträge je Seite', width: 'half')]
+    #[Number(
+        'Beiträge je Seite',
+        width: 'half',
+    )]
     public int $limit = 9;
 
-    #[Checkbox('Blättern (Seite 2, 3 …)', width: 'half')]
+    #[Checkbox(
+        'Blättern (Seite 2, 3 …)',
+        width: 'half',
+    )]
     public bool $pager = true;
 
-    #[Checkbox('Schlagworte zum Filtern zeigen', width: 'half')]
+    #[Checkbox(
+        'Schlagworte zum Filtern zeigen',
+        width: 'half',
+    )]
     public bool $tags = false;
 
     #[Choice(
@@ -61,6 +85,9 @@ final class Posts extends FluidBlock
     )]
     public string $more = '';
 
-    #[Text('Hinweis ohne Beiträge (optional)', maxLength: 200)]
+    #[Text(
+        'Hinweis ohne Beiträge (optional)',
+        maxLength: 200,
+    )]
     public string $emptyText = '';
 }

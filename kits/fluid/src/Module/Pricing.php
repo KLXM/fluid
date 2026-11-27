@@ -22,20 +22,46 @@ use Redaxo\Core\Content\AsModule;
 )]
 final class Pricing extends FluidBlock
 {
-    #[Text('Dachzeile (optional)', maxLength: 60, width: 'half')]
+    #[Text(
+        'Dachzeile (optional)',
+        maxLength: 60,
+        width: 'half',
+    )]
     public string $eyebrow = '';
 
-    #[Text('Überschrift', maxLength: 110, width: 'half')]
+    #[Text(
+        'Überschrift',
+        maxLength: 110,
+        width: 'half',
+    )]
     public string $title = '';
 
-    #[Textarea('Einleitung (optional)', maxLength: 400, rows: 2)]
+    #[Textarea(
+        'Einleitung (optional)',
+        maxLength: 400,
+        rows: 2,
+    )]
     public string $intro = '';
 
-    #[Collection('Pakete', item: PricingItem::class, itemLabel: 'Paket', titleField: 'name', max: 4, variants: ['cards', 'table'])]
+    #[Collection(
+        'Pakete',
+        item: PricingItem::class,
+        itemLabel: 'Paket',
+        titleField: 'name',
+        max: 4,
+        variants: ['cards', 'table'],
+    )]
     public array $items = [];
 
     /** @var list<PriceListItem> */
-    #[Collection('Preisliste', item: PriceListItem::class, itemLabel: 'Eintrag', titleField: 'name', max: 80, variants: ['list'])]
+    #[Collection(
+        'Preisliste',
+        item: PriceListItem::class,
+        itemLabel: 'Eintrag',
+        titleField: 'name',
+        max: 80,
+        variants: ['list'],
+    )]
     public array $entries = [];
 
     #[Collection(

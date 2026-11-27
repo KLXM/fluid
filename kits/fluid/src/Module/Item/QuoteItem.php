@@ -10,15 +10,29 @@ use Redaxo\Core\MediaPool\Media;
 /** Eintrag von „Zitate“ im Block Quote */
 final class QuoteItem
 {
-    #[Textarea('Zitat', required: true, maxLength: 480, rows: 3)]
+    #[Textarea(
+        'Zitat',
+        required: true,
+        maxLength: 480,
+        rows: 3,
+    )]
     public string $text = '';
 
-    #[Text('Name', width: 'half')]
+    #[Text(
+        'Name',
+        width: 'half',
+    )]
     public string $name = '';
 
-    #[Text('Funktion / Organisation', width: 'half')]
+    #[Text(
+        'Funktion / Organisation',
+        width: 'half',
+    )]
     public string $role = '';
 
-    #[MediaPicker('Porträt (optional, 1:1)', preview: true)]
+    #[MediaPicker(
+        'Porträt (optional, 1:1)',
+        preview: true,
+    )]
     public ?Media $image = null;
 }

@@ -28,13 +28,25 @@ use Redaxo\Core\Content\AsModule;
 )]
 final class Cards extends FluidBlock
 {
-    #[Text('Dachzeile (optional)', maxLength: 60, width: 'half')]
+    #[Text(
+        'Dachzeile (optional)',
+        maxLength: 60,
+        width: 'half',
+    )]
     public string $eyebrow = '';
 
-    #[Text('Überschrift', maxLength: 110, width: 'half')]
+    #[Text(
+        'Überschrift',
+        maxLength: 110,
+        width: 'half',
+    )]
     public string $title = '';
 
-    #[Textarea('Einleitung (optional)', maxLength: 400, rows: 2)]
+    #[Textarea(
+        'Einleitung (optional)',
+        maxLength: 400,
+        rows: 2,
+    )]
     public string $intro = '';
 
     #[Choice(
@@ -46,18 +58,41 @@ final class Cards extends FluidBlock
     )]
     public string $size = 'm';
 
-    #[Choice('Bildformat', required: true, choices: self::RATIOS, width: 'half')]
+    #[Choice(
+        'Bildformat',
+        required: true,
+        choices: self::RATIOS,
+        width: 'half',
+    )]
     public string $ratio = '3:2';
 
-    #[Collection('Karten', item: CardsItem::class, itemLabel: 'Karte', titleField: 'title', max: 12)]
+    #[Collection(
+        'Karten',
+        item: CardsItem::class,
+        itemLabel: 'Karte',
+        titleField: 'title',
+        max: 12,
+    )]
     public array $items = [];
 
-    #[Checkbox('Filter nach Kategorie anzeigen', width: 'half', variants: ['image', 'overlay', 'horizontal'], note: 'Knöpfe über den Karten – je Karte unter „Kategorie“ eintragen (ab zwei verschiedenen).')]
+    #[Checkbox(
+        'Filter nach Kategorie anzeigen',
+        width: 'half',
+        variants: ['image', 'overlay', 'horizontal'],
+        note: 'Knöpfe über den Karten – je Karte unter „Kategorie“ eintragen (ab zwei verschiedenen).',
+    )]
     public bool $filter = false;
 
-    #[Text('Button unter den Karten (optional)', maxLength: 32, width: 'half')]
+    #[Text(
+        'Button unter den Karten (optional)',
+        maxLength: 32,
+        width: 'half',
+    )]
     public string $moreLabel = '';
 
-    #[Link('Button-Link', width: 'half')]
+    #[Link(
+        'Button-Link',
+        width: 'half',
+    )]
     public string $moreLink = '';
 }

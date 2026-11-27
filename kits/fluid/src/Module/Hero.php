@@ -40,7 +40,10 @@ use Redaxo\Core\MediaPool\Media;
 )]
 final class Hero extends FluidBlock
 {
-    #[Text('Dachzeile (optional)', maxLength: 60)]
+    #[Text(
+        'Dachzeile (optional)',
+        maxLength: 60,
+    )]
     public string $eyebrow = '';
 
     #[Text(
@@ -51,10 +54,18 @@ final class Hero extends FluidBlock
     )]
     public string $title = '';
 
-    #[Textarea('Text', maxLength: 360, rows: 3)]
+    #[Textarea(
+        'Text',
+        maxLength: 360,
+        rows: 3,
+    )]
     public string $text = '';
 
-    #[Text('Button 1 – Beschriftung', maxLength: 32, width: 'half')]
+    #[Text(
+        'Button 1 – Beschriftung',
+        maxLength: 32,
+        width: 'half',
+    )]
     public string $buttonLabel = '';
 
     #[Link(
@@ -64,10 +75,17 @@ final class Hero extends FluidBlock
     )]
     public string $buttonLink = '';
 
-    #[Text('Button 2 – Beschriftung', maxLength: 32, width: 'half')]
+    #[Text(
+        'Button 2 – Beschriftung',
+        maxLength: 32,
+        width: 'half',
+    )]
     public string $button2Label = '';
 
-    #[Link('Button 2 – Link', width: 'half')]
+    #[Link(
+        'Button 2 – Link',
+        width: 'half',
+    )]
     public string $button2Link = '';
 
     #[Textarea(

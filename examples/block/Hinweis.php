@@ -31,25 +31,48 @@ use function Redaxo\Core\View\escape;
 #[AsBlock(icon: 'info', group: 'Inhalt', nestable: true, help: 'Kurzer Hinweis mit Art, Bild und Link.')]
 final class Hinweis extends FluidBlock
 {
-    #[Text('Überschrift', required: true, maxLength: 120)]
+    #[Text(
+        'Überschrift',
+        required: true,
+        maxLength: 120,
+    )]
     public string $headline = '';
 
-    #[Textarea('Text', rows: 4)]
+    #[Textarea(
+        'Text',
+        rows: 4,
+    )]
     public string $text = '';
 
-    #[Choice('Art', choices: ['info' => 'Information', 'warn' => 'Warnung', 'ok' => 'Erledigt'], width: 'half')]
+    #[Choice(
+        'Art',
+        choices: ['info' => 'Information', 'warn' => 'Warnung', 'ok' => 'Erledigt'],
+        width: 'half',
+    )]
     public string $kind = 'info';
 
-    #[Checkbox('Hervorheben', width: 'half')]
+    #[Checkbox(
+        'Hervorheben',
+        width: 'half',
+    )]
     public bool $strong = false;
 
-    #[DatePicker('Gültig bis', width: 'half')]
+    #[DatePicker(
+        'Gültig bis',
+        width: 'half',
+    )]
     public ?DateTimeImmutable $until = null;
 
-    #[Link('Mehr dazu', width: 'half')]
+    #[Link(
+        'Mehr dazu',
+        width: 'half',
+    )]
     public string $link = '';
 
-    #[MediaPicker('Bild', preview: true)]
+    #[MediaPicker(
+        'Bild',
+        preview: true,
+    )]
     public ?Media $image = null;
 
     #[Override]

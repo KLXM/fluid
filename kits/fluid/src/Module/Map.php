@@ -20,10 +20,18 @@ use Redaxo\Core\Content\AsModule;
 )]
 final class Map extends FluidBlock
 {
-    #[Text('Dachzeile (optional)', maxLength: 60, width: 'half')]
+    #[Text(
+        'Dachzeile (optional)',
+        maxLength: 60,
+        width: 'half',
+    )]
     public string $eyebrow = '';
 
-    #[Text('Überschrift', maxLength: 110, width: 'half')]
+    #[Text(
+        'Überschrift',
+        maxLength: 110,
+        width: 'half',
+    )]
     public string $title = '';
 
     #[Choice(
@@ -39,10 +47,18 @@ final class Map extends FluidBlock
     )]
     public string $point = '';
 
-    #[Text('Beschriftung', placeholder: 'Standard: Name der Website', width: 'half')]
+    #[Text(
+        'Beschriftung',
+        placeholder: 'Standard: Name der Website',
+        width: 'half',
+    )]
     public string $label = '';
 
-    #[Text('Adresse unter der Karte', placeholder: 'Standard: Adresse der Website', width: 'half')]
+    #[Text(
+        'Adresse unter der Karte',
+        placeholder: 'Standard: Adresse der Website',
+        width: 'half',
+    )]
     public string $address = '';
 
     #[Choice(
@@ -59,13 +75,25 @@ final class Map extends FluidBlock
     )]
     public string $zoom = '15';
 
-    #[Choice('Höhe', required: true, choices: Maps::HEIGHTS, width: 'half')]
+    #[Choice(
+        'Höhe',
+        required: true,
+        choices: Maps::HEIGHTS,
+        width: 'half',
+    )]
     public string $height = 'm';
 
-    #[Choice('Kartenstil', choices: Maps::STYLES, width: 'half')]
+    #[Choice(
+        'Kartenstil',
+        choices: Maps::STYLES,
+        width: 'half',
+    )]
     public string $style = 'liberty';
 
-    #[Checkbox('Erst nach Klick laden (Zwei-Klick)', width: 'half')]
+    #[Checkbox(
+        'Erst nach Klick laden (Zwei-Klick)',
+        width: 'half',
+    )]
     public bool $click = false;
 
     #[Checkbox('Link „Route planen“ anzeigen')]

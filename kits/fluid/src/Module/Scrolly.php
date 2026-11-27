@@ -20,13 +20,25 @@ use Redaxo\Core\Content\AsModule;
 )]
 final class Scrolly extends FluidBlock
 {
-    #[Text('Dachzeile (optional)', maxLength: 60, width: 'half')]
+    #[Text(
+        'Dachzeile (optional)',
+        maxLength: 60,
+        width: 'half',
+    )]
     public string $eyebrow = '';
 
-    #[Text('Überschrift', maxLength: 110, width: 'half')]
+    #[Text(
+        'Überschrift',
+        maxLength: 110,
+        width: 'half',
+    )]
     public string $title = '';
 
-    #[Textarea('Einleitung (optional)', maxLength: 400, rows: 2)]
+    #[Textarea(
+        'Einleitung (optional)',
+        maxLength: 400,
+        rows: 2,
+    )]
     public string $intro = '';
 
     #[Choice(
@@ -38,6 +50,12 @@ final class Scrolly extends FluidBlock
     )]
     public string $ratio = 'auto';
 
-    #[Collection('Abschnitte', item: ScrollyItem::class, itemLabel: 'Abschnitt', titleField: 'title', max: 8)]
+    #[Collection(
+        'Abschnitte',
+        item: ScrollyItem::class,
+        itemLabel: 'Abschnitt',
+        titleField: 'title',
+        max: 8,
+    )]
     public array $items = [];
 }

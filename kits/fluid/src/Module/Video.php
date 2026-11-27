@@ -37,16 +37,32 @@ final class Video extends FluidBlock
     /** Displays with video (the video fields are missing for „Audio“); kit „NativeCSS“ adds „morph“ (kit.php → blocks) */
     public const array VIDEO = ['wide', 'text', 'cinema'];
 
-    #[Text('Dachzeile (optional)', maxLength: 60, width: 'half')]
+    #[Text(
+        'Dachzeile (optional)',
+        maxLength: 60,
+        width: 'half',
+    )]
     public string $eyebrow = '';
 
-    #[Text('Überschrift', maxLength: 110, width: 'half')]
+    #[Text(
+        'Überschrift',
+        maxLength: 110,
+        width: 'half',
+    )]
     public string $title = '';
 
-    #[Textarea('Einleitung (optional)', maxLength: 400, rows: 2)]
+    #[Textarea(
+        'Einleitung (optional)',
+        maxLength: 400,
+        rows: 2,
+    )]
     public string $intro = '';
 
-    #[Url('YouTube- oder Vimeo-Link', width: 'half', variants: self::VIDEO)]
+    #[Url(
+        'YouTube- oder Vimeo-Link',
+        width: 'half',
+        variants: self::VIDEO,
+    )]
     public string $videoUrl = '';
 
     #[MediaPicker(
@@ -76,10 +92,18 @@ final class Video extends FluidBlock
     )]
     public array $tracks = [];
 
-    #[Checkbox('Untertitel in der Sprache der Seite gleich einschalten', width: 'half', variants: self::VIDEO)]
+    #[Checkbox(
+        'Untertitel in der Sprache der Seite gleich einschalten',
+        width: 'half',
+        variants: self::VIDEO,
+    )]
     public bool $ccOn = false;
 
-    #[Checkbox('Transkript unter dem Video („Text zum Video“)', width: 'half', variants: self::VIDEO)]
+    #[Checkbox(
+        'Transkript unter dem Video („Text zum Video“)',
+        width: 'half',
+        variants: self::VIDEO,
+    )]
     public bool $transcript = false;
 
     #[Choice(
@@ -110,9 +134,15 @@ final class Video extends FluidBlock
     )]
     public string $audioTranscript = '';
 
-    #[Text('Bildunterschrift (optional)', maxLength: 200)]
+    #[Text(
+        'Bildunterschrift (optional)',
+        maxLength: 200,
+    )]
     public string $caption = '';
 
-    #[RichText('Text daneben', variants: ['text', 'morph'])]
+    #[RichText(
+        'Text daneben',
+        variants: ['text', 'morph'],
+    )]
     public string $text = '';
 }

@@ -26,16 +26,31 @@ use Redaxo\Core\MediaPool\Media;
 )]
 final class Cta extends FluidBlock
 {
-    #[Text('Dachzeile (optional)', maxLength: 60)]
+    #[Text(
+        'Dachzeile (optional)',
+        maxLength: 60,
+    )]
     public string $eyebrow = '';
 
-    #[Text('Überschrift', required: true, maxLength: 110)]
+    #[Text(
+        'Überschrift',
+        required: true,
+        maxLength: 110,
+    )]
     public string $title = '';
 
-    #[Textarea('Text (optional)', maxLength: 300, rows: 2)]
+    #[Textarea(
+        'Text (optional)',
+        maxLength: 300,
+        rows: 2,
+    )]
     public string $text = '';
 
-    #[Text('Button 1 – Beschriftung', maxLength: 32, width: 'half')]
+    #[Text(
+        'Button 1 – Beschriftung',
+        maxLength: 32,
+        width: 'half',
+    )]
     public string $buttonLabel = '';
 
     #[Link(
@@ -45,12 +60,22 @@ final class Cta extends FluidBlock
     )]
     public string $buttonLink = '';
 
-    #[Text('Button 2 – Beschriftung', maxLength: 32, width: 'half')]
+    #[Text(
+        'Button 2 – Beschriftung',
+        maxLength: 32,
+        width: 'half',
+    )]
     public string $button2Label = '';
 
-    #[Link('Button 2 – Link', width: 'half')]
+    #[Link(
+        'Button 2 – Link',
+        width: 'half',
+    )]
     public string $button2Link = '';
 
-    #[MediaPicker('Bild (bei „Mit Bild“)', preview: true)]
+    #[MediaPicker(
+        'Bild (bei „Mit Bild“)',
+        preview: true,
+    )]
     public ?Media $image = null;
 }

@@ -36,19 +36,39 @@ final class BentoItem
     )]
     public string $tone = 'card';
 
-    #[Icon('Symbol (optional)', width: 'half')]
+    #[Icon(
+        'Symbol (optional)',
+        width: 'half',
+    )]
     public string $icon = '';
 
-    #[MediaPicker('Bild (optional)', width: 'half', preview: true)]
+    #[MediaPicker(
+        'Bild (optional)',
+        width: 'half',
+        preview: true,
+    )]
     public ?Media $image = null;
 
-    #[Text('Dachzeile oder große Zahl (optional)', maxLength: 30, width: 'half')]
+    #[Text(
+        'Dachzeile oder große Zahl (optional)',
+        maxLength: 30,
+        width: 'half',
+    )]
     public string $eyebrow = '';
 
-    #[Text('Titel', required: true, maxLength: 80, width: 'half')]
+    #[Text(
+        'Titel',
+        required: true,
+        maxLength: 80,
+        width: 'half',
+    )]
     public string $title = '';
 
-    #[Textarea('Text', maxLength: 240, rows: 2)]
+    #[Textarea(
+        'Text',
+        maxLength: 240,
+        rows: 2,
+    )]
     public string $text = '';
 
     #[Link('Link (ganze Kachel, optional)')]

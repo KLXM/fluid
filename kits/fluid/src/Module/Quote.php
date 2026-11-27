@@ -24,12 +24,26 @@ use Redaxo\Core\Content\AsModule;
 )]
 final class Quote extends FluidBlock
 {
-    #[Text('Dachzeile (optional)', maxLength: 60, width: 'half')]
+    #[Text(
+        'Dachzeile (optional)',
+        maxLength: 60,
+        width: 'half',
+    )]
     public string $eyebrow = '';
 
-    #[Text('Überschrift', maxLength: 110, width: 'half')]
+    #[Text(
+        'Überschrift',
+        maxLength: 110,
+        width: 'half',
+    )]
     public string $title = '';
 
-    #[Collection('Zitate', item: QuoteItem::class, itemLabel: 'Zitat', titleField: 'name', max: 12)]
+    #[Collection(
+        'Zitate',
+        item: QuoteItem::class,
+        itemLabel: 'Zitat',
+        titleField: 'name',
+        max: 12,
+    )]
     public array $items = [];
 }
