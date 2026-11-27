@@ -113,6 +113,8 @@ final class Toolbar
             // Design: admins save; guests (e.g. demo) only preview in their own browser – the API rejects saving
             'design' => $user->admin || $guest ? self::designSchema($article) : null,
             'designSave' => $user->admin && !$guest,
+            // „SEO & KI“: hints for this page and the whole website (klxm/routes Advice)
+            'seo' => true,
             // Several domains (klxm/routes): switch to another one – logged in there on demand (Sso)
             'domains' => $guest ? null : self::domains($user),
             // Website settings (sidebar „Website“): admins only

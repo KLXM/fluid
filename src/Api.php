@@ -194,6 +194,7 @@ final class Api
             })(),
             'drafts' => ['drafts' => Drafts::all($article->languageId, $user)],
             'inbox' => ['items' => Data\Inbox::list($user, Request::post('filter', 'string', 'new')), 'new' => Data\Inbox::countNew($user)],
+            'seo_advice' => ['html' => Seo\AdvicePanel::render($article, Request::post('mode', 'string', 'page'))],
             'inbox_state' => (static function () use ($user) {
                 Data\Inbox::setState($user, Request::post('table', 'string', ''), Request::post('id', 'int', 0), Request::post('state', 'string', 'done'));
 

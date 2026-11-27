@@ -140,6 +140,7 @@
             ${cfg.inbox ? `<button type="button" role="menuitem" data-inbox-open>Anfragen …${cfg.inbox.new ? ` <span class="badge">${cfg.inbox.new}</span>` : ''}</button>` : ''}
             ${cfg.guest ? '' : '<button type="button" role="menuitem" data-history-open>Verlauf & Entwürfe …</button>'}
             ${cfg.glossary ? '<button type="button" role="menuitem" data-gloss-open>Glossar … <span class="menu-hint">Alt+G</span></button>' : ''}
+            ${cfg.seo ? '<button type="button" role="menuitem" data-seo-open>SEO &amp; KI …</button>' : ''}
             <button type="button" role="menuitem" data-compact>Kompaktansicht</button>
             ${may(cfg.article.menu ? 'editCategory' : 'editArticle') ? '<button type="button" role="menuitem" data-page-settings>Seiteneinstellungen …</button>' : ''}
             ${cfg.site ? '<button type="button" role="menuitem" data-site-open>Website …</button>' : ''}
@@ -269,6 +270,16 @@
       </nav>
       <div class="panel__body" data-inbox-body></div>
     </aside>`);
+  // „SEO & KI“ (klxm/routes Advice): hints for this page and the whole website
+  const qpanel = h(`
+    <aside class="panel qpanel" hidden aria-labelledby="fluid-seo-title">
+      <header class="panel__head"><h2 id="fluid-seo-title">SEO &amp; KI</h2><button type="button" class="btn btn--icon" data-seo-close aria-label="Schließen">✕</button></header>
+      <nav class="spanel__tabs" role="tablist" aria-label="Umfang">
+        <button type="button" role="tab" data-seo-mode="page" aria-selected="true">Diese Seite</button>
+        <button type="button" role="tab" data-seo-mode="site" aria-selected="false">Ganze Website</button>
+      </nav>
+      <div class="panel__body" data-seo-body></div>
+    </aside>`);
   // Quick glossary (Klxm\Fluid\Glossary\Glossary): search terms, create a term from selected text, „Gibt es schon?“
   const gpanel = h(`
     <aside class="panel gpanel" hidden aria-labelledby="fluid-gloss-title">
@@ -316,7 +327,7 @@
     </div>`);
   // Layer for menus and dialogs in the UI
   const layer = h('<div class="layer"></div>');
-  root.append(bar, blockbar, addbtn, panel, dpanel, ppanel, spanel, tpanel, hpanel, ipanel, gpanel, picker, dialog, newdlg, tdlg, mdlg, toast, layer);
+  root.append(bar, blockbar, addbtn, panel, dpanel, ppanel, spanel, tpanel, hpanel, ipanel, qpanel, gpanel, picker, dialog, newdlg, tdlg, mdlg, toast, layer);
   document.body.append(host);
   document.documentElement.classList.add('blocks-has-bar');
   // without permission: hide buttons (the API checks anyway)
@@ -505,6 +516,7 @@
   initTree();
   initHistory();
   if (cfg.inbox) initInbox();
+  if (cfg.seo) initSeo();
   if (cfg.glossary) initGlossary();
   if (cfg.site) initSite();
   if (!cfg.editing) return;
@@ -1175,6 +1187,29 @@
 
   // ------------------------------------------------------------------ Inquiry inbox (YForm forms of the website)
 
+  function initSeo() {
+    const body = $('[data-seo-body]');
+    const load = async (mode) => {
+      body.innerHTML = '<p class="site-intro">Wird geprüft …</p>';
+      try { body.innerHTML = (await api('seo_advice', { mode })).html; } catch (err) { say(err.message, true); }
+    };
+    $('[data-seo-open]').addEventListener('click', () => {
+      menu.hidden = true;
+      if ([panel, dpanel, ppanel, spanel, tpanel, hpanel, ipanel, gpanel].some((x) => !x.hidden)) return say('Bitte zuerst die andere Seitenleiste schließen.', true);
+      qpanel.hidden = false;
+      document.documentElement.classList.add('blocks-panel-open');
+      qpanel.querySelectorAll('[data-seo-mode]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.seoMode === 'page')));
+      load('page');
+    });
+    $('[data-seo-close]').addEventListener('click', () => { qpanel.hidden = true; document.documentElement.classList.remove('blocks-panel-open'); });
+    qpanel.addEventListener('click', (e) => {
+      const m = e.target.closest('[data-seo-mode]');
+      if (!m) return;
+      qpanel.querySelectorAll('[data-seo-mode]').forEach((b) => b.setAttribute('aria-selected', String(b === m)));
+      load(m.dataset.seoMode);
+    });
+  }
+
   function initInbox() {
     const body = $('[data-inbox-body]');
     let filter = 'new';
@@ -1213,7 +1248,7 @@
     };
     $('[data-inbox-open]').addEventListener('click', () => {
       menu.hidden = true;
-      if ([panel, dpanel, ppanel, spanel, tpanel, hpanel, gpanel].some((x) => !x.hidden)) return say('Bitte zuerst die andere Seitenleiste schließen.', true);
+      if ([panel, dpanel, ppanel, spanel, tpanel, hpanel, gpanel, qpanel].some((x) => !x.hidden)) return say('Bitte zuerst die andere Seitenleiste schließen.', true);
       ipanel.hidden = false;
       document.documentElement.classList.add('blocks-panel-open');
       load();
@@ -1291,7 +1326,7 @@
     };
     const open = (text = '') => {
       menu.hidden = true;
-      if ([panel, dpanel, ppanel, spanel, tpanel, hpanel, ipanel].some((x) => x && !x.hidden)) return say('Bitte zuerst die andere Seitenleiste schließen.', true);
+      if ([panel, dpanel, ppanel, spanel, tpanel, hpanel, ipanel, qpanel].some((x) => x && !x.hidden)) return say('Bitte zuerst die andere Seitenleiste schließen.', true);
       gpanel.hidden = false;
       document.documentElement.classList.add('blocks-panel-open');
       const manage = gpanel.querySelector('[data-gloss-manage]');

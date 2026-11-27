@@ -558,3 +558,22 @@ fieldset.blocks-form__field { border: 0; padding: 0; margin: 0; min-width: 0; }
 .gloss-warn { color: var(--danger-ink, var(--danger)); font-weight: 600; }
 .gloss-dupe:empty { display: none; }
 .gloss-dupe .btn { margin-top: 4px; }
+
+/* „SEO & KI“ (klxm/routes Advice) */
+.advice { list-style: none; margin: 0 0 12px; padding: 0; display: grid; gap: 8px; }
+.advice__item { padding: 8px 10px 8px 12px; border-left: 3px solid var(--line); border-radius: 4px; background: color-mix(in srgb, var(--line) 18%, transparent); line-height: 1.45; }
+.advice__item b { display: block; font-size: .82em; text-transform: uppercase; letter-spacing: .03em; color: var(--muted); }
+.advice__item.is-todo { border-left-color: #c2410c; }
+.advice__item.is-tip { border-left-color: #ca8a04; }
+.advice__item.is-ok { border-left-color: #15803d; }
+.advice__score { display: flex; align-items: baseline; gap: 8px; margin: 0 0 8px; }
+.advice__score span { font-size: 2.2em; font-weight: 700; line-height: 1; }
+.advice__score[data-level="todo"] span, .advice__badge[data-level="todo"] { color: #c2410c; }
+.advice__score[data-level="tip"] span, .advice__badge[data-level="tip"] { color: #a16207; }
+.advice__score[data-level="ok"] span, .advice__badge[data-level="ok"] { color: #15803d; }
+.advice__badge { font-weight: 700; }
+a.site-list__main { display: block; color: inherit; text-decoration: none; }
+.advice__row { display: flex !important; align-items: center; justify-content: space-between; gap: 12px; width: 100%; }
+.advice__row > span { display: grid; gap: 2px; min-width: 0; }
+.advice__row .advice__badge { font-size: 1.15em; }
+a.site-list__main:hover b, a.site-list__main:focus-visible b { text-decoration: underline; }
