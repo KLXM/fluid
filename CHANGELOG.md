@@ -1,6 +1,6 @@
 # Changelog
 
-## Unveröffentlicht
+## 1.0.0-beta.13 – 2026-11-27
 
 - Schraffur beim Abstand-Ziehen mit weißen Linien – auch auf dunklen Abschnitten gut zu sehen.
 - **Endung der Adressen auf der Website wählen** (Website → Adressen): ohne, Schrägstrich, `.html`, gemischt (Menüpunkte `/`,
