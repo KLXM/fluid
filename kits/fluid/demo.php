@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Demo-Inhalte des Kits „fluid“ (aus KLXM Studio, frei erfunden, als Demo gekennzeichnet) – `php bin/console fluid:demo`.
+ * Demo content of the kit „fluid“ (from KLXM Studio, entirely made up, marked as demo) – `php bin/console fluid:demo`.
  */
 
 $workday = static fn (string $tag) => ['tag' => $tag, 'von' => '09:00', 'bis' => '17:00', 'pause_von' => '', 'pause_bis' => '', 'notiz' => ''];
@@ -143,7 +143,7 @@ return [
             ],
         ],
 
-        // ------------------------------------------------------------------ Über uns
+        // ------------------------------------------------------------------ About us
         [
             'slug' => 'ueber-uns', 'title' => 'Über uns', 'menu' => true,
             'meta_description' => 'Wer hinter dem fiktiven Studio Beispiel steht (Demo-Inhalt).',
@@ -173,7 +173,7 @@ return [
             ],
         ],
 
-        // ------------------------------------------------------------------ Rechtliches (nicht im Menü, verlinkt im Fußbereich)
+        // ------------------------------------------------------------------ Legal (not in the menu, linked in the footer)
         [
             'slug' => 'impressum', 'title' => 'Impressum', 'menu' => false,
             'blocks' => [

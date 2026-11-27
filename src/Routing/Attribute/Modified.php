@@ -4,7 +4,7 @@ namespace Klxm\Fluid\Routing\Attribute;
 
 use Attribute;
 
-/** Spalte: Zuletzt geändert */
+/** Column: last modified */
 #[Attribute(Attribute::TARGET_CLASS)]
 final readonly class Modified extends MetaColumn
 {

@@ -15,8 +15,8 @@ use Redaxo\Core\Security\BackendLogin;
 use Throwable;
 
 /**
- * Endpunkt des FrontendPickers: `?rex-api-call=fluid_picker&_csrf_token=…` (POST: action=media|media_upload|articles).
- * Auf der Website aufrufbar (published), aber nur mit Backend-Sitzung; es gelten Medienpool- bzw. Strukturrechte.
+ * Endpoint of the FrontendPicker: `?rex-api-call=fluid_picker&_csrf_token=…` (POST: action=media|media_upload|articles).
+ * Callable on the website (published), but only with a backend session; media pool or structure permissions apply.
  */
 #[AsApiFunction('fluid_picker')]
 final class PickerApi extends ApiFunction
@@ -41,7 +41,7 @@ final class PickerApi extends ApiFunction
         } catch (PickerError $e) {
             self::send(['ok' => false, 'error' => $e->getMessage()], $e->getCode() ?: 400);
         } catch (UserMessageException $e) {
-            // Meldungen des Medienpools (Dateityp nicht erlaubt …)
+            // Media pool messages (file type not allowed …)
             self::send(['ok' => false, 'error' => $e->getMessage()], 400);
         } catch (Throwable $e) {
             self::send(['ok' => false, 'error' => 'Fehler: ' . $e->getMessage()], 500);

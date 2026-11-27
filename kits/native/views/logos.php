@@ -4,9 +4,9 @@ use Klxm\Fluid\Block;
 use Klxm\Fluid\Kit;
 
 /**
- * Logos im Kit „NativeCSS“: „Laufband“ mit .ncss-marquee von NativeCSS – weiche Ränder, hält bei Maus/Fokus an, steht bei
- * „Bewegung reduzieren“ still (dann horizontal scrollbar) und hat eine sichtbare Schaltfläche „Laufband anhalten“
- * (WCAG 2.2.2; js/marquee.js). Beim Bearbeiten und mit „Dezente Animationen“ aus: ruhiges Raster. „Raster“ kommt von fluid.
+ * Logos in the kit „NativeCSS“: „Laufband“ with .ncss-marquee of NativeCSS – soft edges, pauses on hover/focus, stands
+ * still with „Bewegung reduzieren“ (then horizontally scrollable) and has a visible button „Laufband anhalten“
+ * (WCAG 2.2.2; js/marquee.js). While editing and with „Dezente Animationen“ off: calm grid. „Raster“ comes from fluid.
  * @var Block $b  @var array $d
  */
 $motion = false !== (bool) (Kit::active()->design()->get('motion') ?? true);

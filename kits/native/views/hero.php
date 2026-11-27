@@ -4,13 +4,13 @@ use Klxm\Fluid\Block;
 use Klxm\Fluid\Kit;
 
 /**
- * Einstieg (H1) im Kit „NativeCSS“:
- *   split     Text neben Bild (.ncss-split, stapelt sich per Container Query)
- *   centered  zentriert, Bild darunter
- *   compact   Seitenkopf ohne Bild (Unterseiten)
- *   type      großer Schriftzug, Betonung *Wort* im Markenverlauf (.ncss-text-gradient-brand), Etikett als .ncss-badge
- *   fullbleed Bild/Video vollflächig mit Text darauf (.ncss-hero)
- * Übrige Varianten (cards, scale, collage, compare) kommen aus dem Kit fluid.
+ * Intro (H1) in the kit „NativeCSS“:
+ *   split     text beside image (.ncss-split, stacks via container query)
+ *   centered  centred, image below
+ *   compact   page header without image (subpages)
+ *   type      large lettering, emphasis *word* in the brand gradient (.ncss-text-gradient-brand), label as .ncss-badge
+ *   fullbleed image/video full-bleed with text on top (.ncss-hero)
+ * The other variants (cards, scale, collage, compare) come from the kit fluid.
  * @var Block $b  @var array $d
  */
 $v = $b->variant() ?: 'split';
@@ -43,9 +43,9 @@ if ('fullbleed' === $v):
     $vid = $vid && str_starts_with((string) $vid['mime'], 'video/') ? $vid : null;
     $overlay = in_array($d['overlay'] ?? '', ['strong', 'medium', 'gradient'], true) ? $d['overlay'] : 'strong';
     $poster = !empty($d['image']) ? media((string) $d['image']) : null;
-    // Hintergrundvideo (js/hero-video.js von fluid): lädt erst beim Abspielen, spielt nur sichtbar und nie bei „Bewegung
-    // reduzieren“, „Daten sparen“ oder Kontrastmodus – mit Play/Pause-Schalter (fluid_video_toggle(), WCAG 2.2.2).
-    // Ohne JavaScript und beim Bearbeiten: nur das Standbild.
+    // Background video (fluid's js/hero-video.js): loads only on playback, plays only when visible and never with „Bewegung
+    // reduzieren“, „Daten sparen“ or contrast mode – with a play/pause toggle (fluid_video_toggle(), WCAG 2.2.2).
+    // Without JavaScript and while editing: only the still image.
 ?>
 <div class="ncss-hero nv-hero nv-hero--bleed nv-hero--<?= e($overlay) ?>"<?= $vid ? ' data-hero-video-box' : '' ?>>
   <div class="ncss-hero-media" aria-hidden="true">

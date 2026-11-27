@@ -6,8 +6,8 @@ use Attribute;
 use Klxm\Fluid\Routing\RouteSource;
 
 /**
- * Kennzeichnet eine Quelle eigener Adressen ({@see RouteSource}) – gefunden über die
- * Klassenerkennung des Cores, wie #[AsModule] oder #[AsMetaSchema].
+ * Marks a source of custom addresses ({@see RouteSource}) – found via the core's
+ * class discovery, like #[AsModule] or #[AsMetaSchema].
  *
  *     #[AsRouteSource('news', label: 'News')]
  *     #[FromTable('rex_news', page: 12, where: 'status = 1')]
@@ -18,7 +18,7 @@ use Klxm\Fluid\Routing\RouteSource;
 #[Attribute(Attribute::TARGET_CLASS)]
 final readonly class AsRouteSource
 {
-    /** @param non-empty-string $key Kennung der Quelle (Kleinbuchstaben, Ziffern, „-“, „_“, „:“), z. B. 'news' */
+    /** @param non-empty-string $key identifier of the source (lowercase letters, digits, "-", "_", ":"), e.g. 'news' */
     public function __construct(
         public string $key,
         public ?string $label = null,

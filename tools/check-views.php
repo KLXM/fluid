@@ -3,12 +3,12 @@
 use Klxm\Fluid\BlockSelfTest;
 
 /*
- * Prüft die Views der Kits (Blöcke, Seitenrahmen, Fragmente) auf Code hinter einem Zeilenkommentar – ohne REDAXO.
+ * Checks the views of the kits (blocks, page frames, fragments) for code after a line comment – without REDAXO.
  *
  *   php tools/check-views.php
  *
- * Hintergrund: In `<?php $a = 1; // Kommentar $b = 2; ?>` beendet erst `?>` den Kommentar – `$b = 2;` fehlt still. Das
- * gleiche prüft `console fluid:selftest` (Klxm\Fluid\BlockSelfTest). Läuft in der CI bei jedem Push.
+ * Background: in `<?php $a = 1; // Kommentar $b = 2; ?>` only `?>` ends the comment – `$b = 2;` silently goes missing. The
+ * same is checked by `console fluid:selftest` (Klxm\Fluid\BlockSelfTest). Runs in CI on every push.
  */
 
 require dirname(__DIR__) . '/src/BlockSelfTest.php';

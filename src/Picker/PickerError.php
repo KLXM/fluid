@@ -4,5 +4,5 @@ namespace Klxm\Fluid\Picker;
 
 use RuntimeException;
 
-/** Fehler des FrontendPickers: Meldung für die Redaktion, Code = HTTP-Status */
+/** FrontendPicker error: message for editors, code = HTTP status */
 final class PickerError extends RuntimeException {}

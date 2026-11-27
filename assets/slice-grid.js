@@ -1,14 +1,14 @@
 /*
- * Backend, Slice-Liste (Klxm\Fluid\Backend\SliceGrid): Wird ein Block in einer Layout-Spalte bearbeitet oder
- * über „+ Block in Spalte n“ neu angelegt, öffnet das Formular des Cores in einem Dialog über dem Raster – das Raster
- * bleibt nebeneinander stehen. Esc und ✕ wirken wie „Abbrechen“. Ohne Skript bzw. <dialog>: Spalten untereinander.
+ * Backend, slice list (Klxm\Fluid\Backend\SliceGrid): when a block in a layout column is edited or
+ * newly created via „+ Block in Spalte n“, the core form opens in a dialog above the grid – the grid
+ * stays side by side. Esc and ✕ act like „Abbrechen“. Without script or <dialog>: columns stacked.
  */
 (() => {
   /*
-   * Menü „⋯“ an jedem fluid-Block (Kopf des Cores): Verdoppeln, Kopieren, Ausschneiden, Einfügen darunter – Zwischenablage
-   * wie auf der Website (localStorage „fluid-clipboard“, auch seitenübergreifend). Ausschneiden löscht das Original erst
-   * nach dem Einfügen (Backend\BlockOpsApi). Spalten-Blöcke: schwebende Leiste mit Titel-Reiter, „Bearbeiten“ und „⋯“ –
-   * Pfeile zum Verschieben bleiben sichtbar, Status und Löschen des Cores stehen im Menü (verschoben, Rückfrage über data-confirm wie gehabt).
+   * Menu „⋯“ on every fluid block (core header): duplicate, copy, cut, paste below – clipboard
+   * as on the website (localStorage „fluid-clipboard“, also across pages). Cut deletes the original only
+   * after pasting (Backend\BlockOpsApi). Column blocks: floating bar with title tab, „Bearbeiten“ and „⋯“ –
+   * move arrows stay visible, core status and delete are in the menu (moved, confirmation via data-confirm as before).
    */
   const CLIP = 'fluid-clipboard';
   const clip = () => { try { return JSON.parse(localStorage.getItem(CLIP) || 'null'); } catch { return null; } };
@@ -65,7 +65,7 @@
       field('clip', JSON.stringify(c.clip));
       if (c.cut) {
         field('cut', JSON.stringify(c.cut));
-        delete c.cut;   // nach dem Verschieben bleibt der Inhalt als Kopie in der Zwischenablage
+        delete c.cut;   // after moving, the content stays in the clipboard as a copy
         localStorage.setItem(CLIP, JSON.stringify(c));
       }
       document.body.append(f);
@@ -78,7 +78,7 @@
     document.querySelectorAll('.rex-slice-output > .rex-section > .rex-section-header').forEach((h) => {
       if (h.dataset.fluidBar) return;
       const dup = h.querySelector('[data-fluid-op="duplicate"]');
-      if (!dup) return;   // kein fluid-Block
+      if (!dup) return;   // not a fluid block
       h.dataset.fluidBar = '1';
       const slice = dup.dataset.slice;
       const inCol = !!h.closest('.fluid-be-list');
@@ -109,12 +109,12 @@
         a.removeAttribute('title');
         return a;
       };
-      // Zwischenablage-Gruppe
+      // clipboard group
       dup.closest('.rex-button-group')?.remove();
       list.append(asItem(dup), item('Kopieren', 'copy'), item('Ausschneiden', 'cut'), item('Einfügen darunter', 'paste'));
       if (inCol && edit) {
-        // Spalten-Block: übrige Knöpfe des Cores ins Menü
-        // Verschieben bleibt sichtbar (wird oft gebraucht), Status und Löschen ins Menü
+        // column block: remaining core buttons into the menu
+        // move stays visible (often needed), status and delete into the menu
         const arrows = all.filter((a) => a.querySelector('.rex-icon-up, .rex-icon-down'));
         const rest = all.filter((a) => a !== edit && a !== dup && !arrows.includes(a));
         if (rest.length) {
@@ -160,8 +160,8 @@
         else if (e.key === 'ArrowDown') { e.preventDefault(); items[(i + 1) % items.length]?.focus(); }
         else if (e.key === 'ArrowUp') { e.preventDefault(); items[(i - 1 + items.length) % items.length]?.focus(); }
       });
-      // Schließen, wenn der Fokus den Block verlässt – nicht während eines Klicks im Menü (Safari fokussiert Knöpfe beim
-      // Klick nicht, relatedTarget ist dann leer und das Menü wäre vor dem Klick schon zu)
+      // close when focus leaves the block – not during a click in the menu (Safari does not focus buttons on
+      // click, relatedTarget is then empty and the menu would close before the click)
       let pressing = false;
       more.parentElement.addEventListener('pointerdown', () => { pressing = true; });
       document.addEventListener('pointerup', () => { setTimeout(() => { pressing = false; }, 0); });
@@ -174,7 +174,7 @@
       if (e.target.closest?.('.fluid-be-acts')) return;
       document.querySelectorAll('.fluid-be-menu:not([hidden])').forEach((m) => { m.hidden = true; m.previousElementSibling?.setAttribute('aria-expanded', 'false'); });
     });
-    addEventListener('storage', (e) => { if (e.key === CLIP) refreshPaste(); });   // in einem anderen Tab kopiert
+    addEventListener('storage', (e) => { if (e.key === CLIP) refreshPaste(); });   // copied in another tab
     refreshPaste();
   };
 
@@ -186,10 +186,10 @@
     const item = li.closest('.fluid-be-item.is-editing');
     const params = new URL(location.href).searchParams;
     const col = item ? item.closest('.fluid-be-gcol')?.querySelector('.blocks-be-gcol__label')?.textContent.trim() : (params.get('fluid_col') && params.get('function') === 'add' ? 'Spalte ' + params.get('fluid_col') : '');
-    if (!item && !col) return;   // gewöhnlicher Block: Formular bleibt an seiner Stelle
+    if (!item && !col) return;   // ordinary block: the form stays in place
 
     const title = li.querySelector('.rex-section-title')?.textContent.trim() || 'Block';
-    // „Abbrechen“ des Cores: Link zurück zur Sprungmarke des Slices – nie ein Knopf mit API-Aufruf (Status, Löschen …)
+    // core „Abbrechen“: link back to the slice anchor – never a button with an API call (status, delete …)
     const cancel = [...form.querySelectorAll('a[href]')].find((a) => {
       const u = new URL(a.href, location.href);
       return /^#slice\d+$/.test(u.hash) && !u.searchParams.has('function') && !u.searchParams.has('rex-api-call') && !u.searchParams.has('status');
@@ -212,15 +212,15 @@
     dlg.addEventListener('cancel', (e) => { e.preventDefault(); back(); });
 
     if (item) {
-      // Platzhalter in der Spalte, Raster wieder nebeneinander
+      // placeholder in the column, grid side by side again
       const ph = document.createElement('p');
       ph.className = 'fluid-be-placeholder';
       ph.textContent = `„${title}“ wird bearbeitet …`;
       li.closest("ul").before(ph);
       item.closest('.fluid-be-grid')?.removeAttribute('data-editing');
     }
-    // Hintergrund bleibt an der Stelle des Blocks (wie beim Bearbeiten im Core): Die Sprungmarke #slice… der Adresse zeigt
-    // auf das Panel, das in den Dialog wandert – ohne das sprang die Seite an den Anfang
+    // the background stays at the position of the block (as when editing in the core): the anchor #slice… of the address points
+    // to the panel that moves into the dialog – without this the page jumped to the top
     const spot = item || document.querySelector(`.fluid-be-grid .fluid-be-gcol:nth-child(${+params.get('fluid_col') || 1})`) || li.closest('.rex-slice');
     const keep = () => spot?.isConnected && spot.scrollIntoView({ block: 'center' });
     dlg.querySelector('ul').append(li);
@@ -232,9 +232,9 @@
   };
 
   /*
-   * Vorschauen in der Höhe begrenzt (form.css): überlaufende markieren (Ausblenden unten), per Tastatur scrollbar machen
-   * (tabindex, Name) und „Ganze Vorschau“ zum Aufklappen anbieten. Neu prüfen, wenn sich die Größe ändert (Diagramme,
-   * Bilder laden nach).
+   * Previews limited in height (form.css): mark overflowing ones (fade out at the bottom), make them keyboard scrollable
+   * (tabindex, name) and offer „Ganze Vorschau“ to expand. Check again when the size changes (charts,
+   * images loading later).
    */
   const clips = () => {
     const check = (body) => {
@@ -278,9 +278,9 @@
 
 
   /*
-   * Erfolgsmeldungen des Cores in den Spalten eines Layouts („Block eingefügt.“ …) nach kurzer Zeit ausblenden – sie
-   * stehen dort im schmalen Panel des Blocks und verdecken die Vorschau. Fehler und Warnungen bleiben; Blöcke außerhalb
-   * eines Layouts behalten das Verhalten des Cores.
+   * Hide core success messages in the columns of a layout („Block eingefügt.“ …) after a short time – they
+   * sit in the narrow panel of the block and cover the preview. Errors and warnings stay; blocks outside
+   * a layout keep the core behavior.
    */
   const fades = () => {
     document.querySelectorAll('.fluid-be-grid .rex-alert[data-variant="success"], .fluid-be-grid .rex-alert[data-variant="info"]').forEach((el) => {

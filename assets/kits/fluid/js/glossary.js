@@ -1,9 +1,9 @@
 /**
- * Glossar (Klxm\Fluid\Glossary, aus KLXM Studio, MIT) auf der Website – nur auf Seiten mit markierten Begriffen bzw. dem Block „Glossar“.
- *  - Hinweisfenster: <button class="gl-term" popovertarget> öffnet <span class="gl-pop" popover> (Popover-API: Esc, Klick daneben,
- *    Fokus zurück übernimmt der Browser). Hier: aria-expanded, Position am Begriff (schmale Bildschirme: Blatt unten, nur CSS),
- *    Rückfall ohne Popover-API (Klasse is-open, Esc, Klick daneben, Fokus zurück).
- *  - Block „Glossar“: Suchfeld filtert die Liste (Umlaute/Akzente egal), Buchstaben ohne Treffer werden blass.
+ * Glossary (Klxm\Fluid\Glossary, from KLXM Studio, MIT) on the website – only on pages with marked terms or the block „Glossar“.
+ *  - Popup: <button class="gl-term" popovertarget> opens <span class="gl-pop" popover> (Popover API: the browser handles Esc,
+ *    click outside, returning focus). Here: aria-expanded, position at the term (narrow screens: bottom sheet, CSS only),
+ *    fallback without Popover API (class is-open, Esc, click outside, return focus).
+ *  - Block „Glossar“: search field filters the list (umlauts/accents ignored), letters without hits are faded.
  */
 (() => {
   const d = document;
@@ -15,7 +15,7 @@
     const b = ctl(p.id), st = p.style;
     if (!b) return;
     if (matchMedia('(max-width:36em)').matches) {
-      // Blatt unten: Begriff sichtbar halten (darüber), sonst ein Stück scrollen
+      // bottom sheet: keep the term visible (above it), otherwise scroll a bit
       st.left = st.top = st.right = st.bottom = st.margin = '';
       const r = b.getBoundingClientRect(), free = innerHeight - p.offsetHeight - 12;
       if (first && p.offsetHeight && r.bottom > free) scrollBy(0, r.bottom - free);
@@ -41,7 +41,7 @@
   };
 
   if (native) {
-    // Vor dem Zeigen an den Begriff setzen (kein Aufblitzen), danach mit der echten Größe korrigieren
+    // position at the term before showing (no flash), then correct with the real size
     d.addEventListener('beforetoggle', (e) => {
       if (e.newState === 'open' && e.target.classList?.contains('gl-pop')) place(e.target);
     }, true);

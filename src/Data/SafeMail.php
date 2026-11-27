@@ -9,26 +9,26 @@ use Yakamara\YForm\Form\Action\Action;
 use Yakamara\YForm\Form\Action\SendMail;
 use Yakamara\YForm\Form\Action\Submission;
 
-// Nur mit YForm (fluid läuft auch ohne)
+// only with YForm (fluid also runs without it)
 if (!class_exists(Action::class)) {
     return;
 }
 
 /**
- * Mail einer Formular-Aktion (YForm `SendMail`), deren Fehlschlag die Eingabe nicht verwirft.
+ * Mail of a form action (YForm `SendMail`) whose failure does not discard the input.
  *
- * Ohne diese Hülle bricht YForm bei einem Mailfehler alle weiteren Aktionen ab und zeigt „Fehler – bitte später noch
- * einmal“ – obwohl der Eintrag schon gespeichert ist. Besucher schicken dann erneut ab (doppelte Einträge), die
- * Bestätigung fällt aus. Ist der Eintrag gespeichert ($saved), wird der Fehler protokolliert (Systemprotokoll,
- * Aktivität) und die nächste Aktion läuft weiter; ohne gespeicherten Eintrag bleibt es beim Fehler (sonst gingen Daten
- * verloren).
+ * Without this wrapper YForm aborts all further actions on a mail error and shows „Fehler – bitte später noch
+ * einmal“ – although the entry is already saved. Visitors then submit again (duplicate entries), the
+ * confirmation is missing. If the entry is saved ($saved), the error is logged (system log,
+ * activity) and the next action continues; without a saved entry the error stands (otherwise data would
+ * be lost).
  */
 final class SafeMail extends Action
 {
     public const string TEAM = 'team';
     public const string CONFIRM = 'confirm';
 
-    /** @var list<string> In dieser Anfrage gescheiterte Mails (TEAM, CONFIRM) */
+    /** @var list<string> mails that failed in this request (TEAM, CONFIRM) */
     public static array $failed = [];
 
     public function __construct(

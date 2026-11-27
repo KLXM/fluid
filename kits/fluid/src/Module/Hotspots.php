@@ -13,9 +13,9 @@ use Redaxo\Core\Content\AsModule;
 use Redaxo\Core\MediaPool\Media;
 
 /**
- * Interaktives Bild: Bild aus dem Medienpool mit Markierungen (Punkt, Kreis, Rechteck, Fläche) – je Markierung ein
- * Hinweisfenster mit Titel, Text, Link und optional Glossar-Begriff. Datenformat Klxm\Fluid\Hotspots (Version 1, wie
- * KLXM Studio). Ausgabe: views/hotspots.php, Stile css/hotspots.css, Skript js/hotspots.js.
+ * Interactive image: image from the media pool with markers (point, circle, rectangle, area) – per marker a
+ * tooltip with title, text, link and optionally a glossary term. Data format Klxm\Fluid\Hotspots (version 1, like
+ * KLXM Studio). Output: views/hotspots.php, styles css/hotspots.css, script js/hotspots.js.
  */
 #[AsModule('fluid.hotspots', 'Interaktives Bild')]
 #[AsBlock(

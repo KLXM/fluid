@@ -1,13 +1,13 @@
 <?php
 
 /*
- * Prüft, dass Klassen auf Basis optionaler Pakete (YForm) ohne diese Pakete nicht geladen werden – ohne REDAXO.
+ * Checks that classes based on optional packages (YForm) are not loaded without these packages – without REDAXO.
  *
  *   php tools/check-optional.php
  *
- * Hintergrund: Die Klassensuche von REDAXO 6 (`ClassDiscovery`) lädt jede Klasse unter den Addon-Pfaden. Erbt eine
- * davon von einer YForm-Klasse (oder implementiert ein YForm-Interface) und YForm fehlt, bricht z. B. `migrate` mit
- * „Class … not found“ ab. Solche Dateien brauchen vor der Klasse den Guard
+ * Background: the class discovery of REDAXO 6 (`ClassDiscovery`) loads every class below the addon paths. If one
+ * of them extends a YForm class (or implements a YForm interface) and YForm is missing, e.g. `migrate` aborts with
+ * „Class … not found“. Such files need the guard before the class
  *
  *     if (!class_exists(Elternklasse::class)) { return; }
  */
@@ -45,7 +45,7 @@ foreach (['src', 'kits/fluid/src', 'kits/native/src'] as $dir) {
             } elseif (T_STRING === $t[0] && 'class_exists' === $t[1]) {
                 $guarded = true;
             } elseif (in_array($t[0], [T_CLASS, T_INTERFACE, T_ENUM], true) && ($tokens[$i - 1][0] ?? null) !== T_DOUBLE_COLON) {
-                // Namen nach extends/implements bis zur geschweiften Klammer einsammeln
+                // collect names after extends/implements up to the opening brace
                 $parents = [];
                 $resolve = static function (string $p) use ($imports): string {
                     $p = ltrim($p, '\\');
@@ -58,7 +58,7 @@ foreach (['src', 'kits/fluid/src', 'kits/native/src'] as $dir) {
                         $parents[] = $resolve($tokens[$j][1]);
                     }
                 }
-                // Traits im Klassenrumpf (`use Trait;` – fehlt der Trait, bricht das Laden genauso ab)
+                // traits in the class body (`use Trait;` – if the trait is missing, loading aborts just the same)
                 for (; $j < $n; ++$j) {
                     if (is_array($tokens[$j]) && T_USE === $tokens[$j][0]) {
                         for ($k = $j + 1; $k < $n && ';' !== $tokens[$k] && '{' !== $tokens[$k]; ++$k) {

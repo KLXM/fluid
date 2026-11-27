@@ -7,15 +7,15 @@ use Redaxo\Core\Form\Field\TimePicker as CoreTimePicker;
 use Redaxo\Core\View\Renderable;
 
 /**
- * Feld des Cores (`TimePicker`) mit den Ergänzungen von fluid – alle zusätzlichen Parameter sind optional, ohne sie
- * verhält es sich genau wie das Feld des Cores (siehe docs/entwickler.md, „Felder“).
+ * Core field (`TimePicker`) with fluid's additions – all extra parameters are optional; without them
+ * it behaves exactly like the core field (see docs/entwickler.md, „Felder“).
  */
 #[Attribute(Attribute::TARGET_PROPERTY)]
 class TimePicker extends CoreTimePicker implements FluidField
 {
     /**
-     * @param 'half'|null $width fluid: halbe Breite im Formular
-     * @param list<string>|null $variants fluid: nur in diesen Darstellungen des Blocks
+     * @param 'half'|null $width fluid: half width in the form
+     * @param list<string>|null $variants fluid: only in these display variants of the block
      */
     public function __construct(
         string|Renderable $label,

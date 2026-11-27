@@ -1,2 +1,2 @@
-/* NativeCSS components/dropdown.css – nur auf Seiten, die es brauchen (kit.php → assets). Layer wie in ncss.css von NativeCSS. */
+/* NativeCSS components/dropdown.css – only on pages that need it (kit.php → assets). Layer as in NativeCSS's ncss.css. */
 @import url("../ncss/components/dropdown.css") layer(components);

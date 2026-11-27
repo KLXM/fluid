@@ -3,9 +3,9 @@
 use Klxm\Fluid\Block;
 
 /**
- * Reiter (Tabs). Ohne JavaScript: alle Inhalte mit Zwischenüberschrift untereinander. js/tabs.js macht daraus eine
- * Reiterleiste (role=tablist, Pfeiltasten, Pos1/Ende). „Reiter links“: Sidebar-Muster – die Leiste steht links, solange
- * daneben ≥ 60 % Platz bleiben, sonst oben (waagerecht scrollbar).
+ * Tabs. Without JavaScript: all contents stacked with subheadings. js/tabs.js turns them into a
+ * tab bar (role=tablist, arrow keys, Home/End). „Reiter links“: sidebar pattern – the bar is on the left as long as
+ * ≥ 60 % of space remains next to it, otherwise on top (horizontally scrollable).
  * @var Block $b  @var array $d
  */
 $items = array_values(array_filter((array) $d['items'], static fn ($i) => '' !== trim((string) ($i['label'] ?? ''))));

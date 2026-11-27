@@ -7,17 +7,17 @@ use Redaxo\Core\Form\Field\Textarea as CoreTextarea;
 use Redaxo\Core\View\Renderable;
 
 /**
- * Feld des Cores (`Textarea`) mit den Ergänzungen von fluid – alle zusätzlichen Parameter sind optional, ohne sie
- * verhält es sich genau wie das Feld des Cores (siehe docs/entwickler.md, „Felder“).
+ * Core field (`Textarea`) with the additions of fluid – all additional parameters are optional, without them
+ * it behaves exactly like the core field (see docs/entwickler.md, „Felder“).
  */
 #[Attribute(Attribute::TARGET_PROPERTY)]
 class Textarea extends CoreTextarea implements FluidField
 {
     /**
-     * @param 'half'|null $width fluid: halbe Breite im Formular
-     * @param list<string>|null $variants fluid: nur in diesen Darstellungen des Blocks
-     * @param string|null $placeholder fluid: Platzhalter im Eingabefeld
-     * @param bool $search fluid: in den Suchindex aufnehmen
+     * @param 'half'|null $width fluid: half width in the form
+     * @param list<string>|null $variants fluid: only in these displays of the block
+     * @param string|null $placeholder fluid: placeholder in the input field
+     * @param bool $search fluid: include in the search index
      */
     public function __construct(
         string|Renderable $label,

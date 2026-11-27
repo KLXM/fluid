@@ -13,14 +13,14 @@ use function is_file;
 use function Redaxo\Core\View\escape;
 
 /**
- * Style-Editor (aus KLXM Studio, Core\Design): Das Kit erklärt in design.php, was sich einstellen lässt
- * (Gruppen mit Tokens, Schriften, Vorlagen, Dunkel-Modus); daraus entstehen CSS-Variablen und Klassen am <html>.
+ * Style editor (from KLXM Studio, Core\Design): the kit declares in design.php what can be adjusted
+ * (groups with tokens, fonts, presets, dark mode); this yields CSS variables and classes on <html>.
  *
- * Token-Typen: color (#RRGGBB, optional Dunkel-Wert „name@dark“), range (Zahl + unit), choice (options; 'values' → Variable,
- * 'class' → Klasse am <html>), bool ('class' bzw. Variable 1/0), font (Schlüssel aus 'fonts' → Schrift-Stapel).
- * Schriften mit 'fontsource' => id liegen selbst gehostet unter assets/fonts/{id}/font.css (OFL, siehe LICENSE.txt je Schrift).
+ * Token types: color (#RRGGBB, optional dark value "name@dark"), range (number + unit), choice (options; 'values' → variable,
+ * 'class' → class on <html>), bool ('class' or variable 1/0), font (key from 'fonts' → font stack).
+ * Fonts with 'fontsource' => id are self-hosted under assets/fonts/{id}/font.css (OFL, see LICENSE.txt per font).
  *
- * Gespeichert in der Konfiguration des Addons („design.{kit}“), Ausgabe als Datei assets/fluid-design/design-{kit}-{hash}.css.
+ * Stored in the addon's configuration ("design.{kit}"), output as file assets/fluid-design/design-{kit}-{hash}.css.
  */
 final class Design
 {
@@ -58,7 +58,7 @@ final class Design
         return $out;
     }
 
-    /** @return array<string, array<string, mixed>> Schriften mit 'href', wenn selbst gehostet vorhanden */
+    /** @return array<string, array<string, mixed>> Fonts with 'href' if available self-hosted */
     public function fonts(): array
     {
         $fonts = (array) ($this->def()['fonts'] ?? []);
@@ -73,8 +73,8 @@ final class Design
     }
 
     /**
-     * Gespeicherte Werte, ergänzt um Standardwerte. Ein Kit ohne eigene Werte übernimmt die seines Eltern-Kits
-     * (Farben, Schriften …) – so sieht die Website nach dem Wechsel auf ein abgeleitetes Kit nicht plötzlich anders aus.
+     * Stored values, completed with defaults. A kit without own values takes those of its parent kit
+     * (colors, fonts …) – so the website doesn't suddenly look different after switching to a derived kit.
      *
      * @return array<string, mixed>
      */
@@ -102,7 +102,7 @@ final class Design
     }
 
     /**
-     * Eingaben auf erlaubte Werte begrenzen; Unbekanntes fällt weg.
+     * Limit input to allowed values; unknown ones are dropped.
      *
      * @param array<string, mixed> $in
      * @return array<string, mixed>
@@ -150,7 +150,7 @@ final class Design
 
     // ------------------------------------------------------------------ Ausgabe
 
-    /** CSS mit allen Variablen (hell + dunkel) */
+    /** CSS with all variables (light + dark) */
     public function css(?array $values = null): string
     {
         $values ??= $this->values();
@@ -177,8 +177,8 @@ final class Design
         $out = ':root{' . implode(';', $light) . '}';
         $d = (array) ($this->def()['dark'] ?? []);
         if ($dark && !empty($d['scope'])) {
-            // 'attr' (z. B. data-theme): ausdrückliche Wahl der Besucher am <html> schlägt die Geräte-Einstellung –
-            // „light“ nimmt das dunkle Schema zurück, „dark“ erzwingt es (Kit „NativeCSS“, <ncss-preferences>)
+            // 'attr' (e.g. data-theme): the visitor's explicit choice on <html> beats the device setting –
+            // "light" reverts the dark scheme, "dark" forces it (kit „NativeCSS“, <ncss-preferences>)
             $attr = (string) ($d['attr'] ?? '');
             $scope = (string) $d['scope'] . ('' !== $attr && !empty($d['media']) ? ':not([' . $attr . '="light"])' : '');
             $rule = $scope . '{' . implode(';', $dark) . '}';
@@ -191,7 +191,7 @@ final class Design
         return $out . "\n";
     }
 
-    /** Klassen für <html> aus choice-/bool-Werten mit 'class' */
+    /** Classes for <html> from choice/bool values with 'class' */
     public function classes(?array $values = null): string
     {
         $values ??= $this->values();
@@ -213,7 +213,7 @@ final class Design
         return implode(' ', $out);
     }
 
-    /** @return list<string> Adressen der Schriftdateien (font.css) der gewählten Schriften */
+    /** @return list<string> URLs of the font files (font.css) of the chosen fonts */
     public function fontLinks(?array $values = null): array
     {
         $values ??= $this->values();
@@ -228,11 +228,11 @@ final class Design
         return array_values(array_unique($out));
     }
 
-    /** Öffentliche CSS-Datei der Werte → URL (null = Standardwerte des Kits, keine Datei nötig) */
+    /** Public CSS file of the values → URL (null = kit defaults, no file needed) */
     public function fileUrl(bool $force = false): ?string
     {
-        // Standardwerte des Kits fluid stehen schon in dessen Grund-CSS; abgeleitete Kits haben eigene und brauchen die Datei immer.
-        // $force: trotzdem ausgeben – z. B. für die dunklen Werte bei data-theme="dark" (Darstellungs-Knopf für Besucher)
+        // The defaults of the kit fluid are already in its base CSS; derived kits have their own and always need the file.
+        // $force: output anyway – e.g. for the dark values with data-theme="dark" (appearance button for visitors)
         if (!$force && Kit::DEFAULT === $this->kit->key() && $this->values() == $this->defaults()) {
             return null;
         }
@@ -249,7 +249,7 @@ final class Design
         return Url::assets('fluid-design/' . $name);
     }
 
-    /** <link>-Tags: Schriften + Design-Variablen (nach dem CSS des Kits einbinden) */
+    /** <link> tags: fonts + design variables (include after the kit's CSS) */
     public function head(bool $force = false): string
     {
         $h = '';
@@ -269,7 +269,7 @@ final class Design
         self::$values[$this->kit->key()] = $clean;
     }
 
-    /** Definition für den Editor (Gruppen, Schriften, Vorlagen) – JSON-tauglich */
+    /** Definition for the editor (groups, fonts, presets) – JSON-ready */
     public function schema(): array
     {
         $def = $this->def();
@@ -285,7 +285,7 @@ final class Design
     }
 
     /**
-     * Kontrastprüfungen (WCAG) für Tokens mit 'contrast' => ['with' => Farbe|Token, 'min' => 4.5].
+     * Contrast checks (WCAG) for tokens with 'contrast' => ['with' => color|token, 'min' => 4.5].
      *
      * @return list<array{token: string, mode: string, ratio: float, min: float, ok: bool}>
      */
@@ -321,7 +321,7 @@ final class Design
         return $out;
     }
 
-    /** Kontrast nach WCAG 2.x (1–21) */
+    /** Contrast according to WCAG 2.x (1–21) */
     public static function contrast(string $a, string $b): float
     {
         $l = static function (string $hex): float {

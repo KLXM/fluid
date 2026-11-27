@@ -1,8 +1,8 @@
 <?php
 /**
- * Beiträge eines Blogs: cards · list · featured (erster Beitrag groß, Rest als Karten). Blättern über ?seite=2,
- * Filter über ?tag=slug. Markup der Karten wie die Datenliste (css/data.css), Zusätze in css/b-posts.css.
- * Im Bearbeiten-Modus: „+ Neuer Beitrag“ (legt eine Seite im Blog an) und Entwürfe/offline-Beiträge sichtbar.
+ * Posts of a blog: cards · list · featured (first post large, the rest as cards). Pagination via ?seite=2,
+ * filter via ?tag=slug. Card markup like the data list (css/data.css), additions in css/b-posts.css.
+ * In edit mode: „+ Neuer Beitrag“ (creates a page in the blog) and drafts/offline posts visible.
  * @var Block $b  @var array $d
  */
 use Klxm\Fluid\Block;
@@ -31,7 +31,7 @@ $res = Blog::posts($blog, ['limit' => $limit, 'offset' => ($page - 1) * $limit, 
 $here = Url::article($b->articleId, Language::getCurrentId());
 $q = static fn (array $p) => $here . ([] !== ($p = array_filter($p)) ? '?' . http_build_query($p) : '') . '#' . $b->domId();
 $cols = ['s' => 4, 'm' => 3, 'l' => 2][$d['size'] ?? 'm'] ?? 3;
-// erster Block der Seite: Hauptüberschrift (ohne eigene Überschrift = Seitenname)
+// first block of the page: main heading (without own heading = page name)
 $top = null === $b->prev;
 $pageH1 = $top && '' === trim((string) ($d['title'] ?? '')) ? '<h1 class="h1 dl-head">' . e(Article::getCurrent()?->name ?? '') . '</h1>' : '';
 $hTag = !$top && '' !== trim((string) ($d['title'] ?? '')) ? 'h3' : 'h2';
@@ -49,7 +49,7 @@ $card = static function ($p, string $sizes) use ($hTag) {
         . '</div></li>';
 };
 $pages = (int) ceil($res['total'] / $limit);
-// Filtern und Blättern ohne Seitenwechsel (Live::region – Links mit data-live-nav, ohne JavaScript normale Links)
+// Filter and paginate without a page change (Live::region – links with data-live-nav, normal links without JavaScript)
 $reload = ($pager && $pages > 1) || !empty($d['tags']) ? Live::region($b) : '';
 ?>
 <div class="wrap dl dl--<?= e('list' === $layout ? 'list' : 'cards') ?> posts posts--<?= e($layout) ?>"<?= $reload ?>>

@@ -14,10 +14,10 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use function count;
 
 /**
- * Aktualisiert NativeCSS im Kit „NativeCSS“ (kits/native/assets/ncss) aus einer Arbeitskopie (--from) oder einem
- * Release/Tag von GitHub (--tag) – zeigt vorher, was sich ändert. Für die Arbeit an fluid: Im installierten Projekt
- * liegt das Kit unter vendor/ (Composer überschreibt es beim nächsten Update), deshalb mit --target in die
- * Arbeitskopie von fluid schreiben oder `php tools/ncss-update.php` im Repo von fluid nutzen.
+ * Updates NativeCSS in the kit „NativeCSS“ (kits/native/assets/ncss) from a working copy (--from) or a GitHub
+ * release/tag (--tag) – shows beforehand what changes. For working on fluid: in the installed project the kit lives
+ * under vendor/ (Composer overwrites it on the next update), so write into fluid's working copy with --target or
+ * use `php tools/ncss-update.php` in fluid's repo.
  */
 #[AsCommand(name: 'fluid:kit:ncss-update', description: 'Aktualisiert NativeCSS im Kit „NativeCSS“ aus einer Arbeitskopie (--from) oder von GitHub (--tag)')]
 final class NcssUpdateCommand extends AbstractCommand

@@ -41,38 +41,38 @@ use const JSON_UNESCAPED_SLASHES;
 use const JSON_UNESCAPED_UNICODE;
 
 /**
- * Interaktives Bild: Markierungen (Hotspots) auf einem Bild des Medienpools – Grundlage für den Block „Interaktives Bild“
- * (fluid.hotspots), das Feld „Markierungen“ (Field\Hotspots, Marker-Editor in der Seitenleiste) und externe Editoren
- * (Extension Point FLUID_HOTSPOT_EDITORS). Übernommen aus KLXM Studio (Core\Hotspots, MIT) – das Datenformat ist dasselbe,
- * damit Markierungen zwischen Studio und fluid austauschbar bleiben.
+ * Interactive image: markers (hotspots) on a media pool image – basis for the block „Interaktives Bild“
+ * (fluid.hotspots), the field „Markierungen“ (Field\Hotspots, marker editor in the sidebar) and external editors
+ * (extension point FLUID_HOTSPOT_EDITORS). Taken from KLXM Studio (Core\Hotspots, MIT) – the data format is the same,
+ * so that markers stay interchangeable between Studio and fluid.
  *
- * Datenformat, Version 1 (gespeichert als JSON; Koordinaten in Prozent der Bildbreite bzw. -höhe, 0–100, zwei Nachkommastellen):
+ * Data format, version 1 (stored as JSON; coordinates in percent of image width or height, 0–100, two decimals):
  *
  *   {"v": 1, "items": [
- *     {"id": "h1", "shape": "point",  "x": 12.5, "y": 40,                 …Inhalt},
- *     {"id": "h2", "shape": "circle", "x": 50, "y": 50, "r": 8,            …},   r = Radius in % der Bildbreite
- *     {"id": "h3", "shape": "rect",   "x": 10, "y": 60, "w": 20, "h": 15,  …},   x/y = linke obere Ecke
- *     {"id": "h4", "shape": "poly",   "points": [[10, 10], [30, 12], [20, 30]], …}   3–64 Punkte
+ *     {"id": "h1", "shape": "point",  "x": 12.5, "y": 40,                 …content},
+ *     {"id": "h2", "shape": "circle", "x": 50, "y": 50, "r": 8,            …},   r = radius in % of the image width
+ *     {"id": "h3", "shape": "rect",   "x": 10, "y": 60, "w": 20, "h": 15,  …},   x/y = top left corner
+ *     {"id": "h4", "shape": "poly",   "points": [[10, 10], [30, 12], [20, 30]], …}   3–64 points
  *   ]}
- *   Inhalt je Markierung: "title" (Klartext), "text" (Rich-Text ohne Bilder), "link" (Link wie im Feld „Link“: redaxo://12,
- *   https://…, #anker), "link_label", "term" (Slug oder Begriff des Glossars – Glossary\Glossary antwortet über FLUID_HOTSPOT_TERM, ein
- *   AddOn kann eine andere Quelle liefern), "icon" (Symbol statt der Nummer, leer = Nummer).
+ *   Content per marker: "title" (plain text), "text" (rich text without images), "link" (link as in the field „Link“: redaxo://12,
+ *   https://…, #anchor), "link_label", "term" (slug or term of the glossary – Glossary\Glossary answers via FLUID_HOTSPOT_TERM, an
+ *   AddOn can provide another source), "icon" (icon instead of the number, empty = number).
  *
- * Die Reihenfolge der Liste ist die Nummer (1, 2, 3 …), die Tab-Reihenfolge und die Reihenfolge der Liste unter dem Bild.
- * Flächen (circle/rect/poly) erscheinen als SVG über dem Bild; ihr Knopf mit der Nummer sitzt im Mittelpunkt (anchor()).
- * normalize() nimmt das Format, eine bloße Liste, Formularzeilen (points als „x,y x,y …“) und JSON an – Unbekanntes fällt weg.
+ * The order of the list is the number (1, 2, 3 …), the tab order and the order of the list below the image.
+ * Areas (circle/rect/poly) appear as SVG over the image; their numbered button sits at the center (anchor()).
+ * normalize() accepts the format, a plain list, form rows (points as „x,y x,y …“) and JSON – anything unknown is dropped.
  */
 final class Hotspots
 {
     public const int VERSION = 1;
     public const array SHAPES = ['point', 'circle', 'rect', 'poly'];
-    /** Höchstzahl der Markierungen je Bild und der Punkte einer Fläche */
+    /** Maximum number of markers per image and of points of an area */
     public const int MAX = 60;
     public const int MAX_POINTS = 64;
 
     private static int $n = 0;
 
-    // ================================================================= Datenformat
+    // ================================================================= data format
 
     /** @return array{v: int, items: list<array<string, mixed>>} */
     public static function empty(): array
@@ -81,7 +81,7 @@ final class Hotspots
     }
 
     /**
-     * Beliebige Eingabe → Format Version 1 (bereinigt). JSON-Text, {v, items}, Liste von Markierungen oder Formularzeilen.
+     * Any input → format version 1 (sanitized). JSON text, {v, items}, list of markers or form rows.
      *
      * @return array{v: int, items: list<array<string, mixed>>}
      */
@@ -104,7 +104,7 @@ final class Hotspots
             if (null === $h) {
                 continue;
             }
-            // Kennung je Bild eindeutig (externe Editoren ordnen darüber zu); fehlt sie, entsteht sie aus der Position
+            // ID unique per image (external editors match by it); if missing, it is derived from the position
             $base = '' !== $h['id'] ? $h['id'] : 'h' . (count($items) + 1);
             $id = $base;
             for ($k = 2; isset($ids[$id]); ++$k) {
@@ -119,7 +119,7 @@ final class Hotspots
     }
 
     /**
-     * Eine Markierung bereinigen – null, wenn sie keine gültige Lage hat.
+     * Sanitize one marker – null if it has no valid position.
      *
      * @param array<array-key, mixed> $it
      * @return array<string, mixed>|null
@@ -132,7 +132,7 @@ final class Hotspots
         if ('poly' === $shape) {
             $pts = self::points($it['points'] ?? []);
             if (count($pts) < 3) {
-                // Zu wenige Punkte: als Punkt an der angegebenen Lage behalten (nichts geht beim Umschalten verloren)
+                // too few points: keep as a point at the given position (nothing is lost when switching)
                 if (!is_numeric($it['x'] ?? null) || !is_numeric($it['y'] ?? null)) {
                     return null;
                 }
@@ -176,7 +176,7 @@ final class Hotspots
     }
 
     /**
-     * Punkte einer Fläche: [[x, y], …], [{x, y}, …] oder Text „x,y x,y …“ (auch mit Semikolon/Zeilenumbruch getrennt).
+     * Points of an area: [[x, y], …], [{x, y}, …] or text „x,y x,y …“ (also separated by semicolon/line break).
      *
      * @return list<array{0: float, 1: float}>
      */
@@ -201,7 +201,7 @@ final class Hotspots
         return $out;
     }
 
-    /** @param list<array{0: float, 1: float}> $pts Punkte als Text für das Formular („12.5,40 20,30 …“) */
+    /** @param list<array{0: float, 1: float}> $pts points as text for the form („12.5,40 20,30 …“) */
     public static function pointsText(array $pts): string
     {
         return implode(' ', array_map(static fn (array $p) => self::fmt((float) $p[0]) . ',' . self::fmt((float) $p[1]), $pts));
@@ -213,7 +213,7 @@ final class Hotspots
     }
 
     /**
-     * Mittelpunkt einer Markierung (dort sitzt der Knopf mit der Nummer).
+     * Center of a marker (where the numbered button sits).
      *
      * @param array<string, mixed> $h
      * @return array{0: float, 1: float} in %
@@ -228,7 +228,7 @@ final class Hotspots
     }
 
     /**
-     * Schwerpunkt eines Vielecks (bei entarteten Flächen der Mittelwert der Punkte).
+     * Centroid of a polygon (for degenerate areas the mean of the points).
      *
      * @param list<array{0: float, 1: float}> $pts
      * @return array{0: float, 1: float}
@@ -252,10 +252,10 @@ final class Hotspots
         return [round($cx / (3 * $a), 2), round($cy / (3 * $a), 2)];
     }
 
-    // ================================================================= Formular (Feld „Markierungen“)
+    // ================================================================= form (field „Markierungen“)
 
     /**
-     * Felder einer Zeile im Formular (Wiederholgruppe unter dem Marker-Editor, FieldForm).
+     * Fields of a row in the form (repeater below the marker editor, FieldForm).
      *
      * @return list<array<string, mixed>>
      */
@@ -283,7 +283,7 @@ final class Hotspots
         ];
     }
 
-    /** Formularzeilen (Wiederholgruppe) oder Format → Format */
+    /** Form rows (repeater) or format → format */
     public static function fromForm(mixed $raw): array
     {
         if (is_string($raw) || (is_array($raw) && isset($raw['v']))) {
@@ -294,7 +294,7 @@ final class Hotspots
             if (!is_array($row)) {
                 continue;
             }
-            // Neue Zeile ohne Lage (Knopf „+ Markierung“), aber mit Inhalt: in die Bildmitte statt verwerfen
+            // new row without a position (button „+ Markierung“) but with content: place it in the image center instead of dropping it
             $content = '' !== trim((string) ($row['title'] ?? '')) || '' !== trim(strip_tags((string) ($row['text'] ?? ''))) || '' !== trim((string) ($row['term'] ?? ''));
             if ($content && (!is_numeric($row['x'] ?? null) || !is_numeric($row['y'] ?? null)) && 'poly' !== ($row['shape'] ?? '')) {
                 $row['x'] = is_numeric($row['x'] ?? null) ? $row['x'] : 50;
@@ -307,7 +307,7 @@ final class Hotspots
     }
 
     /**
-     * Format → Zeilen für das Formular (points als Text, x/y einer Fläche = Mittelpunkt).
+     * Format → rows for the form (points as text, x/y of an area = center).
      *
      * @return list<array<string, mixed>>
      */
@@ -326,14 +326,14 @@ final class Hotspots
     }
 
     /**
-     * Weitere Editoren (Knopf „Im … öffnen“ über den Markierungen), z. B. ein Grafik-Editor eines AddOns. Extension Point
-     * FLUID_HOTSPOT_EDITORS: Liste von ['url' => Seite (gleiche Herkunft, „/…“), 'label' => Knopf, 'title' => Tooltip].
-     * Die Seite öffnet eingebettet mit ?format=hotspots&media={Dateiname}&embed=1 und spricht per postMessage (gleiche Herkunft):
-     *   Editor → Feld {source: 'klxm-hotspot-editor', type: 'ready'}  → Feld antwortet {source: 'klxm-hotspots', type: 'init',
+     * Further editors (button „Im … öffnen“ above the markers), e.g. a graphics editor of an AddOn. Extension point
+     * FLUID_HOTSPOT_EDITORS: list of ['url' => page (same origin, „/…“), 'label' => button, 'title' => tooltip].
+     * The page opens embedded with ?format=hotspots&media={file name}&embed=1 and talks via postMessage (same origin):
+     *   editor → field {source: 'klxm-hotspot-editor', type: 'ready'}  → field answers {source: 'klxm-hotspots', type: 'init',
      *     v: 1, data: {v: 1, items: […]}, media: {file, url, width, height}}
-     *   Editor → Feld {source: 'klxm-hotspot-editor', type: 'apply', data: {v: 1, items: […]}, close?: true}
-     *   Editor → Feld {source: 'klxm-hotspot-editor', type: 'close'}
-     * Dasselbe Protokoll wie in KLXM Studio (Extension::hotspotEditor) – ein Editor kann beide bedienen.
+     *   editor → field {source: 'klxm-hotspot-editor', type: 'apply', data: {v: 1, items: […]}, close?: true}
+     *   editor → field {source: 'klxm-hotspot-editor', type: 'close'}
+     * The same protocol as in KLXM Studio (Extension::hotspotEditor) – one editor can serve both.
      *
      * @return list<array{url: string, label: string, title: string}>
      */
@@ -353,13 +353,13 @@ final class Hotspots
         return $out;
     }
 
-    // ================================================================= Ausgabe auf der Website
+    // ================================================================= output on the website
 
     /**
-     * Interaktives Bild: Bild mit nummerierten Knöpfen; jeder öffnet ein Hinweisfenster (<button popovertarget> + <div popover>,
-     * ohne Inline-Skripte und -Stile – Lage über Klassen x0–x100/y0–y100, genau per CSSOM in js/hotspots.js). Flächen als SVG.
-     * Darunter die Liste aller Markierungen (Nummer, Titel, Text): auf schmalen Flächen sichtbar, sonst für Screenreader
-     * ($o['list'] = 'always' immer sichtbar). $o: label (Name), id (Präfix der IDs), sizes, list, eager. Leer ohne Bild.
+     * Interactive image: image with numbered buttons; each opens a popup (<button popovertarget> + <div popover>,
+     * without inline scripts and styles – position via classes x0–x100/y0–y100, exact via CSSOM in js/hotspots.js). Areas as SVG.
+     * Below, the list of all markers (number, title, text): visible on narrow screens, otherwise for screen readers
+     * ($o['list'] = 'always' always visible). $o: label (name), id (ID prefix), sizes, list, eager. Empty without an image.
      *
      * @param array<string, mixed> $o
      */
@@ -378,7 +378,7 @@ final class Hotspots
         }
         $terms = [];
         foreach (array_filter(array_column($items, 'term')) as $key) {
-            // Glossar-AddOn: ['term' => Begriff, 'short' => Kurz-Erklärung, 'url' => Seite] oder null
+            // glossary AddOn: ['term' => term, 'short' => short explanation, 'url' => page] or null
             $t = Extension::dispatch(new ExtensionPoint('FLUID_HOTSPOT_TERM', null, ['key' => $key]));
             if (is_array($t) && '' !== trim((string) ($t['term'] ?? ''))) {
                 $terms[$key] = ['term' => (string) $t['term'], 'short' => (string) ($t['short'] ?? ''), 'url' => (string) ($t['url'] ?? '')];
@@ -422,7 +422,7 @@ final class Hotspots
     }
 
     /**
-     * Titel und Inhalt eines Hinweisfensters (Text, Glossar, Link).
+     * Title and content of a popup (text, glossary, link).
      *
      * @param array<string, mixed> $h
      * @param array<string, array{term: string, short: string, url: string}> $terms
@@ -437,7 +437,7 @@ final class Hotspots
             $body .= '<div class="cms-hs__text">' . RichText::html($h['text']) . '</div>';
         }
         if (null !== $t) {
-            // Kurz-Erklärung: ohne eigenen Text als Inhalt, sonst darunter mit dem Begriff davor
+            // short explanation: as content without own text, otherwise below it, preceded by the term
             if ('' !== $t['short']) {
                 $dfn = '' !== $h['text'] || $title !== $t['term'] ? '<dfn class="cms-hs__dfn">' . escape($t['term']) . '</dfn>: ' : '';
                 $body .= '<p class="cms-hs__gl">' . $dfn . escape($t['short']) . '</p>';
@@ -455,7 +455,7 @@ final class Hotspots
         return ['title' => $title, 'body' => $body];
     }
 
-    /** @param array<string, mixed> $h Fläche als SVG-Form (Koordinaten im Pixelraster des Bildes, viewBox = Bildgröße) */
+    /** @param array<string, mixed> $h area as SVG shape (coordinates in the pixel grid of the image, viewBox = image size) */
     private static function svgShape(array $h, int $n, int $w, int $hgt): string
     {
         $px = static fn (float $v): string => self::fmt($v * $w / 100);
@@ -470,13 +470,13 @@ final class Hotspots
         };
     }
 
-    /** Für Selbsttests: Zähler zurücksetzen */
+    /** For self tests: reset the counter */
     public static function reset(): void
     {
         self::$n = 0;
     }
 
-    /** Daten als JSON (Format v1) – z. B. für den Austausch mit KLXM Studio */
+    /** Data as JSON (format v1) – e.g. for exchange with KLXM Studio */
     public static function json(mixed $data): string
     {
         return (string) json_encode(self::normalize($data), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);

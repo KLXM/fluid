@@ -1,5 +1,5 @@
-/* Bildergalerie, Slider und Lightbox des Kits fluid (aus KLXM Studio, media.css). Farben aus dem Kit: --f-a (Akzent),
-   --f-surface, --f-line, --f-muted, Radius --f-r-l. Skript: js/media.js (Lightbox, Slider nach WAI-ARIA „Carousel“). */
+/* Image gallery, slider and lightbox of the kit fluid (from KLXM Studio, media.css). Colors from the kit: --f-a (accent),
+   --f-surface, --f-line, --f-muted, radius --f-r-l. Script: js/media.js (lightbox, slider following WAI-ARIA "Carousel"). */
 .cms-gallery,.cms-slider{--cms-accent:var(--f-a);--cms-radius:var(--f-r-l,12px);--cms-surface:var(--f-surface);--cms-line:var(--f-line);--cms-muted:var(--f-muted);--cms-card-bg:var(--f-bg,#fff);--cms-card-ink:var(--f-ink,#111)}
 .cms-gallery,.cms-slider{--_r:var(--cms-radius,12px);--_accent:var(--cms-accent,currentColor)}
 .cms-empty-hint{padding:24px;border:1px dashed currentColor;border-radius:8px;opacity:.7}
@@ -27,7 +27,7 @@ a.cms-gallery__link:focus-visible{outline:3px solid var(--_accent);outline-offse
 .cms-gallery--justified .cms-gallery__link{aspect-ratio:calc(var(--ar) / 10)}
 .cms-gallery--masonry{columns:var(--cols);column-gap:var(--_gap)}
 .cms-gallery--masonry .cms-gallery__item{break-inside:avoid;margin-bottom:var(--_gap)}
-/* Zeilen: flex-grow proportional zum Seitenverhältnis → gleiche Höhe je Zeile */
+/* rows: flex-grow proportional to the aspect ratio → equal height per row */
 .cms-gallery--justified{--row:260px;display:flex;flex-wrap:wrap;gap:var(--_gap)}
 .cms-gallery--justified::after{content:"";flex-grow:999}
 .cms-gallery--justified .cms-gallery__item{flex:var(--ar) 1 calc(var(--ar) * var(--row) / 10);min-width:0}
@@ -76,7 +76,7 @@ html:has(.cms-lb[open]){overflow:hidden}
 .cms-slider--h-4-3 .cms-slide{aspect-ratio:4/3}
 .cms-slider--h-screen .cms-slide{aspect-ratio:auto;height:100vh;height:100svh}
 .cms-slide__media{position:absolute;inset:0}
-.cms-slide__media picture{display:block;width:100%;height:100%}   /* <picture> ist inline – sonst füllt das Bild die Folie nicht */
+.cms-slide__media picture{display:block;width:100%;height:100%}   /* <picture> is inline – otherwise the image doesn't fill the slide */
 .cms-slide__media img{display:block;width:100%;height:100%;max-width:none;object-fit:cover}
 .cms-slide::before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none}
 .cms-slide--ov-dark::before{background:linear-gradient(0deg,rgba(0,0,0,.74),rgba(0,0,0,.28) 55%,rgba(0,0,0,.06))}
@@ -102,7 +102,7 @@ html:has(.cms-lb[open]){overflow:hidden}
 .cms-slider__nav[hidden]{display:none}
 .cms-slider__arrow,.cms-slider__play{display:grid;place-items:center;width:44px;height:44px;padding:0;border-radius:50%;cursor:pointer;transition:background .2s,color .2s,border-color .2s}
 .cms-slider__arrow{border:1px solid var(--cms-line,rgba(128,128,128,.4));background:var(--cms-card-bg,transparent);color:inherit}
-.cms-slider__arrow:hover{border-color:var(--_accent);background:color-mix(in srgb,var(--_accent) 16%,transparent);color:inherit}   /* ohne Kit-Akzent ist --_accent = currentColor – gefüllte Fläche + #fff wäre im Dunkeln unsichtbar */
+.cms-slider__arrow:hover{border-color:var(--_accent);background:color-mix(in srgb,var(--_accent) 16%,transparent);color:inherit}   /* without kit accent --_accent is currentColor – a filled area + #fff would be invisible in the dark */
 .cms-slider__arrow[aria-disabled=true]{opacity:.4;pointer-events:none}
 .cms-slider__arrow svg,.cms-slider__play svg{fill:currentColor}
 .cms-slider__dots{display:flex;flex-wrap:wrap;justify-content:center;margin-inline:8px}
@@ -117,7 +117,7 @@ html:has(.cms-lb[open]){overflow:hidden}
 .cms-slider.is-paused .cms-slider__ico-play{display:block}
 :is(.cms-slider__arrow,.cms-slider__dot,.cms-slider__play):focus-visible{outline:3px solid var(--_accent);outline-offset:2px}
 .cms-slider__play:focus-visible{outline-color:#fff}
-/* Überblenden (mit JS) */
+/* crossfade (with JS) */
 .cms-slider--fade.is-js .cms-slider__track{display:grid;overflow:hidden;scroll-snap-type:none}
 .cms-slider--fade.is-js .cms-slide{grid-area:1/1;opacity:0;visibility:hidden;transition:opacity .7s,visibility 0s .7s}
 .cms-slider--fade.is-js .cms-slide.is-current{opacity:1;visibility:visible;transition:opacity .7s}
@@ -132,9 +132,9 @@ html:has(.cms-lb[open]){overflow:hidden}
   .cms-gallery__link img,.cms-slide,.cms-slider__dot::before{transition:none!important}
   .cms-lb__img{animation:none}
 }
-/* Hervorhebung (*Wort*) auf abgedunkeltem bzw. unverändertem Bild: Schriftfarbe statt Akzent (Kontrast), betont durch Unterstreichung */
+/* emphasis (*word*) on a darkened or unchanged image: text color instead of accent (contrast), stressed by underline */
 :is(.cms-slide--ov-dark,.cms-slide--ov-none) .cms-slide__title .hl{color:inherit;text-decoration:underline;text-decoration-color:var(--f-a,currentColor);text-decoration-thickness:.08em;text-underline-offset:.12em}
-/* Galerie mit genau einem Bild (cms-gallery--single, Feld single_size): „groß“ volle Inhaltsbreite im Originalformat, hohe Bilder
-   höchstens 85 % der Fensterhöhe, dann mittig; „mittel“ höchstens 44 rem breit */
+/* Gallery with exactly one image (cms-gallery--single, field single_size): „groß“ full content width in original format, tall images
+   at most 85 % of the window height, then centered; „mittel“ at most 44 rem wide */
 .cms-gallery--single{max-width:min(100%,calc(85vh * var(--ar,13) / 10));margin-inline:auto}
 .cms-gallery--single-medium{max-width:min(100%,44rem,calc(85vh * var(--ar,13) / 10))}

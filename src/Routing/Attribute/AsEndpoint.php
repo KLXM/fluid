@@ -5,13 +5,13 @@ namespace Klxm\Fluid\Routing\Attribute;
 use Attribute;
 
 /**
- * Eigene Adresse, die vor den Seiten beantwortet wird – an einer statischen Methode
- * `fn (string $path, string $rest): void`, die die Anfrage selbst beendet (sonst geht es mit den Seiten weiter).
+ * Custom URL answered before the pages – on a static method
+ * `fn (string $path, string $rest): void` that ends the request itself (otherwise it continues with the pages).
  *
- *     #[AsEndpoint('/feed.json')]            genau dieser Pfad
- *     #[AsEndpoint('/proxy/*')]              Präfix, der Rest kommt als $rest
- *     #[AsEndpoint('/mcp', param: 'mcp')]    Pfad oder Parameter ?mcp=…
- *     #[AsEndpoint('/live', early: true)]    noch vor der Umleitung von Alias-Domains (Dienste wie SSE)
+ *     #[AsEndpoint('/feed.json')]            exactly this path
+ *     #[AsEndpoint('/proxy/*')]              prefix, the rest comes as $rest
+ *     #[AsEndpoint('/mcp', param: 'mcp')]    path or parameter ?mcp=…
+ *     #[AsEndpoint('/live', early: true)]    even before the redirect of alias domains (services like SSE)
  */
 #[Attribute(Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
 final readonly class AsEndpoint

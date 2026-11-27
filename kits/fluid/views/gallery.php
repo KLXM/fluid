@@ -4,8 +4,8 @@ use Klxm\Meta\Alt;
 use Redaxo\Core\MediaPool\Media;
 
 /**
- * Bildergalerie: grid (gleiches Format) · masonry (Spalten, Originalformat) · justified (bündige Zeilen). Lightbox über
- * js/media.js – ohne JavaScript führen die Bilder als Links zur großen Fassung. @var \Klxm\Fluid\Block $b  @var array $d.
+ * Image gallery: grid (same ratio) · masonry (columns, original ratio) · justified (flush rows). Lightbox via
+ * js/media.js – without JavaScript the images link to the large version. @var \Klxm\Fluid\Block $b  @var array $d.
  */
 $layout = in_array($b->variant(), ['grid', 'masonry', 'justified'], true) ? $b->variant() : 'grid';
 $cols = in_array((string) ($d['columns'] ?? ''), ['2', '3', '4', '5'], true) ? (string) $d['columns'] : '3';
@@ -28,8 +28,8 @@ if ('justified' === $layout) {
     $sizes = '(min-width: 860px) 40vw, 100vw';
 }
 $r = 'r-' . str_replace(':', '-', $ratio);
-// Genau ein Bild: Größe wählt die Redaktion – wie die Galerie (eine Spalte), mittel oder groß im Originalformat
-// (Standard „groß“ für neue Blöcke; bestehende behalten „wie die Galerie“ über DefaultChanges)
+// exactly one image: editors choose the size – like the gallery (one column), medium or large in the original ratio
+// (default „groß“ for new blocks; existing ones keep „wie die Galerie“ via DefaultChanges)
 $singleSize = in_array($d['single_size'] ?? '', ['grid', 'medium', 'large'], true) ? $d['single_size'] : 'grid';
 $single = 1 === count($items) && 'grid' !== $singleSize;
 ?>

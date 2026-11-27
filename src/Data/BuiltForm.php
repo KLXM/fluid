@@ -31,15 +31,15 @@ if (!class_exists(FormDefinition::class)) {
 }
 
 /**
- * Formular, das die Redaktion im Block „Formular“ auf der Website zusammenstellt („Eigenes Formular“).
+ * Form that editors put together in the block „Formular“ on the website („Eigenes Formular“).
  *
- * Eine YForm-Formulardefinition wie jede #[AsForm]-Klasse – nur kommen Felder, Schritte und Aktionen aus dem Block
- * statt aus Code. Absenden, Prüfung, CSRF, Honigtopf, Aktionen (SaveRecord, SendMail, Redirect) und der EP
- * YFORM_FORM_SUBMITTED laufen über YForm (FormDefinition::run). Schritte = Reiter des YForm-Layouts; das Kit zeigt sie
- * als Schritte mit „Weiter/Zurück“, Fehler der Server-Prüfung öffnen den richtigen Schritt (Form::activeTab).
+ * A YForm form definition like any #[AsForm] class – only the fields, steps and actions come from the block
+ * instead of code. Submit, validation, CSRF, honeypot, actions (SaveRecord, SendMail, Redirect) and the EP
+ * YFORM_FORM_SUBMITTED run via YForm (FormDefinition::run). Steps = tabs of the YForm layout; the kit shows them
+ * as steps with „Weiter/Zurück“, server validation errors open the right step (Form::activeTab).
  *
- * Feldtypen: text, email, tel, url, textarea, number, date, select, radio, checkboxes, checkbox (Zustimmung),
- * info (Hinweistext), step (neuer Schritt mit Titel).
+ * Field types: text, email, tel, url, textarea, number, date, select, radio, checkboxes, checkbox (consent),
+ * info (notice text), step (new step with title).
  */
 final class BuiltForm extends FormDefinition
 {
@@ -53,7 +53,7 @@ final class BuiltForm extends FormDefinition
     private array $cfg = [];
     private ?Article $article = null;
 
-    /** @param array<string, mixed> $cfg Daten des Blocks */
+    /** @param array<string, mixed> $cfg data of the block */
     public static function make(string $key, array $cfg, ?Article $article = null): self
     {
         $f = new self(new AsForm('fluid-' . $key, trim((string) ($cfg['form_name'] ?? '')) ?: 'Formular'));
@@ -129,7 +129,7 @@ final class BuiltForm extends FormDefinition
             if ('' !== $help) {
                 $field->notice($help);
             }
-            // Text, E-Mail, Internetadresse (Email und Url erben von Text) können placeholder(); Textarea nur als Attribut
+            // text, email, URL (Email and Url extend Text) support placeholder(); Textarea only as an attribute
             if ('' !== $ph && $field instanceof Field\Text) {
                 $field->placeholder($ph);
             } elseif ('' !== $ph && 'textarea' === $type) {
@@ -139,7 +139,7 @@ final class BuiltForm extends FormDefinition
         }
     }
 
-    /** Schritte = Reiter des Layouts (nur, wenn es „Neuer Schritt“ gibt) */
+    /** Steps = tabs of the layout (only if there is a „Neuer Schritt“) */
     public function layout(Layout $layout): Layout
     {
         $steps = [];
@@ -173,7 +173,7 @@ final class BuiltForm extends FormDefinition
     {
         $mode = (string) ($this->cfg['mode'] ?? 'save_mail');
         $page = $this->article ? $this->article->name . ' (' . $this->article->getUrl() . ')' : '';
-        // Gespeichert? Dann verwirft ein Mailfehler die Eingabe nicht (SafeMail) – sonst doppelte Einträge beim erneuten Absenden
+        // saved? Then a mail error does not discard the input (SafeMail) – otherwise duplicate entries on resubmit
         $saved = in_array($mode, ['save', 'save_mail'], true);
         if ($saved) {
             $target = trim((string) ($this->cfg['target'] ?? ''));
@@ -217,17 +217,17 @@ final class BuiltForm extends FormDefinition
     public function successMessage(): string
     {
         $msg = nl2br(htmlspecialchars(trim((string) ($this->cfg['success'] ?? '')) ?: 'Vielen Dank! Ihre Nachricht ist angekommen.'), false);
-        // Eingabe gespeichert, aber die Bestätigung ging nicht raus: ehrlich sagen, damit niemand erneut absendet
+        // input saved but the confirmation was not sent: say so honestly, so that nobody submits again
         if (in_array(SafeMail::CONFIRM, SafeMail::$failed, true)) {
             $note = 'Die Bestätigung per E-Mail konnte gerade nicht gesendet werden – Ihre Angaben sind aber angekommen.';
-            // ein Element: Meldungen der Kits sind oft Flex-Container (sonst stünde der Hinweis daneben)
+            // one element: kit messages are often flex containers (otherwise the notice would sit next to it)
             $msg = '<span>' . $msg . '<br><small>' . htmlspecialchars(function_exists('lt') ? lt($note) : $note) . '</small></span>';
         }
 
         return $msg;
     }
 
-    /** Erstes E-Mail-Feld (Antwortadresse, Bestätigung) */
+    /** First email field (reply address, confirmation) */
     private function emailField(): ?string
     {
         foreach ($this->items() as $it) {
@@ -239,8 +239,8 @@ final class BuiltForm extends FormDefinition
         return null;
     }
 
-    /** „Bezeichnung: Wert“ je Zeile – für Mail und Postfach */
-    /** Angaben als Tabelle für HTML-Mails */
+    /** „Label: value“ per line – for mail and inbox */
+    /** Data as a table for HTML mails */
     private function summaryHtml(Submission $s): string
     {
         $rows = '';
@@ -248,7 +248,7 @@ final class BuiltForm extends FormDefinition
             if (in_array($it['type'], ['step', 'info'], true) || '' === ($v = $s->text($it['name']))) {
                 continue;
             }
-            // „Label: “ und Wert in <div>: so ergibt der Textteil (YForm SendMail::plainText) je Zeile „Label: Wert“
+            // „Label: “ and value in <div>: so the text part (YForm SendMail::plainText) gives „Label: value“ per line
             $rows .= '<tr><th align="left" valign="top" width="36%" style="width:36%;padding:8px 12px 8px 0;border-bottom:1px solid #e5e7eb;font-weight:600">'
                 . escape(rtrim((string) ($it['label'] ?: $it['name']), '.:?! ')) . ': </th><td style="padding:8px 0;border-bottom:1px solid #e5e7eb"><div>' . nl2br(escape($v), false) . '</div></td></tr>';
         }

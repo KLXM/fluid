@@ -1,4 +1,4 @@
-// Vorher/Nachher (fluid_compare): Regler einblenden, Wert als --hx-pos an den Rahmen, sprechender Wert für Screenreader
+// Before/after (fluid_compare): show the slider, value as --hx-pos on the frame, meaningful value for screen readers
 document.querySelectorAll('[data-compare]').forEach((box) => {
   const range = box.querySelector('input[type=range]');
   if (!range) return;

@@ -3,8 +3,8 @@
 use Klxm\Fluid\Block;
 
 /**
- * Merkmale / Leistungen. Raster ohne Spaltenzahl: repeat(auto-fit, minmax(min(100%, Mindestbreite), 1fr)).
- * Jede Karte ist ein Container und stellt sich auf ihre eigene Breite ein (Liste: Symbol neben dem Text, wenn Platz ist).
+ * Features / services. Grid without column count: repeat(auto-fit, minmax(min(100%, min width), 1fr)).
+ * Each card is a container and adapts to its own width (list: icon beside the text when there is room).
  * @var Block $b  @var array $d
  */
 $v = $b->variant() ?: 'cards';

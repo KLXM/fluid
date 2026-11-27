@@ -29,25 +29,25 @@ use function strtotime;
 use function trim;
 
 /**
- * Datensätze einer Tabelle als Adressen – nur mit Attributen, ohne Code:
+ * Records of a table as addresses – with attributes only, no code:
  *
  *     #[AsRouteSource('news', label: 'News')]
  *     #[FromTable('rex_news', page: 12, where: 'status = 1', language: 'clang_id', param: 'news_id')]
  *     #[Slug('title', withId: true)]            /aktuelles/sommerfest-12
- *     #[Title('seo_title')]                     Titel (sonst die Slug-Spalte)
- *     #[Description('teaser')]                  ohne HTML, gekürzt auf 300 Zeichen
- *     #[Image('image')]                         Datei(en) des Medienpools – die erste zählt
- *     #[Modified('updatedate')]                 Zeitstempel oder Datum (Sitemap, article:modified_time)
+ *     #[Title('seo_title')]                     title (otherwise the slug column)
+ *     #[Description('teaser')]                  without HTML, shortened to 300 characters
+ *     #[Image('image')]                         media pool file(s) – the first one counts
+ *     #[Modified('updatedate')]                 timestamp or date (sitemap, article:modified_time)
  *     final class NewsRoutes extends TableSource {}
  *
- * Die Seite bekommt die ID als Parameter (news_id) und gibt den Eintrag aus. Spalten mit editable: true (Standard) kann
- * ein Editor anbieten. Für Besonderes Methoden überschreiben (rows(), slug(), meta() …).
+ * The page gets the ID as a parameter (news_id) and outputs the entry. Columns with editable: true (default) can
+ * be offered by an editor. For special cases override methods (rows(), slug(), meta() …).
  */
 abstract class TableSource extends RouteSource
 {
     private ?FromTable $table = null;
 
-    /** @var array<string, MetaColumn>|null Rolle => Spalte */
+    /** @var array<string, MetaColumn>|null role => column */
     private ?array $columns = null;
 
     /** @var array<string, array<string, mixed>|null> */
@@ -60,7 +60,7 @@ abstract class TableSource extends RouteSource
         return $this->table;
     }
 
-    /** @return array<string, MetaColumn> Rolle (slug, title, description, image, modified) => Spalte */
+    /** @return array<string, MetaColumn> role (slug, title, description, image, modified) => column */
     public function columns(): array
     {
         $this->init();
@@ -141,7 +141,7 @@ abstract class TableSource extends RouteSource
     }
 
     /**
-     * Sichtbare Zeilen der Tabelle.
+     * Visible rows of the table.
      *
      * @return list<array<string, mixed>>
      */
@@ -152,7 +152,7 @@ abstract class TableSource extends RouteSource
         return Sql::factory()->getArray('SELECT * FROM ' . Sql::factory()->escapeIdentifier($t->table) . ('' !== $t->where ? ' WHERE ' . $t->where : ''));
     }
 
-    /** Seite, die den Eintrag zeigt (z. B. je Kategorie eine andere) */
+    /** Page that shows the entry (e.g. a different one per category) */
     protected function page(array $row, int $languageId): int
     {
         return $this->table()->page;
@@ -189,7 +189,7 @@ abstract class TableSource extends RouteSource
         return null !== $col ? array_values(array_filter(array_map('trim', explode(',', (string) ($row[$col->column] ?? ''))))) : [];
     }
 
-    /** Zeile eines Eintrags, wenn er sichtbar ist */
+    /** Row of an entry if it is visible */
     protected function row(RouteEntry $entry): ?array
     {
         $key = $entry->id . '|' . $entry->languageId;

@@ -5,8 +5,8 @@ namespace Klxm\Fluid\Routing\ExtensionPoint;
 use Redaxo\Core\ExtensionPoint\ExtensionPoint;
 
 /**
- * robots.txt: $rules sind die Regeln (Subject beim ersten Aufruf mit $part = 'rules' – ersetzen, z. B. eigener Text),
- * danach der fertige Text inklusive Sitemap-Zeile ($part = 'text' – ergänzen).
+ * robots.txt: $rules are the rules (subject on the first call with $part = 'rules' – replace, e.g. custom text),
+ * then the finished text including the sitemap line ($part = 'text' – extend).
  *
  * @extends ExtensionPoint<string>
  */

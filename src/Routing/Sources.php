@@ -7,7 +7,7 @@ use Redaxo\Core\ClassDiscovery;
 use Throwable;
 
 /**
- * Alle Quellen eigener Adressen: per #[AsRouteSource] gefunden (Klassenerkennung des Cores) und per add() angemeldet.
+ * All sources of custom URLs: found via #[AsRouteSource] (the core's class discovery) and registered via add().
  */
 final class Sources
 {
@@ -36,7 +36,7 @@ final class Sources
                 $all[$s->key()] = $s;
             }
         } catch (Throwable) {
-            // Klassenerkennung nicht verfügbar (Setup)
+            // class discovery not available (setup)
         }
         foreach (self::$added as $s) {
             $all[$s->key()] = $s;

@@ -26,20 +26,20 @@ use function Redaxo\Core\View\escape;
 use const DATE_RSS;
 
 /**
- * Blog / News: Eine Kategorie (Menüpunkt) wird in ihren Seiteneinstellungen zum Blog – ihre Seiten sind dann Beiträge.
- * Beiträge sind normale Artikel mit Blöcken (Entwurf, Versionen, Rechte, Adressen, Sprachen, Suche – alles vom Rest);
- * dazu kommen Datum, Autor und Schlagworte (Tabelle rex_fluid_page). Teaserbild = Bild für soziale Netzwerke,
- * Kurztext = Beschreibung für Suchmaschinen. Sortierung nach Datum, neueste zuerst; RSS unter {blog}/feed.xml.
+ * Blog / news: a category (menu item) becomes a blog in its page settings – its pages are then posts.
+ * Posts are normal articles with blocks (draft, versions, permissions, addresses, languages, search – all from the rest);
+ * plus date, author and tags (table rex_fluid_page). Teaser image = image for social networks,
+ * short text = description for search engines. Sorted by date, newest first; RSS at {blog}/feed.xml.
  *
- *     Blog::posts($blogId, ['limit' => 3]);          // neueste drei Beiträge
- *     Blog::blogOf(Article::getCurrent());           // ID des Blogs, wenn die Seite ein Beitrag ist
+ *     Blog::posts($blogId, ['limit' => 3]);          // newest three posts
+ *     Blog::blogOf(Article::getCurrent());           // ID of the blog if the page is a post
  */
 final class Blog
 {
     /** @var array<int, bool>|null */
     private static ?array $blogs = null;
 
-    /** Beim Routing und SEO anmelden: RSS /{blog}/feed.xml, Feed-Link im Seitenkopf, schema.org Blog/BlogPosting */
+    /** Register with routing and SEO: RSS /{blog}/feed.xml, feed link in the page head, schema.org Blog/BlogPosting */
     public static function boot(): void
     {
         Router::resolver(static function (string $full, int $lang): ?RouteMatch {
@@ -50,7 +50,7 @@ final class Blog
 
             return null;
         });
-        // Feed-Link im Seitenkopf der Übersicht und der Beiträge
+        // feed link in the page head of the overview and the posts
         Extension::register(PageMetaResolved::class, static function (PageMetaResolved $ep): PageMeta {
             $article = $ep->article;
             $blog = self::isBlog($article->id) && $article->isStartArticle() ? $article->id : self::blogOf($article);
@@ -61,7 +61,7 @@ final class Blog
 
             return $ep->subject;
         });
-        // Übersicht = Blog, Beitrag = BlogPosting (Datum, Autor, Bild)
+        // overview = Blog, post = BlogPosting (date, author, image)
         Extension::register('FLUID_STRUCTURED_DATA', static function (ExtensionPoint $ep): array {
             $data = (array) $ep->subject;
             $article = $ep->getParam('article');
@@ -85,13 +85,13 @@ final class Blog
         });
     }
 
-    /** Adresse des RSS-Feeds eines Blogs: {blog}/feed.xml (ohne Endung des Adressformats) */
+    /** Address of the RSS feed of a blog: {blog}/feed.xml (without the extension of the URL format) */
     public static function feedUrl(int $blogId, int $languageId): string
     {
         return rtrim(Router::config()->format->strip(Router::canonical($blogId, $languageId)), '/') . '/feed.xml';
     }
 
-    /** Kategorien, die Blogs sind: [ID => Name] */
+    /** Categories that are blogs: [ID => name] */
     public static function all(): array
     {
         $out = [];
@@ -121,7 +121,7 @@ final class Blog
         return isset(self::ids()[$categoryId]);
     }
 
-    /** Blog-Kategorie, wenn die Seite ein Beitrag ist (Artikel, kein Startartikel, in einer Blog-Kategorie) */
+    /** Blog category if the page is a post (article, not a start article, in a blog category) */
     public static function blogOf(?Article $a): ?int
     {
         return $a && !$a->isStartArticle() && $a->categoryId && self::isBlog($a->categoryId) ? $a->categoryId : null;
@@ -136,7 +136,7 @@ final class Blog
         self::$blogs = null;
     }
 
-    /** Datum, Autor, Schlagworte eines Beitrags (je Sprache; Datum gilt für alle Sprachen) */
+    /** Date, author, tags of a post (per language; the date applies to all languages) */
     public static function saveMeta(Article $a, string $date, string $author, string $tags): void
     {
         $date = preg_match('~^\d{4}-\d{2}-\d{2}$~', $date) ? $date : null;
@@ -169,7 +169,7 @@ final class Blog
     }
 
     /**
-     * Beiträge eines Blogs (0 = aller Blogs), neueste zuerst; nur online (außer $drafts für die Redaktion).
+     * Posts of a blog (0 = all blogs), newest first; online only (except $drafts for the editorial team).
      *
      * @param array{limit?: int, offset?: int, tag?: string, drafts?: bool, language?: int, exclude?: int} $opt
      * @return array{total: int, posts: list<Post>}
@@ -209,7 +209,7 @@ final class Blog
         return ['total' => $total, 'posts' => $posts];
     }
 
-    /** Vorheriger (älterer) und nächster (neuerer) Beitrag */
+    /** Previous (older) and next (newer) post */
     public static function neighbors(Article $a): array
     {
         $blog = self::blogOf($a);
@@ -226,7 +226,7 @@ final class Blog
         return [$all[$i + 1] ?? null, $all[$i - 1] ?? null];
     }
 
-    /** Alle Schlagworte eines Blogs mit Anzahl: [slug => [Name, Anzahl]] */
+    /** All tags of a blog with count: [slug => [name, count]] */
     public static function tags(int $blogId): array
     {
         $out = [];
@@ -241,7 +241,7 @@ final class Blog
         return $out;
     }
 
-    /** RSS 2.0 eines Blogs (Sprache der Anfrage) */
+    /** RSS 2.0 of a blog (language of the request) */
     public static function feed(int $blogId): string
     {
         $lang = Language::getCurrentId();

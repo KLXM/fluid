@@ -42,12 +42,12 @@ use function Redaxo\Core\View\escape;
 use function strlen;
 
 /**
- * Anbindung an YForm für REDAXO 6 (yakamara/yform, Neubau: Tabellen und Formulare sind Klassen im Projekt).
- * Ausschließlich mit den Mitteln von YForm:
- *  - Formulare: #[AsForm]-Klassen; ausgeführt mit FormDefinition::run() – Prüfung, CSRF, Honigtopf und Aktionen
- *    (SaveRecord, SendMail, ShowMessage …) kommen aus der Formular-Klasse. fluid liefert nur ein Theme im Stil des Kits.
- *  - Datenliste: #[AsTable]-Klassen; Abfragen über Table::query(), Werte über Field::textValue() der Feldklassen.
- *  - Rechte: Permission\Access (Tabellen ansehen/bearbeiten), Bearbeiten in der Datenseite von YForm.
+ * Connection to YForm for REDAXO 6 (yakamara/yform, rewrite: tables and forms are classes in the project).
+ * Exclusively with YForm's own means:
+ *  - Forms: #[AsForm] classes; run with FormDefinition::run() – validation, CSRF, honeypot and actions
+ *    (SaveRecord, SendMail, ShowMessage …) come from the form class. fluid only provides a theme in the kit's style.
+ *  - Data list: #[AsTable] classes; queries via Table::query(), values via Field::textValue() of the field classes.
+ *  - Permissions: Permission\Access (view/edit tables), editing in YForm's data page.
  */
 final class YFormBridge
 {
@@ -58,7 +58,7 @@ final class YFormBridge
 
     // ------------------------------------------------------------------ Formulare
 
-    /** @return array<string, string> Formulare für die Auswahl im Block (Name => Beschriftung) */
+    /** @return array<string, string> Forms for the selection in the block (name => label) */
     public static function forms(): array
     {
         if (!self::available()) {
@@ -77,7 +77,7 @@ final class YFormBridge
         return self::available() && '' !== $name ? Forms::find($name) : null;
     }
 
-    /** Formular ausführen (YForm verarbeitet Absenden, Prüfung und Aktionen) – im Theme des Kits, sofern das Projekt keins setzt */
+    /** Run a form (YForm handles submission, validation and actions) – in the kit's theme unless the project sets one */
     public static function runForm(FormDefinition $form): string
     {
         $before = Forms::$defaultTheme;
@@ -95,7 +95,7 @@ final class YFormBridge
         return class_exists(FormDefinition::class) ? BuiltForm::TYPES : ['text' => 'Textzeile'];
     }
 
-    /** Theme mit den Klassen der öffentlichen Formulare des Kits (css/dataform.css, .dff) */
+    /** Theme with the classes of the kit's public forms (css/dataform.css, .dff) */
     public static function theme(): Theme
     {
         return new Theme(
@@ -109,7 +109,7 @@ final class YFormBridge
         );
     }
 
-    /** Tabellen, in die ein Formular speichert (Aktion SaveRecord) @return list<string> */
+    /** Tables a form saves to (action SaveRecord) @return list<string> */
     public static function formTables(FormDefinition $form): array
     {
         $out = [];
@@ -124,7 +124,7 @@ final class YFormBridge
 
     // ------------------------------------------------------------------ Tabellen
 
-    /** @return array<string, string> Tabellen für die Auswahl im Block (Tabellenname => Beschriftung) */
+    /** @return array<string, string> Tables for the selection in the block (table name => label) */
     public static function tables(): array
     {
         if (!self::available()) {
@@ -156,7 +156,7 @@ final class YFormBridge
         return $out;
     }
 
-    /** Feld aus „tabelle.feld“ (Auswahl im Block) – oder das erste Feld einer der Klassen @param list<class-string<Field>> $types */
+    /** Field from "table.field" (selection in the block) – or the first field of one of the classes @param list<class-string<Field>> $types */
     public static function field(Table $table, string $choice, array $types = []): ?Field
     {
         $prefix = $table->definition->name . '.';
@@ -174,7 +174,7 @@ final class YFormBridge
         return null;
     }
 
-    /** @return list<Field> Felder mit Inhalt für Besucher (ohne Technik-Felder) */
+    /** @return list<Field> Fields with content for visitors (without technical fields) */
     public static function detailFields(Table $table, bool $withMeta = false): array
     {
         $skip = [Markup::class, Hidden::class, Password::class, Uuid::class, CreatedBy::class, UpdatedBy::class, UpdatedAt::class];
@@ -221,7 +221,7 @@ final class YFormBridge
         return ['rows' => array_values(iterator_to_array($p->items)), 'total' => $p->total, 'page' => $p->page, 'pages' => $p->pages];
     }
 
-    /** Eintrag für die Detailansicht – nur, wenn er die Bedingung der Liste erfüllt */
+    /** Entry for the detail view – only if it meets the list's condition */
     public static function row(Table $table, int $id, ?Field $filter, string $value, ?int $languageId = null): ?Record
     {
         $q = self::inLanguage($table, $table::query()->where('id', $id), $languageId);
@@ -233,8 +233,8 @@ final class YFormBridge
     }
 
     /**
-     * Mit Feld „Sprache“ (FluidLanguage): nur Einträge der Sprache (Standard: aktuelle) und solche ohne Sprache.
-     * Beim Auflösen von Adressen ist die aktuelle Sprache noch nicht gesetzt – dort die Sprache der Seite übergeben.
+     * With field „Sprache“ (FluidLanguage): only entries of the language (default: current) and those without language.
+     * When resolving addresses the current language is not set yet – pass the page's language there.
      */
     public static function inLanguage(Table $table, Query $q, ?int $languageId = null): Query
     {
@@ -244,7 +244,7 @@ final class YFormBridge
 
                 $code = ($lang ?? Language::getCurrent())->code;
 
-                // „alle Sprachen“ steht als '' oder NULL (Maske von YForm) in der Spalte
+                // "all languages" is stored as '' or NULL (YForm form) in the column
                 return $q->whereAny(static fn (Query $g) => $g->whereIn($f->name, ['', $code])->whereNull($f->name));
             }
         }
@@ -252,13 +252,13 @@ final class YFormBridge
         return $q;
     }
 
-    /** Wert als Text – Ausgabe der Feldklasse (Auswahl-Beschriftung, Datumsformat, Ja/Nein …) */
+    /** Value as text – output of the field class (choice label, date format, yes/no …) */
     public static function text(Record $record, Field $f): string
     {
         return trim($f->textValue($record->get($f->name)));
     }
 
-    /** Wert als HTML (Zeilenumbrüche, E-Mail und Links anklickbar) */
+    /** Value as HTML (line breaks, e-mail and links clickable) */
     public static function html(Record $record, Field $f): string
     {
         $v = self::text($record, $f);
@@ -273,7 +273,7 @@ final class YFormBridge
         };
     }
 
-    /** Erste Datei eines Medienfelds (oder '') */
+    /** First file of a media field (or '') */
     public static function file(Record $record, ?Field $f): string
     {
         if (!$f instanceof Media) {
@@ -289,8 +289,8 @@ final class YFormBridge
     }
 
     /**
-     * Spaltentyp für „Spalten sortierbar“ (js/table-sort.js von NativeCSS): `number` (Ganzzahl, Dezimalzahl – rechtsbündig),
-     * `date` (Datum, Datum + Uhrzeit), sonst '' (Text bzw. automatisch erkannt).
+     * Column type for „Spalten sortierbar“ (js/table-sort.js from NativeCSS): `number` (integer, decimal – right-aligned),
+     * `date` (date, date + time), otherwise '' (text or auto-detected).
      */
     public static function sortType(?Field $f): string
     {
@@ -301,7 +301,7 @@ final class YFormBridge
         };
     }
 
-    /** Gespeicherter Wert für data-sort-value (Datum als ISO 8601, Zahl unformatiert), '' = keiner */
+    /** Stored value for data-sort-value (date as ISO 8601, number unformatted), '' = none */
     public static function sortValue(Record $record, Field $f): string
     {
         $v = $record->get($f->name);
@@ -313,7 +313,7 @@ final class YFormBridge
         return str_starts_with($v, '0000-00-00') ? '' : $v;
     }
 
-    /** Bearbeiten in der Datenseite von YForm (nur mit Bearbeitungsrecht); ohne ID: neuer Eintrag */
+    /** Edit in YForm's data page (only with edit permission); without ID: new entry */
     public static function editUrl(Table $table, ?int $id = null): ?string
     {
         $user = Editing::user();

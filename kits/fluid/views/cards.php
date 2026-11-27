@@ -3,8 +3,8 @@
 use Klxm\Fluid\Block;
 
 /**
- * Karten: image (Bild oben) · overlay (Text auf dem Bild) · horizontal (quer – jede Karte ist ein Container und stellt sich
- * erst ab ~30 rem Kartenbreite quer) · reel (wischbares Band mit scroll-snap, ohne Bibliothek; js/reel.js ergänzt Pfeile).
+ * Cards: image (image on top) · overlay (text on the image) · horizontal (landscape – each card is a container and switches
+ * to landscape only from ~30 rem card width) · reel (swipeable strip with scroll-snap, no library; js/reel.js adds arrows).
  * @var Block $b  @var array $d
  */
 $v = $b->variant() ?: 'image';
@@ -24,7 +24,7 @@ $id = $b->domId() . '-reel';
   </div>
   <?php else: ?><?= fluid_head($b) ?><?php endif ?>
   <?php if ($items): ?>
-  <?php // Filter nach Kategorie (fluid_filter(): CSS-Filter mit Optionsfeldern, js/filter.js für die Ansage der Trefferzahl)
+  <?php // filter by category (fluid_filter(): CSS filter with radio buttons, js/filter.js announces the number of hits)
   $flt = !empty($d['filter']) && 'reel' !== $v ? fluid_filter($b, array_map(static fn ($it) => (string) ($it['category'] ?? ''), $items)) : ['bar' => '', 'item' => []];
   if ('' !== $flt['bar']): ?><ncss-filter class="ncss-filter"><?= $flt['bar'] ?><?php endif ?>
   <ul class="<?= 'reel' === $v ? 'reel ' : 'grid ' ?><?= e(fluid_min($d)) ?> cards cards--<?= e($v) ?>" role="list"<?= 'reel' === $v ? ' id="' . e($id) . '" tabindex="0" aria-label="' . e(trim((string) $d['title']) ?: lt('Karten')) . '"' : '' ?>>

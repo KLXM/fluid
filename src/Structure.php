@@ -15,18 +15,18 @@ use Redaxo\Core\Security\User;
 use function in_array;
 
 /**
- * Seitenleiste „Seiten“ auf der Website (Modell aus KLXM Studio – Seitenbaum): alle Seiten als Baum, sortieren und
- * verschieben per Ziehen, online/offline, „im Menü“ (REDAXO: Kategorie ↔ Artikel), löschen, neue Seite an einer Stelle.
+ * Sidebar „Seiten“ on the website (model from KLXM Studio – page tree): all pages as a tree, sort and move by
+ * dragging, online/offline, „im Menü“ (REDAXO: category ↔ article), delete, new page at a position.
  *
- * Menüpunkte (Kategorien) stehen je Ebene vor den Seiten ohne Menüeintrag (Artikel) – beide Gruppen haben in REDAXO
- * eigene Reihenfolgen. Rechte: Strukturrecht der jeweiligen Kategorie (Admins dürfen alles).
+ * Menu items (categories) come before pages without menu entry (articles) on each level – both groups have their own
+ * order in REDAXO. Permissions: structure permission of the respective category (admins may do everything).
  */
 final class Structure
 {
     /**
-     * Menüpunkt „nicht im Menü“: Metafeld „Nicht in der Navigation zeigen“ von navigation_array (Spalte
-     * meta_nav_hidden der Kategorie, für alle Sprachen) – Stelle, Unterseiten und Status bleiben, die Navigation lässt
-     * die Kategorie weg. Im Backend unter Kategorie → Metadaten.
+     * Menu item „nicht im Menü“: meta field „Nicht in der Navigation zeigen“ of navigation_array (column
+     * meta_nav_hidden of the category, for all languages) – position, subpages and status remain, the navigation omits
+     * the category. In the backend under category → metadata.
      */
     public static function isHidden(int $categoryId): bool
     {
@@ -104,12 +104,12 @@ final class Structure
                     break;
                 case 'tree_menu':
                     if ($isCat) {
-                        // Menüpunkt: nur aus dem Menü ausblenden bzw. wieder zeigen – Stelle, Unterseiten und Status bleiben
+                        // Menu item: only hide from the menu or show again – position, subpages and status remain
                         $hide = !self::isHidden($a->id);
                         self::setHidden($a->id, $languageId, $hide);
                         $msg = $hide ? '„' . $a->name . '“ erscheint nicht mehr im Menü – die Seite bleibt online und an ihrer Stelle.' : '„' . $a->name . '“ steht wieder im Menü.';
                     } else {
-                        // Seite ohne Menüeintrag: Menüpunkte sind in REDAXO Kategorien
+                        // Page without menu entry: menu items are categories in REDAXO
                         ArticleHandler::convertToCategory($a->id);
                         $msg = '„' . $a->name . '“ steht jetzt im Menü.';
                     }
@@ -128,7 +128,7 @@ final class Structure
         return ['tree' => self::tree($languageId), 'message' => $msg];
     }
 
-    /** Ziehen: neue Elternseite (null = oberste Ebene) und Position innerhalb der eigenen Gruppe (Menüpunkte bzw. Seiten) */
+    /** Dragging: new parent page (null = top level) and position within its own group (menu items or pages) */
     private static function move(Article $a, bool $isCat, ?int $parent, int $index, User $user, int $languageId): string
     {
         if (null !== $parent && !Category::get($parent)) {
@@ -141,7 +141,7 @@ final class Structure
                 throw new ApiError('Eine Seite kann nicht unter sich selbst stehen.');
             }
             if ($parent !== $cat->parentId) {
-                CategoryHandler::move($a->id, $parent);   // wirft bei Fehlern
+                CategoryHandler::move($a->id, $parent);   // throws on errors
             }
             CategoryHandler::edit($a->id, $languageId, ['priority' => $index + 1]);
         } else {

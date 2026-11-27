@@ -1,5 +1,5 @@
 <?php
-/** Diagramm: standard (unter dem Kopf) · split (Kopf und Einleitung links, Diagramm rechts). Ausgabe Klxm\Fluid\Chart\Chart. @var \Klxm\Fluid\Block $b  @var array $d */
+/** Chart: standard (below the header) · split (header and intro left, chart right). Output Klxm\Fluid\Chart\Chart. @var \Klxm\Fluid\Block $b  @var array $d */
 use Klxm\Fluid\Chart\Chart as Charts;
 use Klxm\Fluid\Kit\Fluid\Module\Chart;
 

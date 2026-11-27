@@ -15,11 +15,11 @@ use function in_array;
 use function Redaxo\Core\View\escape;
 
 /**
- * Auswahl von Medien (Bilder, Dateien) und Artikeln – im Backend und im Editor auf der Website, ohne Popup-Fenster.
- * Im Backend öffnet assets/form.js Medienpool bzw. Linkmap des Cores als Overlay (rex.pick), auf der Website eine eigene
- * Auswahl im Editor (Media\Library, Links).
+ * Selection of media (images, files) and articles – in the backend and in the website editor, without popup windows.
+ * In the backend assets/form.js opens the core's media pool or linkmap as an overlay (rex.pick), on the website its own
+ * selection in the editor (Media\Library, Links).
  *
- * Link-Felder speichern `redaxo://ID` (Artikel) oder eine Adresse (https://…, mailto:, tel:, #anker).
+ * Link fields store `redaxo://ID` (article) or an address (https://…, mailto:, tel:, #anchor).
  */
 final class Picker
 {
@@ -33,9 +33,9 @@ final class Picker
         $preview = MediaManager::getUrl('rex_media_small', '__FILE__');
         $media = '' !== $value ? Media::get($value) : null;
         $thumb = $media && in_array(strtolower($media->getExtension()), self::IMAGE_TYPES, true) ? '<img src="' . escape(self::thumb($media->fileName)) . '" alt="">' : '';
-        // Addon image_editor: „Bearbeiten“ öffnet den Bildeditor (Zuschneiden, Drehen …) – API im jeweiligen Bereich
+        // addon image_editor: „Bearbeiten“ opens the image editor (crop, rotate …) – API in the respective area
         $ie = $images && class_exists(ImageEditorAddon::class) ? ImageEditorAddon::config() : null;
-        // Addon video_editor: „Video bearbeiten“ öffnet das Video im Medienpool (Optimieren, Poster …) – nur mit Recht
+        // addon video_editor: „Video bearbeiten“ opens the video in the media pool (optimize, poster …) – only with permission
         $ve = !$images && (null === $types || [] !== array_intersect($types, self::VIDEO_TYPES)) && class_exists(VideoEditor::class)
             ? VideoEditor::editUrlTemplate() : null;
 
@@ -61,7 +61,7 @@ final class Picker
             . '</div>';
     }
 
-    /** Vorschaubild (mit Addon image_editor die bearbeitete Fassung) */
+    /** Preview image (with addon image_editor the edited version) */
     public static function thumb(string $file): string
     {
         return class_exists(ImageEditor::class)
@@ -69,7 +69,7 @@ final class Picker
             : MediaManager::getUrl('rex_media_small', $file);
     }
 
-    /** Eingabefeld mit Knöpfen – im Backend mit den Klassen der Core-Widgets (rex-input-group), auf der Website schlicht */
+    /** Input field with buttons – in the backend with the classes of the core widgets (rex-input-group), plain on the website */
     private static function group(bool $backend, string $input, string $title, string $icon, string $label, bool $edit = false, bool $video = false): string
     {
         if ($backend) {

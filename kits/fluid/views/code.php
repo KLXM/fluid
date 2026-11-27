@@ -3,7 +3,7 @@
 use Klxm\Fluid\Block;
 
 /**
- * Code – eine oder mehrere Dateien als Codebeispiel, maskiert ausgegeben (kein HTML aus dem Feld), mit Kopier-Knopf (js/code.js).
+ * Code – one or more files as a code sample, output escaped (no HTML from the field), with copy button (js/code.js).
  * @var Block $b  @var array $d
  */
 $langs = ['php' => 'PHP', 'bash' => 'Terminal', 'env' => '.env', 'json' => 'JSON', 'yaml' => 'YAML', 'html' => 'HTML', 'css' => 'CSS', 'js' => 'JavaScript', 'text' => 'Text'];

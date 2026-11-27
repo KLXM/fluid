@@ -7,7 +7,7 @@ use Redaxo\Core\Form\Reference;
 use function is_string;
 use function preg_match_all;
 
-/** @internal Verweise auf Seiten (redaxo://ID) in Link- und Rich-Text-Feldern – für die Verwendungsliste des Cores */
+/** @internal References to pages (redaxo://ID) in link and rich text fields – for the core's usage list */
 final class Links
 {
     /** @return list<Reference> */

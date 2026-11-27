@@ -23,8 +23,8 @@ use function array_key_exists;
 use function is_array;
 
 /**
- * Werkzeuge des MCP-Servers. Jedes Werkzeug sagt, ob es schreibt (write) und ob es öffentlich sein darf (public).
- * Die Liste richtet sich nach dem Zugang: öffentlich nur Freigegebenes, Schlüssel „read“ ohne Schreib-Werkzeuge.
+ * Tools of the MCP server. Each tool states whether it writes (write) and whether it may be public (public).
+ * The list depends on the access: public only what is released, key „read“ without writing tools.
  */
 final class Tools
 {
@@ -36,7 +36,7 @@ final class Tools
         $this->content = new Content($access);
     }
 
-    /** @return array<string, array<string, mixed>> Name => Definition (mit run) */
+    /** @return array<string, array<string, mixed>> name => definition (with run) */
     public function all(): array
     {
         $cfg = Access::config();
@@ -81,7 +81,7 @@ final class Tools
                 $res = Search::search((string) ($a['query'] ?? ''), $c->language($a['lang'] ?? null), (int) ($a['limit'] ?? 10));
                 foreach ($res['hits'] as &$h) {
                     $h['url'] = Content::abs($h['url']);
-                    // Hervorhebung der Website (<mark>) als **…** – Werkzeuge lesen Text
+                    // Website highlighting (<mark>) as **…** – tools read text
                     $h['title'] = html_entity_decode(strip_tags(str_replace(['<mark>', '</mark>'], '**', $h['title'])));
                     $h['excerpt'] = html_entity_decode(strip_tags(str_replace(['<mark>', '</mark>'], '**', $h['excerpt'])));
                 }

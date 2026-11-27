@@ -1,13 +1,13 @@
 /*
- * Video-Links in der Lightbox (Klxm\Fluid\VideoLinks; aus KLXM Studio, MIT): Links mit data-video-lb="youtube|vimeo" + data-video-id
- * öffnen nach Einwilligung den Player in einem <dialog class="cms-lb cms-lb--video"> (Stile css/video-lightbox.css, vom Kit
- * ersetzbar). Lädt nur, wenn die Website-Einstellung an ist und die Seite solche Links hat.
- *  - Einwilligung beim Klick prüfen (spätere Änderungen gelten ab dem nächsten Klick): AddOn consent_kit (window.ConsentKit.has
- *    mit den Diensten „youtube“/„vimeo“), Einwilligungs-API von KLXM Studio (window.cmsConsent.embed) oder die Freigabe
- *    „{Anbieter}-Videos künftig direkt laden“ des Video-Blocks (localStorage, wie js/embed.js). Keine eigene Cookie-Auswertung.
- *  - Ohne Einwilligung: normaler Link – kein Nachladen, keine Anfrage an den Anbieter.
- *  - Player: nur youtube-nocookie.com bzw. player.vimeo.com, Adresse erst beim Öffnen; Esc/Knopf schließen, iframe wird entfernt,
- *    der Fokus kehrt zum Link zurück. Modaler Dialog: der Rest der Seite ist solange inaktiv.
+ * Video links in the lightbox (Klxm\Fluid\VideoLinks; from KLXM Studio, MIT): links with data-video-lb="youtube|vimeo" + data-video-id
+ * open the player after consent in a <dialog class="cms-lb cms-lb--video"> (styles css/video-lightbox.css, replaceable by the
+ * kit). Loads only if the website setting is on and the page has such links.
+ *  - Consent is checked on click (later changes apply from the next click): addon consent_kit (window.ConsentKit.has
+ *    with the services "youtube"/"vimeo"), KLXM Studio's consent API (window.cmsConsent.embed) or the permission
+ *    „{Anbieter}-Videos künftig direkt laden“ of the video block (localStorage, like js/embed.js). No own cookie evaluation.
+ *  - Without consent: normal link – no loading, no request to the provider.
+ *  - Player: only youtube-nocookie.com or player.vimeo.com, URL set only on opening; Esc/button closes, the iframe is removed,
+ *    focus returns to the link. Modal dialog: the rest of the page is inert meanwhile.
  */
 (() => {
   const d = document, cfg = d.currentScript?.dataset || {};
@@ -46,7 +46,7 @@
     d.body.append(dlg);
     return dlg;
   }
-  // Titel für Dialog und Player: sichtbarer Linktext (ohne Screenreader-Zusätze wie „öffnet in neuem Tab“)
+  // title for dialog and player: visible link text (without screen reader additions like „öffnet in neuem Tab“)
   const title = (a) => { const c = a.cloneNode(true); c.querySelectorAll('.sr-only,.visually-hidden,svg').forEach((n) => n.remove()); return (c.textContent || '').trim().replace(/\s+/g, ' ') || cfg.video || 'Video'; };
 
   function open(a, p, id) {
@@ -64,14 +64,14 @@
     box.append(f);
     stage.replaceChildren(box);
     dlg.showModal();
-    dlg.querySelector('.cms-lb__close')?.focus();   // Fokus nicht ins fremde iframe – dort käme Esc nicht an
+    dlg.querySelector('.cms-lb__close')?.focus();   // don't focus into the foreign iframe – Esc wouldn't arrive there
   }
 
   d.addEventListener('click', (e) => {
     const a = e.target.closest?.('a[data-video-lb]');
     if (!a || e.defaultPrevented || e.button || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
     const p = a.dataset.videoLb, id = a.dataset.videoId || '';
-    if (!ID[p] || !ID[p].test(id) || !allowed(p)) return;   // „off“, unbekannt oder ohne Einwilligung: normaler Link
+    if (!ID[p] || !ID[p].test(id) || !allowed(p)) return;   // "off", unknown or without consent: normal link
     e.preventDefault();
     open(a, p, id);
   });

@@ -1,8 +1,8 @@
 /*
- * Kit fluid: Darstellungs-Einstellungen der Besucher (Website → „Darstellungs-Knopf für Besucher anzeigen“). Das Bedienfeld
- * ist <ncss-preferences> von NativeCSS (preferences.js, preferences.css aus dem Kit „NativeCSS“); hier die Tokens, die es
- * braucht (aus den Design-Werten --f-…), und die Wirkung der Attribute am <html> auf fluid – im Kit „NativeCSS“ erledigen
- * das colors.css/reset.css von NativeCSS und native.css. !important wie bei NativeCSS: eine Wahl der Besucher schlägt das Design.
+ * Kit fluid: visitors' display settings (Website → „Darstellungs-Knopf für Besucher anzeigen“). The panel is
+ * NativeCSS's <ncss-preferences> (preferences.js, preferences.css from the kit „NativeCSS“); here are the tokens it
+ * needs (from the design values --f-…) and the effect of the attributes on <html> on fluid – in the kit „NativeCSS“
+ * NativeCSS's colors.css/reset.css and native.css do that. !important as in NativeCSS: a visitor's choice beats the design.
  */
 :root {
   --ncss-border-width: 1px; --ncss-focus-ring-width: 2px;
@@ -16,8 +16,8 @@
   --ncss-motion-duration-fast: 100ms; --ncss-motion-easing: cubic-bezier(.4, 0, .2, 1);
 }
 ncss-preferences { font-family: var(--f-font); }
-/* Bedienfeld in den Farben der Seite, nicht des (ggf. farbigen) Kopfs: Der Kopf definiert --f-… für sich neu – die Kopien
-   --fp-… werden am :root aufgelöst und erben unverändert. Knöpfe ohne Browser-Grau (NativeCSS hat dafür reset.css). */
+/* Panel in the page's colors, not those of the (possibly colored) header: the header redefines --f-… for itself – the copies
+   --fp-… are resolved on :root and inherited unchanged. Buttons without browser gray (NativeCSS has reset.css for that). */
 :root { --fp-bg: var(--f-bg); --fp-surface: var(--f-surface); --fp-text: var(--f-text); --fp-muted: var(--f-muted); --fp-line: var(--f-line); --fp-a: var(--f-a); --fp-a-on: var(--f-a-on); }
 html .ncss-preferences-panel {
   --ncss-color-surface: var(--fp-bg); --ncss-color-bg: var(--fp-bg); --ncss-color-bg-subtle: var(--fp-surface);
@@ -27,39 +27,39 @@ html .ncss-preferences-panel {
 }
 .ncss-preferences-panel button { background-color: transparent; color: inherit; font: inherit; font-weight: 600; cursor: pointer; }
 
-/* Platz im Kopf: breit in den Werkzeugen, sobald die Navigation in der Leiste steht; sonst im Menü (Menü-Knopf) */
+/* Place in the header: wide in the tools as soon as the navigation is in the bar; otherwise in the menu (menu button) */
 .hdr__prefs { display: none; }
 .hdr__prefs--always { display: inline-block; }
 @container hdr (min-width: 60rem) { .hdr:not(.is-overflow) .hdr__prefs { display: inline-block; } }
 .mnav__prefs { display: block; margin-block-start: var(--f-s-m); }
 .mnav__prefs:not(:defined) { display: none; }
-/* Knopf übernimmt die Farbe des Kopfs (auch auf Akzent- oder dunklem Kopf), statt der Knopf-Gestaltung von fluid */
+/* The button takes the header's color (also on an accent or dark header) instead of fluid's button styling */
 :is(.hdr, .mnav) .ncss-preferences-toggle { background: transparent; color: inherit; font: 600 var(--f-t-1)/1 var(--f-font); border-color: color-mix(in oklab, currentColor 35%, transparent); }
 :is(.hdr, .mnav) .ncss-preferences-toggle:hover { background: color-mix(in oklab, currentColor 10%, transparent); }
-/* farbiger Kopf: Schriftfarbe des Kopfs (wie die Lupe) */
+/* colored header: the header's text color (like the magnifier) */
 .hbg-accent .hdr .ncss-preferences-toggle { color: var(--f-a-on); }
 .hbg-secondary .hdr .ncss-preferences-toggle { color: var(--f-b-on); }
 .hbg-dark .hdr .ncss-preferences-toggle { color: #fff; }
 
-/* Farbschema: „Dunkel“ braucht das dunkle Farbschema des Browsers (Werte: Design-Datei mit data-theme, js/prefs-theme.js) */
+/* Color scheme: „Dunkel“ needs the browser's dark color scheme (values: design file with data-theme, js/prefs-theme.js) */
 html.has-dark[data-theme="dark"] { color-scheme: dark; }
 html[data-theme="light"] { color-scheme: light; }
 html.is-dark .brand__logo--light { display: none; }
 html.is-dark .brand__logo--dark { display: block; }
 
-/* Kontrast */
+/* Contrast */
 :root[data-contrast="more"] {
   --f-text: light-dark(#000000, #ffffff) !important; --f-ink: light-dark(#000000, #ffffff) !important;
   --f-muted: light-dark(#2b2f36, #dcdfe5) !important; --f-line: light-dark(#5c6370, #a3a9b4) !important;
 }
-/* Lese-Schrift (preferences-fonts.css setzt --ncss-font-family-base/-heading) */
+/* Reading font (preferences-fonts.css sets --ncss-font-family-base/-heading) */
 :root[data-ncss-font] { --f-font: var(--ncss-font-family-base) !important; --f-font-head: var(--ncss-font-family-heading) !important; }
-/* Bewegung (zusätzlich nimmt js/prefs-theme.js has-motion zurück) */
+/* Motion (js/prefs-theme.js additionally removes has-motion) */
 :root[data-motion="reduce"] *, :root[data-motion="reduce"] *::before, :root[data-motion="reduce"] *::after {
   animation-duration: .01ms !important; animation-iteration-count: 1 !important; animation-timeline: auto !important;
   transition-duration: .01ms !important; scroll-behavior: auto !important;
 }
-/* Schriftgröße, Textabstände (WCAG 1.4.12), Links, Fokus – wie reset.css von NativeCSS */
+/* Font size, text spacing (WCAG 1.4.12), links, focus – like NativeCSS's reset.css */
 :root[data-text-scale="115"] { font-size: 115% !important; }
 :root[data-text-scale="130"] { font-size: 130% !important; }
 :root[data-text-spacing] * { line-height: 1.5 !important; letter-spacing: .12em !important; word-spacing: .16em !important; }

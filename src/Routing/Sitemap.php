@@ -20,26 +20,26 @@ use function Redaxo\Core\View\escape;
 use const DATE_ATOM;
 
 /**
- * sitemap.xml der Hauptadresse bzw. einer Landing-Domain.
+ * sitemap.xml of the main address or of a landing domain.
  *
- * Seiten: online (samt Eltern), mit gespeicherter Adresse, Canonical auf dieser Domain, nicht die Fehlerseite – mit lastmod
- * (mit Uhrzeit), hreflang (inkl. x-default = Startsprache) und bis zu IMAGES Bildern. Ab MAX Adressen: Sitemap-Index
- * (/sitemap.xml) mit Teilen (/sitemap-1.xml …). Im Browser zeigt /sitemap.xsl die Adressen als Tabelle.
+ * Pages: online (including parents), with saved address, canonical on this domain, not the error page – with lastmod
+ * (with time), hreflang (incl. x-default = start language) and up to IMAGES images. From MAX addresses: sitemap index
+ * (/sitemap.xml) with parts (/sitemap-1.xml …). In the browser /sitemap.xsl shows the addresses as a table.
  *
- * Bausteine ergänzen, ohne dass das Routing sie kennt:
- *   Sitemap::exclude(fn (int $id, int $lang): bool)            Seite weglassen (z. B. „nicht indexieren“)
- *   Sitemap::images(fn (int $id, int $lang): iterable)         Bilder einer Seite (Adressen, z. B. Vorschaubild, Medien der Blöcke)
- *   Sitemap::children(fn (int $id, int $lang, string $loc): iterable)  weitere Adressen unter einer Seite
- *                                                              (z. B. Detailseiten einer Datenliste): ['loc' => …, 'lastmod' => int|null]
- *   Einträge der Quellen (RouteSource) kommen von selbst dazu (sitemap: true, Bilder, hreflang)
- *   Extension Point SitemapEntries (Liste aller Einträge, landing)  hinzufügen, ändern, entfernen
+ * Extensions without the routing knowing them:
+ *   Sitemap::exclude(fn (int $id, int $lang): bool)            omit a page (e.g. „nicht indexieren“)
+ *   Sitemap::images(fn (int $id, int $lang): iterable)         images of a page (addresses, e.g. preview image, media of the blocks)
+ *   Sitemap::children(fn (int $id, int $lang, string $loc): iterable)  further addresses below a page
+ *                                                              (e.g. detail pages of a data list): ['loc' => …, 'lastmod' => int|null]
+ *   Entries of the sources (RouteSource) are added automatically (sitemap: true, images, hreflang)
+ *   Extension point SitemapEntries (list of all entries, landing)  add, change, remove
  */
 final class Sitemap
 {
-    /** Höchstzahl Adressen je Datei (Protokoll: 50 000) */
+    /** Maximum number of addresses per file (protocol: 50,000) */
     public const int MAX = 45000;
 
-    /** Höchstzahl Bilder je Adresse */
+    /** Maximum number of images per address */
     public const int IMAGES = 5;
 
     /** @var list<callable(int, int): iterable<string>> */
@@ -67,7 +67,7 @@ final class Sitemap
     }
 
     /**
-     * Alle Einträge der Domain.
+     * All entries of the domain.
      *
      * @return list<array{loc: string, lastmod: int|null, alternates: array<string, string>, images?: list<string>}>
      */
@@ -87,7 +87,7 @@ final class Sitemap
                     continue;
                 }
                 $loc = Router::canonical($id, $lang);
-                // Nur Adressen dieser Domain (Canonical zeigt auf eine Landing-Domain → steht in deren Sitemap)
+                // Only addresses of this domain (canonical points to a landing domain → listed in its sitemap)
                 if (null !== $origin ? !str_starts_with($loc, $origin . '/') && $loc !== $origin : self::onLanding($id, $a->path)) {
                     continue;
                 }
@@ -104,7 +104,7 @@ final class Sitemap
             }
         }
 
-        // Einträge der Quellen (je Eintrag mit hreflang seiner Sprachfassungen)
+        // Entries of the sources (each with hreflang of its language versions)
         $groups = [];
         foreach (Routes::entries() as $e) {
             if (!$e->sitemap) {
@@ -132,7 +132,7 @@ final class Sitemap
         return is_array($out) ? array_values($out) : [];
     }
 
-    /** Inhalt von /sitemap.xml ($part = 0) bzw. /sitemap-{part}.xml; null = diesen Teil gibt es nicht. */
+    /** Content of /sitemap.xml ($part = 0) or /sitemap-{part}.xml; null = this part doesn't exist. */
     public static function xml(?Domain $landing, int $part = 0): ?string
     {
         $entries = self::entries($landing);
@@ -173,7 +173,7 @@ final class Sitemap
         return $xml . '</sitemapindex>' . "\n";
     }
 
-    /** /sitemap.xsl: Tabellenansicht der Sitemap im Browser (Suchmaschinen lesen das XML). */
+    /** /sitemap.xsl: table view of the sitemap in the browser (search engines read the XML). */
     public static function xsl(): string
     {
         return <<<'XSL'
@@ -202,7 +202,7 @@ final class Sitemap
             XSL;
     }
 
-    /** XML-Kopf mit Verweis auf die Tabellenansicht */
+    /** XML header with reference to the table view */
     private static function head(?Domain $landing): string
     {
         return '<?xml version="1.0" encoding="UTF-8"?>' . "\n" . '<?xml-stylesheet type="text/xsl" href="' . escape(self::base($landing) . '/sitemap.xsl') . '"?>' . "\n";
@@ -213,7 +213,7 @@ final class Sitemap
         return rtrim($landing ? Router::origin($landing) : Router::absolute(Router::base() . '/'), '/');
     }
 
-    /** @return list<string> absolute Bildadressen, ohne Doppelte, höchstens IMAGES */
+    /** @return list<string> absolute image addresses, without duplicates, at most IMAGES */
     private static function imagesOf(int $id, int $lang): array
     {
         $out = [];
@@ -231,9 +231,9 @@ final class Sitemap
     }
 
     /**
-     * hreflang (inkl. x-default = Startsprache), wenn es mehr als eine Sprachfassung gibt.
+     * hreflang (incl. x-default = start language) if there is more than one language version.
      *
-     * @param array<int, array{0: string}> $pages Sprache => [Adresse, …]
+     * @param array<int, array{0: string}> $pages language => [address, …]
      * @return array<string, string>
      */
     private static function alternatesOf(array $pages, int $startLang): array

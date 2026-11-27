@@ -1,11 +1,11 @@
 /*
- * Karten (fluid, aus KLXM Studio): MapLibre GL + OpenFreeMap über den eigenen Proxy (/proxy/ofm/…).
- * MapLibre (~800 KB) wird erst geladen, wenn eine Karte in Sichtweite kommt.
- * Erst nach Klick auf „Karte anzeigen“: bei „Datensparen“ (Save-Data) und im Zwei-Klick-Modus (data-click, Core\Maps).
- * Kits mit eigenem Lader importieren dieses Modul erst beim Klick und setzen vorher data-go – diese Karten starten sofort.
- * 3D (cfg.view3d, Core\Maps): Gebäude mit Höhe (fill-extrusion aus render_height der OpenMapTiles-Kacheln), nach dem Laden
- * weiche Kamerafahrt auf Neigung 55° / Drehung −20° – bei „Bewegung reduzieren“ sofort. Steuerung mit Kompass/Neigung;
- * Tastatur: Pfeile verschieben, +/− zoomen, Umschalt + Pfeile drehen/neigen (MapLibre).
+ * Maps (fluid, from KLXM Studio): MapLibre GL + OpenFreeMap via the own proxy (/proxy/ofm/…).
+ * MapLibre (~800 KB) is loaded only when a map comes into view.
+ * Only after a click on „Karte anzeigen“: with „Datensparen“ (Save-Data) and in two-click mode (data-click, Core\Maps).
+ * Kits with their own loader import this module only on click and set data-go before – these maps start immediately.
+ * 3D (cfg.view3d, Core\Maps): buildings with height (fill-extrusion from render_height of the OpenMapTiles tiles), after
+ * loading a smooth camera move to pitch 55° / bearing −20° – instantly with „Bewegung reduzieren“. Controls with
+ * compass/pitch; keyboard: arrows pan, +/− zoom, Shift + arrows rotate/tilt (MapLibre).
  */
 let lib = null;
 
@@ -31,7 +31,7 @@ async function init(el) {
   try {
     const ml = await loadLib(cfg);
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    // Dunkler Stil nur, wenn das Theme Dunkelmodus unterstützt und das Gerät ihn verlangt
+    // Dark style only if the theme supports dark mode and the device asks for it
     const themeDark = /dark/.test(document.querySelector('meta[name="color-scheme"]')?.content || '');
     const mq = matchMedia('(prefers-color-scheme: dark)');
     const styleFor = () => (themeDark && mq.matches && cfg.styleDark ? cfg.styleDark : cfg.style);
@@ -66,7 +66,7 @@ async function init(el) {
   }
 }
 
-// Gebäude als Körper (Höhe aus render_height), flache Gebäude des Stils ausblenden; Kamera einmal weich neigen
+// Buildings as solids (height from render_height), hide the style's flat buildings; tilt the camera smoothly once
 let tilted = false;
 function add3d(map, reduce) {
   const style = map.getStyle();
@@ -95,7 +95,7 @@ const start = el => { el.classList.add('is-started'); init(el); };
 const io = 'IntersectionObserver' in window && new IntersectionObserver(entries => {
   for (const en of entries) if (en.isIntersecting) { io.unobserve(en.target); init(en.target); }
 }, { rootMargin: '300px 0px' });
-// Karten suchen – beim Laden und nach dem Neuausgeben von Blöcken im Editor (Ereignis fluid:rendered)
+// Find maps – on load and after blocks are re-rendered in the editor (event fluid:rendered)
 function scan() {
   for (const el of document.querySelectorAll('[data-cms-map]:not([data-ready]):not([data-seen])')) {
     el.dataset.seen = '1';

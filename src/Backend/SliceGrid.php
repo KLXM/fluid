@@ -36,47 +36,47 @@ use function str_replace;
 use function strip_tags;
 
 /**
- * Slice-Liste des Backends wie die Website: Die Blöcke eines Layouts stehen im Layout-Panel nebeneinander in ihren
- * Spalten – jeder mit Kopf und Knöpfen des Cores (editieren, löschen, online, verschieben), also weiter echte Slices.
+ * Backend slice list like the website: the blocks of a layout sit side by side in their columns in the layout
+ * panel – each with the core's head and buttons (edit, delete, online, move), so they remain real slices.
  *
- * Von außen, ohne den Core zu ändern:
- *  - SliceOutput (Bearbeiten-Modus): Panels der Spalten-Blöcke werden eingesammelt statt an ihrer Stelle ausgegeben,
- *    das Layout-Panel enthält je Spalte einen Platzhalter (LayoutBlock::output()).
- *  - Fragment core/structure/content/slice_list.php (fragments/ des AddOns): setzt die Panels in die Platzhalter ein.
- *  - ContentPageModuleSelect: „Block hinzufügen“ in einer Spalte gibt die Spalte mit (fluid_col) – das Formular wählt
- *    sie vor (Form\FieldForm). Je Spalte zusätzlich „+ Block in Spalte n“ am Ende.
+ * From the outside, without changing the core:
+ *  - SliceOutput (edit mode): panels of the column blocks are collected instead of output in place,
+ *    the layout panel contains a placeholder per column (LayoutBlock::output()).
+ *  - Fragment core/structure/content/slice_list.php (the addon's fragments/): inserts the panels into the placeholders.
+ *  - ContentPageModuleSelect: „Block hinzufügen“ in a column passes the column along (fluid_col) – the form
+ *    preselects it (Form\FieldForm). Additionally „+ Block in Spalte n“ at the end of each column.
  *
- * Wird ein Spalten-Block bearbeitet oder neu angelegt, öffnet assets/slice-grid.js das Formular in einem Dialog über dem
- * Raster; ohne Skript stehen die Spalten untereinander (Formular in voller Breite).
+ * When a column block is edited or created, assets/slice-grid.js opens the form in a dialog above the
+ * grid; without the script the columns are stacked (form at full width).
  */
 final class SliceGrid
 {
-    /** Parameter für die Spalte eines neuen Blocks */
+    /** Parameter for the column of a new block */
     public const string PARAM = 'fluid_col';
 
-    /** Parameter und Cookie für die Ansicht der Layouts (grid | tree) */
+    /** Parameter and cookie for the layout view (grid | tree) */
     public const string VIEW = 'fluid_view';
 
-    /** Parameter: Layout, dessen Ansicht umgeschaltet wird */
+    /** Parameter: layout whose view is toggled */
     public const string LAYOUT = 'fluid_layout';
 
-    /** @var array<int, array<int, list<string>>> Layout-ID → Spalte → HTML der Spalten-Blöcke */
+    /** @var array<int, array<int, list<string>>> layout ID → column → HTML of the column blocks */
     private static array $cols = [];
 
-    /** @var array<int, true> Layouts, in deren Spalten gerade ein Block bearbeitet wird */
+    /** @var array<int, true> Layouts in whose columns a block is currently being edited */
     private static array $editing = [];
 
     private static bool $on = false;
 
-    /** Adresse der API-Funktion für Kopieren/Einfügen (mit CSRF-Token) – für das Skript an der Slice-Liste */
+    /** URL of the API function for copy/paste (with CSRF token) – for the script on the slice list */
     private static ?string $opsUrl = null;
 
-    /** Im Backend auf der Inhaltsseite einschalten (FluidAddon::boot) */
+    /** Enable in the backend on the content page (FluidAddon::boot) */
     public static function boot(): void
     {
         self::$on = true;
-        // Ansicht je Layout: Spalten (Raster, Standard) oder Baum – per Knopf im Layout-Panel; das Cookie merkt sich die
-        // Layouts in der Baumansicht
+        // View per layout: columns (grid, default) or tree – via a button in the layout panel; the cookie remembers the
+        // layouts in tree view
         $view = Request::get(self::VIEW, 'string');
         $layout = Request::get(self::LAYOUT, 'int', 0);
         if (in_array($view, ['grid', 'tree'], true) && $layout > 0) {
@@ -89,7 +89,7 @@ final class SliceGrid
             $_COOKIE[self::VIEW] = $value;
         }
         Fragment::addDirectory(FluidAddon::instance()->getPath('fragments/'));
-        Asset::addJsFile(FluidAddon::instance()->getAssetsUrl('slice-grid.js'));   // Formular im Dialog über dem Raster
+        Asset::addJsFile(FluidAddon::instance()->getAssetsUrl('slice-grid.js'));   // form in a dialog above the grid
         Extension::register(ContentPageModuleSelect::class, self::moduleSelect(...));
         Extension::register(SliceMenu::NAME, self::compactMenu(...));   // meldet sich als SLICE_MENU an
     }
@@ -100,13 +100,13 @@ final class SliceGrid
         return self::$on && Core::isBackend();
     }
 
-    /** Zeigt dieses Layout seine Blöcke im Raster (Ansicht „Spalten“) – sonst als Baum darunter */
+    /** Does this layout show its blocks in the grid (view „Spalten“) – otherwise as a tree below */
     public static function showsGrid(ArticleSlice $layout): bool
     {
         return self::active() && !in_array($layout->id, self::treeIds(), true);
     }
 
-    /** @return list<int> Layouts in der Baumansicht (Cookie) */
+    /** @return list<int> Layouts in tree view (cookie) */
     private static function treeIds(): array
     {
         $raw = (string) ($_COOKIE[self::VIEW] ?? '');
@@ -135,7 +135,7 @@ final class SliceGrid
         }
         $parent = Layout::parentOf($ep->slice);
         if (null === $parent || !self::showsGrid($parent)) {
-            return null;   // kein Spalten-Block bzw. Layout in der Baumansicht
+            return null;   // not a column block, or layout in tree view
         }
         $editing = in_array(Request::get('function', 'string'), ['edit', 'add'], true) && Request::get('slice_id', 'int') === $ep->slice->id;
         if ($editing) {
@@ -155,9 +155,9 @@ final class SliceGrid
     }
 
     /**
-     * Raster im Layout-Panel: Spalten in ihrer Breite, je Spalte Platzhalter für die Panels und „+ Block in Spalte n“.
+     * Grid in the layout panel: columns at their width, per column placeholders for the panels and „+ Block in Spalte n“.
      *
-     * @param array<string, mixed> $data Werte des Layouts
+     * @param array<string, mixed> $data values of the layout
      */
     public static function grid(ArticleSlice $layout, array $data): string
     {
@@ -175,20 +175,20 @@ final class SliceGrid
         return '<div class="fluid-be-grid fluid-be-cols' . $n . (isset(self::$editing[$layout->id]) ? ' is-editing' : '') . '" data-fluid-grid="' . $layout->id . '">' . $h . '</div>';
     }
 
-    /** Attribut für die Slice-Liste: Adresse der API-Funktion (Kopieren, Ausschneiden, Einfügen) */
+    /** Attribute for the slice list: URL of the API function (copy, cut, paste) */
     public static function opsAttr(): string
     {
         return null !== self::$opsUrl ? ' data-fluid-ops="' . escape(self::$opsUrl) . '"' : '';
     }
 
-    /** Fragment slice_list.php: Panels der Spalten-Blöcke in die Platzhalter setzen */
+    /** Fragment slice_list.php: insert the panels of the column blocks into the placeholders */
     public static function assemble(string $content): string
     {
         foreach (self::$cols as $layoutId => $cols) {
             foreach ($cols as $col => $items) {
                 $ph = self::placeholder($layoutId, $col);
                 $html = implode('', $items);
-                // nicht gefunden (Layout offline/anders gefiltert): Blöcke nicht verlieren – ans Ende
+                // not found (layout offline/filtered differently): don't lose blocks – append them at the end
                 $content = str_contains($content, $ph) ? str_replace($ph, $html, $content) : $content . $html;
             }
             if (isset(self::$editing[$layoutId])) {
@@ -200,7 +200,7 @@ final class SliceGrid
         return (string) preg_replace('~<!--fluid-grid:\d+:\d+-->~', '<p class="blocks-be-empty">leer</p>', $content);
     }
 
-    /** „Block hinzufügen“ vor einem Spalten-Block: neue Blöcke landen in derselben Spalte */
+    /** „Block hinzufügen“ before a column block: new blocks land in the same column */
     public static function moduleSelect(ContentPageModuleSelect $ep): string
     {
         $select = (string) $ep->subject;
@@ -217,8 +217,8 @@ final class SliceGrid
     }
 
     /**
-     * Knöpfe eines Spalten-Blocks als Symbole (Stift, Papierkorb, Status) – Titel und Knöpfe passen in eine Zeile der
-     * schmalen Spalte. Die Beschriftung bleibt für Screenreader (hidden_label) und als Tooltip.
+     * Buttons of a column block as icons (pencil, trash, status) – title and buttons fit into one line of the
+     * narrow column. The label remains for screen readers (hidden_label) and as tooltip.
      */
     public static function compactMenu(SliceMenu $ep): void
     {
@@ -226,7 +226,7 @@ final class SliceGrid
         if (null === $slice || !Module::exists($slice->moduleKey)) {
             return;
         }
-        // Verdoppeln (auch ohne Skript); Kopieren, Ausschneiden, Einfügen ergänzt assets/slice-grid.js im Menü „⋯“
+        // duplicate (also without script); assets/slice-grid.js adds copy, cut, paste in the "⋯" menu
         $article = Article::get($slice->articleId, $slice->languageId);
         if (null !== $article && $ep->hasPerm) {
             self::$opsUrl ??= BlockOpsApi::url($article, $slice->contentSectionId);
@@ -257,7 +257,7 @@ final class SliceGrid
         $ep->menuStatusAction = $icon($ep->menuStatusAction, 1 === $slice->status ? 'online' : 'offline');
     }
 
-    /** Spalte für ein neues Block-Formular (Hinzufügen in einer Spalte) – oder null */
+    /** Column for a new block form (adding in a column) – or null */
     public static function requestedCol(): ?int
     {
         $col = Request::get(self::PARAM, 'int', 0);
@@ -265,7 +265,7 @@ final class SliceGrid
         return self::active() && 'add' === Request::get('function', 'string') && $col > 0 ? $col : null;
     }
 
-    /** „+ Block in Spalte n“: nur Blöcke, die in Spalten stehen dürfen; eingefügt hinter der Gruppe des Layouts */
+    /** „+ Block in Spalte n“: only blocks allowed in columns; inserted after the layout's group */
     private static function addButton(ArticleSlice $layout, int $before, int $col): string
     {
         $items = [];
@@ -291,7 +291,7 @@ final class SliceGrid
         return '<div class="fluid-be-add">' . $fragment->parse('core/structure/content/module_select.php') . '</div>';
     }
 
-    /** Erster Slice hinter dem Layout und seinen Spalten-Blöcken (-1 = Ende) – neue Spalten-Blöcke kommen davor */
+    /** First slice after the layout and its column blocks (-1 = end) – new column blocks go before it */
     private static function sliceAfterGroup(ArticleSlice $layout): int
     {
         $children = Layout::children($layout);

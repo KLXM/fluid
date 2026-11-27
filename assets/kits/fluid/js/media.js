@@ -1,10 +1,10 @@
 /*
- * Blöcke „Bildergalerie“ (Lightbox) und „Slider“ des Kits fluid (aus KLXM Studio, media.mjs) – nur auf Seiten mit diesen Blöcken.
- * Ohne JavaScript: Galerie-Bilder sind Links auf die große Fassung, der Slider ist ein wischbarer Scroll-Snap-Streifen.
- *  Lightbox: <dialog> (modal), Fokus bleibt im Dialog, Esc schließt, ←/→ und Wischen blättern, Bildunterschrift + Zähler.
- *            Bewegung nur bei Kits mit „Animationen“ (html.has-motion) und ohne „Bewegung reduzieren“: Zoom aus dem Vorschaubild
- *            und zurück, Gleiten mit Überblendung beim Blättern, Wischen folgt dem Finger (Web Animations, keine Inline-Stile im HTML).
- *  Slider:  WAI-ARIA-„Carousel“; Autoplay nur mit Pause-Schaltfläche, stoppt bei Maus/Fokus, nie bei „Bewegung reduzieren“.
+ * Blocks „Bildergalerie“ (lightbox) and „Slider“ of the kit fluid (from KLXM Studio, media.mjs) – only on pages with these blocks.
+ * Without JavaScript: gallery images link to the large version, the slider is a swipeable scroll-snap strip.
+ *  Lightbox: <dialog> (modal), focus stays in the dialog, Esc closes, ←/→ and swiping page through, caption + counter.
+ *            Motion only in kits with „Animationen“ (html.has-motion) and without „Bewegung reduzieren“: zoom from the
+ *            thumbnail and back, sliding with crossfade when paging, swiping follows the finger (Web Animations, no inline styles in the HTML).
+ *  Slider:  WAI-ARIA „Carousel“; autoplay only with a pause button, stops on mouse/focus, never with „Bewegung reduzieren“.
  */
 (() => {
 const d = document;
@@ -21,7 +21,7 @@ const motion = () => d.documentElement.classList.contains('has-motion') && !rm.m
 const EASE = 'cubic-bezier(.2,.75,.15,1)';
 const thumbOf = a => a?.querySelector('img');
 let dx = 0, x0 = null;
-// Zwischen Vorschaubild und Großansicht zoomen (Verschiebung + Skalierung der beiden Rechtecke)
+// Zoom between thumbnail and large view (translation + scaling of the two rectangles)
 function zoom(a, back) {
   const t = thumbOf(a);
   if (!motion() || !t) return null;
@@ -32,7 +32,7 @@ function zoom(a, back) {
   dlg.animate([{ backgroundColor: 'transparent' }, {}], { duration: back ? 280 : 420, easing: 'ease', direction: back ? 'reverse' : 'normal', fill: 'both' });
   return img.animate(back ? frames.reverse() : frames, { duration: back ? 300 : 460, easing: EASE, fill: back ? 'forwards' : 'none' });
 }
-// Blättern: Kopie des alten Bildes gleitet hinaus, das neue herein
+// Paging: a copy of the old image slides out, the new one in
 function slideOut(dir) {
   if (!motion() || !img.currentSrc) return;
   const r = img.getBoundingClientRect(), g = img.cloneNode();
@@ -51,7 +51,7 @@ function close() {
   if (anim) anim.finished.then(() => { dlg.close(); anim.cancel(); }, () => dlg.close()); else dlg.close();
   if (a) opener = a;
 }
-// Dialog bei Bedarf suchen: nach einem Austausch des Inhalts (Bearbeiten, Ereignis cms:content-replaced) ist es ein neues Element
+// Look up the dialog when needed: after the content is replaced (editing, event cms:content-replaced) it is a new element
 let dlg = null, img, txt, cnt;
 let items = [], idx = 0, opener;
 function lb() {
@@ -66,13 +66,13 @@ function lb() {
     dlg.addEventListener('keydown', e => {
       if (e.key === 'Escape' && motion()) { e.preventDefault(); close(); }
       else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); const s = e.key === 'ArrowLeft' ? -1 : 1; if (items.length > 1) show(idx + s, s); }
-      else if (e.key === 'Tab') { // Fokus im Dialog halten
+      else if (e.key === 'Tab') { // Keep focus in the dialog
         const f = $$('button:not([hidden])', dlg), first = f[0], last = f[f.length - 1];
         if (e.shiftKey && d.activeElement === first) { e.preventDefault(); last.focus(); }
         else if (!e.shiftKey && d.activeElement === last) { e.preventDefault(); first.focus(); }
       }
     });
-    // Wischen: Bild folgt dem Finger (mit Bewegung), ab 50 px wird geblättert, sonst federt es zurück
+    // Swiping: the image follows the finger (with motion), from 50 px it pages, otherwise it springs back
     dlg.addEventListener('pointerdown', e => { x0 = e.isPrimary && e.pointerType !== 'mouse' ? e.clientX : null; dx = 0; });
     dlg.addEventListener('pointermove', e => { if (x0 === null || items.length < 2) return; dx = e.clientX - x0; if (motion()) img.style.transform = `translateX(${dx}px)`; });
     dlg.addEventListener('pointerup', () => {
@@ -165,9 +165,9 @@ function slider(el) {
   set(0, false);
   tick();
 }
-// Neue Slider nach einem Austausch des Inhalts (Bearbeiten auf der Website) ebenfalls starten – jeden nur einmal
+// Also start new sliders after the content is replaced (editing on the website) – each only once
 const scan = () => $$('[data-cms-slider]').forEach(el => { if (!el.cmsSlider) { el.cmsSlider = true; slider(el); } });
 scan();
 d.addEventListener('cms:content-replaced', () => { lb(); scan(); });
-d.addEventListener('cms:block-preview', () => { lb(); scan(); });   // Seiten-Editor: Block neu gezeichnet
+d.addEventListener('cms:block-preview', () => { lb(); scan(); });   // Page editor: block redrawn
 })();

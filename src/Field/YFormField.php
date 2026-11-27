@@ -7,16 +7,16 @@ use Redaxo\Core\Form\Field\Text as CoreText;
 use Redaxo\Core\View\Renderable;
 
 /**
- * Feld einer YForm-Tabelle („tabelle.feld“) – die Auswahl richtet sich nach dem Feld YFormTable des Blocks.
+ * Field of a YForm table ("table.field") – the selection depends on the block's YFormTable field.
  *
- * Nur in fluid (eigener Name). In gewöhnlichen Formularen des Cores verhält es sich wie das Feld, von dem es erbt.
+ * Only in fluid (own name). In ordinary core forms it behaves like the field it inherits from.
  */
 #[Attribute(Attribute::TARGET_PROPERTY)]
 class YFormField extends CoreText implements FluidField
 {
     /**
-     * @param 'half'|null $width fluid: halbe Breite im Formular
-     * @param list<string>|null $variants fluid: nur in diesen Darstellungen des Blocks
+     * @param 'half'|null $width fluid: half width in the form
+     * @param list<string>|null $variants fluid: only in these displays of the block
      */
     public function __construct(
         string|Renderable $label,

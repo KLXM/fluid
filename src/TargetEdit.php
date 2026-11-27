@@ -28,25 +28,25 @@ use function trim;
 use const PHP_URL_PATH;
 
 /**
- * „Ziel bearbeiten“: kleine Aktion an Karten und Kacheln, die auf eine andere Seite oder einen Datensatz zeigen
- * (aus KLXM Studio). Nur im Bearbeiten-Modus und nur mit Recht – Besucher bekommen nichts (keine Abfrage, kein Markup).
+ * „Ziel bearbeiten“: small action on cards and tiles pointing to another page or a record (from KLXM Studio).
+ * Only in edit mode and only with permission – visitors get nothing (no query, no markup).
  *
- *     <?= $b->targetEdit($it['link'], $it['title']) ?>   als erstes Kind der Karte
+ *     <?= $b->targetEdit($it['link'], $it['title']) ?>   as the card's first child
  *
- * Verweise wie im Feld „Link“: `redaxo://12` (auch `#anker`) oder eine Adresse dieser Website („/leistungen/marke“,
- * „https://eigene-domain/…“, Detailseiten einer Datenliste „/termine/titel-5“). Fremde Adressen, mailto:, tel:, Anker
- * der Seite und Sonderwerte („phone“, „email“) ergeben nichts.
+ * References as in the field „Link“: `redaxo://12` (also `#anchor`) or a URL of this website („/leistungen/marke“,
+ * „https://eigene-domain/…“, detail pages of a data list „/termine/titel-5“). External URLs, mailto:, tel:, anchors
+ * on the page and special values („phone“, „email“) yield nothing.
  *
- *  - Seite (Recht auf ihre Kategorie): öffnet sie im Bearbeiten-Modus.
- *  - Datensatz (Bearbeitungsrecht für die YForm-Tabelle): öffnet die Maske von YForm im Overlay; die Seite bleibt offen
- *    und gibt den Block nach dem Speichern neu aus. Mit Strg/⌘ bzw. ohne Skript: die Maske im Backend.
+ *  - Page (permission for its category): opens it in edit mode.
+ *  - Record (edit permission for the YForm table): opens YForm's form in the overlay; the page stays open and
+ *    re-renders the block after saving. With Ctrl/⌘ or without script: the form in the backend.
  */
 final class TargetEdit
 {
     /** @var array<string, array{kind: string, title: string, href: string}|null> */
     private static array $memo = [];
 
-    /** Die Aktion als HTML – leer für Besucher, ohne Recht und ohne internes Ziel */
+    /** The action as HTML – empty for visitors, without permission and without internal target */
     public static function html(?string $ref, ?string $label = null): string
     {
         if (null === $ref || '' === trim($ref) || !Editing::active() || Editing::isGuest()) {
@@ -70,7 +70,7 @@ final class TargetEdit
     }
 
     /**
-     * Ziel samt Rechteprüfung – null ohne Recht bzw. ohne internes Ziel.
+     * Target including permission check – null without permission or without internal target.
      *
      * @return array{kind: 'page'|'entry', title: string, href: string}|null
      */
@@ -118,7 +118,7 @@ final class TargetEdit
         [$pageId, $entryId] = $match;
         $config = Detail::config($pageId, $languageId);
         $table = null !== $config ? YFormBridge::table((string) $config['table']) : null;
-        $href = null !== $table ? YFormBridge::editUrl($table, $entryId) : null;   // prüft das Bearbeitungsrecht
+        $href = null !== $table ? YFormBridge::editUrl($table, $entryId) : null;   // checks the edit permission
         if (null === $href) {
             return null;
         }
@@ -142,7 +142,7 @@ final class TargetEdit
         return ['kind' => 'page', 'title' => $article->name, 'href' => $url . (str_contains($url, '?') ? '&' : '?') . Editing::PARAM . '=1'];
     }
 
-    /** Pfad einer Adresse dieser Website (ohne Basis, Anfrage, Anker) – null für fremde Adressen und Sonderwerte */
+    /** Path of a URL of this website (without base, query, anchor) – null for external URLs and special values */
     private static function localPath(string $href): ?string
     {
         if (preg_match('~^(mailto|tel|sms|javascript|data):~i', $href)) {
@@ -170,7 +170,7 @@ final class TargetEdit
     }
 
     /**
-     * Sprachpräfix abtrennen („en/leistungen“ → [„leistungen“, ID von en]); ohne Präfix die aktuelle Sprache.
+     * Splits off the language prefix („en/leistungen“ → [„leistungen“, ID of en]); without prefix the current language.
      *
      * @return array{string, int}
      */

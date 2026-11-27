@@ -1,7 +1,7 @@
 <?php
 /**
- * Formular aus YForm (#[AsForm]-Klasse im Projekt): YForm verarbeitet Absenden, Prüfung, CSRF, Honigtopf und Aktionen;
- * fluid gibt es im Stil des Kits aus (YFormBridge::theme). single: unter der Überschrift · split: Kopf links, Formular rechts.
+ * Form from YForm (#[AsForm] class in the project): YForm handles submitting, validation, CSRF, honeypot and actions;
+ * fluid renders it in the kit's style (YFormBridge::theme). single: below the headline · split: header left, form right.
  * @var Block $b  @var array $d
  */
 use Klxm\Fluid\Block;
@@ -12,7 +12,7 @@ use Klxm\Fluid\Legal\LegalDialog;
 use Redaxo\Core\Content\Article;
 
 $v = 'split' === $b->variant() ? 'split' : 'single';
-// Formular-Klasse aus dem Projekt (#[AsForm]) oder das eigene Formular aus den Feldern des Blocks (Data\BuiltForm)
+// form class from the project (#[AsForm]) or the own form from the block's fields (Data\BuiltForm)
 $def = YFormBridge::formDefinition((string) ($d['form'] ?? ''));
 if (!$def && YFormBridge::available() && [] !== (array) ($d['fields'] ?? [])) {
     $def = BuiltForm::make($b->id, $d, Article::getCurrent());

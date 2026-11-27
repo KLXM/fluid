@@ -7,15 +7,15 @@ use Redaxo\Core\Form\Field\DatePicker as CoreDatePicker;
 use Redaxo\Core\View\Renderable;
 
 /**
- * Feld des Cores (`DatePicker`) mit den Ergänzungen von fluid – alle zusätzlichen Parameter sind optional, ohne sie
- * verhält es sich genau wie das Feld des Cores (siehe docs/entwickler.md, „Felder“).
+ * Core field (`DatePicker`) with fluid's additions – all additional parameters are optional, without them it behaves
+ * exactly like the core field (see docs/entwickler.md, „Felder“).
  */
 #[Attribute(Attribute::TARGET_PROPERTY)]
 class DatePicker extends CoreDatePicker implements FluidField
 {
     /**
-     * @param 'half'|null $width fluid: halbe Breite im Formular
-     * @param list<string>|null $variants fluid: nur in diesen Darstellungen des Blocks
+     * @param 'half'|null $width fluid: half width in the form
+     * @param list<string>|null $variants fluid: only in these displays of the block
      */
     public function __construct(
         string|Renderable $label,

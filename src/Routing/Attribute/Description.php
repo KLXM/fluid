@@ -4,7 +4,7 @@ namespace Klxm\Fluid\Routing\Attribute;
 
 use Attribute;
 
-/** Spalte: Beschreibung für Suchmaschinen */
+/** Column: description for search engines */
 #[Attribute(Attribute::TARGET_CLASS)]
 final readonly class Description extends MetaColumn
 {

@@ -1,5 +1,5 @@
 <?php
-/** Fragen & Antworten (details/summary – ohne JavaScript). split: Kopf neben der Liste (Sidebar-Muster) · stacked. @var \Klxm\Fluid\Block $b  @var array $d */
+/** Questions & answers (details/summary – without JavaScript). split: header beside the list (sidebar pattern) · stacked. @var \Klxm\Fluid\Block $b  @var array $d */
 $v = 'stacked' === $b->variant() ? 'stacked' : 'split';
 ?>
 <div class="wrap faq faq--<?= e($v) ?>">

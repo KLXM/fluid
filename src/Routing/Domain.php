@@ -2,7 +2,7 @@
 
 namespace Klxm\Fluid\Routing;
 
-/** Eine Domain der Website (siehe Domains) */
+/** A domain of the website (see Domains) */
 final readonly class Domain
 {
     public function __construct(

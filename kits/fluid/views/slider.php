@@ -4,10 +4,10 @@ use Klxm\Fluid\Block;
 use Redaxo\Core\MediaPool\Media;
 
 /**
- * Slider (WAI-ARIA APG „Carousel“): CSS-Scroll-Snap, ohne JavaScript wisch- und scrollbar; js/media.js ergänzt Pfeile,
- * Punkte, Tastatur (←/→, Pos1/Ende), Überblenden und – nur wenn eingeschaltet – automatisches Weiterblättern mit
- * Pause-Knopf (hält bei Maus/Fokus, nie bei „Bewegung reduzieren“). Folien als group „n von m“, nicht sichtbare inert.
- * Varianten: slide (schieben) · fade (überblenden). @var \Klxm\Fluid\Block $b  @var array $d.
+ * Slider (WAI-ARIA APG „Carousel“): CSS scroll snap, swipeable and scrollable without JavaScript; js/media.js adds arrows,
+ * dots, keyboard (←/→, Home/End), crossfading and – only if enabled – automatic advancing with a
+ * pause button (stops on hover/focus, never with „reduce motion“). Slides as group „n of m“, invisible ones inert.
+ * Variants: slide · fade. @var \Klxm\Fluid\Block $b  @var array $d.
  */
 $height = in_array($d['height'] ?? '', ['16:9', '21:9', '3:2', '4:3', 'screen'], true) ? $d['height'] : '16:9';
 $fade = 'fade' === $b->variant();

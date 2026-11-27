@@ -16,18 +16,18 @@ use function array_key_exists;
 use function in_array;
 
 /**
- * Gesperrte Blöcke und Gestaltungsrechte (siehe Perm): Ein gesperrter Block (`lock` in den Abschnitts-Optionen des Slices)
- * bleibt sichtbar und verschiebbar, lässt sich aber nur mit `fluid[design_full]` ändern, online/offline schalten oder löschen.
- * Ohne `fluid[design]` bleiben die Abschnitts-Werte (Hintergrund, Abstände, Sprungmarke, Einblend-Effekt), wie sie sind.
+ * Locked blocks and design permissions (see Perm): a locked block (`lock` in the slice's section options) stays visible
+ * and movable, but can only be changed, switched online/offline or deleted with `fluid[design_full]`.
+ * Without `fluid[design]` the section values (background, spacing, anchor, reveal effect) stay as they are.
  *
- * Geprüft wird in der API von fluid (Website) und im Backend des Cores (SliceUpdating/SliceDeleting, Menü des Slices).
+ * Checked in fluid's API (website) and in the core's backend (SliceUpdating/SliceDeleting, slice menu).
  */
 final class Lock
 {
-    /** Schlüssel in den Abschnitts-Optionen (tunes) */
+    /** Key in the section options (tunes) */
     public const string TUNE = 'lock';
 
-    /** Abschnitts-Optionen, die zur Gestaltung (Stufe 1) gehören; `col` (Spalte im Layout) zählt zum Verschieben */
+    /** Section options that belong to design (level 1); `col` (column in the layout) counts as moving */
     public const array DESIGN_TUNES = ['background', 'anchor', 'spaceTop', 'spaceBottom', 'reveal'];
 
     /** @param array<string, mixed> $tunes */
@@ -36,7 +36,7 @@ final class Lock
         return !empty($tunes[self::TUNE]);
     }
 
-    /** Warum ein Benutzer einen Block nicht ändern darf: '' (darf), 'perm' (kein Modulrecht), 'lock' (gesperrt, ohne Recht). */
+    /** Why a user may not change a block: '' (may), 'perm' (no module permission), 'lock' (locked, without permission). */
     public static function reason(?User $user, ArticleSlice $slice): string
     {
         if (null === $user) {
@@ -52,7 +52,7 @@ final class Lock
         return !$modulePerm ? 'perm' : ($locked && !$designFull ? 'lock' : '');
     }
 
-    /** Ändern, Online-Schalter und Löschen nur ohne Hindernis (Modulrecht, Sperre) */
+    /** Changing, online switch and deleting only without obstacle (module permission, lock) */
     public static function assert(User $user, ArticleSlice $slice): void
     {
         match (self::reason($user, $slice)) {
@@ -63,8 +63,8 @@ final class Lock
     }
 
     /**
-     * Eingaben der Abschnitts-Optionen nach den Rechten übernehmen: ohne `fluid[design]` gelten die gespeicherten Werte der
-     * Gestaltung, ohne `fluid[design_full]` der gespeicherte Zustand der Sperre.
+     * Applies section option inputs according to permissions: without `fluid[design]` the stored design values apply,
+     * without `fluid[design_full]` the stored lock state.
      *
      * @param array<string, mixed> $stored
      * @param array<string, mixed> $input
@@ -108,7 +108,7 @@ final class Lock
         return $input;
     }
 
-    /** Kopien (Verdoppeln, Einfügen) sind nur mit Recht wieder gesperrt @param array<string, mixed> $tunes @return array<string, mixed> */
+    /** Copies (duplicating, pasting) are locked again only with permission @param array<string, mixed> $tunes @return array<string, mixed> */
     public static function forCopy(?User $user, array $tunes): array
     {
         if (null === $user || !Perm::can($user, Perm::DESIGN_FULL)) {
@@ -118,7 +118,7 @@ final class Lock
         return $tunes;
     }
 
-    /** Backend des Cores: gesperrte Blöcke ohne Recht weder bearbeiten noch löschen (Menü des Slices und Handler) */
+    /** Core backend: locked blocks can neither be edited nor deleted without permission (slice menu and handler) */
     public static function boot(): void
     {
         if (!Core::isBackend()) {

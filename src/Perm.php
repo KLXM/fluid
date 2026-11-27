@@ -11,31 +11,31 @@ use Redaxo\Core\Security\User;
 use function is_array;
 
 /**
- * Aktionsrechte des Cores (Benutzer → Rollen → „Optionen“) auf der Website – dieselben Rechte wie im Backend:
- * wer dort keine Artikel löschen darf, darf es auch auf der Website nicht. Admins dürfen alles.
+ * Core action permissions (Benutzer → Rollen → „Optionen“) on the website – the same permissions as in the backend:
+ * whoever may not delete articles there may not do so on the website either. Admins may do everything.
  *
- * Welche Blöcke jemand einfügen, bearbeiten und löschen darf, regeln die **Modulrechte** der Rolle (`modules`) – fluid
- * nutzt sie, statt eigene „erlaubte Blöcke“ einzuführen: Die Blockauswahl zeigt nur erlaubte Blöcke, Blöcke anderer Module
- * sind auf der Seite schreibgeschützt, die API prüft jede Aktion.
+ * Which blocks someone may insert, edit and delete is governed by the **module permissions** of the role (`modules`) – fluid
+ * uses them instead of introducing its own „allowed blocks“: the block picker only shows allowed blocks, blocks of other modules
+ * are read-only on the page, the API checks every action.
  *
- * Dazu zwei eigene Optionen für die **Gestaltung** (Rolle → Optionen):
- *  - `fluid[design]` (Stufe 1): Abschnitt eines Blocks – Hintergrund, Abstände (auch per Greifer), Sprungmarke, Einblend-Effekt.
- *  - `fluid[design_full]` (Stufe 2): zusätzlich Blöcke sperren und entsperren und gesperrte Blöcke ändern oder löschen (Lock).
- * Ohne Stufe 1 bleiben die Abschnitts-Werte, wie sie sind. Bestehende Rollen bekommen beide Optionen einmal beim Update
- * (migrateRoles), damit niemand etwas verliert; neue Rollen haben sie erst, wenn man sie anhakt.
+ * Plus two own options for **design** (role → options):
+ *  - `fluid[design]` (level 1): section of a block – background, spacing (also via handle), anchor, reveal effect.
+ *  - `fluid[design_full]` (level 2): additionally lock and unlock blocks and change or delete locked blocks (lock).
+ * Without level 1 the section values stay as they are. Existing roles get both options once on update
+ * (migrateRoles), so nobody loses anything; new roles only have them once they are ticked.
  */
 final class Perm
 {
-    /** Gestaltung, Stufe 1: Abschnitts-Optionen der Blöcke */
+    /** Design, level 1: section options of the blocks */
     public const string DESIGN = 'fluid[design]';
 
-    /** Gestaltung, Stufe 2: Blöcke sperren/entsperren, gesperrte Blöcke ändern und löschen */
+    /** Design, level 2: lock/unlock blocks, change and delete locked blocks */
     public const string DESIGN_FULL = 'fluid[design_full]';
 
-    /** Merker in der Konfiguration: bestehende Rollen haben die Optionen der Gestaltung bekommen */
+    /** Flag in the config: existing roles have received the design options */
     public const string MIGRATED = 'perm_design_roles';
 
-    /** Bezeichnungen für Meldungen */
+    /** Labels for messages */
     private const array LABEL = [
         'version[live_version]' => 'Veröffentlichen (Liveversion)',
         'moveSlice[]' => 'Blöcke verschieben',
@@ -56,7 +56,7 @@ final class Perm
         self::DESIGN_FULL => 'Blöcke gestalten und sperren',
     ];
 
-    /** Optionen der Gestaltung im Rollen-Formular des Cores anmelden (boot) */
+    /** Register the design options in the core role form (boot) */
     public static function register(): void
     {
         Permission::register(self::DESIGN, 'fluid: Blöcke gestalten – Abschnitt (Hintergrund, Abstände, Sprungmarke, Einblend-Effekt)', Permission::OPTIONS);
@@ -64,8 +64,8 @@ final class Perm
     }
 
     /**
-     * Einmal beim Update (FluidAddon::install): alle vorhandenen Rollen bekommen beide Optionen der Gestaltung – so ändert
-     * sich für bestehende Benutzer nichts. Liefert die Zahl der geänderten Rollen.
+     * Once on update (FluidAddon::install): all existing roles get both design options – so nothing changes
+     * for existing users. Returns the number of changed roles.
      */
     public static function migrateRoles(): int
     {
@@ -87,7 +87,7 @@ final class Perm
         return $n;
     }
 
-    /** Rechte einer Rolle (JSON) mit beiden Optionen der Gestaltung – null, wenn nichts zu ändern ist */
+    /** Permissions of a role (JSON) with both design options – null if nothing needs to change */
     public static function withDesign(string $json): ?string
     {
         $perms = json_decode($json, true);
@@ -104,7 +104,7 @@ final class Perm
         return (string) json_encode($perms);
     }
 
-    /** Modulrecht des Cores: darf der Benutzer Blöcke dieses Moduls einfügen, bearbeiten und löschen? */
+    /** Core module permission: may the user insert, edit and delete blocks of this module? */
     public static function module(User $user, string $moduleKey): bool
     {
         if ($user->admin) {
@@ -125,7 +125,7 @@ final class Perm
         }
     }
 
-    /** Recht je nach Art der Seite: Menüseite (Kategorie) oder Seite (Artikel), z. B. for($a, 'move') */
+    /** Permission depending on the kind of page: menu page (category) or page (article), e.g. for($a, 'move') */
     public static function forPage(Article $a, string $action): string
     {
         $isCat = $a->isStartArticle() && null !== Category::get($a->id);
@@ -133,7 +133,7 @@ final class Perm
         return $action . ($isCat ? 'Category' : 'Article') . '[]';
     }
 
-    /** Für die Leiste: was darf dieser Benutzer? */
+    /** For the toolbar: what may this user do? */
     public static function flags(User $user): array
     {
         $out = [];

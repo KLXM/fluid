@@ -4,11 +4,11 @@ namespace Klxm\Fluid\Routing\Attribute;
 
 use Attribute;
 
-/** Spalte, aus der die Adresse entsteht */
+/** Column the address is created from */
 #[Attribute(Attribute::TARGET_CLASS)]
 final readonly class Slug extends MetaColumn
 {
-    /** @param bool $withId ID anhängen („titel-12“): stabil, wenn der Titel nicht eindeutig ist */
+    /** @param bool $withId append the ID („titel-12“): stable if the title is not unique */
     public function __construct(
         string $column,
         public bool $withId = false,

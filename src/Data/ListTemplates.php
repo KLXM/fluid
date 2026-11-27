@@ -35,36 +35,36 @@ use const JSON_UNESCAPED_SLASHES;
 use const JSON_UNESCAPED_UNICODE;
 
 /**
- * Listen-Vorlagen: gespeicherte Darstellungen (Optionssätze) für Listenblöcke wie die Datenliste – nach dem Vorbild von
- * KLXM Studio (Core\Blocks\ListTemplates, MIT).
+ * List templates: saved presentations (option sets) for list blocks like the data list – modelled on KLXM Studio
+ * (Core\Blocks\ListTemplates, MIT).
  *
- * Eine Vorlage ist ein benannter Satz der Darstellungs-Optionen eines Blocks (Darstellung, Bild-, Text- und Zusatzfeld,
- * Sortierung, Besucher-Filter, Breite …) für eine Tabelle. Der Block behält, was zum Inhalt und zur Adresse gehört
- * (BLOCK_KEYS: Überschrift, Tabelle, Titelfeld, Bedingung, Anzahl, Blättern, Detailansicht, Menü …). Beim Ausgeben legt
- * resolve() die Werte der gewählten Vorlage über die Blockdaten (BlockModule::block()) – Views bekommen normale Daten.
- * **Ohne gewählte Vorlage (Feld „template“ leer, auch alle bestehenden Blöcke) bleibt alles wie bisher**; fehlt eine
- * gewählte Vorlage, gelten die eigenen Werte des Blocks.
+ * A template is a named set of a block's presentation options (variant, image, text and extra field, sorting,
+ * visitor filters, width …) for one table. The block keeps what belongs to the content and the URL (BLOCK_KEYS:
+ * headline, table, title field, condition, count, paging, detail view, menu …). On output resolve() lays the values
+ * of the selected template over the block data (BlockModule::block()) – views get normal data.
+ * **Without a selected template (field „template“ empty, including all existing blocks) everything stays as before**;
+ * if a selected template is missing, the block's own values apply.
  *
- * Quellen:
- *  - Tabelle rex_fluid_list_template (Verwaltung in der Seitenleiste: „Als Vorlage speichern“, Standard, Umbenennen, Löschen);
- *    Vorschläge je Tabelle legt seed() beim ersten Öffnen an.
+ * Sources:
+ *  - Table rex_fluid_list_template (managed in the sidebar: „Als Vorlage speichern“, default, rename, delete);
+ *    seed() creates suggestions per table on first opening.
  *  - Kit: kit.php → 'list_templates' => ['gross' => ['name' => …, 'options' => […], 'tables' => ['rex_…'], 'default' => true]] –
- *    Schlüssel „kit:gross“, nur lesbar.
- *  - Extension Point FLUID_LIST_TEMPLATES (gleiches Format, Params table, block) – Schlüssel „ext:…“.
- * Feldwerte von YForm-Feldern dürfen ohne Tabellen-Präfix stehen („title“ statt „rex_news.title“).
+ *    key „kit:gross“, read-only.
+ *  - Extension point FLUID_LIST_TEMPLATES (same format, params table, block) – key „ext:…“.
+ * Values of YForm fields may omit the table prefix („title“ instead of „rex_news.title“).
  *
- * Blöcke nehmen teil mit #[AsBlock(listTemplate: true)] (oder einer Liste weiterer Felder, die beim Block bleiben) und einem
- * Feld Field\ListTemplate. Recht zum Anlegen, Ändern und Festlegen des Standards: Perm::DESIGN_FULL.
+ * Blocks take part with #[AsBlock(listTemplate: true)] (or a list of further fields that stay with the block) and a
+ * field Field\ListTemplate. Permission to create, change and set the default: Perm::DESIGN_FULL.
  */
 final class ListTemplates
 {
     public const string TABLE = 'rex_fluid_list_template';
 
-    /** Felder, die immer beim Block bleiben: Inhalt, Auswahl der Einträge, Adressen */
+    /** Fields that always stay with the block: content, selection of entries, URLs */
     public const array BLOCK_KEYS = ['eyebrow', 'title', 'intro', 'table', 'template', 'title_field', 'filter_field', 'filter_value', 'limit', 'pager',
         'detail', 'ics', 'empty_text', 'menu_entries', 'menu_limit', 'knowledge_style'];
 
-    /** Merker: Vorschläge je „block|tabelle“ schon angelegt (auch wenn danach gelöscht) */
+    /** Marker: suggestions per „block|tabelle“ already created (even if deleted afterwards) */
     public const string SEEDED = 'list_templates_seeded';
 
     /** @var array<string, array<string, array<string, mixed>>> */
@@ -93,7 +93,7 @@ final class ListTemplates
     }
 
     /**
-     * Namen der Felder, die eine Vorlage festlegt: Darstellung und alle Felder außer BLOCK_KEYS (und weiteren des Blocks).
+     * Names of the fields a template sets: variant and all fields except BLOCK_KEYS (and further ones of the block).
      *
      * @param class-string<BlockModule> $module
      * @return list<string>
@@ -116,7 +116,7 @@ final class ListTemplates
     // ------------------------------------------------------------------ Lesen
 
     /**
-     * Vorlagen eines Blocks für eine Tabelle: gespeicherte (Standard zuerst), dann Kit und Extension Point.
+     * Templates of a block for a table: saved ones (default first), then kit and extension point.
      *
      * @param class-string<BlockModule> $module
      * @return array<string, array{key: string, id: ?int, name: string, variant: string, options: array<string, mixed>, default: bool, source: string, locked: bool}>
@@ -147,7 +147,7 @@ final class ListTemplates
     }
 
     /**
-     * Vorlagen aus dem Kit (kit.php → list_templates) und dem Extension Point FLUID_LIST_TEMPLATES.
+     * Templates from the kit (kit.php → list_templates) and the extension point FLUID_LIST_TEMPLATES.
      *
      * @param class-string<BlockModule> $module
      * @return array<string, array<string, mixed>>
@@ -184,7 +184,7 @@ final class ListTemplates
         return '' === $key || '' === $table ? null : (self::forTable($module, $table)[$key] ?? null);
     }
 
-    /** Standard der Tabelle: gespeicherter, sonst der eines Kits/Extension Points, sonst null @param class-string<BlockModule> $module */
+    /** Default of the table: saved one, otherwise that of a kit/extension point, otherwise null @param class-string<BlockModule> $module */
     public static function defaultKey(string $module, string $table): ?string
     {
         $code = null;
@@ -213,7 +213,7 @@ final class ListTemplates
     // ------------------------------------------------------------------ Anwenden
 
     /**
-     * Blockdaten mit der gewählten Vorlage (BlockModule::block(), Data\Detail); ohne Vorlage unverändert.
+     * Block data with the selected template (BlockModule::block(), Data\Detail); unchanged without template.
      *
      * @param class-string<BlockModule> $module
      * @param array<string, mixed> $data
@@ -232,8 +232,8 @@ final class ListTemplates
     }
 
     /**
-     * Werte der Vorlage über die Blockdaten legen; fehlende Optionen = Standard des Feldes (eine Vorlage bestimmt die
-     * Darstellung ganz).
+     * Lays the template's values over the block data; missing options = the field's default (a template fully
+     * determines the presentation).
      *
      * @param class-string<BlockModule> $module
      * @param array<string, mixed> $data
@@ -250,7 +250,7 @@ final class ListTemplates
             }
             $f = $byName[$k] ?? [];
             $v = array_key_exists($k, $tpl['options']) ? $tpl['options'][$k] : ($f['default'] ?? ('bool' === ($f['type'] ?? '') ? false : ''));
-            // YForm-Felder: ohne Präfix („title“) gilt die Tabelle des Blocks
+            // YForm fields: without prefix („title“) the block's table applies
             if ('yform_field' === ($f['type'] ?? '') && is_string($v) && '' !== $v && !str_contains($v, '.')) {
                 $v = $table . '.' . $v;
             }
@@ -261,7 +261,7 @@ final class ListTemplates
     }
 
     /**
-     * Optionen aus den Blockdaten (Als Vorlage speichern) – nur die Felder der Vorlage, YForm-Felder ohne Präfix.
+     * Options from the block data („Als Vorlage speichern“) – only the template's fields, YForm fields without prefix.
      *
      * @param class-string<BlockModule> $module
      * @param array<string, mixed> $data
@@ -314,7 +314,7 @@ final class ListTemplates
         self::changed();
     }
 
-    /** Standard der Tabelle setzen (null = keiner) @param class-string<BlockModule> $module */
+    /** Sets the table's default (null = none) @param class-string<BlockModule> $module */
     public static function setDefault(string $module, string $table, ?string $key): void
     {
         Sql::factory()->setQuery('UPDATE ' . self::TABLE . ' SET is_default = IF(tkey = ?, 1, 0) WHERE block = ? AND table_name = ?', [(string) $key, $module::key(), $table]);
@@ -331,7 +331,7 @@ final class ListTemplates
     private static function changed(): void
     {
         self::$memo = [];
-        Cache::delete();   // Seiten mit der Vorlage neu ausgeben (Inhalts-Cache der Artikel)
+        Cache::delete();   // re-render pages using the template (articles' content cache)
     }
 
     private static function cleanName(string $name): string
@@ -354,11 +354,11 @@ final class ListTemplates
         return $key;
     }
 
-    // ------------------------------------------------------------------ Vorschläge
+    // ------------------------------------------------------------------ Suggestions
 
     /**
-     * Vorschläge für eine Tabelle (je nach Feldern): Karten immer; Liste mit Bild, wenn ein Bildfeld da ist; Tabelle
-     * sortierbar; Kompakte Karten. Nur Optionen, die der Block kennt.
+     * Suggestions for a table (depending on its fields): cards always; list with image if there is an image field;
+     * sortable table; compact cards. Only options the block knows.
      *
      * @return list<array{name: string, options: array<string, mixed>}>
      */
@@ -377,14 +377,14 @@ final class ListTemplates
             $out[] = ['name' => 'Liste', 'options' => ['variant' => 'list']];
         }
         $out[] = ['name' => 'Tabelle sortierbar', 'options' => ['variant' => 'table', 'table_sort' => true]];
-        if (Knowledge::is($t)) {   // Wissensbereich: Inhaltsverzeichnis mit Kapitelbaum
+        if (Knowledge::is($t)) {   // Knowledge base: table of contents with chapter tree
             array_unshift($out, ['name' => 'Inhaltsverzeichnis', 'options' => ['variant' => 'toc']]);
         }
 
         return $out;
     }
 
-    /** Vorschläge einmal je Tabelle anlegen (gelöschte kommen nicht wieder) @param class-string<BlockModule> $module */
+    /** Creates suggestions once per table (deleted ones don't come back) @param class-string<BlockModule> $module */
     public static function seed(string $module, string $table): int
     {
         if ('' === $table || !self::supports($module) || null === YFormBridge::table($table)) {
@@ -416,7 +416,7 @@ final class ListTemplates
 
     // ------------------------------------------------------------------ Seitenleiste
 
-    /** Vorschaubild einer Darstellung als SVG (nur Formen, Farbe aus currentColor; aria-hidden) */
+    /** Preview image of a variant as SVG (shapes only, color from currentColor; aria-hidden) */
     public static function preview(string $variant): string
     {
         $r = static fn (float $x, float $y, float $w, float $h, string $c = 'b', int $rx = 2) => '<rect x="' . $x . '" y="' . $y . '" width="' . $w . '" height="' . $h . '" rx="' . $rx . '" class="ltpl-svg__' . $c . '"/>';
@@ -451,9 +451,9 @@ final class ListTemplates
     }
 
     /**
-     * Feld „Vorlage“ (FieldForm, Typ listtemplate): Kacheln mit Vorschaubild je Vorlage aller Tabellen – form.js zeigt die der
-     * gewählten Tabelle –, „Eigene Einstellungen“ zuerst. Mit Recht (Perm::DESIGN_FULL) und auf der Website: Als Vorlage
-     * speichern, Standard, Umbenennen, Löschen, Überschreiben.
+     * Field „Vorlage“ (FieldForm, type listtemplate): tiles with a preview image per template of all tables – form.js
+     * shows those of the selected table –, „Eigene Einstellungen“ first. With permission (Perm::DESIGN_FULL) and on the
+     * website: „Als Vorlage speichern“, default, rename, delete, overwrite.
      *
      * @param class-string<BlockModule> $module
      */
@@ -463,7 +463,7 @@ final class ListTemplates
         $user = Editing::user() ?? Core::getUser();
         $manage = !$backend && null !== $user && Perm::can($user, Perm::DESIGN_FULL);
         if ('' !== $table) {
-            self::seed($module, $table);   // Vorschläge der gewählten Tabelle beim ersten Öffnen
+            self::seed($module, $table);   // suggestions for the selected table on first opening
         }
         $variants = $module::variants();
         $tile = static function (string $key, string $tname, string $variant, string $tbl, bool $isDefault, string $opts, bool $locked) use ($name, $value, $id, $variants, $table): string {
@@ -509,8 +509,8 @@ final class ListTemplates
     }
 
     /**
-     * API des Editors (Api: Aktion list_template): op = save | overwrite | rename | default | delete. Antwort: neues Feld
-     * (html) und der gewählte Schlüssel.
+     * Editor API (Api: action list_template): op = save | overwrite | rename | default | delete. Response: new field
+     * (html) and the selected key.
      *
      * @return array<string, mixed>
      */

@@ -12,8 +12,8 @@ use Redaxo\Core\Http\Response;
 use function Redaxo\Core\View\escape;
 
 /**
- * Beispiel: Modul mit eigenem input() – das Formular baut das Modul selbst zusammen. fluid zeigt dafür in der
- * Seitenleiste das Formular des Cores (dieselbe Maske wie im Backend).
+ * Example: module with its own input() – the module builds the form itself. For this fluid shows the core's form
+ * in the sidebar (the same form as in the backend).
  */
 #[AsModule('hinweis_eigen', 'Hinweis mit eigenem Formular (Beispiel)')]
 final class HinweisEigenesFormularModule extends Module
@@ -31,7 +31,7 @@ final class HinweisEigenesFormularModule extends Module
 
     public function output(): string
     {
-        // Keine style-Attribute (Content-Security-Policy des Backends): Klasse und einmal je Seite ein <style nonce>
+        // No style attributes (the backend's Content Security Policy): a class and one <style nonce> per page
         static $css = false;
         $style = $css ? '' : '<style nonce="' . escape(Response::getNonce()) . '">.hinweis-eigen{margin-block:2rem;padding:1.25rem 2rem;border:2px dashed var(--f-line-strong,#94a3b8);border-radius:var(--f-radius,6px)}.hinweis-eigen p{margin:.5rem 0 0}</style>';
         $css = true;

@@ -7,8 +7,8 @@ use Redaxo\Core\Database\Sql;
 use Throwable;
 
 /**
- * Aktivitätsprotokoll (Modell aus KLXM Studio – Core\Activity): wer hat wann welche Seite gespeichert, veröffentlicht,
- * angelegt, verschoben … (Tabelle rex_fluid_activity, die letzten MAX Einträge). Keine IP-Adressen.
+ * Activity log (model from KLXM Studio – Core\Activity): who saved, published, created, moved … which page
+ * when (table rex_fluid_activity, the last MAX entries). No IP addresses.
  */
 final class Activity
 {
@@ -24,8 +24,8 @@ final class Activity
 
     public static function log(string $action, ?int $articleId = null, string $detail = ''): void
     {
-        // Suchindex: jede protokollierte Änderung (Editor, MCP) kann live sein (ohne Arbeitsversion) – neu aufbauen lassen
-        if (!Editing::isGuest()) {   // Gäste (Gastzugang) ändern nie dauerhaft
+        // search index: every logged change (editor, MCP) can be live (without working version) – have it rebuilt
+        if (!Editing::isGuest()) {   // guests (guest access) never change anything permanently
             Search\Search::markDirty();
         }
         try {
@@ -38,7 +38,7 @@ final class Activity
                 Sql::factory()->setQuery('DELETE FROM ' . self::TABLE . ' WHERE id < (SELECT m FROM (SELECT MAX(id) - ' . self::MAX . ' AS m FROM ' . self::TABLE . ') x)');
             }
         } catch (Throwable) {
-            // Protokoll ist nie wichtiger als die Aktion selbst
+            // the log is never more important than the action itself
         }
     }
 

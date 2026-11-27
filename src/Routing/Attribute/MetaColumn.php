@@ -5,8 +5,8 @@ namespace Klxm\Fluid\Routing\Attribute;
 use Klxm\Fluid\Routing\RouteSource;
 
 /**
- * Spalte einer Tabelle mit einer Rolle (Slug, Titel …). Editierbare Spalten kann ein Editor (z. B. fluid auf der Website)
- * anbieten – {@see RouteSource::editable()}.
+ * Column of a table with a role (slug, title …). An editor (e.g. fluid on the website) can offer editable columns
+ * – {@see RouteSource::editable()}.
  */
 abstract readonly class MetaColumn
 {
@@ -16,7 +16,7 @@ abstract readonly class MetaColumn
         public bool $editable = true,
     ) {}
 
-    /** Rolle: slug, title, description, image, modified */
+    /** Role: slug, title, description, image, modified */
     abstract public function role(): string;
 
     abstract public function defaultLabel(): string;
@@ -26,7 +26,7 @@ abstract readonly class MetaColumn
         return $this->label ?? $this->defaultLabel();
     }
 
-    /** Art des Eingabefelds: text, textarea, media, none */
+    /** Kind of input field: text, textarea, media, none */
     public function kind(): string
     {
         return 'text';

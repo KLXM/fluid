@@ -4,15 +4,15 @@ use Klxm\Fluid\Block;
 use Klxm\Fluid\Kit;
 
 /**
- * Scrollytelling: Bildspalte bleibt stehen (position: sticky), Textabschnitte ziehen vorbei; js/scrolly.js blendet das
- * passende Bild ein (IntersectionObserver). Container-Query: Unter ~46 rem Blockbreite steht jedes Bild direkt über
- * seinem Text (die stehende Spalte entfällt). Ohne JavaScript bleibt das erste Bild stehen – alle Bilder stehen zusätzlich
- * am Text. Bei „Bewegung reduzieren“ wechseln die Bilder ohne Überblendung.
- *  - Bild je Abschnitt optional: Ohne eigenes Bild bleibt das vorige stehen (data-img am Abschnitt = Index des Abschnitts,
- *    dessen Bild gilt; leer = noch kein Bild). Auf schmalen Flächen steht ein Bild nur bei dem Abschnitt, der es bringt.
- *  - Bildformat „auto“: jedes Bild in seinem eigenen Seitenverhältnis (kein Zuschnitt, Hochformat bleibt ganz).
- *  - Text: Rich-Text (früher Textfeld) – alter Klartext erscheint unverändert wie bisher. Zwischenüberschriften im Text liegen
- *    immer unter der Ebene des Abschnittstitels (unter h3 → h4).
+ * Scrollytelling: the image column stays in place (position: sticky), text sections scroll past; js/scrolly.js fades in
+ * the matching image (IntersectionObserver). Container query: below ~46 rem block width each image sits directly above
+ * its text (the sticky column is dropped). Without JavaScript the first image stays – all images also appear at the
+ * text. With reduced motion the images change without crossfade.
+ *  - Image per section optional: without its own image the previous one stays (data-img on the section = index of the
+ *    section whose image applies; empty = no image yet). On narrow areas an image only appears with the section that brings it.
+ *  - Image format „auto“: each image in its own aspect ratio (no cropping, portrait stays whole).
+ *  - Text: rich text (formerly a text field) – old plain text appears unchanged as before. Subheadings in the text are
+ *    always below the level of the section title (below h3 → h4).
  * @var Block $b  @var array $d
  */
 $ratio = (string) ($d['ratio'] ?? '') ?: '4:5';
@@ -34,7 +34,7 @@ foreach ($items as $i => $it) {
     }
 }
 if ($long) {
-    Kit::active()->markUsed('@rich');   // css/prose.css für die Texte
+    Kit::active()->markUsed('@rich');   // css/prose.css for the texts
 }
 ?>
 <div class="wrap">

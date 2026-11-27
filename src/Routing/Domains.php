@@ -12,13 +12,13 @@ use function strtolower;
 use function trim;
 
 /**
- * Domains einer Website (Tabelle rex_fluid_domain, Modell aus KLXM Studio – Core\Domains und Core\Landings):
+ * Domains of a website (table rex_fluid_domain, model from KLXM Studio – Core\Domains and Core\Landings):
  *
- *  - primary: Hauptadresse. Canonical, Sitemap und absolute Links nutzen sie. Ohne Eintrag gilt der aufgerufene Host.
- *  - alias:   weitere Domain derselben Website – leitet per 301 auf die Hauptadresse (nie für lokale Hosts).
- *  - landing: eigene Domain für eine Seite (auf Wunsch mit Unterseiten) – „/“ zeigt die Seite. Links auf Seiten der
- *             Landingpage bleiben auf der Landing-Domain, alle anderen zeigen absolut auf die Hauptadresse.
- *             Canonical „own“ = Landing-Domain ist maßgeblich, „mirror“ = Hauptadresse.
+ *  - primary: main address. Canonical, sitemap and absolute links use it. Without an entry the requested host applies.
+ *  - alias:   another domain of the same website – redirects with 301 to the main address (never for local hosts).
+ *  - landing: own domain for one page (optionally with subpages) – „/“ shows the page. Links to pages of the
+ *             landing page stay on the landing domain, all others point absolutely to the main address.
+ *             Canonical „own“ = landing domain is authoritative, „mirror“ = main address.
  */
 final class Domains
 {
@@ -44,7 +44,7 @@ final class Domains
                     $r['article_id'] ? (int) $r['article_id'] : null, (bool) $r['subtree'], 'mirror' !== $r['canonical']);
             }
         } catch (Throwable) {
-            // Tabelle noch nicht angelegt
+            // table not created yet
         }
 
         return self::$all;
@@ -73,7 +73,7 @@ final class Domains
         return null;
     }
 
-    /** Landing-Domain, zu der eine Seite gehört (Einstiegsseite oder – mit Unterseiten – darunter) */
+    /** Landing domain a page belongs to (entry page or – with subpages – below it) */
     public static function landingFor(int $articleId, array $ancestors): ?Domain
     {
         foreach (self::all() as $d) {
@@ -86,7 +86,7 @@ final class Domains
         return null;
     }
 
-    /** Host ohne Schema, Pfad und Port, klein */
+    /** Host without scheme, path and port, lowercase */
     public static function host(string $h): string
     {
         $h = strtolower(trim($h));
@@ -95,7 +95,7 @@ final class Domains
         return trim((string) preg_replace('~[/:].*$~', '', $h), '.');
     }
 
-    /** Lokale Entwicklungsadresse – nie Quelle einer Weiterleitung auf die Hauptadresse */
+    /** Local development address – never the source of a redirect to the main address */
     public static function isLocal(string $host): bool
     {
         $h = self::host($host);

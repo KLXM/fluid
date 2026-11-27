@@ -1,14 +1,14 @@
 /* ==========================================================================
-   Glossar (Klxm\Fluid\Glossary, aus KLXM Studio, MIT): Begriffe im Text (.gl, .gl-term, .gl-pop) und Block „Glossar“ (.glx).
-   Nur geladen auf Seiten mit markierten Begriffen bzw. dem Block. Kits ersetzen css/glossary.css oder setzen Variablen
-   (auf :root, einem Abschnitt oder .gl/.glx):
-     --gl-accent   Unterstreichung beim Zeigen, Link, Fokus       --gl-line    gepunktete Unterstreichung
-     --gl-bg       Fläche des Hinweisfensters                     --gl-text    Text im Hinweisfenster
-     --gl-border   Rand des Hinweisfensters                       --gl-radius  Eckenradius
-     --gl-shadow   Schatten                                       --gl-width   Breite des Hinweisfensters
-     --gl-font     Schrift des Hinweisfensters (Standard: wie der Text)
-     --gl-pop-accent  Link und Fokus im Hinweisfenster (Standard: Akzent, mit der Textfarbe gemischt)
-   Ohne Angaben: Akzent aus den Link-Farben der Kern-Kits, Fläche und Text aus der Textfarbe abgeleitet (hell/dunkel).
+   Glossary (Klxm\Fluid\Glossary, from KLXM Studio, MIT): terms in the text (.gl, .gl-term, .gl-pop) and block „Glossar“ (.glx).
+   Loaded only on pages with marked terms or the block. Kits replace css/glossary.css or set variables
+   (on :root, a section or .gl/.glx):
+     --gl-accent   underline on hover, link, focus                --gl-line    dotted underline
+     --gl-bg       background of the popup                        --gl-text    text in the popup
+     --gl-border   border of the popup                            --gl-radius  corner radius
+     --gl-shadow   shadow                                         --gl-width   width of the popup
+     --gl-font     font of the popup (default: like the text)
+     --gl-pop-accent  link and focus in the popup (default: accent, mixed with the text colour)
+   Defaults: accent from the core kits' link colours, background and text derived from the text colour (light/dark).
    ========================================================================== */
 .gl{
   --_acc:var(--gl-accent,var(--kit-link,var(--b-link,var(--m-link,var(--e-link,var(--n-link,var(--f-link,var(--g-link,var(--s-link,var(--primary,currentColor))))))))));
@@ -21,15 +21,15 @@
   text-decoration:underline dotted var(--gl-line,color-mix(in srgb,currentColor 62%,transparent));
   text-decoration-thickness:max(1.5px,.09em);text-underline-offset:.24em;-webkit-tap-highlight-color:transparent
 }
-/* Über „ganze Karte ist ein Link“ (::after mit inset:0, z. B. Referenz- und Leistungskarten) liegen – sonst öffnet der Begriff
-   nie sein Hinweisfenster, der Klick ginge an den Karten-Link. Der Rest der Karte bleibt klickbar. */
+/* Sit above „whole card is a link“ (::after with inset:0, e.g. reference and service cards) – otherwise the term never
+   opens its popup and the click would go to the card link. The rest of the card stays clickable. */
 .gl-term{position:relative;z-index:2}
 .gl-sr{position:absolute!important;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
 .gl-term:hover,.gl-term[aria-expanded=true]{text-decoration-color:var(--_acc);text-decoration-style:solid}
 .gl-term[aria-expanded=true]{background:color-mix(in srgb,var(--_acc) 14%,transparent)}
 .gl-term:focus-visible{outline:2px solid var(--_acc);outline-offset:2px}
 
-/* ---------------------------------------------------------------- Hinweisfenster (Popover; ohne Popover-API: .is-open) */
+/* ---------------------------------------------------------------- Popup (popover; without Popover API: .is-open) */
 .gl-pop{
   display:none;position:fixed;inset:auto 12px 12px;z-index:2147483000;box-sizing:border-box;width:max-content;max-width:var(--gl-width,min(22rem,calc(100vw - 24px)));
   margin:0 auto;padding:.85em 1em .9em;overflow:visible;border:1px solid var(--gl-border,color-mix(in srgb,currentColor 18%,transparent));
@@ -37,7 +37,7 @@
   letter-spacing:normal;text-align:left;text-transform:none;white-space:normal;color:inherit;background:Canvas;
   box-shadow:var(--gl-shadow,0 12px 32px -8px rgb(0 0 0/.28),0 2px 6px rgb(0 0 0/.1))
 }
-/* Fläche und Text aus der Textfarbe der Umgebung: dunkle Schrift → helle Fläche, helle Schrift → dunkle Fläche */
+/* Background and text from the surrounding text colour: dark text → light background, light text → dark background */
 @supports (color:oklch(from red l c h)){
   .gl-pop{color:var(--gl-text,oklch(from currentColor clamp(.17,(l - .6) * 1000,.97) min(c,.02) h));
     background:var(--gl-bg,oklch(from currentColor clamp(.22,(.6 - l) * 1000,.995) min(c,.012) h))}
@@ -54,10 +54,10 @@
 .gl-pop__d{display:block}
 .gl-pop__more{display:inline-block;margin-top:.55em;color:var(--gl-pop-accent,var(--_acc));font-weight:600;text-decoration:underline;text-underline-offset:.2em}
 @supports (color:oklch(from red l c h)){
-  /* Link gut lesbar auf der abgeleiteten Fläche: Akzent mit der Helligkeit des Textes mischen */
+  /* Link readable on the derived background: mix the accent with the text's lightness */
   .gl-pop__more{color:var(--gl-pop-accent,color-mix(in oklab,var(--_acc) 70%,currentColor))}
 }
-/* Schmale Bildschirme: unten als Blatt über die ganze Breite */
+/* Narrow screens: at the bottom as a sheet across the full width */
 @media (max-width:36em){
   .gl-pop{inset:auto 0 0 0;width:auto;max-width:none;padding:1.1em 1.25em calc(1.2em + env(safe-area-inset-bottom));border-width:1px 0 0;
     border-radius:var(--_r) var(--_r) 0 0;font-size:1rem;box-shadow:0 -10px 32px -6px rgb(0 0 0/.3)}
@@ -69,7 +69,7 @@
 }
 @media (forced-colors:active){.gl-pop{border:1px solid CanvasText}.gl-term{text-decoration-color:LinkText}}
 
-/* ---------------------------------------------------------------- Druck: Erklärung in Klammern hinter dem Begriff */
+/* ---------------------------------------------------------------- Print: explanation in brackets after the term */
 @media print{
   .gl-term{text-decoration:none;background:none}
   .gl-pop[popover],.gl-pop{display:inline!important;position:static!important;inset:auto;width:auto;max-width:none;margin:0;padding:0;border:0;
@@ -80,7 +80,7 @@
   .gl-pop__d{display:inline}
 }
 
-/* ---------------------------------------------------------------- Block „Glossar“: Liste A–Z und Detailseite */
+/* ---------------------------------------------------------------- Block „Glossar“: list A–Z and detail page */
 .glx-group[hidden]{display:none}
 .glx-list{display:grid;margin:0;border-top:1px solid var(--f-line-strong,currentColor)}
 .glx-item{display:flex;flex-wrap:wrap;gap:.25rem 1.5rem;padding:.8rem 0;border-bottom:1px solid var(--f-line,rgb(0 0 0/.12))}

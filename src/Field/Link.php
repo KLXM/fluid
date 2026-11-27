@@ -9,16 +9,16 @@ use Redaxo\Core\Form\Reference;
 use Redaxo\Core\View\Renderable;
 
 /**
- * Link: Seite der Website (redaxo://ID, Linkmap), Adresse, E-Mail, Telefon oder Sprungmarke.
+ * Link: page of the website (redaxo://ID, linkmap), URL, email, phone or anchor.
  *
- * Nur in fluid (eigener Name). In gewöhnlichen Formularen des Cores verhält es sich wie das Feld, von dem es erbt.
+ * Only in fluid (own name). In ordinary core forms it behaves like the field it extends.
  */
 #[Attribute(Attribute::TARGET_PROPERTY)]
 class Link extends CoreText implements FluidField, ReferencesItems
 {
     /**
-     * @param 'half'|null $width fluid: halbe Breite im Formular
-     * @param list<string>|null $variants fluid: nur in diesen Darstellungen des Blocks
+     * @param 'half'|null $width fluid: half width in the form
+     * @param list<string>|null $variants fluid: only in these display variants of the block
      */
     public function __construct(
         string|Renderable $label,
@@ -37,7 +37,7 @@ class Link extends CoreText implements FluidField, ReferencesItems
         return array_filter(['type' => 'link', 'width' => $this->width, 'variants' => $this->variants], static fn ($v) => null !== $v);
     }
 
-    /** @return list<Reference> verlinkte Seite (redaxo://ID) */
+    /** @return list<Reference> linked page (redaxo://ID) */
     public function references(mixed $value): array
     {
         return Links::references($value);

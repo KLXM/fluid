@@ -18,8 +18,8 @@ use function count;
 use function in_array;
 
 /**
- * Glossar aus der YForm-Tabelle rex_fluid_glossary (GlossaryTable) – Standard-Datenquelle von Glossary. Ohne YForm ist
- * das Glossar einfach nicht verfügbar.
+ * Glossary from the YForm table rex_fluid_glossary (GlossaryTable) – Glossary's default data source. Without YForm
+ * the glossary is simply not available.
  */
 final class YFormGlossaryStore implements GlossaryStore
 {
@@ -55,7 +55,7 @@ final class YFormGlossaryStore implements GlossaryStore
             }
             $rows = iterator_to_array($q->find(), false);
         } catch (Throwable) {
-            return [];   // Tabelle noch nicht angelegt (vor migrate)
+            return [];   // table not created yet (before migrate)
         }
         $out = [];
         $slugs = [];
@@ -64,7 +64,7 @@ final class YFormGlossaryStore implements GlossaryStore
             if ('' === $term) {
                 continue;
             }
-            // Slug aus dem Begriff; doppelte bekommen die ID dazu
+            // slug from the term; duplicates get the ID appended
             $slug = Routes::slugify($term) ?: 'begriff';
             if (isset($slugs[$slug])) {
                 $slug .= '-' . $r->id;

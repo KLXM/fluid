@@ -15,16 +15,15 @@ use Redaxo\Core\Content\ArticleContent;
 use Redaxo\Core\Content\AsTemplate;
 use Redaxo\Core\Content\Category;
 use Redaxo\Core\Content\ContentSection;
-use Redaxo\Core\Content\Module;
 use Redaxo\Core\Content\Template;
 use Redaxo\Core\Language\Language;
 use Redaxo\Core\View\HasView;
 use Redaxo\Core\View\Renderer;
 
 /**
- * Seitenrahmen von fluid: Kopf mit Menü aus der Struktur, Inhalt (Blöcke), Fuß – gestaltet vom gewählten Kit.
- * Markup und Klassen wie im Studio-Kit, damit dessen CSS unverändert greift. Ein Kit kann den Rahmen mit eigener
- * `template.view.php` ersetzen (gleiche Signatur wie FluidTemplate.view.php).
+ * Page frame of fluid: header with menu from the structure, content (blocks), footer – styled by the selected kit.
+ * Markup and classes as in the Studio kit so its CSS applies unchanged. A kit can replace the frame with its own
+ * `template.view.php` (same signature as FluidTemplate.view.php).
  */
 #[AsTemplate('fluid', 'Fluid')]
 final class FluidTemplate extends Template
@@ -35,31 +34,31 @@ final class FluidTemplate extends Template
     public function render(ArticleContent $content): string
     {
         $kit = Kit::active();
-        $kit->definition();   // lädt functions.php des Kits (und seiner Vorfahren)
+        $kit->definition();   // loads functions.php of the kit (and its ancestors)
         if (null !== $own = $kit->file('template.view.php')) {
             return VideoLinks::inject(Renderer::render($own, [$content]));
         }
 
-        // Video-Links in der Lightbox (Website-Einstellung, Standard aus): Links kennzeichnen, Skript nur bei Bedarf
+        // Video links in the lightbox (website setting, off by default): mark links, script only when needed
         return VideoLinks::inject($this->renderView($content));
     }
 
     #[Override]
     public function isModuleAllowed(ContentSection $section, string $module): bool
     {
-        // fluid-Blöcke nur die des aktiven Kits; gewöhnliche Module des Projekts oder von AddOns wie üblich in REDAXO –
-        // im Backend pflegbar und auf der Website über die Seitenleiste (Formular des Cores)
+        // fluid blocks only those of the active kit; ordinary modules of the project or of addons as usual in REDAXO –
+        // editable in the backend and on the website via the sidebar (core form)
         return is_a($module, BlockModule::class, true) ? $module::kit() === Kit::active() : true;
     }
 
     /**
-     * Menü aus der Struktur (Online-Kategorien, zwei Ebenen; navigation_array) im Format der fluid-Navigation.
+     * Menu from the structure (online categories, two levels; navigation_array) in the format of the fluid navigation.
      *
      * @return list<array{label: string, href: string, current: bool, active: bool, children: list<array<string, mixed>>}>
      */
     public static function menu(int $depth = 2): array
     {
-        // Landing-Domain: Menü auf die Landingpage begrenzt (Unterseiten der Einstiegsseite, sonst keins)
+        // Landing domain: menu limited to the landing page (subpages of the start page, otherwise none)
         $start = 0;
         if ($landing = Router::landing()) {
             if (!$landing->subtree || !Category::get((int) $landing->articleId)) {
@@ -67,15 +66,15 @@ final class FluidTemplate extends Template
             }
             $start = (int) $landing->articleId;
         }
-        // navigation_array: depth zählt die Ebenen unterhalb der ersten
+        // navigation_array: depth counts the levels below the first
         $map = static function (NavigationItem $i) use (&$map): array {
             return ['label' => $i->name, 'href' => $i->url, 'current' => $i->current, 'active' => $i->active, 'children' => array_map($map, $i->children), 'id' => $i->id];
         };
 
-        // Menüpunkte „nicht im Menü“ (Metafeld von navigation_array, Seitenbaum) lässt Navigation samt Unterseiten weg
+        // Navigation omits menu items „nicht im Menü“ (meta field of navigation_array, page tree) including subpages
         $menu = array_map($map, new Navigation(start: $start, depth: $depth - 1)->items());
 
-        // Einträge im Menü (Datenliste mit Detailansicht → „Einträge im Menü zeigen“): virtuelle Unterpunkte der Übersicht
+        // Entries in the menu (data list with detail view → „Einträge im Menü zeigen“): virtual sub-items of the overview
         return YFormBridge::available() ? MenuEntries::extend($menu, Language::getCurrentId()) : $menu;
     }
 }

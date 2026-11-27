@@ -15,17 +15,17 @@ use function str_contains;
 use function strlen;
 
 /**
- * Selbsttest der Blöcke und Kits (`console fluid:selftest`, Gruppe „Blöcke“) – Vorbild KLXM Studio (Core\Blocks\SelfTest):
+ * Self test of the blocks and kits (`console fluid:selftest`, group „Blöcke“) – modeled on KLXM Studio (Core\Blocks\SelfTest):
  *
- *  - Views: kein Code hinter einem Zeilenkommentar (`<?php $a = 1; // … $b = 2;` – alles nach // fehlt still).
- *    Läuft auch ohne REDAXO: `php tools/check-views.php` (CI).
- *  - Inhaltsverzeichnis (fluid_toc): h2 als oberste Ebene nur, wenn der Text h2 enthält.
- *  - Video-Schalter (fluid_video_toggle): Name im Text, kein aria-pressed, beide Symbole, Ausgangszustand „abspielen“.
- *  - Geänderte Standardwerte (DefaultChanges): bisheriger Zustand für gespeicherte Blöcke, idempotent, auch in „Fluid-Blöcke“.
- *  - Interaktives Bild (Hotspots): Format v1 wie KLXM Studio, Formularzeilen, Ausgabe (Popover, Liste, SVG, keine style-Attribute).
- *  - Video-Links (VideoLinks): Erkennung, aus = unverändert, an = Kennzeichnung und Skript, Ausnahme je Link-Feld.
- *  - Termine (Data\Ics): Kalenderdatei ganztägig und mit Uhrzeit, Maskierung, Falten.
- *  - Scrollytelling: Klartext bleibt Klartext, Zwischenüberschriften unter dem Abschnittstitel.
+ *  - Views: no code after a line comment (`<?php $a = 1; // … $b = 2;` – everything after // silently goes missing).
+ *    Also runs without REDAXO: `php tools/check-views.php` (CI).
+ *  - Table of contents (fluid_toc): h2 as top level only if the text contains h2.
+ *  - Video toggle (fluid_video_toggle): name in the text, no aria-pressed, both icons, initial state „abspielen“.
+ *  - Changed defaults (DefaultChanges): previous state for saved blocks, idempotent, also in „Fluid-Blöcke“.
+ *  - Interactive image (hotspots): format v1 like KLXM Studio, form rows, output (popover, list, SVG, no style attributes).
+ *  - Video links (VideoLinks): detection, off = unchanged, on = marking and script, exception per link field.
+ *  - Events (Data\Ics): calendar file all-day and with time, escaping, folding.
+ *  - Scrollytelling: plain text stays plain text, subheadings below the section title.
  */
 final class BlockSelfTest
 {
@@ -58,13 +58,13 @@ final class BlockSelfTest
         }
     }
 
-    // ------------------------------------------------------------------ Views
+    // ------------------------------------------------------------------ views
 
     /**
-     * Zeilen in Views (Blöcke, Seitenrahmen, Fragmente) mit Code nach „; //“ in derselben PHP-Zeile, ohne schließendes
-     * PHP-Tag dahinter. Ohne REDAXO aufrufbar (tools/check-views.php).
+     * Lines in views (blocks, page frames, fragments) with code after „; //“ in the same PHP line, without a closing
+     * PHP tag after it. Can be called without REDAXO (tools/check-views.php).
      *
-     * @return list<string> Datei:Zeile
+     * @return list<string> file:line
      */
     public static function viewComments(?string $root = null): array
     {
@@ -97,7 +97,7 @@ final class BlockSelfTest
     {
         $bad = self::viewComments();
         $this->check([] === $bad, 'Views: kein Code hinter einem Zeilenkommentar (' . implode(', ', $bad) . ')');
-        // Der Test erkennt den Fehler (Probe in einer Datei im Temp-Ordner)
+        // the test detects the error (probe in a file in the temp folder)
         $dir = sys_get_temp_dir() . '/fluid-views-' . bin2hex(random_bytes(4));
         @mkdir($dir . '/kits/probe/views', 0o777, true);
         file_put_contents($dir . '/kits/probe/views/x.php', "<?php \$a = 1; // Kommentar \$b = 2;\n<?php \$c = 1; // ok ?>\n");
@@ -110,12 +110,12 @@ final class BlockSelfTest
         $this->check(['kits/probe/views/x.php:1'] === $hits, 'Views: Probe mit Code hinter // wird erkannt (' . implode(', ', $hits) . ')');
     }
 
-    // ------------------------------------------------------------------ Inhaltsverzeichnis
+    // ------------------------------------------------------------------ table of contents
 
     private function toc(): void
     {
         if (!function_exists('fluid_toc')) {
-            Kit::get(Kit::DEFAULT)?->definition();   // lädt functions.php des Kits fluid
+            Kit::get(Kit::DEFAULT)?->definition();   // loads functions.php of the kit fluid
         }
         if (!function_exists('fluid_toc')) {
             $this->fails[] = 'Inhaltsverzeichnis: fluid_toc() fehlt';
@@ -129,7 +129,7 @@ final class BlockSelfTest
         $this->check(str_contains($html, '<h2 id="t-eins">') && str_contains($html, '<h2 class="x" id="t-zwei">'), 'Inhaltsverzeichnis: h2 bekommen Sprungmarken');
     }
 
-    // ------------------------------------------------------------------ Video-Schalter
+    // ------------------------------------------------------------------ video toggle
 
     private function videoToggle(): void
     {
@@ -150,7 +150,7 @@ final class BlockSelfTest
         }
     }
 
-    // ------------------------------------------------------------------ Geänderte Standardwerte
+    // ------------------------------------------------------------------ changed defaults
 
     private function defaultChanges(): void
     {
@@ -178,7 +178,7 @@ final class BlockSelfTest
         $this->check('auto' === (null !== $sc ? array_column($sc::fields(), 'default', 'name')['ratio'] ?? null : null), 'Standardwerte: neues Scrollytelling bekommt „Automatisch“');
     }
 
-    // ------------------------------------------------------------------ Interaktives Bild
+    // ------------------------------------------------------------------ interactive image
 
     private function hotspots(): void
     {
@@ -211,7 +211,7 @@ final class BlockSelfTest
         $this->check(1 === substr_count($h, '<ol class="cms-hs__list"') && 3 === preg_match_all('~<(polygon|rect|circle) class="cms-hs__area"~', $h), 'Markierungen: Liste und Flächen als SVG');
     }
 
-    // ------------------------------------------------------------------ Video-Links
+    // ------------------------------------------------------------------ video links
 
     private function videoLinks(): void
     {
@@ -235,7 +235,7 @@ final class BlockSelfTest
         }
     }
 
-    // ------------------------------------------------------------------ Termine
+    // ------------------------------------------------------------------ events
 
     private function ics(): void
     {
@@ -251,7 +251,7 @@ final class BlockSelfTest
         $this->check($ok && str_starts_with($b, "BEGIN:VCALENDAR\r\n") && str_ends_with($b, "END:VCALENDAR\r\n"), 'Termine: Zeilen höchstens 75 Bytes, UTF-8 nicht geteilt');
     }
 
-    // ------------------------------------------------------------------ Scrollytelling
+    // ------------------------------------------------------------------ scrollytelling
 
     private function scrolly(): void
     {

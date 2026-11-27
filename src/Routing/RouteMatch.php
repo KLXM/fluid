@@ -5,18 +5,18 @@ namespace Klxm\Fluid\Routing;
 use Klxm\Fluid\Routing\Seo\PageMeta;
 
 /**
- * Ergebnis der Auflösung einer Adresse, die keine Seite ist: welche Seite angezeigt wird, mit welchen Parametern – und
- * optional die kanonische Adresse (weicht die Anfrage ab, leitet der Router per 301 um), Meta-Angaben und Sprachfassungen.
+ * Result of resolving an address that is not a page: which page is shown, with which parameters – and
+ * optionally the canonical address (if the request differs, the router redirects with 301), meta data and language versions.
  *
- * Gespeicherte Einträge der Quellen bekommen sie vom Router; dynamische Resolver (Router::resolver) geben sie zurück.
+ * Stored entries of the sources get it from the router; dynamic resolvers (Router::resolver) return it.
  */
 final readonly class RouteMatch
 {
     /**
-     * @param array<string, scalar> $params Parameter für die Seite (Request und $_GET)
-     * @param string|null $url kanonische Adresse (relativ wie Router::url oder absolut); null = keine Prüfung
-     * @param bool $cacheRedirect 301 im Browser zwischenspeichern – nicht bei Adressen, die sich ändern können (Titel)
-     * @param array<int, string> $alternates Sprach-ID => Adresse derselben Sache in anderen Sprachen (hreflang)
+     * @param array<string, scalar> $params parameters for the page (request and $_GET)
+     * @param string|null $url canonical address (relative like Router::url or absolute); null = no check
+     * @param bool $cacheRedirect cache the 301 in the browser – not for addresses that can change (title)
+     * @param array<int, string> $alternates language ID => address of the same thing in other languages (hreflang)
      */
     public function __construct(
         public int $articleId,

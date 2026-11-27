@@ -1,6 +1,6 @@
 <?php
 /**
- * Suche (Klxm\Fluid\Search\Search, Loupe): Suchfeld und Treffer mit Textausschnitt. Ohne JavaScript (GET ?q=).
+ * Search (Klxm\Fluid\Search\Search, Loupe): search field and hits with text excerpt. Works without JavaScript (GET ?q=).
  * @var Block $b  @var array $d
  */
 use Klxm\Fluid\Block;
@@ -13,8 +13,8 @@ $q = trim(mb_substr(Request::get('q', 'string', ''), 0, 100));
 $res = '' !== $q ? Search::search($q, Language::getCurrentId(), (int) ($d['limit'] ?? 20)) : null;
 $id = $b->domId() . '-q';
 ?>
-<div class="wrap fsearch"<?= Live::region($b) /* Treffer beim Tippen, ohne Seitenwechsel */ ?>>
-  <?= fluid_head($b, '', null === $b->prev ? 'h1' : 'h2') /* erster Block der Seite: Hauptüberschrift */ ?>
+<div class="wrap fsearch"<?= Live::region($b) /* hits while typing, without page change */ ?>>
+  <?= fluid_head($b, '', null === $b->prev ? 'h1' : 'h2') /* first block of the page: main heading */ ?>
   <form class="fsearch__form" role="search" method="get" data-live-nav action="#<?= e($b->domId()) ?>">
     <label class="sr-only" for="<?= e($id) ?>"><?= e(lt('Suchbegriff')) ?></label>
     <input class="fsearch__input" id="<?= e($id) ?>" type="search" name="q" value="<?= e($q) ?>" placeholder="<?= e(trim((string) ($d['placeholder'] ?? '')) ?: lt('Wonach suchen Sie?')) ?>" maxlength="100" autocomplete="off" enterkeyhint="search" data-live-input data-live-delay="600" data-live-min="3"<?= '' === $q && !is_editing() ? ' autofocus' : '' ?>>

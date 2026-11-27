@@ -41,17 +41,17 @@ use const JSON_UNESCAPED_UNICODE;
 use const PHP_URL_PATH;
 
 /**
- * Felder eines Datensatzes direkt in der Detailansicht bearbeiten (Datenliste mit Detailansicht). Im Bearbeitungsmodus
- * sind Texte auf der Seite editierbar; Adresse, E-Mail, Datum, Zeit, Zahl und Auswahl öffnen ein kleines Eingabefeld an
- * der Stelle, Ja/Nein schaltet per Klick, Bild und Seitenlink öffnen die Auswahl (Medienpool, Linkmap). Gespeichert wird
- * sofort über die Record-API von YForm (`fromInput()` wie das Formular, Prüfungen der Tabelle greifen). Relationen,
- * Uploads und das Feld „Fluid-Blöcke“ bleiben der YForm-Maske im Overlay („Eintrag bearbeiten“) bzw. den Blöcken.
+ * Edit the fields of a record directly in the detail view (data list with detail view). In edit mode
+ * texts on the page are editable; address, email, date, time, number and choice open a small input in
+ * place, yes/no toggles on click, image and page link open the picker (media pool, linkmap). Saved
+ * immediately via YForm's record API (`fromInput()` like the form, the table's validations apply). Relations,
+ * uploads and the field „Fluid-Blöcke“ are left to the YForm form in the overlay („Eintrag bearbeiten“) or the blocks.
  *
- * Datensätze kennen keinen Entwurf: Änderungen sind sofort gespeichert, wie bei den Blöcken eines Datensatzes.
+ * Records have no draft: changes are saved immediately, as with the blocks of a record.
  */
 final class RecordInline
 {
-    /** Art der Bearbeitung auf der Seite, null = nur in der Maske */
+    /** Kind of editing on the page, null = only in the form */
     public static function kind(?Field $field): ?string
     {
         return match (true) {
@@ -78,7 +78,7 @@ final class RecordInline
         return null !== self::kind($field);
     }
 
-    /** Attribute für ein editierbares Feld – leer, wenn nicht bearbeitet wird oder das Recht fehlt */
+    /** Attributes for an editable field – empty when not editing or without permission */
     public static function attrs(Table $table, Record $record, ?Field $field): string
     {
         $kind = self::kind($field);
@@ -94,7 +94,7 @@ final class RecordInline
         if ('multi' === $kind) {
             $attrs['data-rec-multi'] = '';
         }
-        // Wert im Format der Eingabe (wie das Formular von YForm)
+        // Value in the input format (like YForm's form)
         $attrs['data-rec-value'] = match ($kind) {
             'text', 'multi' => null,
             'date', 'datetime' => $field instanceof Date ? $field->inputValue($value) : '',
@@ -123,7 +123,7 @@ final class RecordInline
     }
 
     /**
-     * API „record_field“: ein Feld speichern, Ausgabe zurück – beim Titelfeld der Detailansicht auch die neue Adresse.
+     * API „record_field“: save one field, return the output – for the title field of the detail view also the new URL.
      *
      * @return array{html: string, text: string, url?: string}
      */
@@ -147,7 +147,7 @@ final class RecordInline
             'text' => trim((string) preg_replace('/\s+/u', ' ', $input)),
             'multi' => trim((string) preg_replace("/\n{3,}/", "\n\n", str_replace("\r\n", "\n", $input))),
             'url', 'email' => trim($input),
-            // Mehrfachauswahl: Werte als JSON-Liste
+            // Multiple choice: values as a JSON list
             'choice' => $field instanceof Choice && $field->multiple ? (array) (json_decode($input, true) ?: []) : $input,
             default => $input,
         };

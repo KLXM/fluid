@@ -6,9 +6,9 @@ use Redaxo\Core\AbstractProject;
 use Redaxo\Core\Filesystem\DefaultPathProvider;
 
 /**
- * Adressen ab dem Basis-Pfad der Website (/assets/…, /media/…, /index.php) statt relativ (./assets/…).
- * Nötig für schöne Adressen: Auf /leistungen/beratung würden relative Adressen sonst unter /leistungen/ gesucht.
- * Router::boot setzt ihn im Frontend über Url::init() (Erweiterungspunkt des Cores).
+ * Addresses from the base path of the website (/assets/…, /media/…, /index.php) instead of relative (./assets/…).
+ * Needed for pretty URLs: on /leistungen/beratung relative addresses would otherwise be looked up below /leistungen/.
+ * Router::boot sets it in the frontend via Url::init() (core extension point).
  */
 final class RootPathProvider extends DefaultPathProvider
 {

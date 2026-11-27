@@ -12,32 +12,32 @@ use Redaxo\Core\Language\Language;
 
 return static function (ArticleContent $content): void {
     $kit = Kit::active();
-    // Inhalt zuerst: so ist bekannt, welche Blöcke (und damit welches CSS) die Seite braucht
+    // content first: then it is known which blocks (and thus which CSS) the page needs
     $main = $content->renderContent();
     $article = $content->article;
     $name = Settings::name();
     $isHome = $article->id === Article::getSiteStartArticleId();
-    // Landing-Domain: Einstiegsseite der Landingpage statt Startseite der Website
+    // landing domain: entry page of the landing page instead of the start page of the website
     $landing = Router::landing();
     $home = $landing ? (Article::get((int) $landing->articleId)?->getUrl() ?? '/') : (Article::getSiteStartArticle()?->getUrl() ?? '/');
     $isHome = $landing ? $article->id === $landing->articleId : $isHome;
     $menu = FluidTemplate::menu();
-    // Suchseite mit Lupe im Kopf: nicht noch einmal als Menüpunkt (die Lupe führt schon hin)
+    // search page with magnifier in the header: not again as a menu item (the magnifier already leads there)
     if ('' !== ($searchHref = trim((string) setting('search_page', '')))) {
         $searchHref = rtrim((string) parse_url(link_href($searchHref), PHP_URL_PATH), '/');
         $menu = array_values(array_filter($menu, static fn (array $m) => rtrim((string) parse_url((string) $m['href'], PHP_URL_PATH), '/') !== $searchHref || !empty($m['children'])));
     }
-    // Sprachwahl: Sprachen, in denen diese Seite online ist
+    // language switch: languages in which this page is online
     $langs = Router::alternates($article);
     $design = $kit->design();
-    // Blog-Beitrag: Kopf (Titel, Datum, Bild) und „Älterer/Neuerer Beitrag“ aus dem Template
+    // blog post: header (title, date, image) and „Älterer/Neuerer Beitrag“ from the template
     $isPost = null !== Blog::blogOf($article);
     if ($isPost) {
         $kit->markUsed('@post');
     }
-    // Kopf (Titel, SEO, CSS und Skripte des Kits, Design): KitHead – wie in eigenen Templates.
-    // Website → „Darstellungs-Knopf für Besucher anzeigen“: <ncss-preferences> von NativeCSS (Skripte und Bedienfeld-CSS aus dem
-    // Kit „NativeCSS“), Tokens und Wirkung auf fluid in css/prefs.css, Klassen-Brücke js/prefs-theme.js
+    // head (title, SEO, CSS and scripts of the kit, design): KitHead – as in own templates.
+    // Website → „Darstellungs-Knopf für Besucher anzeigen“: <ncss-preferences> of NativeCSS (scripts and panel CSS from the
+    // kit „NativeCSS“), tokens and effect on fluid in css/prefs.css, class bridge js/prefs-theme.js
     $prefs = KitHead::visitorPreferences();
     $prefsFonts = $prefs && (bool) setting('visitor_prefs_fonts', true);
     $prefsEl = static fn (string $class): string => '<ncss-preferences class="' . $class . '" settings="'
@@ -58,7 +58,7 @@ return static function (ArticleContent $content): void {
 
         return $h . '</ul></details></li>';
     };
-    // Logo (hell/dunkel) oder Wortmarke – Website-Einstellungen (wie Kern-Fragment „brand“ in KLXM Studio)
+    // logo (light/dark) or wordmark – website settings (like core fragment „brand“ in KLXM Studio)
     $logo = (string) setting('logo', '');
     $logoDark = (string) setting('logo_dark', '');
     $brand = static function (string $class = '') use ($isHome, $home, $name, $logo, $logoDark): string {
@@ -75,8 +75,8 @@ return static function (ArticleContent $content): void {
         return $h . '<span class="sr-only"> – ' . e(lt('Startseite')) . '</span></a>';
     };
     $cta = fluid_header_cta();
-    // Fußbereich: eigener Handlungsaufruf (Spalten → unter Claim/Text, Schlicht/Zentriert → in der Zeile, Großer Schriftzug → statt
-    // des Kopf-Buttons); Dichte „Kompakt“ gibt die Adresse einzeilig aus (css/opt-footer_density-compact.css)
+    // footer: own call to action (columns → below claim/text, plain/centered → in the row, large lettering → instead of
+    // the header button); density „Kompakt“ outputs the address on one line (css/opt-footer_density-compact.css)
     $ftrCta = fluid_footer_cta();
     $ftrBtn = static fn (array $c, string $class): string => '<a class="btn btn--primary ' . $class . '" ' . fluid_link_attrs($c['link']) . '>' . e($c['label']) . icon('arrow-right') . '</a>';
     $compact = 'compact' === $design->get('footer_density');
@@ -134,7 +134,7 @@ return static function (ArticleContent $content): void {
     <?php endif ?>
     <div class="hdr__tools">
       <?= $prefs ? $prefsEl($menu ? 'hdr__prefs' : 'hdr__prefs hdr__prefs--always') : '' ?>
-      <?php if (count($langs) > 2): $curLang = array_values(array_filter($langs, static fn ($l) => $l['current']))[0] ?? $langs[0]; // ab drei Sprachen: Menü (Popover) statt Leiste?>
+      <?php if (count($langs) > 2): $curLang = array_values(array_filter($langs, static fn ($l) => $l['current']))[0] ?? $langs[0]; // from three languages: menu (popover) instead of bar?>
       <div class="langmenu">
         <button type="button" class="langmenu__btn" popovertarget="langmenu" aria-haspopup="true" aria-label="<?= e(lt('Sprache')) ?>: <?= e($curLang['name']) ?>"><span lang="<?= e($curLang['code']) ?>"><?= e(strtoupper($curLang['code'])) ?></span><?= icon('caret-down', ['class' => 'langmenu__chev']) ?></button>
         <ul id="langmenu" class="langmenu__list" popover role="list" aria-label="<?= e(lt('Sprache')) ?>"><?php foreach ($langs as $l): ?><li><a href="<?= e($l['url']) ?>" hreflang="<?= e($l['code']) ?>" lang="<?= e($l['code']) ?>"<?= $l['current'] ? ' aria-current="true"' : '' ?>><span><?= e($l['name']) ?></span><span class="langmenu__code" aria-hidden="true"><?= e(strtoupper($l['code'])) ?></span></a></li><?php endforeach ?></ul>

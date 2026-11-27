@@ -1,10 +1,10 @@
 <?php
 
 /**
- * Hilfsfunktionen für die Ausgaben des Kits „fluid“.
+ * Helper functions for the output of the kit „fluid“.
  *
- * Die View-Dateien stammen aus KLXM Studio; die Funktionen hier bilden die dort genutzten Helfer auf REDAXO ab
- * (Medienpool statt Mediathek, REDAXO-Links, Sanitizer des Cores). Prototyp – im Paket kommen sie in einen Namespace.
+ * The view files come from KLXM Studio; the functions here map the helpers used there to REDAXO
+ * (media pool instead of media library, REDAXO links, core sanitizer). Prototype – in the package they move into a namespace.
  */
 
 use Klxm\Fluid\Block;
@@ -42,8 +42,8 @@ if (!function_exists('e')) {
 }
 
 /**
- * Feste Texte der Website in der Sprache der aufgerufenen Seite (Quelle Deutsch, wie lt() in KLXM Studio):
- * lang/site/{code}.php des Kits; Projekte ergänzen/ändern per Extension Point FLUID_SITE_TRANSLATIONS (Subject: Array, Param code).
+ * Fixed website texts in the language of the requested page (source German, like lt() in KLXM Studio):
+ * lang/site/{code}.php of the kit; projects add/change them via extension point FLUID_SITE_TRANSLATIONS (subject: array, param code).
  */
 function lt(string $text, array $vars = []): string
 {
@@ -75,7 +75,7 @@ function is_editing(): bool
 }
 
 /**
- * Website-Einstellungen (Klxm\Fluid\Settings) – wie setting() in KLXM Studio.
+ * Website settings (Klxm\Fluid\Settings) – like setting() in KLXM Studio.
  */
 function setting(string $key, mixed $default = null): mixed
 {
@@ -87,7 +87,7 @@ function filled(mixed $v): bool
     return null !== $v && '' !== trim((string) (is_array($v) ? implode('', $v) : $v)) && !str_starts_with(trim((string) (is_array($v) ? '' : $v)), '[');
 }
 
-// ------------------------------------------------------------ Website: Name, Kontakt, Zeiten, Social (aus kits/fluid/functions.php)
+// ------------------------------------------------------------ Website: name, contact, hours, social (from kits/fluid/functions.php)
 
 function fluid_name(bool $short = false): string
 {
@@ -100,7 +100,7 @@ function fluid_phone(): string
 }
 
 /**
- * tel:-Adresse aus einer Telefonnummer (+49 statt 0) oder null.
+ * tel: address from a phone number (+49 instead of 0), or null.
  */
 function fluid_phone_href(): ?string
 {
@@ -125,7 +125,7 @@ function fluid_email(): string
 }
 
 /**
- * Adresse als Zeilen: [Straße, PLZ Ort, Land] – nur befüllte Teile.
+ * Address as lines: [street, postcode city, country] – only filled parts.
  */
 function fluid_address_lines(): array
 {
@@ -163,7 +163,7 @@ function fluid_weekday(int $dow, bool $short = false): string
 }
 
 /**
- * Öffnungszeiten Mo–So, aufeinanderfolgende Tage mit gleichen Zeiten zusammengefasst @return list<array{days: string, time: string}>.
+ * Opening hours Mon–Sun, consecutive days with the same hours merged @return list<array{days: string, time: string}>.
  */
 function fluid_hours(): array
 {
@@ -225,7 +225,7 @@ function fluid_quick_contact(string $class = 'quick'): string
 }
 
 /**
- * Impressum, Datenschutz, Barrierefreiheit (Website → Recht; Klxm\Fluid\Legal\Legal) @return list<array{label: string, href: string}>.
+ * Imprint, privacy, accessibility (Website → Recht; Klxm\Fluid\Legal\Legal) @return list<array{label: string, href: string}>.
  */
 function fluid_legal_links(): array
 {
@@ -241,8 +241,8 @@ function fluid_header_cta(): ?array
 }
 
 /**
- * Handlungsaufruf des Fußbereichs ['label', 'link'] (Website → Kopf, Fuß & Hinweis → „Handlungsaufruf im Fuß“) oder null.
- * Getrennt vom Button im Kopf; erscheint nur mit Beschriftung und Ziel.
+ * Call to action of the footer ['label', 'link'] (Website → Kopf, Fuß & Hinweis → „Handlungsaufruf im Fuß“) or null.
+ * Separate from the button in the header; only shown with a label and a target.
  */
 function fluid_footer_cta(): ?array
 {
@@ -253,7 +253,7 @@ function fluid_footer_cta(): ?array
 }
 
 /**
- * Symbol aus den Phosphor-Sprites (MIT) des Kits.
+ * Icon from the Phosphor sprites (MIT) of the kit.
  */
 function icon(?string $name, array $opt = []): string
 {
@@ -274,7 +274,7 @@ function icon(?string $name, array $opt = []): string
 }
 
 /**
- * Medium aus dem Medienpool (Dateiname).
+ * Medium from the media pool (file name).
  */
 function media(?string $name): ?array
 {
@@ -292,9 +292,9 @@ function media_url(array|string|null $m, ?int $width = null): string
 }
 
 /**
- * Bild aus dem Medienpool. Mit dem Addon image_editor: bearbeitete Fassung, responsiv (srcset, AVIF/WebP über den Media Manager)
- * und im Bearbeiten-Modus der Knopf „Bild bearbeiten“ (data-ie-file). Alt-Text nach der Regel von klxm_meta: Feld
- * „Alternativtext“ des Medienpools (je Sprache), dekorativ = alt="", sonst Titel; $opt['alt'] überschreibt.
+ * Image from the media pool. With the addon image_editor: edited version, responsive (srcset, AVIF/WebP via the Media Manager)
+ * and in edit mode the button „Bild bearbeiten“ (data-ie-file). Alt text following the rule of klxm_meta: field
+ * „Alternativtext“ of the media pool (per language), decorative = alt="", otherwise title; $opt['alt'] overrides.
  */
 function img(?string $name, string $sizes = '100vw', array $opt = []): string
 {
@@ -303,21 +303,21 @@ function img(?string $name, string $sizes = '100vw', array $opt = []): string
         return '';
     }
     $alt = Alt::attribute($m, $opt['alt'] ?? null);
-    // ohne Angabe: erstes Bild im ersten Block der Seite sofort und mit Vorrang (Einstieg), sonst lazy
+    // not specified: first image in the first block of the page loads immediately with priority (hero), otherwise lazy
     $eager = array_key_exists('eager', $opt) ? !empty($opt['eager']) : Block::firstImage();
     $editor = class_exists(ImageEditor::class) ? ImageEditor::class : null;
     $editable = $editor && null === $editor::editable($m);
-    // Einstellung an dieser Stelle (Effekt, Darstellung, Ausschnitt – je Einbindung im Block)
+    // setting at this place (effect, display, crop – per use in the block)
     $at = ImagePlaces::take($m->fileName);
     $place = $at['place'] ?? null;
     $frameRatio = (string) ($opt['ratio'] ?? '');
-    // Bildformat (16:9 …): Ausschnitt je Format aus image_editor – eigener Ausschnitt oder automatisch um den Fokuspunkt.
-    // Nicht bei „Einpassen“ (contain): dann zeigt der Rahmen das ganze Bild.
+    // Aspect ratio (16:9 …): crop per ratio from image_editor – custom crop or automatic around the focal point.
+    // Not with „Einpassen“ (contain): then the frame shows the whole image.
     $ratio = $frameRatio;
     if (!$editable || !defined($editor . '::RATIOS') || !in_array($ratio, $editor::RATIOS, true) || str_contains($editor::imgStyle($m->fileName), 'contain')) {
         $ratio = '';
     }
-    // eigener Ausschnitt oder andere Darstellung an dieser Stelle: das ganze Bild laden, nicht den Zuschnitt des Formats
+    // custom crop or different display at this place: load the whole image, not the crop of the ratio
     if (null !== $place && ($place->hasCrop() || ImageFit::Cover !== $place->fit)) {
         $ratio = '';
     }
@@ -332,13 +332,13 @@ function img(?string $name, string $sizes = '100vw', array $opt = []): string
     }
     $wh = $w && $h ? ' width="' . $w . '" height="' . $h . '"' : '';
     $ie = $editable && is_editing() ? ' data-ie-file="' . e($m->fileName) . '"' . ('' !== $ratio ? ' data-ie-ratio="' . e($ratio) . '"' : '') : '';
-    // Bild an dieser Stelle bearbeiten (Editor): Feldpfad, Format des Rahmens, gespeicherte Einstellung
+    // edit the image at this place (editor): field path, ratio of the frame, saved setting
     if (null !== $at && is_editing()) {
         $ie .= ' data-img-path="' . e($at['path']) . '"'
             . ('' !== $frameRatio ? ' data-img-frame="' . e($frameRatio) . '"' : '')
             . (null !== $place ? ' data-img-place="' . e(json_encode($place->toArray(), \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE)) . '"' : '');
     }
-    // Fokuspunkt und Einpassen (image_editor): object-position / object-fit am Bild, danach die Einstellung an dieser Stelle
+    // focal point and fit (image_editor): object-position / object-fit on the image, then the setting at this place
     $style = $editable ? $editor::imgStyle($m->fileName) : '';
     if (null !== $place) {
         // small blurred version (image_editor); without it there is no blurred background
@@ -347,11 +347,11 @@ function img(?string $name, string $sizes = '100vw', array $opt = []): string
     }
 
     return '<img src="' . e($src) . '"' . $srcset . ' alt="' . e($alt) . '"' . $wh . ($eager ? ' fetchpriority="high"' : ' loading="lazy"') . ' decoding="async"'
-        . InlineStyle::attr($style, (string) ($opt['class'] ?? '')) . $ie . '>';   // Fokuspunkt als Klasse (CSP: keine style-Attribute)
+        . InlineStyle::attr($style, (string) ($opt['class'] ?? '')) . $ie . '>';   // focal point as class (CSP: no style attributes)
 }
 
 /**
- * Rich Text sicher ausgeben (Klassenvertrag der Formatierungsleiste, RichText).
+ * Output rich text safely (class contract of the formatting toolbar, RichText).
  */
 function rich(?string $html): string
 {
@@ -359,7 +359,7 @@ function rich(?string $html): string
 }
 
 /**
- * Link-Wert eines Feldes → Adresse: redaxo://12, page:12, 12, https://…, #anker, tel:, mailto:
+ * Link value of a field → address: redaxo://12, page:12, 12, https://…, #anchor, tel:, mailto:
  */
 function link_href(?string $link): string
 {
@@ -367,7 +367,7 @@ function link_href(?string $link): string
     if ('' === $l) {
         return '#';
     }
-    // Sonderwerte aus „Website“: phone, email
+    // special values from „Website“: phone, email
     if ('phone' === $l) {
         return fluid_phone_href() ?? '#';
     }
@@ -393,7 +393,7 @@ function ext_attrs(string $href): string
     return is_external($href) ? ' target="_blank" rel="noopener"' : '';
 }
 
-// ------------------------------------------------------------ aus kits/fluid/functions.php (KLXM Studio)
+// ------------------------------------------------------------ from kits/fluid/functions.php (KLXM Studio)
 
 function fluid_link(?string $link): string
 {
@@ -476,8 +476,8 @@ function fluid_htag(array $d): string
 }
 
 /**
- * Klartext statt Rich-Text? Für Felder, die früher Textfelder waren (z. B. Text der Scrollytelling-Abschnitte): alter
- * Klartext wird wie bisher ausgegeben. Nur Tags, die Rich-Text enthalten kann – „x<y“ oder „<3“ bleiben Klartext.
+ * Plain text instead of rich text? For fields that used to be text fields (e.g. text of the scrollytelling sections): old
+ * plain text is output as before. Only tags that rich text can contain – „x<y“ or „<3“ stay plain text.
  */
 function fluid_is_plain_text(?string $value): bool
 {
@@ -485,8 +485,8 @@ function fluid_is_plain_text(?string $value): bool
 }
 
 /**
- * Zwischenüberschriften eines Rich-Texts unter die Ebene $level (Überschrift des Abschnitts: h3 → h4) – nie höher als h4,
- * h4 bleibt h4. Beim Bearbeiten unverändert (der Editor speichert, was er sieht).
+ * Subheadings of a rich text below level $level (heading of the section: h3 → h4) – never higher than h4,
+ * h4 stays h4. Unchanged while editing (the editor saves what it sees).
  */
 function fluid_rich_below(string $html, int $level): string
 {
@@ -505,7 +505,7 @@ function fluid_min(array $d, string $key = 'size'): string
 
 function fluid_image(?string $id, string $sizes, string $ratio, string $class = '', array $opt = []): string
 {
-    // Originalgröße (am Medium oder an dieser Stelle): Rahmen ohne festes Seitenverhältnis
+    // original size (on the medium or at this place): frame without fixed aspect ratio
     $place = $id ? ImagePlaces::peek($id) : null;
     $fit = null !== $place ? $place->fit->value : ($id && class_exists(ImageEditor::class) ? (ImageEditor::stored($id)['fit'] ?? '') : '');
     if ('original' === $fit) {
@@ -523,7 +523,7 @@ function fluid_image(?string $id, string $sizes, string $ratio, string $class = 
 
 function fluid_title(string $text): string
 {
-    // Bearbeiten: Hervorhebung sichtbar, Sternchen dezent – beim Auslesen (innerText) bleibt „*Wort*“ erhalten
+    // editing: emphasis visible, asterisks subtle – reading out (innerText) keeps „*Wort*“
     if (is_editing()) {
         return preg_replace('~\*([^*]+)\*~u', '<span class="hl-mark">*</span><em class="hl">$1</em><span class="hl-mark">*</span>', e($text)) ?? e($text);
     }
@@ -535,7 +535,7 @@ function fluid_toc(string $html, string $prefix): array
 {
     $toc = [];
     $used = [];
-    // Texte mit <h2> (importiert/eingefügt, unter dem Blocktitel): <h2> ist die oberste Ebene – Texte nur mit <h3>/<h4> bleiben wie bisher
+    // texts with <h2> (imported/pasted, below the block title): <h2> is the top level – texts with only <h3>/<h4> stay as before
     $top = preg_match('~<h2[\s>]~i', $html) ? 'h2' : 'h3';
     $levels = 'h2' === $top ? 'h[234]' : 'h[34]';
     $html = preg_replace_callback('~<(' . $levels . ')([^>]*)>(.*?)</\1>~is', static function ($m) use (&$toc, &$used, $prefix, $top) {
@@ -569,7 +569,7 @@ function fluid_reading_time(string $html): int
 }
 
 /**
- * „Wert: Bezeichnung“ je Zeile (Hero „Fließende Skala“).
+ * „value: label“ per line (hero „Fließende Skala“).
  */
 function fluid_pairs(mixed $s): array
 {
@@ -581,13 +581,13 @@ function fluid_pairs(mixed $s): array
 }
 
 /**
- * Play/Pause-Schalter für ein Hintergrundvideo (Einstieg „Vollflächig“, Video „Morphing“ im Kit NativeCSS). Runder Symbol-Knopf
- * mit den Symbolen „pause“/„play“; der zugängliche Name steht im Text daneben – visuell versteckt ($mode 'icon') oder sichtbar
- * ('text'). js/hero-video.js wechselt Text, title und .is-paused mit dem Zustand (läuft → Pause-Symbol + „anhalten“,
- * angehalten → Play-Symbol + „abspielen“); kein aria-pressed, der Name sagt die Aktion. Ohne Skript bleibt der Knopf verborgen.
- * Lädt css/video-toggle.css und js/hero-video.js über kit.php → assets (@videotoggle). Der Rahmen um Video und Knopf trägt
- * data-hero-video-box und position: relative; das <video> data-hero-video. $class: Klasse(n) des Kits für Lage und Feinschliff.
- * Aus KLXM Studio (Core\Blocks\Hero::videoToggle, MIT).
+ * Play/pause toggle for a background video (hero „Vollflächig“, video „Morphing“ in the kit NativeCSS). Round icon button
+ * with the icons „pause“/„play“; the accessible name is in the text next to it – visually hidden ($mode 'icon') or visible
+ * ('text'). js/hero-video.js switches text, title and .is-paused with the state (playing → pause icon + „anhalten“,
+ * paused → play icon + „abspielen“); no aria-pressed, the name states the action. Without script the button stays hidden.
+ * Loads css/video-toggle.css and js/hero-video.js via kit.php → assets (@videotoggle). The frame around video and button has
+ * data-hero-video-box and position: relative; the <video> data-hero-video. $class: kit class(es) for position and finish.
+ * From KLXM Studio (Core\Blocks\Hero::videoToggle, MIT).
  */
 function fluid_video_toggle(string $class = '', string $mode = 'icon'): string
 {
@@ -596,16 +596,16 @@ function fluid_video_toggle(string $class = '', string $mode = 'icon'): string
     $pause = lt('Hintergrundvideo anhalten');
     $play = lt('Hintergrundvideo abspielen');
 
-    // Ausgangszustand „angehalten“: das Video läuft erst, wenn das Skript es startet
+    // initial state „angehalten“: the video only plays once the script starts it
     return '<button type="button" class="' . e(trim($class . ' hx-vt hx-vt--' . $mode)) . ' is-paused" data-hero-video-toggle hidden title="' . e($play) . '">'
         . icon('pause', ['class' => 'hx-ico hx-ico--pause']) . icon('play', ['class' => 'hx-ico hx-ico--play'])
         . '<span class="hx-vt__label" data-l-pause="' . e($pause) . '" data-l-play="' . e($play) . '">' . e($play) . '</span></button>';
 }
 
 /**
- * Vorher/Nachher (Block „Vorher/Nachher“, $d mit before, after, label_before, label_after): zwei Bilder, darüber ein
- * Regler (input range, js/compare.js setzt .is-ready und --hx-pos). Ohne Skript stehen die Bilder nebeneinander.
- * Leer, solange eines der Bilder fehlt.
+ * Before/after (block „Vorher/Nachher“, $d with before, after, label_before, label_after): two images with a
+ * slider on top (input range, js/compare.js sets .is-ready and --hx-pos). Without script the images sit side by side.
+ * Empty as long as one of the images is missing.
  */
 function fluid_compare(array $d, string $sizes, string $ratio, string $class): string
 {
@@ -625,8 +625,8 @@ function fluid_compare(array $d, string $sizes, string $ratio, string $class): s
 }
 
 /**
- * Hinweis nur beim Bearbeiten: Bild ohne Alternativtext und nicht als dekorativ markiert (klxm_meta). Für Bilder mit
- * Aussage (z. B. Vorher/Nachher) – Besucher sehen nichts davon.
+ * Notice only while editing: image without alt text and not marked as decorative (klxm_meta). For images that
+ * convey information (e.g. before/after) – visitors see none of it.
  */
 function fluid_alt_hint(?string $file): string
 {
@@ -640,7 +640,7 @@ function fluid_alt_hint(?string $file): string
 }
 
 /**
- * Hinweis nur beim Bearbeiten: eigene Videodatei ohne Untertitel (Videos mit Sprache brauchen sie).
+ * Notice only while editing: own video file without subtitles (videos with speech need them).
  */
 function fluid_caption_hint(array $d): string
 {
@@ -657,13 +657,13 @@ function fluid_caption_hint(array $d): string
 }
 
 /**
- * Filter für Besucher („Filter nach Kategorie“ bei Karten und Datenliste): aus den Kategorien je Eintrag (Komma trennt
- * mehrere) eine Leiste mit Optionsfeldern – gefiltert wird per CSS (:has(), Kategorien als Nummern 1–12, Markup der
- * Komponente filter von NativeCSS), js/filter.js ergänzt die Trefferzahl als Ansage. Leer, wenn weniger als zwei
- * Kategorien vorkommen oder beim Bearbeiten.
+ * Filter for visitors („Filter nach Kategorie“ for cards and data list): from the categories per entry (comma separates
+ * several) a bar of radio buttons – filtering happens via CSS (:has(), categories as numbers 1–12, markup of the
+ * NativeCSS component filter), js/filter.js adds the match count as an announcement. Empty if fewer than two
+ * categories occur or while editing.
  *
- * @param list<string> $cats Kategorien je Eintrag (Index wie die Einträge)
- * @return array{bar: string, item: list<string>} Leiste und data-category je Eintrag
+ * @param list<string> $cats categories per entry (same index as the entries)
+ * @return array{bar: string, item: list<string>} bar and data-category per entry
  */
 function fluid_filter(Block $b, array $cats): array
 {
@@ -697,7 +697,7 @@ function fluid_filter(Block $b, array $cats): array
 }
 
 /**
- * Text ohne *Betonung*-Sternchen (Attribute, Screenreader).
+ * Text without *emphasis* asterisks (attributes, screen readers).
  */
 function strip_emphasis(string $text): string
 {
@@ -705,7 +705,7 @@ function strip_emphasis(string $text): string
 }
 
 /**
- * Datenschutzerklärung (Website → Recht, sonst Seite „Datenschutz“ der obersten Ebene) – oder ''.
+ * Privacy policy (Website → Recht, otherwise page „Datenschutz“ at the top level) – or ''.
  */
 function privacy_url(): string
 {
@@ -713,12 +713,12 @@ function privacy_url(): string
 }
 
 /**
- * Video einbetten (aus KLXM Studio, Kern-Fragment video-embed – vereinfacht): YouTube/Vimeo mit Zwei-Klick-Lösung
- * (Player lädt erst nach Klick, js/embed.js; „künftig direkt laden“ im Browser), MP4 aus dem Medienpool als <video>.
- * Markup und Klassen (.vembed …) wie in Studio, damit css/b-video.css greift.
+ * Embed a video (from KLXM Studio, core fragment video-embed – simplified): YouTube/Vimeo with two-click solution
+ * (player loads only after a click, js/embed.js; „künftig direkt laden“ in the browser), MP4 from the media pool as <video>.
+ * Markup and classes (.vembed …) as in Studio, so that css/b-video.css applies.
  */
 /**
- * Video: eigene Datei (mit Vorschaubild, Untertiteln, Transkript) oder YouTube/Vimeo mit Zwei-Klick-Lösung.
+ * Video: own file (with poster, subtitles, transcript) or YouTube/Vimeo with two-click solution.
  * $tracks: [['file' => 'film.de.vtt', 'lang' => 'de', 'kind' => 'subtitles', 'label' => ''], …].
  */
 function fluid_video_embed(string $url, string $file, string $poster, string $ratio, string $label, array $tracks = [], bool $ccOn = false, bool $transcript = false): string
@@ -757,18 +757,18 @@ function fluid_video_embed(string $url, string $file, string $poster, string $ra
 }
 
 /**
- * Eigene Videodatei: Vorschaubild (gewählt oder Standbild per ffmpeg), Untertitel-Spuren, Transkript.
+ * Own video file: poster (chosen or still frame via ffmpeg), subtitle tracks, transcript.
  */
 function fluid_video_file(Media $video, string $poster, string $ratio, string $label, array $tracks, bool $ccOn, bool $transcript): string
 {
     $mm = MediaManager::class;
-    // AddOn video_editor (optional): dort gewähltes Poster und Web-Fassungen (WebM, 480p/720p/1080p je nach Bildschirm) – ohne es das Original
+    // AddOn video_editor (optional): poster and web versions chosen there (WebM, 480p/720p/1080p depending on screen) – without it the original
     $ve = class_exists(VideoEditor::class);
     $p = '' !== $poster ? Media::get($poster) : ($ve ? VideoEditor::poster($video->fileName) : null);
     $posterUrl = $p ? $mm::getUrl('fluid_poster', $p) : (Ffmpeg::available() ? $mm::getUrl('fluid_poster', $video) : '');
     $sources = $ve ? VideoEditor::sources($video->fileName) : [];
     $sources = $sources ?: [['url' => $video->getUrl(), 'type' => (string) $video->type]];
-    // Untertitel aus dem Video-Editor, wenn im Block keine gewählt sind
+    // subtitles from the video editor if none are chosen in the block
     if ($ve && [] === $tracks) {
         $tracks = array_map(static fn (array $t) => ['file' => $t['file'], 'lang' => $t['lang'], 'kind' => $t['kind'], 'label' => $t['label']],
             VideoEditor::tracks($video->fileName));
@@ -792,7 +792,7 @@ function fluid_video_file(Media $video, string $poster, string $ratio, string $l
         $out .= '<track kind="' . e($kind) . '" src="' . e(Tracks::url($f)) . '" srclang="' . e($code) . '" label="'
             . e(Tracks::label($kind, $code, (string) ($t['label'] ?? ''))) . '"' . ($default ? ' default' : '') . '>';
     }
-    // Untertitel von derselben Adresse (crossorigin nötig, sobald Medien von einer anderen Domain kommen)
+    // subtitles from the same address (crossorigin needed as soon as media come from another domain)
     $h = '<div class="vembed r-' . e($ratio) . '"><video controls preload="none" playsinline' . ('' !== $posterUrl ? ' poster="' . e($posterUrl) . '"' : '')
         . ('' !== $label ? ' aria-label="' . e($label) . '"' : '') . '>'
         . implode('', array_map(static fn (array $src) => '<source src="' . e($src['url']) . '" type="' . e($src['type']) . '"'
@@ -809,8 +809,8 @@ function fluid_video_file(Media $video, string $poster, string $ratio, string $l
 }
 
 /**
- * Audiodateien des Blocks „Video & Audio“ (Darstellung Audio) für die Ausgabe: nur vorhandene Audiodateien, Titel aus dem
- * Block oder dem Medienpool, Kapitel als geprüftes WebVTT (/fluid-track/…).
+ * Audio files of the block „Video & Audio“ (display audio) for output: only existing audio files, title from the
+ * block or the media pool, chapters as validated WebVTT (/fluid-track/…).
  *
  * @return list<array{url: string, mime: string, title: string, artist: string, chapters: string}>
  */
@@ -832,7 +832,7 @@ function fluid_audio_tracks(array $items): array
 }
 
 /**
- * Datum in der Sprache der Seite, z. B. „13. Oktober 2026“ / „October 13, 2026“.
+ * Date in the language of the page, e.g. „13. Oktober 2026“ / „October 13, 2026“.
  */
 function fluid_date(DateTimeInterface $d): string
 {
@@ -849,7 +849,7 @@ function fluid_date(DateTimeInterface $d): string
 }
 
 /**
- * Zeile „Datum · Autor“ eines Beitrags.
+ * Line „date · author“ of a post.
  */
 function fluid_post_meta(Post $p, bool $author = true): string
 {
@@ -862,7 +862,7 @@ function fluid_post_meta(Post $p, bool $author = true): string
 }
 
 /**
- * Kopf einer Beitragsseite (Template): Zurück zur Übersicht, Titel, Datum, Autor, Schlagworte, Bild.
+ * Header of a post page (template): back to overview, title, date, author, tags, image.
  */
 function fluid_post_header(Article $a): string
 {
@@ -887,7 +887,7 @@ function fluid_post_header(Article $a): string
 }
 
 /**
- * Fuß einer Beitragsseite (Template): älterer / neuerer Beitrag.
+ * Footer of a post page (template): older / newer post.
  */
 function fluid_post_footer(Article $a): string
 {
@@ -904,8 +904,8 @@ function fluid_post_footer(Article $a): string
 }
 
 /**
- * Hauptmenü im Seitenblatt (Menü-Schaltfläche) – wie in KLXM Studio (Modus „overview“): Unterseiten als Akkordeon
- * (<details name> – je Ebene nur eins offen, ohne JavaScript), erster Eintrag „Übersicht: …“, aktiver Zweig offen.
+ * Main menu in the page sheet (menu button) – as in KLXM Studio (mode „overview“): subpages as accordion
+ * (<details name> – only one open per level, without JavaScript), first entry „Übersicht: …“, active branch open.
  *
  * @param list<array{label: string, href: string, current: bool, active: bool, children: list<array<string, mixed>>}> $menu
  */
@@ -933,8 +933,8 @@ function fluid_nav_sheet(array $menu): string
 }
 
 /**
- * Bildergalerie und Slider (Kit-Blöcke gallery/slider, aus KLXM Studio – Core\MediaBlocks): Link zur großen Fassung für
- * die Lightbox (ohne JavaScript ein gewöhnlicher Link), Klasse für „Zeilen“ (Seitenverhältnis × 10) und Dialog/Skript.
+ * Image gallery and slider (kit blocks gallery/slider, from KLXM Studio – Core\MediaBlocks): link to the large version for
+ * the lightbox (an ordinary link without JavaScript), class for „Zeilen“ (aspect ratio × 10) and dialog/script.
  */
 function fluid_lightbox_link(string $file, string $caption): string
 {
@@ -960,7 +960,7 @@ function fluid_aspect_class(string $file): string
 }
 
 /**
- * Lightbox-Dialog einmal je Seite (js/media.js befüllt ihn) – nicht im Bearbeiten-Modus.
+ * Lightbox dialog once per page (js/media.js fills it) – not in edit mode.
  */
 function fluid_lightbox(): string
 {

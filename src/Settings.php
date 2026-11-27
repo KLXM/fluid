@@ -12,11 +12,11 @@ use function count;
 use function is_array;
 
 /**
- * Website-Einstellungen (Modell aus KLXM Studio – „Website“): Name, Logo, Kontakt, Öffnungszeiten, Social Media,
- * Hinweisleiste, Kopf und Fuß, Rechtliches. Zentral gepflegt, erscheinen sie automatisch überall (Template, Blöcke
- * „Kontakt“ und „Karte“, strukturierte Daten). Gespeichert in der Config des AddOns ('site'); Kits lesen sie über setting().
+ * Website settings (model from KLXM Studio – „Website“): name, logo, contact, opening hours, social media,
+ * notice bar, header and footer, legal. Maintained centrally, they appear everywhere automatically (template, blocks
+ * „Kontakt“ and „Karte“, structured data). Stored in the addon config ('site'); kits read them via setting().
  *
- * Felder im Format der Kits (FieldForm) – je Reiter eine Gruppe. Domains und Weiterleitungen haben eigene Reiter (Routing).
+ * Fields in the kit format (FieldForm) – one group per tab. Domains and redirects have their own tabs (routing).
  */
 final class Settings
 {
@@ -37,7 +37,7 @@ final class Settings
     /** @return array<string, array{label: string, fields: list<array<string, mixed>>}> */
     private static function baseSchema(): array
     {
-        // Reiter „Kit“ nur, wenn es mehr als eins gibt (Projekt oder Composer-Pakete mit #[AsKit])
+        // Tab „Kit“ only if there is more than one (project or Composer packages with #[AsKit])
         $kits = Kit::options();
         $kitTab = count($kits) > 1 ? ['kit' => ['label' => 'Kit', 'fields' => [
             ['name' => 'kit', 'label' => 'Kit der Website', 'type' => 'select', 'required' => true, 'default' => Kit::DEFAULT, 'options' => $kits,
@@ -94,7 +94,7 @@ final class Settings
                 ['name' => 'topbar_text', 'translate' => true, 'label' => 'Infoleiste über dem Kopf (optional)', 'type' => 'text', 'max' => 120, 'help' => 'Kurzer Text neben Telefon und E-Mail – erscheint, wenn im Design eine Infoleiste gewählt ist.'],
                 ['name' => 'footer_text', 'translate' => true, 'label' => 'Text im Fuß (optional)', 'type' => 'textarea', 'rows' => 2, 'max' => 300],
                 ['name' => 'footer_statement', 'translate' => true, 'label' => 'Großer Satz im Fuß (Design „Statement“)', 'type' => 'text', 'max' => 120, 'help' => '*Wort* hebt hervor.'],
-                // Handlungsaufruf im Fußbereich (fluid_footer_cta): eigener Button, getrennt vom Kopf; leer = kein Button
+                // Call to action in the footer (fluid_footer_cta): own button, separate from the header; empty = no button
                 ['name' => 'footer_cta_label', 'translate' => true, 'label' => 'Handlungsaufruf im Fuß – Beschriftung (optional)', 'type' => 'text', 'max' => 32, 'width' => 'half', 'placeholder' => 'z. B. Mitglied werden',
                     'help' => 'Erscheint als Button im Fußbereich – bei „Großer Schriftzug“ statt des Buttons aus dem Kopf. Leer = kein Button.'],
                 ['name' => 'footer_cta_link', 'label' => 'Handlungsaufruf im Fuß – Ziel', 'type' => 'link', 'width' => 'half', 'help' => 'Seite, #anker, https://… – Sonderwerte „phone“ und „email“.'],
@@ -102,8 +102,8 @@ final class Settings
                 ['name' => 'notice_text', 'translate' => true, 'label' => 'Hinweis', 'type' => 'text', 'max' => 200, 'placeholder' => 'z. B. Vom 22.12. bis 6.1. geschlossen.'],
                 ['name' => 'video_lightbox', 'label' => 'Video-Links in Lightbox öffnen', 'type' => 'bool', 'default' => false,
                     'help' => 'Links und Buttons auf YouTube- oder Vimeo-Videos öffnen den Player in einer Lightbox auf der Website – nur, wenn Besucher in den Dienst eingewilligt haben (AddOn consent_kit bzw. „Videos künftig direkt laden“ im Block Video). Ohne Einwilligung bleibt es ein normaler Link. Einzelne Buttons lassen sich ausnehmen.'],
-                // <ncss-preferences> von NativeCSS im Kopf – Kit „NativeCSS“ und Kit fluid (Seitenrahmen beider Kits); Skripte und
-                // Bedienfeld kommen aus kits/native, deshalb nur, wenn es das Kit gibt
+                // <ncss-preferences> of NativeCSS in the header – kit „NativeCSS“ and kit fluid (frame of both kits); scripts and
+                // panel come from kits/native, so only if that kit exists
                 ...(null !== Kit::get('native') ? [
                     ['name' => 'visitor_prefs', 'label' => 'Darstellungs-Knopf für Besucher anzeigen', 'type' => 'bool', 'default' => false,
                         'help' => 'Ein Knopf „Darstellung“ im Kopf der Website: Besucher wählen Farbschema, Kontrast, Bewegung, Schriftgröße, Lese-Schrift, Textabstände, unterstrichene Links und einen deutlicheren Fokus-Rahmen – gespeichert in ihrem Browser. Ohne Wahl gelten die Einstellungen ihres Geräts. Ersetzt keine barrierefreie Gestaltung, ergänzt sie.'],
@@ -143,7 +143,7 @@ final class Settings
 
     public static function get(string $key, mixed $default = null): mixed
     {
-        // weitere Sprachen: Übersetzung, sonst Text der Startsprache
+        // further languages: translation, otherwise text of the start language
         $lang = Language::getCurrentId();
         if ($lang !== Language::getStartId()) {
             $t = self::translations($lang)[$key] ?? null;
@@ -156,7 +156,7 @@ final class Settings
         return array_key_exists($key, $all) && '' !== $all[$key] && null !== $all[$key] ? $all[$key] : $default;
     }
 
-    /** Übersetzte Werte einer weiteren Sprache (Felder mit 'translate' => true) */
+    /** Translated values of a further language (fields with 'translate' => true) */
     public static function translations(int $languageId): array
     {
         $all = FluidAddon::instance()->getConfig(self::CONFIG . '_i18n', []);
@@ -164,13 +164,13 @@ final class Settings
         return is_array($all[$languageId] ?? null) ? $all[$languageId] : [];
     }
 
-    /** Felder eines Reiters, die je Sprache gepflegt werden */
+    /** Fields of a tab that are maintained per language */
     public static function translatable(string $tab): array
     {
         return array_values(array_filter(self::schema()[$tab]['fields'] ?? [], static fn (array $f) => !empty($f['translate'])));
     }
 
-    /** Werte eines Reiters speichern (nur Felder des Schemas); weitere Sprache: nur die übersetzbaren Felder */
+    /** Saves the values of a tab (schema fields only); further language: only the translatable fields */
     public static function save(string $tab, array $input, ?int $languageId = null): void
     {
         $fields = self::schema()[$tab]['fields'] ?? null;
@@ -208,7 +208,7 @@ final class Settings
         Kit::reset();
     }
 
-    /** Name der Website: Einstellung oder REDAXO-Instanzname */
+    /** Name of the website: setting or REDAXO instance name */
     public static function name(bool $short = false): string
     {
         $name = trim((string) self::get('org_name', ''));

@@ -19,22 +19,22 @@ use function substr_replace;
 use function trim;
 
 /**
- * Keine style-Attribute (Content-Security-Policy, im Backend erzwungen): Werte, die sich nicht über feste Klassen
- * abbilden lassen (Fokuspunkt eines Bildes, Rasterbreite …), bekommen eine Klasse – die Regeln stehen gesammelt in
- * einem <style nonce> im Kopf der Seite (OUTPUT_FILTER, Website und Backend).
+ * No style attributes (Content Security Policy, enforced in the backend): values that can't be expressed with fixed
+ * classes (focus point of an image, grid width …) get a class – the rules are collected in
+ * a <style nonce> in the page head (OUTPUT_FILTER, website and backend).
  *
  *     '<img class="' . InlineStyle::class('object-position:30% 40%') . '" …>'
  *
- * Die Regeln tragen !important, damit sie wie vorher die style-Attribute über den Stylesheets stehen.
+ * The rules carry !important so they take precedence over the stylesheets like the former style attributes.
  */
 final class InlineStyle
 {
-    /** @var array<string, string> Klasse → Deklarationen */
+    /** @var array<string, string> class → declarations */
     private static array $rules = [];
 
     private static bool $booted = false;
 
-    /** Klasse für diese Deklarationen ('' bei leeren) */
+    /** Class for these declarations ('' for empty ones) */
     public static function class(string $declarations): string
     {
         $declarations = trim($declarations, " ;\t\n");
@@ -48,7 +48,7 @@ final class InlineStyle
         return $class;
     }
 
-    /** Attribut class="…" (leer bei leeren Deklarationen), mit weiteren Klassen */
+    /** Attribute class="…" (empty for empty declarations), with further classes */
     public static function attr(string $declarations, string $classes = ''): string
     {
         $all = trim($classes . ' ' . self::class($declarations));
@@ -56,7 +56,7 @@ final class InlineStyle
         return '' !== $all ? ' class="' . escape($all) . '"' : '';
     }
 
-    /** <style nonce> mit allen Regeln – leer, wenn keine anfielen */
+    /** <style nonce> with all rules – empty if there were none */
     public static function tag(): string
     {
         $css = self::css();
@@ -65,8 +65,8 @@ final class InlineStyle
     }
 
     /**
-     * Alle Regeln als CSS-Text (danach geleert) – für Antworten ohne Seitenkopf, z. B. die API des Editors, die neu
-     * ausgegebene Blöcke liefert.
+     * All rules as CSS text (cleared afterwards) – for responses without page head, e.g. the editor API that returns
+     * re-rendered blocks.
      */
     public static function css(): string
     {

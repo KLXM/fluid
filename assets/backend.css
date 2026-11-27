@@ -1,6 +1,6 @@
-/* klxm/fluid – Seiten des AddOns im Backend (Status …). Nur Tokens des Cores, hell und dunkel. */
+/* klxm/fluid – the addon's pages in the backend (status …). Only core tokens, light and dark. */
 
-/* Kopf der Statusseite: Zusammenfassung mit Ampel */
+/* head of the status page: summary with traffic light */
 .fluid-status-hero {
     --fluid-state: var(--rex-color-success);
     --fluid-state-bg: var(--rex-color-success-subtle);
@@ -23,7 +23,7 @@
 .fluid-status-hero__text h2 { margin: 0 0 4px; font-size: var(--rex-font-size-large); font-weight: 700; }
 .fluid-status-hero__text p { margin: 0; color: var(--rex-color-text-muted); }
 
-/* Prüfungen als Kacheln */
+/* checks as tiles */
 .fluid-status-checks {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
@@ -57,7 +57,7 @@
 .fluid-status-mailtest { max-width: 520px; margin: 0 0 20px; }
 .fluid-status-sub { margin: 20px 0 8px; font-size: var(--rex-font-size); font-weight: 700; }
 
-/* Wartung: je Aufgabe eine Kachel */
+/* maintenance: one tile per task */
 .fluid-status-tasks { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); gap: 12px; }
 .fluid-status-task {
     display: flex;
@@ -72,7 +72,7 @@
 .fluid-status-task h3 { margin: 0; font-size: var(--rex-font-size); font-weight: 700; }
 .fluid-status-task > p:not(.fluid-status-task__action) { flex: 1; margin: 0; color: var(--rex-color-text-muted); font-size: var(--rex-font-size-small); }
 .fluid-status-task__action { margin: 0; }
-/* MCP-Seite: Unteroptionen eingerückt, Schlüssel zum Markieren (eigene Klassen, keine Core-Selektoren) */
+/* MCP page: sub-options indented, keys for selecting (own classes, no core selectors) */
 .fluid-mcp-sub{margin-block-start:.25rem;padding-inline-start:1.5rem;border-inline-start:2px solid var(--rex-color-border)}
 .fluid-mcp-secret{user-select:all;overflow-x:auto}
 .fluid-mcp-secret--wrap{white-space:pre-wrap;overflow-wrap:anywhere}

@@ -24,13 +24,13 @@ use function is_array;
 use function json_decode;
 
 /**
- * Blöcke in der Slice-Liste des Backends verdoppeln, kopieren, ausschneiden und einfügen – mit BlockOps wie auf der
- * Website und derselben Zwischenablage im Browser (localStorage „fluid-clipboard“, assets/slice-grid.js).
+ * Duplicate, copy, cut and paste blocks in the backend slice list – with BlockOps as on the
+ * website and the same clipboard in the browser (localStorage „fluid-clipboard“, assets/slice-grid.js).
  *
- *  - fluid_op=copy       JSON {clip, label} für die Zwischenablage
- *  - fluid_op=duplicate  Kopie direkt hinter dem Block (in Spalten: in derselben Spalte)
- *  - fluid_op=paste      Inhalt der Zwischenablage (POST clip) hinter dem Block; mit POST cut wird das Original danach
- *                        gelöscht (Ausschneiden = erst einfügen, dann entfernen – es geht nichts verloren)
+ *  - fluid_op=copy       JSON {clip, label} for the clipboard
+ *  - fluid_op=duplicate  copy right after the block (in columns: in the same column)
+ *  - fluid_op=paste      clipboard content (POST clip) after the block; with POST cut the original is deleted
+ *                        afterwards (cut = paste first, then remove – nothing is lost)
  */
 #[AsApiFunction('fluid_block_ops')]
 final class BlockOpsApi extends ApiFunction
@@ -72,7 +72,7 @@ final class BlockOpsApi extends ApiFunction
                 }
                 $cut = json_decode(Request::post('cut', 'string', ''), true);
                 $cut = is_array($cut) ? $cut : [];
-                // Ausschneiden: nicht hinter sich selbst bzw. in die eigenen Spalten
+                // cut: not after itself or into its own columns
                 $source = (int) ($cut['slice'] ?? 0);
                 if ($source > 0 && in_array($source, [$slice->id, Layout::parentOf($slice)?->id], true)) {
                     throw new ApiError('Ein Block lässt sich nicht in sich selbst verschieben.');
@@ -93,7 +93,7 @@ final class BlockOpsApi extends ApiFunction
         throw new ApiFunctionException('Unbekannte Aktion.');
     }
 
-    /** Adresse für Aufrufe aus der Slice-Liste (mit CSRF-Token) */
+    /** Address for calls from the slice list (with CSRF token) */
     public static function url(Article $article, int $contentSectionId): string
     {
         return Url::backendPage('content/edit', [

@@ -36,7 +36,7 @@ use function Redaxo\Core\View\escape;
 use const FILTER_VALIDATE_EMAIL;
 
 /**
- * Backend → AddOns → fluid → Status: Prüfung der Umgebung und Wartung (Adressen, Suchindex, Karten-Cache).
+ * Backend → AddOns → fluid → Status: environment check and maintenance (URLs, search index, map cache).
  *
  * @internal
  */
@@ -55,7 +55,7 @@ final class StatusPage
         $mail = Mail::status();
         $site = $start ? $start->getUrl(['fluid_edit' => 1]) : Url::frontend();
 
-        // [Status, Bereich, Text]; Status: ok | warn | info
+        // [status, area, text]; status: ok | warn | info
         $rows = [
             [$start ? 'ok' : 'warn', 'Startseite', $start ? escape($start->name) . ' – Template ' . escape((string) $start->templateKey) . ('fluid' === $start->templateKey ? '' : ' (nicht das Template von fluid)') : 'Noch keine Seiten – die Website zeigt „Erste Schritte“.'],
             ['ok', 'Kit', escape($kit->label()) . ' (' . escape($kit->key()) . ')' . (null !== ($parent = $kit->parent()) ? ' – erbt von ' . escape($parent->label()) : '')
@@ -74,7 +74,7 @@ final class StatusPage
             [class_exists(ImageEditorAddon::class) ? 'ok' : 'info', 'Bildbearbeitung', class_exists(ImageEditorAddon::class) ? 'image_editor vorhanden' : 'optional: klxm/image_editor'],
             [$n404 > 0 ? 'info' : 'ok', '404-Protokoll', $n404 . ' nicht gefundene Adressen in 30 Tagen – auf der Website unter Website → Weiterleitungen'],
         ];
-        // Kopf: Zusammenfassung (Ampel) und Absprung auf die Website
+        // Header: summary (traffic light) and link to the website
         $count = array_count_values(array_column($rows, 0)) + ['ok' => 0, 'warn' => 0, 'info' => 0];
         $state = $count['warn'] > 0 ? 'warn' : 'ok';
         $out .= '<div class="fluid-status-hero" data-state="' . $state . '">'
@@ -84,7 +84,7 @@ final class StatusPage
             . '<a class="rex-button" data-variant="primary" href="' . escape($site) . '"><i class="rex-icon fa-solid fa-pen-to-square" aria-hidden="true"></i> Auf der Website bearbeiten</a>'
             . '</div>';
 
-        // Prüfungen als Kacheln, Warnungen zuerst
+        // Checks as tiles, warnings first
         $order = ['warn' => 0, 'info' => 1, 'ok' => 2];
         usort($rows, static fn (array $a, array $b) => $order[$a[0]] <=> $order[$b[0]]);
         $label = ['ok' => 'in Ordnung', 'warn' => 'prüfen', 'info' => 'Hinweis'];
@@ -100,7 +100,7 @@ final class StatusPage
         $csrf = CsrfToken::factory(self::CSRF)->getHiddenField();
         $out .= self::mailSection($mail, $csrf);
 
-        // Wartung: je Aufgabe eine Kachel mit Erklärung
+        // Maintenance: one tile with explanation per task
         $task = static fn (string $do, string $icon, string $title, string $help, string $button) => '<form method="post" class="fluid-status-task">' . $csrf
             . '<span class="fluid-status-task__icon" aria-hidden="true"><i class="rex-icon fa-solid ' . $icon . '"></i></span><h3>' . escape($title) . '</h3><p>' . escape($help) . '</p>'
             . '<p class="fluid-status-task__action"><button class="rex-button" data-size="sm" name="fluid_do" value="' . $do . '">' . escape($button) . '</button></p></form>';
@@ -157,7 +157,7 @@ final class StatusPage
     }
 
     /**
-     * Abschnitt „E-Mail“: Einrichtung, Testmail, letzte Fehler, nicht gesendete Mails (erneut senden).
+     * Section „E-Mail“: setup, test mail, recent errors, unsent mails (resend).
      *
      * @param array<string, mixed> $mail
      */
@@ -206,7 +206,7 @@ final class StatusPage
         return (string) new Section(title: 'E-Mail', body: Html::raw($body))->render();
     }
 
-    /** Symbol je Zustand (ok, warn, info) */
+    /** Icon per state (ok, warn, info) */
     private static function icon(string $state): string
     {
         return '<i class="rex-icon fa-solid ' . ['ok' => 'fa-circle-check', 'warn' => 'fa-triangle-exclamation', 'info' => 'fa-circle-info'][$state] . '" aria-hidden="true"></i>';

@@ -3,8 +3,8 @@
 use Klxm\Fluid\Block;
 
 /**
- * Bento-Raster: dichtes Raster (grid-auto-flow: dense) aus Kacheln verschiedener Größe. Spaltenzahl ergibt sich aus der
- * Breite (auto-fill, min. 15 rem); breite/hohe Kacheln spannen erst, wenn der Container Platz hat (@container).
+ * Bento grid: dense grid (grid-auto-flow: dense) of tiles of different sizes. The number of columns follows from the
+ * width (auto-fill, min. 15 rem); wide/tall tiles only span when the container has room (@container).
  * @var Block $b  @var array $d
  */
 $items = array_values(array_filter((array) ($d['items'] ?? []), static fn ($i) => '' !== trim((string) ($i['title'] ?? '')) || is_editing()));

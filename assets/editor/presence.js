@@ -1,25 +1,25 @@
 /**
- * Präsenz der Redaktion – eigenständiges Modul aus KLXM Studio (resources/js/presence.mjs, MIT); in fluid geladen von Toolbar
- * (PresenceApi). Keine Abhängigkeit vom Editor (editor.js).
- * Gekoppelt nur über data-Attribute und Ereignisse:
+ * Presence of the editorial team – standalone module from KLXM Studio (resources/js/presence.mjs, MIT); in fluid loaded
+ * by Toolbar (PresenceApi). No dependency on the editor (editor.js).
+ * Coupled only via data attributes and events:
  *
- *   [data-presence-here]   Leiste: wer bearbeitet dieses Objekt gerade, wer hat zuletzt gespeichert, Konflikt-Warnung.
- *       data-presence-endpoint  POST-Adresse (Schema siehe Entwicklerhandbuch → Präsenz)
- *       data-presence-type / -id / -label / -url / -csrf   Objekt und CSRF-Token
- *       data-presence-live      Adresse des Live-Streams (Live, /fluid-live) – schnelle Aktualisierung beim Kommen/Gehen
- *       data-presence-texts     JSON mit den Texten (siehe T unten)
- *     Meldet sich nur im Bearbeiten-Modus (html.cms-editing bzw. data-presence-editing="1"), sonst nur nachsehen (peek).
- *   [data-presence-list]   Übersicht (Seitenbaum, Eintragsliste): Elemente [data-id] bekommen ein Kürzel in [data-presence-slot].
- *       data-presence-endpoint (GET), data-presence-type, data-presence-prefix (z. B. „news:“ für Einträge)
- *   [data-presence-board]  Liste „Gerade aktiv“ (Übersicht/Dashboard): Personen mit Link zum Ort.
+ *   [data-presence-here]   Bar: who is editing this object right now, who saved last, conflict warning.
+ *       data-presence-endpoint  POST address (schema see developer manual → presence)
+ *       data-presence-type / -id / -label / -url / -csrf   object and CSRF token
+ *       data-presence-live      address of the live stream (Live, /fluid-live) – fast update on arrival/leaving
+ *       data-presence-texts     JSON with the texts (see T below)
+ *     Registers only in edit mode (html.cms-editing or data-presence-editing="1"), otherwise only looks (peek).
+ *   [data-presence-list]   Overview (page tree, entry list): elements [data-id] get initials in [data-presence-slot].
+ *       data-presence-endpoint (GET), data-presence-type, data-presence-prefix (e.g. „news:“ for entries)
+ *   [data-presence-board]  List „Gerade aktiv“ (overview/dashboard): people with a link to the place.
  *
- * Konflikt: hat jemand anderes seit dem Öffnen gespeichert, fragt das Modul beim Ereignis „cms:before-save“ nach
- * (detail.waitUntil) – keine Sperre, „Trotzdem speichern“ ist erlaubt. Ereignis „cms:presence“ am document: {here, last, conflict, lock}.
- * Bearbeitungssperre (optional, lock.on, EditLock): fremder Inhaber → Hinweiszeile „nur Ansehen“ (+ „Übernehmen“ für die
- * Administration); wieder frei → „Jetzt bearbeiten“; Sperre beim Bearbeiten verloren → einmal deutlich sagen.
- * Rückfrage über window.CMSAdmin.bar.ask bzw. window.FluidEditor.ask ({title, body, ok, cancel, danger} → Promise<bool>), sonst confirm().
- * Wurzeln: document und offene Schatten-Wurzeln (z. B. die Werkzeugleiste). Später eingefügte Übersichten/Leisten:
- * Ereignis „cms:presence-scan“ am document auslösen.
+ * Conflict: if someone else has saved since opening, the module asks on the event „cms:before-save“
+ * (detail.waitUntil) – no lock, „Trotzdem speichern“ is allowed. Event „cms:presence“ on document: {here, last, conflict, lock}.
+ * Edit lock (optional, lock.on, EditLock): other owner → notice line „nur Ansehen“ (+ „Übernehmen“ for
+ * administrators); free again → „Jetzt bearbeiten“; lock lost while editing → say so clearly once.
+ * Confirmation via window.CMSAdmin.bar.ask or window.FluidEditor.ask ({title, body, ok, cancel, danger} → Promise<bool>), else confirm().
+ * Roots: document and open shadow roots (e.g. the toolbar). Overviews/bars inserted later:
+ * dispatch the event „cms:presence-scan“ on document.
  */
 const d = document;
 const BEAT = 15000, LIST = 30000;
@@ -47,7 +47,7 @@ const badge = (p) => p.avatar
   : `<span class="cms-presence__ava cms-presence__ava--ini" aria-hidden="true">${esc(p.initials || '?')}</span>`;
 const names = (ps) => ps.map((p) => p.name).join(', ');
 
-// ------------------------------------------------------------------ Live (Core\Live): bei neuer Version sofort nachfragen
+// ------------------------------------------------------------------ Live (Core\Live): ask right away on a new version
 function live(url, token, onChange) {
   if (!url || !token || !('EventSource' in window)) return;
   let es = null, v = 0;
@@ -59,13 +59,13 @@ function live(url, token, onChange) {
   open();
 }
 
-// ------------------------------------------------------------------ Leiste: dieses Objekt
+// ------------------------------------------------------------------ Bar: this object
 function here(el) {
   if (el._presence) return;
   el._presence = true;
   const T = { ...T0, ...JSON.parse(el.dataset.presenceTexts || '{}') };
   const body = (extra = {}) => JSON.stringify({ type: el.dataset.presenceType, id: el.dataset.presenceId, label: el.dataset.presenceLabel || '', url: el.dataset.presenceUrl || '', ...extra });
-  // Gesperrt (data-presence-locked): ?fluid_edit in der Adresse zählt nicht – der Server zeigt nur die Ansicht
+  // Locked (data-presence-locked): ?fluid_edit in the address does not count – the server only shows the view
   const editing = () => el.dataset.presenceEditing === '1' || d.documentElement.classList.contains('cms-editing')
     || (!el.dataset.presenceLocked && new URLSearchParams(location.search).has('fluid_edit'));
   let base = null, last = null, conflict = false, liveOn = false, timer = 0, ack = 0, lock = null, wasMine = false, toldTaken = false;
@@ -77,7 +77,7 @@ function here(el) {
     let h = '';
     const lockedHere = lock?.on && lock.by && !editing();
     if (lockedHere) {
-      // Bearbeitungssperre: in der Leiste Kürzel + Schloss, Text und „Übernehmen“ in der Hinweiszeile darunter
+      // Edit lock: initials + lock in the bar, text and „Übernehmen“ in the notice line below
       h = `<span class="cms-presence__avas">${badge(lock.by)}</span><span class="cms-presence__lock" aria-hidden="true">🔒</span><span class="cms-presence__sr">${esc(fill(T.locked, { name: lock.by.name }))}</span>`;
     } else if (others.length) {
       h += `<span class="cms-presence__avas">${others.slice(0, 4).map(badge).join('')}</span>`
@@ -91,7 +91,7 @@ function here(el) {
     el.classList.toggle('is-conflict', conflict);
     el.classList.toggle('is-locked', !!lockedHere);
     el.title = [lockedHere ? fill(T.locked, { name: lock.by.name }) : '', conflict ? fill(T.conflict, { name: last.name || '?' }) : '', ...others.map((p) => p.name + ' – ' + ago(p.since, T))].filter(Boolean).join('\n');
-    // Hinweiszeile unter der Leiste: gesperrt (mit „Übernehmen“ für die Administration) bzw. wieder frei
+    // Notice line below the bar: locked (with „Übernehmen“ for administrators) or free again
     if (lockedHere) {
       note(`<span aria-hidden="true">🔒</span><span>${esc(fill(T.lockedNotePage, { name: lock.by.name }))}</span>`
         + (lock.canTake ? `<button type="button" class="cms-lock-note__btn" data-presence-take>${esc(T.take)}</button>` : ''));
@@ -102,7 +102,7 @@ function here(el) {
     }
   };
 
-  // Hinweiszeile (in derselben Wurzel wie die Leiste, fest unter ihr)
+  // Notice line (in the same root as the bar, fixed below it)
   let noteEl = null;
   const note = (html, free = false) => {
     if (!html) { if (noteEl) noteEl.hidden = true; return; }
@@ -118,14 +118,14 @@ function here(el) {
     noteEl.innerHTML = html;
     noteEl.hidden = false;
   };
-  // Übernehmen (nur Administration – der Server prüft das Recht): nachfragen, Sperre übernehmen, in den Bearbeiten-Modus
+  // Take over (administrators only – the server checks the permission): ask, take over the lock, switch to edit mode
   const takeClick = async (e) => {
     if (!e.target.closest('[data-presence-take]') || !lock?.by) return;
     const by = lock.by.name;
     if (!(await ask({ title: fill(T.takeAsk, { name: by }), body: fill(T.takeBody, { name: by }), ok: T.take, cancel: T.cancel, danger: true }))) return;
     try {
       await fetch(el.dataset.presenceEndpoint, { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-Token': el.dataset.presenceCsrf || '' }, body: body({ take: 1 }) });
-    } catch { /* neu laden zeigt den Stand */ }
+    } catch { /* reloading shows the state */ }
     location.href = editUrl();
   };
 
@@ -134,15 +134,15 @@ function here(el) {
     try {
       const r = await fetch(el.dataset.presenceEndpoint, { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-Token': el.dataset.presenceCsrf || '' }, body: body(peek ? { peek: 1 } : {}) });
       const j = r.ok ? await r.json() : null;
-      if (!j || j.on === false) { el.hidden = true; return; }   // abgeschaltet – keine weiteren Meldungen
+      if (!j || j.on === false) { el.hidden = true; return; }   // switched off – no further reports
       last = j.last || null;
       if (last) {
-        if (base === null) base = last.at;                       // Stand beim Öffnen
-        if (last.self) base = Math.max(base, last.at);           // eigene Speicherung ist kein Konflikt
+        if (base === null) base = last.at;                       // state when opening
+        if (last.self) base = Math.max(base, last.at);           // own save is not a conflict
         conflict = !last.self && last.at > Math.max(base, ack);
       }
       lock = j.lock || null;
-      // Sperre verloren (Administration hat übernommen), während hier noch bearbeitet wird: einmal deutlich sagen
+      // Lock lost (an administrator took over) while still editing here: say so clearly once
       if (lock?.on && editing()) {
         if (lock.mine) wasMine = true;
         else if (lock.by && wasMine && !toldTaken) {
@@ -153,31 +153,31 @@ function here(el) {
       render(j.here || []);
       d.dispatchEvent(new CustomEvent('cms:presence', { detail: { here: j.here || [], last, conflict, lock } }));
       if (!liveOn && j.live) { liveOn = true; live(el.dataset.presenceLive, j.live, () => tick()); }
-    } catch { /* nächster Versuch */ }
+    } catch { /* next attempt */ }
     timer = setTimeout(() => tick(), BEAT);
   };
 
-  // Konflikt: vor dem Speichern nachfragen (keine Sperre)
+  // Conflict: ask before saving (no lock)
   d.addEventListener('cms:before-save', (e) => {
     if (!conflict || !last) return;
     const ask = window.CMSAdmin?.bar?.ask || window.FluidEditor?.ask;
     const o = { title: fill(T.conflictTitle, { name: last.name }), body: fill(T.conflictBody, { name: last.name, ago: ago(last.at, T) }), ok: T.conflictOk, cancel: T.cancel, danger: true };
     e.detail?.waitUntil?.((ask ? ask(o) : Promise.resolve(window.confirm(o.title + '\n\n' + o.body))).then((ok) => { if (ok) { ack = last.at; conflict = false; } return ok; }));
   });
-  // Abmelden beim Verlassen (sendBeacon: Formulardaten mit _csrf)
+  // Sign off when leaving (sendBeacon: form data with _csrf)
   addEventListener('pagehide', () => {
     if (!editing() || !navigator.sendBeacon) return;
     const f = new FormData();
     f.append('type', el.dataset.presenceType); f.append('id', el.dataset.presenceId); f.append('leave', '1'); f.append('_csrf', el.dataset.presenceCsrf || '');
     navigator.sendBeacon(el.dataset.presenceEndpoint, f);
   });
-  // Moduswechsel (Ansehen ↔ Bearbeiten ohne Neuladen): sofort melden
+  // Mode change (view ↔ edit without reloading): report immediately
   d.addEventListener('cms:mode-change', () => tick());
   tick();
-  setTimeout(() => tick(), 2000);   // Leiste/Modus sind beim Start evtl. noch nicht gesetzt
+  setTimeout(() => tick(), 2000);   // Bar/mode may not be set yet at start
 }
 
-// ------------------------------------------------------------------ Übersichten: Kürzel an den Einträgen, „Gerade aktiv“
+// ------------------------------------------------------------------ Overviews: initials on the entries, „Gerade aktiv“
 let listTimer = 0, listLive = false;
 async function lists() {
   clearTimeout(listTimer);
@@ -185,7 +185,7 @@ async function lists() {
   if (!boxes.length && !boards.length) return;
   const first = boxes[0] || boards[0];
   let j = null;
-  try { const r = await fetch(first.dataset.presenceEndpoint, { credentials: 'same-origin', headers: { Accept: 'application/json' } }); j = r.ok ? await r.json() : null; } catch { /* später */ }
+  try { const r = await fetch(first.dataset.presenceEndpoint, { credentials: 'same-origin', headers: { Accept: 'application/json' } }); j = r.ok ? await r.json() : null; } catch { /* later */ }
   if (j && j.on !== false) {
     const items = (j.items || []).filter((p) => !p.self);
     boxes.forEach((box) => {

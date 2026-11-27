@@ -6,18 +6,18 @@ use Override;
 use Redaxo\Core\Language\Language;
 use Yakamara\YForm\Field\Choice;
 
-// Nur mit YForm (fluid läuft auch ohne)
+// Only with YForm (fluid also runs without it)
 if (!class_exists(Choice::class)) {
     return;
 }
 
 /**
- * YForm-Feld „Sprache“ (Modell aus KLXM Studio: Eintrag mit Sprache): die Datenliste von fluid zeigt nur Einträge der
- * aktuellen Sprache – und solche ohne Sprache („Alle Sprachen“, auch alle Einträge von vor dem Feld).
+ * YForm field „Sprache“ (modeled on KLXM Studio: entry with language): fluid's data list shows only entries of the
+ * current language – and those without language („Alle Sprachen“, also all entries from before the field).
  *
  *     yield FluidLanguage::new('lang');
  *
- * Gespeichert wird der Code der Sprache (de, en …). Übersetzen heißt: den Eintrag in der anderen Sprache anlegen.
+ * The language code is stored (de, en …). Translating means: creating the entry in the other language.
  */
 final class FluidLanguage extends Choice
 {
@@ -27,7 +27,7 @@ final class FluidLanguage extends Choice
         parent::init();
         $this->label('Sprache');
         $this->default('');
-        $this->filterable();   // Suche der Liste im Backend: nach Sprache filtern
+        $this->filterable();   // list search in the backend: filter by language
         $this->options(static function (): array {
             $out = ['' => 'Alle Sprachen'];
             foreach (Language::getAll() as $l) {

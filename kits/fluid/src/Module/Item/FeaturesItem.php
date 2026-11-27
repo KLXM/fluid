@@ -9,7 +9,7 @@ use Klxm\Fluid\Field\Text;
 use Klxm\Fluid\Field\Textarea;
 use Redaxo\Core\MediaPool\Media;
 
-/** Eintrag von „Einträge“ im Block Features */
+/** Entry of „Einträge“ in the block Features */
 final class FeaturesItem
 {
     #[Icon('Symbol', width: 'half')]

@@ -1,39 +1,39 @@
 /*
- * klxm/fluid – Bearbeiten direkt auf der Website.
+ * klxm/fluid – editing directly on the website.
  *
- * Nur für angemeldete Backend-Benutzer geladen (Toolbar::inject). Oberfläche im Shadow DOM (#blocks-ui), damit das CSS
- * der Website sie nicht beeinflusst. Blöcke kennzeichnet der Server im Bearbeiten-Modus mit
- * [data-block][data-type][data-label] (Abschnitte bzw. Blöcke in Layout-Spalten mit data-col), Textfelder mit [data-edit="pfad"].
+ * Loaded only for logged-in backend users (Toolbar::inject). The UI lives in the Shadow DOM (#blocks-ui) so the
+ * website's CSS doesn't affect it. In edit mode the server marks blocks with
+ * [data-block][data-type][data-label] (sections, or blocks in layout columns with data-col), text fields with [data-edit="path"].
  */
 (async () => {
   'use strict';
 
-  // AddOns (cfg.scripts, z. B. fluid_demo) können den Start verzögern, etwa bis die Seite ausgetauscht ist
+  // AddOns (cfg.scripts, e.g. fluid_demo) can delay the start, e.g. until the page has been replaced
   await Promise.all(window.fluidEditorWait || []);
   const cfgEl = document.getElementById('blocks-editor-config');
   if (!cfgEl) return;
   const cfg = JSON.parse(cfgEl.textContent);
-  // Aktionsrechte des Cores (Rollen → Optionen); ohne Angabe erlaubt
+  // Action permissions of the core (roles → options); allowed if not specified
   const may = (k) => cfg.can?.[k] !== false;
   const unamp = (u) => String(u).replace(/&amp;/g, '&');
   const main = document.querySelector('main') || document.body;
 
-  // ------------------------------------------------------------------ Seitenwechsel mit View Transitions (Design „Seitenwechsel“)
-  // In den Modus „Bearbeiten“ (?fluid_edit=1) bzw. aus ihm heraus gibt es keinen Übergang: Die Seite im Bearbeiten-Modus meldet sich
-  // nicht an („ViewTransition opt-in disabled“) – der Browser bräche den Übergang ab und meldete das je Versprechen (ready,
-  // finished, updateCallbackDone) als Fehler. Daher: überspringen und die Versprechen abfangen.
+  // ------------------------------------------------------------------ Page transitions with View Transitions (design „Seitenwechsel“)
+  // There is no transition into or out of edit mode (?fluid_edit=1): the page in edit mode doesn't opt in
+  // („ViewTransition opt-in disabled“) – the browser would abort the transition and report it as an error for each
+  // promise (ready, finished, updateCallbackDone). So: skip it and catch the promises.
   addEventListener('pageswap', (e) => {
     const tr = e.viewTransition;
     if (!tr) return;
     [tr.ready, tr.finished, tr.updateCallbackDone].forEach((p) => p?.catch(() => {}));
     let to = null;
-    try { to = new URL(e.activation?.entry?.url || '', location.href); } catch { /* ohne Ziel */ }
+    try { to = new URL(e.activation?.entry?.url || '', location.href); } catch { /* no target */ }
     if (!to || to.searchParams.has('fluid_edit') || new URLSearchParams(location.search).has('fluid_edit')) tr.skipTransition();
   });
 
   // ------------------------------------------------------------------ Server
 
-  // Schreibende Aktionen: vorher „cms:before-save“ (z. B. Präsenz: jemand anderes hat inzwischen gespeichert → Rückfrage)
+  // Writing actions: „cms:before-save“ first (e.g. presence: someone else has saved in the meantime → confirm)
   const WRITES = new Set(['save', 'module_save', 'module_add', 'add', 'move', 'reorder', 'col_move', 'paste', 'duplicate', 'status', 'delete', 'publish', 'discard', 'page_save', 'lang_copy', 'version_restore']);
   async function beforeSave(action) {
     const waits = [];
@@ -41,7 +41,7 @@
     if ((await Promise.all(waits)).some((ok) => ok === false)) throw new Error('Abgebrochen.');
   }
 
-  // Regeln von InlineStyle aus API-Antworten (die Seite hat sie nur für den ersten Aufruf im Kopf): mit der Nonce der Seite
+  // Rules of InlineStyle from API responses (the page has them in its head only for the first request): with the page's nonce
   const cssNonce = document.querySelector('style[nonce], script[nonce]')?.nonce || '';
   function addCss(css) {
     const st = document.createElement('style');
@@ -60,9 +60,9 @@
       }
     }
     fd.append('_csrf_token', cfg.csrf);
-    if (cfg.entry) fd.append('eintrag', cfg.entry);   // Detailansicht eines Datensatzes (Api)
-    if (cfg.route) fd.append('route', cfg.route);     // Eintrag einer Quelle des Routings (Seiteneinstellungen)
-    // AddOns können Felder ergänzen (z. B. fluid_demo: gemerkte Änderungen) und erfahren vom Erfolg (fluid:api-done)
+    if (cfg.entry) fd.append('eintrag', cfg.entry);   // Detail view of a record (Api)
+    if (cfg.route) fd.append('route', cfg.route);     // Entry of a routing source (page settings)
+    // AddOns can add fields (e.g. fluid_demo: remembered changes) and learn about success (fluid:api-done)
     document.dispatchEvent(new CustomEvent('fluid:api-request', { detail: { action, fd } }));
     let res;
     try {
@@ -74,19 +74,19 @@
     if (!json.ok) throw new Error(json.error || 'Unbekannter Fehler.');
     if (json.css) addCss(json.css);
     document.dispatchEvent(new CustomEvent('fluid:api-done', { detail: { action, fd, json } }));
-    // Server verlangt neu laden (z. B. erster Block eines Datensatzes)
+    // Server requests a reload (e.g. first block of a record)
     if (json.refresh) { dirty?.clear(); location.reload(); return new Promise(() => {}); }
     if (json.state) setState(json.state);
     return json;
   }
 
-  // ------------------------------------------------------------------ Oberfläche (Shadow DOM)
+  // ------------------------------------------------------------------ UI (Shadow DOM)
 
   const host = document.createElement('div');
   host.id = 'blocks-ui';
   const root = host.attachShadow({ mode: 'open' });
-  // Keine style-Attribute im erzeugten Markup (Content-Security-Policy): Farbfelder (data-sw) und Einrückung im
-  // Seitenbaum (data-d) setzt das Skript über CSSOM – das erlaubt die CSP
+  // No style attributes in the generated markup (Content Security Policy): the script sets color swatches (data-sw) and
+  // indentation in the page tree (data-d) via CSSOM – the CSP allows that
   const cssom = (scope) => {
     scope.querySelectorAll?.('[data-sw]').forEach((el) => { el.style.background = el.dataset.sw; });
     scope.querySelectorAll?.('[data-d]').forEach((el) => { el.style.setProperty('--d', el.dataset.d); });
@@ -238,7 +238,7 @@
         <div class="dlg__actions"><button type="button" class="btn" data-tpl-cancel>Abbrechen</button><button type="submit" class="btn btn--primary">Speichern</button></div>
       </form>
     </div>`);
-  // Vorlagen verwalten: umbenennen, bearbeiten, löschen
+  // Manage templates: rename, edit, delete
   const mdlg = h(`
     <div class="dlg" hidden role="dialog" aria-modal="true" aria-labelledby="fluid-tpls-t">
       <div class="dlg__box newpage tpls">
@@ -268,7 +268,7 @@
       </nav>
       <div class="panel__body" data-inbox-body></div>
     </aside>`);
-  // Quick-Glossar (Klxm\Fluid\Glossary\Glossary): Begriffe suchen, markierten Text als Begriff anlegen, „Gibt es schon?“
+  // Quick glossary (Klxm\Fluid\Glossary\Glossary): search terms, create a term from selected text, „Gibt es schon?“
   const gpanel = h(`
     <aside class="panel gpanel" hidden aria-labelledby="fluid-gloss-title">
       <header class="panel__head"><h2 id="fluid-gloss-title">Glossar</h2><button type="button" class="btn btn--icon" data-gloss-close aria-label="Schließen">✕</button></header>
@@ -313,12 +313,12 @@
         <div class="dlg__actions"><button type="button" class="btn" data-new-cancel>Abbrechen</button><button type="submit" class="btn btn--primary">Anlegen &amp; bearbeiten</button></div>
       </form>
     </div>`);
-  // Ebene für Menüs und Dialoge in der Oberfläche
+  // Layer for menus and dialogs in the UI
   const layer = h('<div class="layer"></div>');
   root.append(bar, blockbar, addbtn, panel, dpanel, ppanel, spanel, tpanel, hpanel, ipanel, gpanel, picker, dialog, newdlg, tdlg, mdlg, toast, layer);
   document.body.append(host);
   document.documentElement.classList.add('blocks-has-bar');
-  // ohne Recht: Knöpfe ausblenden (die API prüft ohnehin)
+  // without permission: hide buttons (the API checks anyway)
   const noperm = (sel) => root.querySelectorAll(sel).forEach((el) => el.setAttribute('data-noperm', ''));
   if (!may('publish')) noperm('[data-publish]');
   if (!may('moveSlice')) {
@@ -338,7 +338,7 @@
     say.t = setTimeout(() => (toast.hidden = true), error ? 6000 : 2500);
   }
 
-  /** Rückfrage: true (OK), false (Abbrechen, Esc) oder 'alt' (dritte Möglichkeit, z. B. „Verwerfen“) */
+  /** Confirmation: true (OK), false (cancel, Esc) or 'alt' (third option, e.g. „Verwerfen“) */
   function ask({ title, body = '', ok = 'OK', cancel = 'Abbrechen', danger = false, alt = '' }) {
     return new Promise((resolve) => {
       $('[data-dlg-title]').textContent = title;
@@ -346,7 +346,7 @@
       const okBtn = $('[data-dlg-ok]');
       okBtn.textContent = ok;
       okBtn.classList.toggle('btn--danger', danger);
-      // cancel: false = nur ein Knopf (Hinweis zum Bestätigen, z. B. Bearbeitung wurde übernommen)
+      // cancel: false = a single button only (notice to acknowledge, e.g. the edit was applied)
       const cancelBtn = $('[data-dlg-cancel]');
       cancelBtn.textContent = cancel || '';
       cancelBtn.hidden = false === cancel;
@@ -374,15 +374,15 @@
     });
   }
 
-  // Rückfrage für andere Module (z. B. Präsenz: assets/editor/presence.js)
-  // api: auch für Formulare der Seitenleiste (form.js, z. B. Listen-Vorlagen verwalten)
+  // Confirmation for other modules (e.g. presence: assets/editor/presence.js)
+  // api: also for sidebar forms (form.js, e.g. managing list templates)
   window.FluidEditor = { ...(window.FluidEditor || {}), ask, api, discard: () => dirty.clear() };
 
   // ------------------------------------------------------------------ Status
 
   let state = cfg.state;
   let busy = 0;
-  const dirty = new Map(); // Block-ID → { pfad: wert } (Text direkt auf der Seite)
+  const dirty = new Map(); // Block ID → { path: value } (text directly on the page)
 
   function setState(s) {
     state = s;
@@ -412,7 +412,7 @@
       : 'Die Arbeitsversion ist aus – gespeicherte Änderungen sind sofort live.');
   });
 
-  // Menü ⋯ – auf schmalen Bildschirmen steckt „Design“ im Menü
+  // Menu ⋯ – on narrow screens „Design“ is in the menu
   $('[data-design-menu]')?.addEventListener('click', () => { $('.menu').hidden = true; $('[data-design-open]')?.click(); });
   const moreBtn = $('[data-more]');
   const menu = $('.menu');
@@ -427,21 +427,21 @@
     }
   });
 
-  // Hinweis-Leiste von AddOns (cfg.notice): Knöpfe lösen ihr Ereignis am document aus; Meldungen über „fluid:notice“
-  // – auch in der Ansicht, also vor dem Ende für !cfg.editing
-  // (auch im Menü ⋯ – auf schmalen Bildschirmen ist der Titelbereich der Leiste ausgeblendet)
+  // Notice bar of AddOns (cfg.notice): buttons fire their event on document; messages via „fluid:notice“
+  // – also in view mode, so before the return for !cfg.editing
+  // (also in menu ⋯ – on narrow screens the title area of the bar is hidden)
   root.querySelectorAll('[data-notice-event]').forEach((b) => b.addEventListener('click', () => {
     menu.hidden = true;
     moreBtn.setAttribute('aria-expanded', 'false');
     document.dispatchEvent(new CustomEvent(b.dataset.noticeEvent, { detail: { button: b } }));
   }));
-  // detail: Text (Hinweis) oder {text, error} – z. B. Meldungen der Formulare (form.js)
+  // detail: text (notice) or {text, error} – e.g. messages of the forms (form.js)
   document.addEventListener('fluid:notice', (e) => {
     const d = e.detail;
     if (d && typeof d === 'object') say(String(d.text || ''), !!d.error); else say(String(d || ''), true);
   });
 
-  // Abmelden (Api::logout): vorher ungespeicherte Änderungen klären, danach die Seite als Besucher laden
+  // Log out (Api::logout): resolve unsaved changes first, then load the page as a visitor
   $('[data-logout]')?.addEventListener('click', async () => {
     menu.hidden = true;
     moreBtn.setAttribute('aria-expanded', 'false');
@@ -459,8 +459,8 @@
     }
   });
 
-  // Bearbeiten verlassen: erst ungespeicherte Änderungen klären, dann einen unveröffentlichten Entwurf
-  // (sonst zeigt „Ansehen“ die Live-Fassung und die Änderungen scheinen verloren)
+  // Leaving edit mode: resolve unsaved changes first, then an unpublished draft
+  // (otherwise „Ansehen“ shows the live version and the changes seem lost)
   $('.modes').addEventListener('click', async (e) => {
     const a = e.target.closest('a[data-mode="view"]');
     if (!a || !cfg.editing || (!dirty.size && !state.draft)) return;
@@ -509,13 +509,13 @@
   if (!cfg.editing) return;
 
 
-  // ================================================================== Style-Editor (Design)
-  // Werte → Server (Design::css/classes) → live auf der Seite: <style id="fluid-design-preview">, Klassen am <html>,
-  // Schriften und Options-Stylesheets. „Speichern“ gilt für die ganze Website.
+  // ================================================================== Style editor (design)
+  // Values → server (Design::css/classes) → live on the page: <style id="fluid-design-preview">, classes on <html>,
+  // fonts and option stylesheets. „Speichern“ applies to the whole website.
   function initDesign() {
     const D = cfg.design;
-    // Nur Vorschau (Gäste, z. B. Demo): „Übernehmen“ behält die Wahl im Browser (Ereignis fluid:design-keep), gespeichert wird nichts.
-    // window.fluidDesignInitial: zuvor übernommene Werte, beim Laden der Seite gleich als Vorschau anwenden.
+    // Preview only (guests, e.g. demo): „Übernehmen“ keeps the choice in the browser (event fluid:design-keep), nothing is saved.
+    // window.fluidDesignInitial: previously applied values, applied as a preview right when the page loads.
     const keepOnly = cfg.designSave === false;
     const initial = keepOnly && window.fluidDesignInitial && typeof window.fluidDesignInitial === 'object' ? window.fluidDesignInitial : null;
     let saved = { ...D.values, ...(initial || {}) };
@@ -556,7 +556,7 @@
 
     const applyPreview = (res) => {
       const html = document.documentElement;
-      // Klassen des Designs austauschen (übrige Klassen der Seite bleiben)
+      // Swap the design's classes (other classes of the page stay)
       (html.dataset.fluidClasses || '').split(/\s+/).filter(Boolean).forEach((c) => html.classList.remove(c));
       res.classes.split(/\s+/).filter(Boolean).forEach((c) => html.classList.add(c));
       html.dataset.fluidClasses = res.classes;
@@ -564,11 +564,11 @@
       const n = (i) => parseInt(bg.slice(i, i + 2), 16) / 255;
       html.classList.toggle('is-darkbase', 0.2126 * n(1) + 0.7152 * n(3) + 0.0722 * n(5) < 0.18);
       html.classList.toggle('head-serif', ['fraunces', 'newsreader', 'instrument-serif', 'roboto-slab'].includes(values.font_head));
-      // Variablen
+      // Variables
       let st = document.getElementById('fluid-design-preview');
       if (!st) { st = document.createElement('style'); st.id = 'fluid-design-preview'; document.head.append(st); }
       st.textContent = res.css;
-      // Schriften und Options-Stylesheets
+      // Fonts and option stylesheets
       res.fonts.forEach((href) => {
         if (!document.querySelector(`link[data-fluid-font][href="${CSS.escape(href)}"]`)) {
           const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = href; l.dataset.fluidFont = ''; document.head.append(l);
@@ -577,7 +577,7 @@
       const want = new Set(res.opt);
       document.querySelectorAll('link[data-fluid-opt]').forEach((l) => { if (!want.has(l.getAttribute('href'))) l.remove(); else want.delete(l.getAttribute('href')); });
       want.forEach((href) => { const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = href; l.dataset.fluidOpt = ''; document.head.append(l); });
-      // Kopf- und Fußvariante: Klasse am Element (Markup ist für alle Varianten gleich)
+      // Header and footer variant: class on the element (markup is the same for all variants)
       document.querySelectorAll('[data-header]').forEach((el) => { el.className = el.className.replace(/\bhdr--[a-z]+/, 'hdr--' + values.header); });
       document.querySelectorAll('footer.ftr').forEach((el) => el.classList.replace([...el.classList].find((c) => c.startsWith('ftr--')) || 'ftr--columns', 'ftr--' + values.footer));
       const checks = $('[data-design-checks]');
@@ -654,7 +654,7 @@
     });
   }
 
-  // ------------------------------------------------------------------ Seiteneinstellungen, neue Seite
+  // ------------------------------------------------------------------ Page settings, new page
 
   function initPage() {
     const pform = $('[data-page-form]');
@@ -748,14 +748,14 @@
     });
 
     const nform = $('[data-new-form]');
-    // Vorlagen in die Auswahl „Inhalt“ laden (bei jedem Öffnen aktuell)
+    // Load templates into the „Inhalt“ select (fresh on every open)
     newdlg.addEventListener('fluid:open', async () => {
       const sel = nform.querySelector('[data-new-from]');
       sel.querySelectorAll('[data-tpl]').forEach((o) => o.remove());
       try {
         const res = await api('templates', {});
         for (const t of res.templates || []) sel.insertAdjacentHTML('beforeend', `<option value="${t.id}" data-tpl>Vorlage: ${esc(t.name)}</option>`);
-      } catch { /* ohne Vorlagen */ }
+      } catch { /* no templates */ }
     });
     $('[data-template-save]')?.addEventListener('click', () => {
       menu.hidden = true;
@@ -767,7 +767,7 @@
     });
     $('[data-tpl-cancel]').addEventListener('click', () => { tdlg.hidden = true; });
 
-    // Vorlagen verwalten
+    // Manage templates
     const tbody = $('[data-tpls-body]');
     let tpls = [];
     const drawTpls = (canManage) => {
@@ -803,7 +803,7 @@
       const n = e.target.closest?.('[data-tpls-name]');
       if (n && e.key === 'Enter') { e.preventDefault(); tbody.querySelector(`[data-tpls-rename="${n.dataset.tplsName}"]`)?.click(); }
     });
-    // geänderter Name: „Umbenennen“ einblenden
+    // name changed: show „Umbenennen“
     tbody.addEventListener('input', (e) => {
       const n = e.target.closest('[data-tpls-name]');
       if (!n) return;
@@ -832,14 +832,14 @@
       if (dirty.size && !(await ask({ title: 'Erst speichern?', body: 'Ungespeicherte Änderungen kommen nicht in die Vorlage. Trotzdem fortfahren?', ok: 'Fortfahren' }))) return;
       try { const res = await api('template_save', new FormData(f)); tdlg.hidden = true; say(res.message); } catch (err) { say(err.message, true); }
     });
-    // Datensatz ohne Blöcke: „+ Ersten Block einfügen“
+    // Record without blocks: „+ Ersten Block einfügen“
     main.addEventListener('click', (e) => {
       const rb = e.target.closest('[data-record-add]');
       if (!rb) return;
       e.preventDefault();
       openPicker(rb);
     });
-    // Block „Beiträge“: „+ Neuer Beitrag“ – Seite ohne Menüeintrag im Blog
+    // Block „Beiträge“: „+ Neuer Beitrag“ – page without menu entry in the blog
     main.addEventListener('click', (e) => {
       const nb = e.target.closest('[data-fluid-new-post]');
       if (!nb) return;
@@ -885,7 +885,7 @@
 
 
 
-  // ------------------------------------------------------------------ Seitenbaum (sortieren, verschieben, Menü, Status)
+  // ------------------------------------------------------------------ Page tree (sort, move, menu, status)
 
   function initTree() {
     const list = $('[data-tree]');
@@ -900,9 +900,9 @@
       }
       return null;
     };
-    // nächste Menüseite oberhalb in derselben Ebene (Ziel für →)
+    // next menu page above on the same level (target for →)
     const mv = (n) => may(n.menu ? 'moveCategory' : 'moveArticle');
-    // Blogs: Beiträge eingeklappt (aufgeklappt, wenn die aktuelle Seite ein Beitrag ist)
+    // Blogs: posts collapsed (expanded if the current page is a post)
     const open = new Set();
     const openCurrent = (nodes) => nodes.forEach((n) => {
       if (n.blog && (n.children || []).some((c) => c.id === cfg.article.id)) open.add(n.id);
@@ -929,11 +929,11 @@
         ${n.children?.length && n.blog ? `<button type="button" class="tree__more" data-tree-toggle data-d="${depth + 1}" aria-expanded="${open.has(n.id)}">${n.children.length} ${n.children.length === 1 ? 'Beitrag' : 'Beiträge'} ${open.has(n.id) ? '▾' : '▸'}</button>` : ''}
         ${n.children?.length ? `<ul role="group"${n.blog && !open.has(n.id) ? ' hidden' : ''}>${n.children.map((c, i, all) => row(c, depth + 1, menuBefore(all, i))).join('')}</ul>` : ''}
       </li>`;
-    // Startseite immer oben (REDAXO sortiert je Ebene erst Menüpunkte, dann Seiten – die Startseite gehört davor)
+    // Start page always on top (REDAXO sorts each level by menu items first, then pages – the start page comes before them)
     const draw = () => {
       const top = [...tree.filter((n) => n.home), ...tree.filter((n) => !n.home)];
       list.innerHTML = top.map((n, i, all) => row(n, 0, n.home ? null : menuBefore(all, i))).join('');
-      document.dispatchEvent(new CustomEvent('cms:presence-scan'));   // Präsenz: Kürzel an den Seiten
+      document.dispatchEvent(new CustomEvent('cms:presence-scan'));   // Presence: initials on the pages
     };
     const run = async (action, data) => {
       try {
@@ -942,13 +942,13 @@
         openCurrent(tree);
         draw();
         if (res.message) say(res.message);
-        // online/offline, Menü, Verschieben, Löschen: Menüs der Seite (Kopf, Menü-Blatt, Fuß) gleich mitziehen
+        // online/offline, menu, move, delete: update the page's menus (header, menu sheet, footer) as well
         if (['tree_move', 'tree_status', 'tree_menu', 'tree_delete'].includes(action)) refreshNav();
         return true;
       } catch (err) { say(err.message, true); return false; }
     };
     const close = () => { tpanel.hidden = true; document.documentElement.classList.remove('blocks-panel-open'); };
-    // Position innerhalb der eigenen Gruppe (Menüpunkte bzw. Seiten) ermitteln
+    // Determine the position within the own group (menu items or pages)
     const indexIn = (siblings, moving, beforeId) => {
       const group = siblings.filter((x) => x.menu === moving.menu && x.id !== moving.id);
       if (beforeId === null) return group.length;
@@ -973,11 +973,11 @@
       }
       const nb = e.target.closest('[data-tree-new]');
       if (nb) {
-        // Dialog „Neue Seite“ mit vorgegebener Stelle
+        // Dialog „Neue Seite“ with a given position
         close();
         nform.reset();
         nform.dataset.parent = nb.dataset.treeNew;
-        // im Blog: neuer Beitrag (Seite ohne Menüeintrag)
+        // in the blog: new post (page without menu entry)
         const isBlog = find(tree, +nb.dataset.treeNew)?.node.blog;
         newdlg.querySelector('#fluid-new-t').textContent = isBlog ? 'Neuer Beitrag' : 'Neue Seite';
         const kindSet = newdlg.querySelector('input[name=kind]')?.closest('fieldset');
@@ -994,7 +994,7 @@
       const loc = find(tree, id);
       if (!loc) return;
       const act = b.dataset.treeAct;
-      // ← eine Ebene höher: direkt hinter die Elternseite; → unter die Menüseite darüber (ans Ende) – geht auch ohne Ziehen (Handy)
+      // ← one level up: right after the parent page; → under the menu page above (at the end) – works without dragging (phone)
       if (act === 'out' && loc.parent) {
         const up = find(tree, loc.parent.id);
         const after = up.siblings.slice(up.siblings.indexOf(up.node) + 1).find((x) => x.menu === loc.node.menu);
@@ -1010,7 +1010,7 @@
       if (act === 'up' || act === 'down') {
         const group = loc.siblings.filter((x) => x.menu === loc.node.menu);
         const i = group.indexOf(loc.node) + (act === 'up' ? -1 : 1);
-        // erste Unterseite ↑ → eine Ebene höher, vor die Elternseite
+        // first subpage ↑ → one level up, before the parent page
         if (i < 0 && loc.parent && loc.node.menu) {
           const up = find(tree, loc.parent.id);
           await run('tree_move', { id, parent: up.parent?.id || 0, index: indexIn(up.siblings, loc.node, up.node.id) });
@@ -1025,7 +1025,7 @@
       await run(act, { id });
       if (act === 'tree_delete' && id === cfg.article.id) location.href = '/';
     });
-    // Ziehen
+    // Dragging
     list.addEventListener('dragstart', (e) => {
       const it = e.target.closest('[data-id]');
       if (!it) return;
@@ -1040,8 +1040,8 @@
       const y = (e.clientY - r.top) / r.height;
       return y < 0.3 ? 'before' : y > 0.7 ? 'after' : (target.menu ? 'inside' : (y < 0.5 ? 'before' : 'after'));
     };
-    // Ziel des Ziehens: hinein, davor, dahinter – unter der letzten Unterseite (oder auf der eigenen Zeile) bestimmt die
-    // Mausposition nach links die Ebene (nach links ziehen = eine Ebene höher)
+    // Drop target: into, before, after – below the last subpage (or on its own row) the mouse position to the left
+    // determines the level (dragging left = one level up)
     const plan = (e, rowEl) => {
       const target = find(tree, +rowEl.closest('[data-id]').dataset.id);
       const moving = find(tree, dragId);
@@ -1090,7 +1090,7 @@
   }
 
 
-  // ------------------------------------------------------------------ Verlauf: Versionen, Entwürfe, Aktivität
+  // ------------------------------------------------------------------ History: versions, drafts, activity
 
   function initHistory() {
     const body = $('[data-history-body]');
@@ -1103,7 +1103,7 @@
         const item = (v) => `<li class="site-list__item"><span class="site-list__main"><b>${esc(when(v.date))}</b><small>${esc(v.label)} · ${v.blocks} Blöcke${v.user ? ' · ' + esc(v.user) : ''}</small></span>
               <button type="button" class="btn" data-versions-view="${v.revision}-${esc(String(v.date).replace(/\D/g, ''))}">Ansehen</button>
               <button type="button" class="btn" data-restore="${esc(v.date)}" data-rev="${v.revision}">Wiederherstellen</button></li>`;
-        // Entwurf (Zwischenstände bis zur Live-Schaltung) und veröffentlichte Stände (Archiv) getrennt
+        // Draft (intermediate states until going live) and published states (archive) separately
         const draft = res.versions.filter((v) => v.revision), live = res.versions.filter((v) => !v.revision);
         return `<p class="site-intro">„Wiederherstellen“ holt einen Stand in den <b>Entwurf</b> – live geht er erst mit „Veröffentlichen“, Korrekturen davor sind möglich. Der aktuelle Entwurf wird vorher gesichert.</p>
             <p><button type="button" class="btn btn--primary" data-versions-view>Zeitleiste mit Vorschau öffnen</button></p>`
@@ -1151,7 +1151,7 @@
   }
 
 
-  // Versionen-Ansicht wie in KLXM Studio (assets/editor/versions.js): Zeitleiste, Vorschau, Gegenüberstellen, Hervorheben
+  // Versions view as in KLXM Studio (assets/editor/versions.js): timeline, preview, side by side, highlighting
   async function openVersions(select = '') {
     try {
       const mod = await import(cfg.versions.js);
@@ -1160,7 +1160,7 @@
         css: cfg.versions.css,
         select,
         restore: async (key) => {
-          // eigener Dialog läge hinter der Versionen-Ansicht – hier die Rückfrage des Browsers
+          // a custom dialog would sit behind the versions view – use the browser's confirmation here
           if (dirty.size && !confirm('Ungespeicherte Änderungen gehen beim Wiederherstellen verloren. Fortfahren?')) throw new Error('Abgebrochen.');
           const res = await api('version_restore', { key });
           dirty.clear();
@@ -1172,7 +1172,7 @@
   }
 
 
-  // ------------------------------------------------------------------ Anfragen-Postfach (YForm-Formulare der Website)
+  // ------------------------------------------------------------------ Inquiry inbox (YForm forms of the website)
 
   function initInbox() {
     const body = $('[data-inbox-body]');
@@ -1265,7 +1265,7 @@
       status.textContent = !terms.length ? 'Im Glossar stehen noch keine Begriffe.' : !hits.length ? 'Kein Begriff gefunden.' : hits.length === 1 ? '1 Begriff' : `${hits.length} Begriffe`;
       list.innerHTML = hits.slice(0, 60).map((t) => `<li class="site-list__item"><span class="site-list__main"><b>${esc(t.term)}</b>${t.online ? '' : ' <small>Entwurf</small>'}<small>${esc(t.short)}</small>${t.variants.length ? `<small>Auch: ${esc(t.variants.join(', '))}</small>` : ''}</span>${t.edit ? `<a class="btn" href="${esc(unamp(t.edit))}" target="_blank" rel="noopener" aria-label="${esc(t.term)} bearbeiten">Bearbeiten</a>` : ''}</li>`).join('');
     };
-    // „Gibt es schon?“: gleicher Begriff bzw. Schreibweise – sonst ähnliche Begriffe, denen der Text als Schreibweise zugeordnet werden kann
+    // „Gibt es schon?“: same term or spelling – otherwise similar terms the text can be assigned to as a spelling
     const dupe = () => {
       const box = gpanel.querySelector('[data-gloss-dupe]');
       const v = norm(gpanel.querySelector('[data-gloss-term]').value);
@@ -1309,7 +1309,7 @@
     };
     const selected = () => String(window.getSelection?.() || '').replace(/\s+/g, ' ').trim();
     $('[data-gloss-open]').addEventListener('click', () => open(selected()));
-    // Alt+G: Glossar mit dem markierten Text öffnen
+    // Alt+G: open the glossary with the selected text
     document.addEventListener('keydown', (e) => {
       if (e.altKey && !e.ctrlKey && !e.metaKey && (e.code === 'KeyG')) { e.preventDefault(); open(selected()); }
     });
@@ -1361,7 +1361,7 @@
     });
   }
 
-  // ------------------------------------------------------------------ Website-Einstellungen (Admins)
+  // ------------------------------------------------------------------ Website settings (admins)
 
   function initSite() {
     const body = $('[data-site-body]');
@@ -1379,12 +1379,12 @@
       landingOnly();
       body.scrollTop = 0;
     };
-    let lang = 0;   // Sprache der übersetzbaren Texte (0 = Startsprache)
+    let lang = 0;   // Language of the translatable texts (0 = start language)
     const load = async (t) => {
       tab = t;
       try { show(await api('site', { tab: t, lang })); } catch (err) { say(err.message, true); }
     };
-    // Domains: Felder der Landing-Domain nur bei dieser Rolle
+    // Domains: fields of the landing domain only for this role
     const landingOnly = () => body.querySelectorAll('form').forEach((f) => {
       const role = f.querySelector('[data-domain-role]')?.value;
       f.querySelectorAll('[data-landing-only]').forEach((x) => { x.hidden = role !== 'landing'; });
@@ -1461,19 +1461,19 @@
     });
   }
 
-  // ================================================================== Bearbeiten-Modus
+  // ================================================================== Edit mode
 
   const blocks = () => [...main.querySelectorAll('[data-block]')];
-  // Geschwister für „nach oben/unten“: Abschnitte untereinander bzw. Blöcke derselben Layout-Spalte
+  // Siblings for „up/down“: sections among each other, or blocks of the same layout column
   const siblings = (el) => [...el.parentElement.children].filter((x) => x.matches('[data-block]'));
   const byId = (id) => main.querySelector(`[data-block="${id}"]`);
-  let current = null;   // Block unter der Maus bzw. ausgewählt
-  let selected = null;  // ausgewählter Block (Klick)
+  let current = null;   // Block under the mouse or selected
+  let selected = null;  // selected block (click)
   let panelBlock = null;
 
-  // ------------------------------------------------------------------ Menüs der Seite nach Änderungen der Struktur
-  // Die Vorlage markiert ihre Menüs mit data-fluid-nav (main, sheet, footer). Die Seite wird im Hintergrund neu geladen
-  // und nur der Inhalt dieser Bereiche ersetzt; site.js misst den Kopf danach neu (fluid:nav-updated).
+  // ------------------------------------------------------------------ Page menus after structure changes
+  // The template marks its menus with data-fluid-nav (main, sheet, footer). The page is reloaded in the background
+  // and only the content of these areas is replaced; site.js then measures the header again (fluid:nav-updated).
   async function refreshNav() {
     const mine = [...document.querySelectorAll('[data-fluid-nav]')];
     try {
@@ -1482,19 +1482,19 @@
       const doc = new DOMParser().parseFromString(await res.text(), 'text/html');
       const fresh = [...doc.querySelectorAll('[data-fluid-nav]')];
       const key = (el) => el.dataset.fluidNav;
-      // Menü ganz neu oder ganz weg: das ändert den Aufbau des Kopfes – nur nach Neuladen sichtbar
+      // Menu entirely new or entirely gone: that changes the header structure – visible only after a reload
       if (fresh.map(key).join() !== mine.map(key).join()) { say('Das Menü hat sich geändert – nach dem Neuladen der Seite sichtbar.'); return; }
       mine.forEach((el, i) => { if (el.innerHTML !== fresh[i].innerHTML) el.innerHTML = fresh[i].innerHTML; });
       window.dispatchEvent(new Event('fluid:nav-updated'));
-    } catch { /* Netzwerk: beim nächsten Laden aktuell */ }
+    } catch { /* network: up to date on next load */ }
   }
 
-  // ------------------------------------------------------------------ Gewöhnliche REDAXO-Module (keine fluid-Blöcke)
-  // Ihre Ausgabe trägt im Bearbeiten-Modus data-fluid-slice (FluidAddon, SliceOutput). „… bearbeiten“ öffnet das Formular
-  // des Cores für diesen Slice in der Seitenleiste (Backend-Seite im Rahmen, nur das Formular – assets/frame.css).
-  // „Block speichern“ schließt die Leiste, „Block übernehmen“ lässt sie offen; die Ausgabe auf der Seite wird erneuert.
+  // ------------------------------------------------------------------ Ordinary REDAXO modules (not fluid blocks)
+  // In edit mode their output carries data-fluid-slice (FluidAddon, SliceOutput). „… bearbeiten“ opens the core's form
+  // for this slice in the sidebar (backend page in a frame, only the form – assets/frame.css).
+  // „Block speichern“ closes the sidebar, „Block übernehmen“ keeps it open; the output on the page is refreshed.
   const modFrame = panel.querySelector('[data-panel-frame]');
-  let modId = 0, modLoads = 0, modMode = false;   // modMode: 'native' (Formular von fluid) oder 'frame' (Formular des Cores)
+  let modId = 0, modLoads = 0, modMode = false;   // modMode: 'native' (fluid's form) or 'frame' (the core's form)
   let modNew = null;   // ordinary module being added from the block library: { key, after } – the slice exists only after „Übernehmen“
   function initModules(scope) {
     scope.querySelectorAll('[data-fluid-slice]').forEach((el) => {
@@ -1507,7 +1507,7 @@
       el.prepend(b);
     });
   }
-  // Seitenleiste wieder für Blöcke: Rahmen leeren und ausblenden
+  // Sidebar back to blocks: empty and hide the frame
   function modReset() {
     if (modMode) form.innerHTML = '';
     modMode = false;
@@ -1552,7 +1552,7 @@
         initModules(fresh.parentElement);
         if (modMode) fresh.classList.add('is-editing');
       }
-    } catch { /* beim nächsten Laden aktuell */ }
+    } catch { /* up to date on next load */ }
   }
   main.addEventListener('click', async (e) => {
     const b = e.target.closest?.('.fluid-mod__btn');
@@ -1566,7 +1566,7 @@
     modLoads = 0;
     $('[data-panel-title]').textContent = el.dataset.label;
     $('[data-panel-vis]').hidden = true;
-    // zuerst im Formular von fluid (Feldtypen des Cores), sonst das Formular des Cores im Rahmen
+    // first in fluid's form (core field types), otherwise the core's form in the frame
     let res = null;
     try { res = await api('module_form', { slice: modId }); } catch (err) { say(err.message, true); el.classList.remove('is-editing'); return; }
     if (res.html) {
@@ -1588,7 +1588,7 @@
     document.documentElement.classList.add('blocks-panel-open');
     el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   });
-  // „Übernehmen“ der Seitenleiste: Formular des Cores absenden („Block speichern“)
+  // „Übernehmen“ of the sidebar: submit the core's form („Block speichern“)
   async function modApply() {
     if ('native' === modMode && modNew) {
       const fd = new FormData(form);
@@ -1638,14 +1638,14 @@
       if (!formEl) say('Das Formular dieses Moduls ließ sich hier nicht öffnen – bitte im Backend bearbeiten.', true);
       return;
     }
-    // Pflichtfeld o. Ä.: Formular kommt mit Meldung zurück – Leiste bleibt offen
+    // Required field or similar: the form comes back with a message – the sidebar stays open
     if (formEl) return;
     await refreshSlice(modId);
     closePanel();
     say('Modul gespeichert.');
   });
 
-  // ------------------------------------------------------------------ Text direkt auf der Seite
+  // ------------------------------------------------------------------ Text directly on the page
 
   function initEditables(scope) {
     scope.querySelectorAll('[data-edit]').forEach((el) => {
@@ -1662,7 +1662,7 @@
       el.dataset.blocksEditable = '';
       if (el.tagName === 'A' || el.closest('a')) el.closest('a')?.addEventListener('click', (e) => e.preventDefault());
     });
-    // Felder eines Datensatzes (Detailansicht der Datenliste, Data\RecordInline): Texte direkt, alles andere per Klick
+    // Fields of a record (detail view of the data list, Data\RecordInline): texts directly, everything else by click
     scope.querySelectorAll('[data-rec-field]').forEach((el) => {
       const text = ['text', 'multi'].includes(el.dataset.recKind);
       if (text) {
@@ -1677,14 +1677,14 @@
     });
   }
 
-  // Datensätze kennen keinen Entwurf: jede Änderung wird sofort gespeichert (API record_field, Prüfung von YForm).
+  // Records have no draft: every change is saved immediately (API record_field, validated by YForm).
   async function recSave(el, value, rerender) {
     const sec = el.closest('[data-block]');
     el.setAttribute('aria-busy', 'true');
     try {
       const r = await api('record_field', { field: el.dataset.recField, value });
       if (r.url) history.replaceState(history.state, '', r.url + location.search + location.hash);
-      // Datum, Bild, Auswahl …: der Block wird neu ausgegeben (Formatierung, Bild, Abhängigkeiten wie die Meta-Zeile)
+      // Date, image, choice …: the block is rendered again (formatting, image, dependencies such as the meta line)
       if (rerender && sec?.isConnected) apply(await api('render', { slice: sec.dataset.block }), sec);
       else el.innerHTML = r.html;
       say(`„${el.dataset.recLabel}“ gespeichert.`);
@@ -1695,7 +1695,7 @@
     } finally { el.removeAttribute('aria-busy'); }
   }
 
-  // Kleines Eingabefeld an der Stelle: Adresse, E-Mail, Datum, Zeit, Zahl, Auswahl
+  // Small input in place: address, email, date, time, number, choice
   const recPop = h(`<form class="recpop" hidden role="dialog" aria-modal="false" aria-labelledby="fluid-recpop-l">
       <label class="recpop__l" id="fluid-recpop-l"></label><div class="recpop__c"></div>
       <div class="recpop__a"><button type="button" class="btn" data-rec-cancel>Abbrechen</button><button type="submit" class="btn btn--primary">Speichern</button></div>
@@ -1722,7 +1722,7 @@
     recPlace();
     box.querySelector('input, select')?.focus({ preventScroll: true });
   }
-  // am Feld ausrichten (unterhalb, sonst oberhalb) – auch beim Scrollen
+  // align to the field (below, otherwise above) – also while scrolling
   function recPlace() {
     if (!recEl) return;
     const r = recEl.getBoundingClientRect();
@@ -1746,11 +1746,11 @@
   addEventListener('scroll', recPlace, { passive: true });
   addEventListener('resize', recPlace);
 
-  // Klick auf ein Feld, das kein Text ist: Ja/Nein umschalten, Bild/Seite auswählen, sonst Eingabefeld
+  // Click on a field that isn't text: toggle yes/no, pick image/page, otherwise an input
   main.addEventListener('click', async (e) => {
     const el = e.target.closest?.('[data-rec-field]');
     if (!el || ['text', 'multi'].includes(el.dataset.recKind)) {
-      // Links in editierbaren Texten führen beim Bearbeiten nicht weg
+      // Links in editable texts don't navigate away while editing
       if (el && e.target.closest('a')) e.preventDefault();
       return;
     }
@@ -1801,8 +1801,8 @@
   main.addEventListener('keydown', (e) => {
     const el = e.target.closest?.('[data-edit], [data-rec-field][contenteditable]:not([data-rec-multi])');
     if (el && e.key === 'Enter' && !el.dataset.editMode) e.preventDefault();
-    // Einzeilige Felder: Ende/Pos1 an Ende/Anfang des ganzen Feldes – nicht der sichtbaren Zeile (große Überschriften
-    // brechen um, mit Silbentrennung sogar mitten im Wort); mit Umschalt wird markiert
+    // Single-line fields: End/Home go to the end/start of the whole field – not the visible line (large headings
+    // wrap, with hyphenation even mid-word); with Shift it selects
     if (el && !el.dataset.editMode && (e.key === 'End' || e.key === 'Home') && !e.altKey && !e.ctrlKey && !e.metaKey) {
       e.preventDefault();
       const sel = getSelection();
@@ -1822,8 +1822,8 @@
     document.execCommand('insertText', false, el.dataset.editMode ? text : text.replace(/\s*\n\s*/g, ' '));
   });
 
-  // „Ziel bearbeiten“ (TargetEdit) an Karten: Seite im Bearbeiten-Modus öffnen – erst ungespeicherte Änderungen klären.
-  // Datensätze (zusätzlich .fdl-edit) öffnet das Overlay der YForm-Maske weiter unten.
+  // „Ziel bearbeiten“ (TargetEdit) on cards: open the page in edit mode – resolve unsaved changes first.
+  // Records (additionally .fdl-edit) are opened by the YForm form overlay further below.
   main.addEventListener('click', async (e) => {
     const a = e.target.closest('a.cms-target-edit[data-cms-target="page"]');
     if (!a) return;
@@ -1838,7 +1838,7 @@
     location.href = a.href;
   }, true);
 
-  // Links und Formulare im Inhalt im Bearbeiten-Modus nicht auslösen
+  // Don't trigger links and forms in the content in edit mode
   main.addEventListener('click', (e) => {
     const sec = e.target.closest('[data-block]');
     if (e.target.closest('a[href]') && sec) e.preventDefault();
@@ -1907,14 +1907,14 @@
     location.reload();
   });
 
-  // ------------------------------------------------------------------ Blockleiste und „+“
+  // ------------------------------------------------------------------ Block bar and „+“
 
   function replace(sec, html) {
     sec.querySelectorAll('.rex-tiptap-inline').forEach((n) => window.RexTiptap?.get?.(n)?.destroy());
     const el = h(html);
     const ids = [sec, ...sec.querySelectorAll('[data-block]')].map((x) => x.dataset.block);
     sec.replaceWith(el);
-    // Skripte des neu ausgegebenen Blocks ausführen (innerHTML führt sie nicht aus) und Kit-Skripte benachrichtigen
+    // Run the scripts of the newly rendered block (innerHTML doesn't run them) and notify kit scripts
     el.querySelectorAll('script').forEach((old) => {
       const n = document.createElement('script');
       for (const a of old.attributes) n.setAttribute(a.name, a.value);
@@ -1925,7 +1925,7 @@
     initEditables(el);
     initColumns(el);
     initHandles(el.closest('section[data-block]') || el);
-    // Verweise auf ersetzte Blöcke (auch Spalten-Blöcke eines neu ausgegebenen Layouts) neu auflösen
+    // Re-resolve references to replaced blocks (also column blocks of a newly rendered layout)
     const again = (old) => (old && ids.includes(old.dataset.block) ? byId(old.dataset.block) : old);
     current = again(current);
     if (selected && ids.includes(selected.dataset.block)) { const s2 = byId(selected.dataset.block); selected = null; select(s2); }
@@ -1935,13 +1935,13 @@
     return el;
   }
 
-  /** Antwort des Servers einsetzen: `target` = Block, der ersetzt wird (bei Spaltenwechsel das ganze Layout) */
+  /** Insert the server response: `target` = block being replaced (the whole layout when changing columns) */
   function apply(res, sec) {
     const wasChild = sec.hasAttribute('data-col');
     const target = byId(res.target) || sec;
     const el = replace(target, res.html);
-    if (sec.isConnected && !el.contains(sec) && sec !== el) sec.remove();   // in eine Spalte gewechselt: alte Stelle weg
-    if (wasChild && el.tagName === 'SECTION' && el.dataset.block === sec.dataset.block) location.reload();   // Layout verlassen
+    if (sec.isConnected && !el.contains(sec) && sec !== el) sec.remove();   // moved into a column: remove the old position
+    if (wasChild && el.tagName === 'SECTION' && el.dataset.block === sec.dataset.block) location.reload();   // Leaving the layout
     return el;
   }
 
@@ -1973,7 +1973,7 @@
     const barH = bar.offsetHeight;
     blockbar.hidden = r.bottom < barH + 40 || r.top > innerHeight - 40;
     blockbar.style.top = `${Math.max(r.top + 8, barH + 8)}px`;
-    // Verschachtelt (Spalte eines Layouts): Pfad „Layout › Spalte n/m · Block“, „Layout ›“ wählt das Layout aus
+    // Nested (column of a layout): path „Layout › Spalte n/m · Block“, „Layout ›“ selects the layout
     const col = sec.closest('[data-lay-col]');
     const parentSec = col?.parentElement?.closest('[data-block]') || null;
     const cols = col ? col.parentElement.querySelectorAll(':scope > [data-lay-col]').length : 0;
@@ -1983,11 +1983,11 @@
     pb.onclick = parentSec ? () => { select(parentSec); parentSec.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } : null;
     const offline = sec.hasAttribute('data-offline');
     const st = $('[data-bb-status]');
-    // Datensatz-Blöcke: kein Online-Schalter, keine Spalten
+    // Record blocks: no online toggle, no columns
     st.toggleAttribute('data-noperm', sec.hasAttribute('data-record') || !may('publishSlice'));
     st.textContent = offline ? 'Offline' : 'Online';
     st.classList.toggle('is-off', offline);
-    // Gesperrte Blöcke und Blöcke ohne Modulrecht (data-readonly, Klxm\Fluid\Lock): sichtbar und verschiebbar, nicht änderbar
+    // Locked blocks and blocks without module permission (data-readonly, Klxm\Fluid\Lock): visible and movable, not editable
     const ro = sec.dataset.readonly || '';
     const lockEl = $('[data-bb-lock]');
     lockEl.hidden = !ro && !sec.hasAttribute('data-locked');
@@ -2001,10 +2001,10 @@
     const i = sib.indexOf(sec);
     $('[data-bb-up]').disabled = i <= 0;
     $('[data-bb-down]').disabled = i === sib.length - 1;
-    // rechts am Block wie die Slice-Leiste im REDAXO-Backend – erst jetzt, die Breite hängt von Bezeichnung und Knöpfen ab
+    // on the right of the block like the slice bar in the REDAXO backend – only now, the width depends on label and buttons
     const bw = blockbar.offsetWidth;
     blockbar.style.left = `${Math.max(8, Math.min(innerWidth - bw - 8, r.right - bw - 8))}px`;
-    // „+“ an der Unterkante des Blocks – bei hohen Blöcken am unteren Fensterrand, solange der Block sichtbar ist
+    // „+“ at the bottom edge of the block – for tall blocks at the bottom of the window while the block is visible
     addbtn.hidden = !panel.hidden || r.bottom < barH || r.top > innerHeight;
     addbtn.style.top = `${Math.min(r.bottom - 18, innerHeight - 52)}px`;
     addbtn.style.left = `${r.left + r.width / 2 - 18}px`;
@@ -2066,11 +2066,11 @@
     }
   });
 
-  // ------------------------------------------------------------------ Block einfügen
+  // ------------------------------------------------------------------ Insert block
 
   let insertAfter = null;
   let insertCol = 0;
-  let insertInto = null;   // .lay-col, in die eingefügt wird
+  let insertInto = null;   // .lay-col to insert into
 
   function openPicker(after, col = 0, into = null) {
     insertAfter = after;
@@ -2078,12 +2078,12 @@
     insertInto = into;
     const list = $('[data-picker-list]');
     const groups = {};
-    // Datensatz-Blöcke (Feld „Fluid-Blöcke“): nur die im Feld erlaubten Blöcke
+    // Record blocks (field „Fluid-Blöcke“): only the blocks allowed in the field
     const allowed = after?.closest?.('[data-record-blocks]')?.dataset.allowed?.split(',');
     const mods = cfg.modules.filter((m) => (!col || m.nestable) && (!allowed || allowed.includes(m.key)));
     mods.forEach((m) => (groups[m.group] ||= []).push(m));
-    // Reihenfolge wie in KLXM Studio: „Häufig verwendet“ (meiste Vorkommen auf der Website, sonst übliche Grundblöcke), dann
-    // die Gruppen in fester Folge. Beim Suchen bleiben die Favoriten weg (sie stehen auch in ihrer Gruppe).
+    // Order as in KLXM Studio: „Häufig verwendet“ (most occurrences on the website, otherwise common basic blocks), then
+    // the groups in a fixed order. When searching the favorites are left out (they are also in their group).
     const keys = new Set(mods.map((m) => m.key));
     const used = Object.keys(cfg.usage || {}).filter((k) => keys.has(k));
     const basics = ['richtext', 'media_text', 'cards', 'hero', 'cta', 'features'].map((t) => mods.find((m) => m.key.endsWith('.' + t))?.key).filter(Boolean);
@@ -2112,7 +2112,7 @@
   function closePicker() {
     picker.hidden = true;
   }
-  // „+“ unter einem Block: Spalten-Block → in dieselbe Spalte dahinter, sonst als Abschnitt dahinter
+  // „+“ below a block: column block → after it in the same column, otherwise as a section after it
   addbtn.addEventListener('click', () => {
     const col = Number(current?.dataset.col || 0);
     openPicker(current, col, col ? current.parentElement : null);
@@ -2122,7 +2122,7 @@
   $('[data-picker-q]').addEventListener('input', (e) => {
     const q = e.target.value.trim().toLowerCase();
     root.querySelectorAll('.picker__item').forEach((b) => (b.hidden = q !== '' && (b.classList.contains('picker__item--fav') || !b.dataset.q.includes(q))));
-    // Gruppenüberschriften nur mit sichtbaren Blöcken darunter
+    // Group headings only with visible blocks below them
     root.querySelectorAll('.picker__group').forEach((g) => {
       let n = g.nextElementSibling, any = false;
       while (n && !n.matches('.picker__group')) { if (!n.hidden) any = true; n = n.nextElementSibling; }
@@ -2162,7 +2162,7 @@
     if (!hint) {
       hint = document.createElement('div');
       hint.dataset.blocksEmpty = '';
-      // in einer weiteren Sprache: Inhalt einer gefüllten Sprache übernehmen und dann übersetzen
+      // in another language: copy the content of a filled language, then translate
       const sources = may('copyContent') ? (cfg.languages || []).filter((l) => !l.current && !l.empty) : [];
       hint.innerHTML = '<p>Diese Seite hat noch keine Blöcke.</p><button type="button" data-first>+ Ersten Block einfügen</button>'
         + sources.map((l) => `<button type="button" data-lang-copy="${l.id}">Inhalt aus ${esc(l.name)} übernehmen</button>`).join('');
@@ -2175,13 +2175,13 @@
           location.reload();
         } catch (err) { b.disabled = false; say(err.message, true); }
       }));
-      // Beitragsseite: unter den Beitragskopf
+      // Post page: below the post header
       const ph = main.querySelector(':scope > .post-head');
       if (ph) ph.after(hint); else main.prepend(hint);
     }
   }
 
-  // „+ Block in diese Spalte“ in jeder Spalte eines Layouts (Light DOM, Stil in editor.css)
+  // „+ Block in diese Spalte“ in every column of a layout (light DOM, style in editor.css)
   function initColumns(scope) {
     const cols = scope.matches?.('[data-lay-col]') ? [scope] : [...scope.querySelectorAll('[data-lay-col]')];
     cols.forEach((col) => {
@@ -2199,13 +2199,13 @@
     });
   }
 
-  // ------------------------------------------------------------------ Seitenleiste: alle Felder
+  // ------------------------------------------------------------------ Sidebar: all fields
 
   let original = '';
   let previewTimer = 0;
   let previewSeq = 0;
   const form = $('[data-panel-form]');
-  // Mehrzeilige Felder wachsen mit dem Text (bis zur halben Bildschirmhöhe) – auf dem Handy kein Scrollen im Feld
+  // Multi-line fields grow with the text (up to half the screen height) – no scrolling inside the field on phones
   const grow = (ta) => { ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight + 2, Math.round(innerHeight * 0.5)) + 'px'; };
 
   async function openPanel(sec) {
@@ -2221,7 +2221,7 @@
       window.BlocksForm?.init(form, schedulePreview);
       tiptapUp(form);
       panel.hidden = false;
-      form.querySelectorAll('textarea.rex-input, textarea.form-control').forEach(grow);   // erst sichtbar hat das Feld eine Höhe
+      form.querySelectorAll('textarea.rex-input, textarea.form-control').forEach(grow);   // the field has a height only once visible
       document.documentElement.classList.add('blocks-panel-open');
       sec.setAttribute('data-blocks-panel', '');
       sec.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
@@ -2232,7 +2232,7 @@
     }
   }
 
-  // Sichtbarkeit oben in der Seitenleiste (wie KLXM Studio): schaltet sofort, ohne die Eingaben im Formular zu verwerfen
+  // Visibility at the top of the sidebar (like KLXM Studio): toggles immediately without discarding the form input
   function showVisibility(sec) {
     const box = $('[data-panel-vis]');
     box.hidden = sec.hasAttribute('data-record') || !may('publishSlice');
@@ -2246,7 +2246,7 @@
     if (!sec) return;
     try {
       const res = await api('status', { slice: sec.dataset.block });
-      // Vorschau im Block behalten, nur die Kennzeichnung umschalten – auch im Stand für „Abbrechen“
+      // Keep the preview in the block, only toggle the marker – also in the state for „Abbrechen“
       sec.toggleAttribute('data-offline', !res.online);
       const o = h(original);
       o.toggleAttribute('data-offline', !res.online);
@@ -2325,7 +2325,7 @@
   form.addEventListener('change', () => schedulePreview());
   form.addEventListener('click', (e) => e.target.closest('[data-blocks-add]') && setTimeout(() => tiptapUp(form)));
 
-  // ------------------------------------------------------------------ Bilder bearbeiten (Addon image_editor, optional)
+  // ------------------------------------------------------------------ Edit images (Addon image_editor, optional)
 
   const ieBtn = h(`<div class="iebtn" hidden>
       <button type="button" data-ie="place" title="Nur an dieser Stelle: Effekt, Darstellung im Rahmen, Ausschnitt">◧ Hier anpassen</button>
@@ -2335,14 +2335,14 @@
     </div>`);
   root.append(ieBtn);
   let ieImg = null;
-  // Skript-Lader in form.js: CSS und Dialog gehören in diese Ebene
+  // Script loader in form.js: CSS and dialog belong in this layer
   document.addEventListener('blocks:image-editor', (e) => {
     e.preventDefault();
     root.append(h(`<link rel="stylesheet" href="${esc(unamp(e.detail.css))}">`));
     window.ImageEditor.setLayer(layer);
   });
-  // Bild unter dem Zeiger – auch wenn eine Ebene darüber liegt (ganze Karte als Link mit ::after, Verlauf, Beschriftung);
-  // dann trifft mouseover nie das <img> (wie KLXM Studio _media.js imgAt)
+  // Image under the pointer – even if a layer lies above it (whole card as link with ::after, gradient, caption);
+  // then mouseover never hits the <img> (like KLXM Studio _media.js imgAt)
   const IMG = 'img[data-ie-file], img[data-img-path]';
   const imgAt = (e) => e.target.closest?.(IMG) || document.elementsFromPoint(e.clientX, e.clientY).find((x) => x.matches?.(IMG)) || null;
   let ieRaf = 0;
@@ -2353,7 +2353,7 @@
   function showIe(img) {
     if (!img || img === ieImg) return;
     ieImg = img;
-    // Medium (image_editor) und „nur hier“ (Feldpfad, nicht bei gesperrten Blöcken)
+    // Medium (image_editor) and „nur hier“ (field path, not for locked blocks)
     const media = !!(cfg.imageEditor && img.dataset.ieFile);
     const here = !!img.dataset.imgPath && !img.closest('[data-block]')?.dataset.readonly;
     ieBtn.querySelector('[data-ie="place"]').hidden = !here;
@@ -2365,7 +2365,7 @@
     const r = img.getBoundingClientRect();
     let top = Math.max(bar.offsetHeight + 8, r.top + 10);
     const left = Math.max(8, r.right - ieBtn.offsetWidth - 10);
-    // die Blockleiste sitzt oben rechts am Block – liegt das Bild dort, weicht der Knopf darunter aus
+    // the block bar sits at the top right of the block – if the image is there, the button moves below it
     if (!blockbar.hidden) {
       const b = blockbar.getBoundingClientRect();
       if (left < b.right && left + ieBtn.offsetWidth > b.left && top < b.bottom && top + ieBtn.offsetHeight > b.top) top = b.bottom + 6;
@@ -2400,10 +2400,10 @@
     }
   });
 
-  // ------------------------------------------------------------------ Bild an dieser Stelle (Klxm\Fluid\Media\ImagePlace)
+  // ------------------------------------------------------------------ Image at this position (Klxm\Fluid\Media\ImagePlace)
 
-  // Vorschau und Speichern über den Server (Aktion preview, patch „@img:pfad“) – die Darstellung entsteht nur in PHP.
-  // Gespeichert wird mit „Speichern“ zusammen mit den übrigen Änderungen (patchBlock).
+  // Preview and saving via the server (action preview, patch „@img:path“) – rendering happens only in PHP.
+  // Saved with „Speichern“ together with the other changes (patchBlock).
   const IP = cfg.imagePlace || { effects: [], fits: [] };
   const ipRange = (k, label, min, max) => `<label class="imgpop__r"><span>${label}</span>
       <input type="range" name="${k}" min="${min}" max="${max}" step="${k === 'z' ? 10 : k === 'x' || k === 'y' ? 1 : 10}"><output></output></label>`;
@@ -2469,7 +2469,7 @@
     f.z.value = v.z ?? 100;
     ipSync();
   };
-  // Ausgaben der Regler, Hintergrund nur bei „Ganzes Bild“
+  // Slider outputs, background only for „Ganzes Bild“
   function ipSync() {
     ipPop.querySelectorAll('.imgpop__r').forEach((l) => {
       const i = l.querySelector('input');
@@ -2501,12 +2501,12 @@
     if (!img || ipPop.hidden) return;
     const r = img.getBoundingClientRect();
     const w = ipPop.offsetWidth, ht = ipPop.offsetHeight;
-    // neben dem Bild (rechts, sonst links), damit die Vorschau sichtbar bleibt
+    // next to the image (right, otherwise left) so the preview stays visible
     const left = r.right + 12 + w < innerWidth ? r.right + 12 : r.left - 12 - w > 0 ? r.left - 12 - w : Math.max(8, innerWidth - w - 8);
     ipPop.style.left = `${left}px`;
     ipPop.style.top = `${Math.max(bar.offsetHeight + 8, Math.min(r.top, innerHeight - ht - 8))}px`;
   }
-  // Vorschau vom Server: alle ungespeicherten Änderungen des Blocks plus diese Einstellung
+  // Preview from the server: all unsaved changes of the block plus this setting
   async function ipRender(ctx, value) {
     const seq = ++ipSeq;
     const id = ctx.sec.dataset.block;
@@ -2551,7 +2551,7 @@
   ipPop.addEventListener('submit', (e) => {
     e.preventDefault();
     if (!ip) return;
-    // Werte wie im Medienpool entfernt der Server (ImagePlace::fromArray) – kein eigener Vergleich nötig
+    // The server removes values equal to the media pool's (ImagePlace::fromArray) – no own comparison needed
     patchBlock(byId(ip.sec.dataset.block) || ip.sec, `@img:${ip.path}`, JSON.stringify(ipValues()));
     ipClose(false);
     say('Bild an dieser Stelle geändert – mit „Speichern“ sichern.');
@@ -2565,7 +2565,7 @@
   addEventListener('scroll', ipPlace, { passive: true });
   addEventListener('resize', ipPlace);
 
-  // Ausschnitt durch Ziehen am Bild (Reiter „Ausschnitt“): Bewegung nach rechts zeigt mehr vom linken Bildrand
+  // Crop by dragging the image (tab „Ausschnitt“): moving right shows more of the left image edge
   main.addEventListener('pointerdown', (e) => {
     const img = ipImg();
     if (!img || ipPop.hidden || ipPop.querySelector('[data-ip-panel="crop"]').hidden || !document.elementsFromPoint(e.clientX, e.clientY).includes(img)) return;
@@ -2577,7 +2577,7 @@
       f.x.value = Math.max(0, Math.min(100, Math.round(start.px - ((ev.clientX - start.x) / r.width) * 100)));
       f.y.value = Math.max(0, Math.min(100, Math.round(start.py - ((ev.clientY - start.y) / r.height) * 100)));
       ipSync();
-      img.style.objectPosition = `${f.x.value}% ${f.y.value}%`;   // nur während des Ziehens, danach Vorschau vom Server
+      img.style.objectPosition = `${f.x.value}% ${f.y.value}%`;   // only while dragging, afterwards preview from the server
     };
     const up = () => {
       removeEventListener('pointermove', move);
@@ -2638,7 +2638,7 @@
   });
   if (main.querySelector('[data-edit-mode="rich"]')) ttLoad().catch(() => {});   // bundle ready before the first click
 
-  // ------------------------------------------------------------------ Blöcke: Menü ⋯, Ziehen, Zwischenablage, Einklappen
+  // ------------------------------------------------------------------ Blocks: menu ⋯, dragging, clipboard, collapsing
 
   const CLIP = 'fluid-clipboard';
   const bbMenu = $('.bb__menu');
@@ -2656,18 +2656,18 @@
     paste.disabled = !c || inCol;
     paste.textContent = c ? `${c.cut ? 'Verschieben hierher' : 'Einfügen darunter'}: „${c.label}“` : 'Einfügen darunter';
     bbMenu.querySelector('[data-bb-op="duplicate"]').disabled = inCol;
-    bbMenu.querySelector('[data-bb-op="cut"]').hidden = !!sec?.dataset.readonly;   // gesperrt: Original bliebe stehen
+    bbMenu.querySelector('[data-bb-op="cut"]').hidden = !!sec?.dataset.readonly;   // locked: the original would remain
     bbMenu.querySelector('[data-bb-op="collapse"]').textContent = sec?.classList.contains('fluid-collapsed') ? 'Aufklappen' : 'Einklappen';
   });
   document.addEventListener('click', () => { bbMenu.hidden = true; bbMore.setAttribute('aria-expanded', 'false'); });
-  // Eingeklappte Blöcke je Seite merken (nur in diesem Browser)
+  // Remember collapsed blocks per page (in this browser only)
   const FOLD = 'fluid-folded-' + cfg.article.id;
   const folded = () => { try { return new Set(JSON.parse(localStorage.getItem(FOLD) || '[]')); } catch { return new Set(); } };
   const setFold = (sec, on) => {
     sec.classList.toggle('fluid-collapsed', on);
     const f = folded();
     on ? f.add(sec.dataset.block) : f.delete(sec.dataset.block);
-    try { localStorage.setItem(FOLD, JSON.stringify([...f])); } catch { /* privat */ }
+    try { localStorage.setItem(FOLD, JSON.stringify([...f])); } catch { /* private */ }
   };
   const applyFolds = () => { const f = folded(); main.querySelectorAll('section[data-block]').forEach((s) => s.classList.toggle('fluid-collapsed', f.has(s.dataset.block))); };
   applyFolds();
@@ -2693,8 +2693,8 @@
       if (op === 'collapse') { setFold(top, !top.classList.contains('fluid-collapsed')); place(); return; }
       await saveAll();
       if (op === 'copy' || op === 'cut') {
-        // Ausschneiden: wie Kopieren, das Original wird erst nach dem Einfügen entfernt (BlockOps::finishCut) – gleiche
-        // Zwischenablage wie im Backend (Backend\BlockOpsApi)
+        // Cut: like copy, the original is removed only after pasting (BlockOps::finishCut) – same
+        // clipboard as in the backend (Backend\BlockOpsApi)
         const res = await api('copy', { slice: sec.dataset.block });
         const entry = { clip: res.clip, label: res.label };
         if (op === 'cut') entry.cut = { article: cfg.article.id, language: cfg.article.language, slice: +sec.dataset.block };
@@ -2712,7 +2712,7 @@
         ? await api('duplicate', { slice: top.dataset.block, after: top.dataset.block })
         : await api('paste', { after: top.dataset.block, clip: JSON.stringify(clip()?.clip || null), cut: JSON.stringify(clip()?.cut || null) });
       if (op === 'paste' && clip()?.cut) {
-        // verschoben: Original ist entfernt – Zwischenablage behält den Inhalt als Kopie; Seite neu, falls es hier stand
+        // moved: the original is removed – the clipboard keeps the content as a copy; reload the page if it was here
         const c = clip();
         const here = c.cut.article === cfg.article.id;
         delete c.cut;
@@ -2731,7 +2731,7 @@
     } catch (err) { say(err.message, true); }
   });
 
-  // Ziehen am Namen in der Blockleiste: Abschnitte umsortieren (Layout samt Spalten)
+  // Dragging the name in the block bar: reorder sections (layout including columns)
   const dropLine = document.createElement('div');
   dropLine.className = 'fluid-dropline';
   dropLine.hidden = true;
@@ -2751,7 +2751,7 @@
   document.addEventListener('dragover', (e) => {
     if (!dragSec) return;
     e.preventDefault();
-    // Datensatz-Blöcke nur innerhalb ihrer Liste, Seiten-Blöcke nicht in eine Datensatz-Liste
+    // Record blocks only within their list, page blocks not into a record list
     const secs = dragSec.hasAttribute('data-record')
       ? siblings(dragSec)
       : [...main.querySelectorAll('section[data-block]')].filter((s) => !s.closest('[data-lay-col]') && !s.hasAttribute('data-record'));
@@ -2777,11 +2777,11 @@
     } catch (err) { say(err.message, true); }
   });
 
-  // ------------------------------------------------------------------ YForm-Einträge (Datenliste)
+  // ------------------------------------------------------------------ YForm entries (data list)
 
-  // „Bearbeiten“ / „Neuer Eintrag“: YForm-Maske im Overlay (iframe derselben Domain; fluid_frame=1 = Seite ohne
-  // Navigation, FluidAddon). „Speichern“ führt YForm zurück zur Liste – dann schließt das Overlay; „Übernehmen“ bleibt
-  // in der Maske. Beim Schließen wird der Block neu ausgegeben, wenn gespeichert wurde.
+  // „Bearbeiten“ / „Neuer Eintrag“: YForm form in an overlay (iframe on the same domain; fluid_frame=1 = page without
+  // navigation, FluidAddon). „Speichern“ takes YForm back to the list – then the overlay closes; „Übernehmen“ stays
+  // in the form. On close the block is rendered again if something was saved.
   const yfo = h(`<dialog class="yfo" aria-labelledby="fluid-yfo-t">
       <div class="yfo__bar"><strong class="yfo__t" id="fluid-yfo-t">Datensatz</strong>
         <a class="yfo__ext" target="_blank" rel="noopener" title="Im Backend öffnen">Backend ↗</a>
@@ -2811,12 +2811,12 @@
     if (loc.href === 'about:blank') return;
     yfoLoads++;
     const func = loc.searchParams.get('func');
-    // nach dem Absenden: Erfolg oder zurück in der Liste
+    // after submitting: success or back in the list
     if (yfoLoads > 1 && (!['edit', 'add'].includes(func) || loc.searchParams.has('msg') || doc.querySelector('.rex-alert[data-variant="success"]'))) yfoSaved = true;
     if (!['edit', 'add'].includes(func)) { yfoClose(); return; }
-    // Links und Formulare der Maske bleiben im Rahmen ohne Navigation
+    // Links and forms of the form stay in the frame without navigation
     doc.querySelectorAll('form').forEach((f) => {
-      try { const u = new URL(f.getAttribute('action') || loc.href, loc.href); u.searchParams.set('fluid_frame', '1'); f.action = u.href; } catch { /* fremdes Ziel */ }
+      try { const u = new URL(f.getAttribute('action') || loc.href, loc.href); u.searchParams.set('fluid_frame', '1'); f.action = u.href; } catch { /* foreign target */ }
     });
     const t = doc.querySelector('h1')?.textContent.trim();
     if (t) yfo.querySelector('.yfo__t').textContent = t;
@@ -2836,13 +2836,13 @@
     yfo.showModal();
   });
 
-  // ------------------------------------------------------------------ Greifer: Abstände und Spaltenbreiten (wie KLXM Studio)
+  // ------------------------------------------------------------------ Handles: spacing and column widths (like KLXM Studio)
 
   /*
-   * Abstand oben/unten (violett ↕) am Rand jedes Abschnitts: Ziehen um je ~56 px wechselt Kein → Klein → Normal → Groß
-   * (Vorschau sofort über pt-/pb-Klassen). Spaltenbreiten (grün ↔) zwischen zwei Layout-Spalten: rastet auf Zwölftel ein,
-   * Nachbarspalte gleicht aus; Doppelklick bzw. Entf = Breiten des Rasters. Pfeiltasten je ein Schritt. Änderungen landen
-   * wie Text in den ungespeicherten Änderungen (dirty) – „Speichern“ übernimmt sie.
+   * Spacing top/bottom (violet ↕) at the edge of each section: dragging by ~56 px each switches none → small → normal → large
+   * (instant preview via pt-/pb- classes). Column widths (green ↔) between two layout columns: snaps to twelfths,
+   * the neighboring column compensates; double-click or Del = grid widths. Arrow keys one step each. Changes end up
+   * in the unsaved changes (dirty) like text – „Speichern“ applies them.
    */
   const HANDLE_CSS = `
     :host{all:initial}
@@ -2859,7 +2859,7 @@
     .h--x .t{top:50%;left:50%;translate:-50% calc(-50% - 44px)}
     .h:is(:hover,:focus-visible,.is-drag) .t{opacity:1}
     @media (prefers-reduced-motion:reduce){.g,.t{transition:none}}
-    @media (max-width:760px){.h--split,.h--width{display:none}}`;   /* Handy: Bild und Text stehen untereinander – Aufteilung/Textbreite ohne Wirkung */
+    @media (max-width:760px){.h--split,.h--width{display:none}}`;   /* Phone: image and text are stacked – split/text width has no effect */
   const ICON_Y = '<svg viewBox="0 0 24 24"><path d="M12 3v18M8 7l4-4 4 4M8 17l4 4 4-4"/></svg>';
   const ICON_X = '<svg viewBox="0 0 24 24"><path d="M3 12h18M7 8l-4 4 4 4M17 8l4 4-4 4"/></svg>';
   const SPACE = { none: 'Kein', small: 'Klein', normal: 'Normal', large: 'Groß' };
@@ -2886,7 +2886,7 @@
     const secs = scope.matches?.('section[data-block]') ? [scope] : [...scope.querySelectorAll('section[data-block]')];
     secs.forEach((sec) => {
       sec.querySelectorAll(':scope > .fluid-handle, [data-lay-col] > .fluid-handle').forEach((x) => x.remove());
-      // Greifer: Abstände nur mit Recht der Gestaltung, Spalten und Felder nur bei änderbaren Blöcken
+      // Handles: spacing only with design permission, columns and fields only for editable blocks
       requestAnimationFrame(() => {
         if (sec.dataset.readonly) return;
         if (may('design')) spaceHandles(sec);
@@ -2903,7 +2903,7 @@
       const pre = side === 'top' ? 'pt-' : 'pb-', key = side === 'top' ? '@spaceTop' : '@spaceBottom';
       const prop = side === 'top' ? 'paddingTop' : 'paddingBottom';
       const values = ['none', 'small', 'normal', 'large'];
-      // Wirkt der Abstand hier? (Kopfbereiche haben eigene Abstände) – Klassen kurz ausprobieren, sonst kein Griff
+      // Does the spacing take effect here? (header areas have their own spacing) – briefly try the classes, otherwise no handle
       const keep = sec.className, seen = new Set();
       for (const v of values) { values.forEach((x) => sec.classList.remove(pre + x)); if (v !== 'normal') sec.classList.add(pre + v); seen.add(getComputedStyle(sec)[prop]); }
       sec.className = keep;
@@ -2924,7 +2924,7 @@
         h.setAttribute('aria-valuemax', '3');
         h.setAttribute('aria-valuetext', SPACE[v]);
       };
-      // der Abstand selbst ist beim Zeigen und Ziehen schraffiert (wie KLXM Studio), der Abschnitt leuchtet auf
+      // the spacing itself is hatched while hovering and dragging (like KLXM Studio), the section lights up
       const band = document.createElement('div');
       band.className = `fluid-handle fluid-band fluid-band--${side}`;
       band.contentEditable = 'false';
@@ -2960,7 +2960,7 @@
       };
       h.addEventListener('pointerup', end);
       h.addEventListener('pointercancel', end);
-      h.addEventListener('lostpointercapture', end);   // Erfassung verloren (Tab-Wechsel, Systemgeste): Zug trotzdem abschließen
+      h.addEventListener('lostpointercapture', end);   // Capture lost (tab switch, system gesture): finish the drag anyway
       h.addEventListener('click', (e) => e.stopPropagation());
       h.addEventListener('keydown', (e) => {
         const step = e.key === 'ArrowDown' ? 1 : e.key === 'ArrowUp' ? -1 : 0;
@@ -2981,12 +2981,12 @@
     const pw = dirty.get(sec.dataset.block)?.widths;
     if (pw) units = pw.split(',').map(Number);
     if (cols.length < 2 || units.length !== cols.length) return;
-    if (cols[1].getBoundingClientRect().top > cols[0].getBoundingClientRect().top + 8) return;   // untereinander (schmal)
+    if (cols[1].getBoundingClientRect().top > cols[0].getBoundingClientRect().top + 8) return;   // stacked (narrow)
     const U = 12, MIN = 2;
     const frac = (n) => ({ 2: '⅙', 3: '¼', 4: '⅓', 6: '½', 8: '⅔', 9: '¾', 10: '⅚' })[n] || n + '/12';
     const label = (w) => w.map(frac).join(' · ');
     const apply = (w) => cols.forEach((c, i) => c.style.setProperty('--lay-w', w[i]));
-    const base = grid.dataset.layPreset || grid.dataset.layW;   // Breiten des Rasters (Doppelklick/Entf)
+    const base = grid.dataset.layPreset || grid.dataset.layW;   // Grid widths (double-click/Del)
     const commit = (w) => {
       units = w ? [...w] : base.split(',').map(Number);
       apply(units);
@@ -3034,7 +3034,7 @@
       };
       h.addEventListener('pointerup', end);
       h.addEventListener('pointercancel', end);
-      h.addEventListener('lostpointercapture', end);   // Erfassung verloren (Tab-Wechsel, Systemgeste): Zug trotzdem abschließen
+      h.addEventListener('lostpointercapture', end);   // Capture lost (tab switch, system gesture): finish the drag anyway
       h.addEventListener('dblclick', (e) => { e.stopPropagation(); commit(null); });
       h.addEventListener('click', (e) => e.stopPropagation());
       h.addEventListener('keydown', (e) => {
@@ -3052,8 +3052,8 @@
   }
 
   /*
-   * Felder, die der Block als Griff anbietet (Kit 'drags'): Textbreite (bernstein), Aufteilung Bild/Text (pink).
-   * Griff an der Kante des Zielelements; weg vom Element ziehen = größer, je ~56 px ein Wert, Vorschau über die Klasse.
+   * Fields the block offers as a handle (kit 'drags'): text width (amber), image/text split (pink).
+   * Handle on the edge of the target element; dragging away from the element = larger, one value per ~56 px, preview via the class.
    */
   function fieldHandles(sec) {
     if (!sec.isConnected) return;
@@ -3071,7 +3071,7 @@
         `<button type="button" class="h h--x h--${g.kind}" role="slider" aria-orientation="horizontal"><span class="g" aria-hidden="true">${ICON_X}</span><span class="t"></span></button>`);
       const host = sr.host, h = sr.querySelector('.h'), tip = sr.querySelector('.t');
       let dir = 1, drag = null;
-      // Griff sitzt an der Kante des Ziels (nie im bearbeitbaren Text): Element rechts → Griff links, nach links ziehen = größer
+      // The handle sits on the edge of the target (never in the editable text): element on the right → handle on the left, dragging left = larger
       const place = () => {
         const t = target.getBoundingClientRect(), hr = sec.getBoundingClientRect(), pr = (target.parentElement || target).getBoundingClientRect();
         if (!t.width) return;
@@ -3114,7 +3114,7 @@
       };
       h.addEventListener('pointerup', end);
       h.addEventListener('pointercancel', end);
-      h.addEventListener('lostpointercapture', end);   // Erfassung verloren (Tab-Wechsel, Systemgeste): Zug trotzdem abschließen
+      h.addEventListener('lostpointercapture', end);   // Capture lost (tab switch, system gesture): finish the drag anyway
       h.addEventListener('click', (e) => e.stopPropagation());
       h.addEventListener('keydown', (e) => {
         const step = e.key === (dir > 0 ? 'ArrowRight' : 'ArrowLeft') ? 1 : e.key === (dir > 0 ? 'ArrowLeft' : 'ArrowRight') ? -1 : 0;
@@ -3127,15 +3127,15 @@
     }
   }
   let handleTimer = 0;
-  // Neu aufbauen bei geänderter Fenstergröße – nie während gezogen wird (sonst geht das Loslassen verloren; auf dem Handy
-  // feuert resize schon beim Ein-/Ausblenden der Adressleiste)
+  // Rebuild when the window size changes – never while dragging (otherwise the release gets lost; on phones
+  // resize already fires when the address bar shows or hides)
   const dragging = () => [...main.querySelectorAll('.fluid-handle')].some((x) => x.shadowRoot?.querySelector('.is-drag'));
   const rebuild = () => { clearTimeout(handleTimer); handleTimer = setTimeout(() => (dragging() ? rebuild() : initHandles(main)), 200); };
   addEventListener('resize', rebuild, { passive: true });
 
   // ------------------------------------------------------------------ Start
 
-  // Redaktionskommentare [# … #] markieren – CSS Custom Highlight API, ohne das DOM zu ändern (nichts landet im Text)
+  // Mark editorial comments [# … #] – CSS Custom Highlight API, without changing the DOM (nothing ends up in the text)
   function highlightNotes() {
     if (!window.CSS?.highlights || typeof Highlight === 'undefined') return;
     const ranges = [];
@@ -3155,7 +3155,7 @@
   let noteTimer = 0;
   main.addEventListener('input', () => { clearTimeout(noteTimer); noteTimer = setTimeout(highlightNotes, 300); });
 
-  // Klick auf eine Notiz in einem Textfeld (wie KLXM Studio): „Als Text übernehmen“ (sichtbarer Text) oder „Notiz löschen“
+  // Click on a note in a text field (like KLXM Studio): „Als Text übernehmen“ (visible text) or „Notiz löschen“
   const caretAt = (x, y) => {
     if (document.caretPositionFromPoint) {
       const p = document.caretPositionFromPoint(x, y);

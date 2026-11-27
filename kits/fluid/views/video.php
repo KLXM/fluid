@@ -4,10 +4,10 @@ use Klxm\Fluid\Block;
 use Redaxo\Core\Language\Language;
 
 /**
- * Video (YouTube/Vimeo mit Zwei-Klick-Lösung, MP4 aus dem Medienpool): wide · text (Text daneben) · cinema (randlos, dunkel).
- * Aus KLXM Studio; Einbettung: fluid_video_embed() (functions.php), Skript js/embed.js (lädt den Player erst nach Klick).
- * audio: Audiodateien mit dem Player des Browsers (<audio controls>), mehrere als Liste – das Kit „NativeCSS“ nimmt
- * dafür <ncss-audio-player> mit Playlist.
+ * Video (YouTube/Vimeo with two-click solution, MP4 from the media pool): wide · text (text beside) · cinema (borderless, dark).
+ * From KLXM Studio; embedding: fluid_video_embed() (functions.php), script js/embed.js (loads the player only after a click).
+ * audio: audio files with the browser's player (<audio controls>), several as a list – the kit „NativeCSS“ uses
+ * <ncss-audio-player> with playlist for this.
  * @var Block $b  @var array $d
  */
 if ('audio' === $b->variant()):
@@ -35,7 +35,7 @@ if ('audio' === $b->variant()):
   <?php elseif (is_editing()): ?><p class="empty-hint">Noch keine Audiodatei – in der Seitenleiste hinzufügen.</p><?php endif ?>
 </div>
 <?php return; endif;
-// „morph“ (Kit NativeCSS) nach einem Kit-Wechsel: Video mit Text daneben
+// "morph" (kit NativeCSS) after a kit switch: video with text beside
 $v = 'morph' === $b->variant() ? 'text' : (in_array($b->variant(), ['wide', 'text', 'cinema'], true) ? $b->variant() : 'wide');
 $embed = fluid_video_embed((string) $d['video_url'], (string) $d['video_file'], (string) $d['poster'], (string) ($d['ratio'] ?: '16-9'), strip_emphasis(trim((string) $d['title'])),
     (array) ($d['tracks'] ?? []), !empty($d['cc_on']), !empty($d['transcript']));

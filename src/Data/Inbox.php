@@ -14,9 +14,9 @@ use Yakamara\YForm\Table\Table;
 use function sprintf;
 
 /**
- * Anfragen-Postfach (Modell aus KLXM Studio – Anfragen): Einträge der Tabellen, in die die Formulare der Website
- * speichern (Blöcke „Formular“/„Kontakt“ → #[AsForm]-Klasse → Aktion SaveRecord). Status neu/erledigt in rex_fluid_inbox –
- * die YForm-Tabellen bleiben unverändert. Sichtbar nur mit Recht „Tabellen ansehen“, Löschen mit „bearbeiten“ (YForm).
+ * Inquiry inbox (model from KLXM Studio – inquiries): entries of the tables the website forms save
+ * into (blocks „Formular“/„Kontakt“ → #[AsForm] class → action SaveRecord). Status new/done in rex_fluid_inbox –
+ * the YForm tables stay unchanged. Visible only with permission „Tabellen ansehen“, deleting with „bearbeiten“ (YForm).
  */
 final class Inbox
 {
@@ -35,7 +35,7 @@ final class Inbox
             foreach ($form ? YFormBridge::formTables($form) : [] as $t) {
                 $names[$t] = true;
             }
-            // eigenes Formular (BuiltForm): speichert in „Formular-Eingänge“ oder die gewählte Tabelle
+            // custom form (BuiltForm): saves into „Formular-Eingänge“ or the selected table
             if (!$form && [] !== (array) ($d['fields'] ?? []) && 'mail' !== ($d['mode'] ?? 'save_mail')) {
                 $names[trim((string) ($d['target'] ?? '')) ?: 'rex_fluid_form_entry'] = true;
             }
@@ -61,7 +61,7 @@ final class Inbox
         return $n;
     }
 
-    /** @return list<array<string, mixed>> neueste zuerst (je Tabelle höchstens 100) */
+    /** @return list<array<string, mixed>> newest first (at most 100 per table) */
     public static function list(User $user, string $filter = 'new'): array
     {
         $out = [];

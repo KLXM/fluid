@@ -5,11 +5,11 @@ use Klxm\Fluid\InlineStyle;
 use Klxm\Fluid\Kit;
 
 /**
- * Karten im Kit „NativeCSS“ (.ncss-card mit Rahmen, Radius, Schatten; ganze Karte klickbar über .ncss-card-link):
- *   image       Bild oben
- *   overlay     Text auf dem Bild
- *   horizontal  quer, sobald die Karte breit genug ist (.ncss-card--horizontal im .ncss-card-container)
- * „reel“ (wischbares Band) kommt aus dem Kit fluid.
+ * Cards in the kit „NativeCSS“ (.ncss-card with border, radius, shadow; whole card clickable via .ncss-card-link):
+ *   image       image on top
+ *   overlay     text on the image
+ *   horizontal  landscape as soon as the card is wide enough (.ncss-card--horizontal in .ncss-card-container)
+ * „reel“ (swipeable strip) comes from the kit fluid.
  * @var Block $b  @var array $d
  */
 $v = $b->variant() ?: 'image';
@@ -26,7 +26,7 @@ $min = ['s' => '14rem', 'm' => '18rem', 'l' => '24rem'][$d['size'] ?? 'm'] ?? '1
 <div class="wrap">
   <?= fluid_head($b) ?>
   <?php if ($items): ?>
-  <?php // Filter nach Kategorie (fluid_filter(): CSS-Filter mit Optionsfeldern, js/filter.js für die Ansage der Trefferzahl)
+  <?php // Filter by category (fluid_filter(): CSS filter with radio buttons, js/filter.js for announcing the number of results)
   $flt = !empty($d['filter']) && 'reel' !== $v ? fluid_filter($b, array_map(static fn ($it) => (string) ($it['category'] ?? ''), $items)) : ['bar' => '', 'item' => []];
   if ('' !== $flt['bar']): ?><ncss-filter class="ncss-filter"><?= $flt['bar'] ?><?php endif ?>
   <ul class="ncss-grid nv-cards nv-cards--<?= e($v) ?> <?= e(InlineStyle::class('--ncss-grid-min:' . $min)) ?>" role="list">
@@ -35,7 +35,7 @@ $min = ['s' => '14rem', 'm' => '18rem', 'l' => '24rem'][$d['size'] ?? 'm'] ?? '1
         $label = trim((string) ($it['link_label'] ?? ''));
         $pic = fluid_image(!empty($it['image']) ? (string) $it['image'] : null, 'horizontal' === $v ? '(min-width: 1080px) 320px, 100vw' : '(min-width: 1080px) 420px, (min-width: 640px) 50vw, 90vw', $ratio);
         $card = 'ncss-card ncss-border ncss-radius-lg ncss-shadow-sm' . ('' !== $link ? ' ncss-card--linked ncss-shadow-hover-md' : '') . ('horizontal' === $v ? ' ncss-card--horizontal' : '') . ('overlay' === $v ? ' nv-card--overlay' : '');
-        // „Hervorheben“: Rahmen in der Akzentfarbe und ein Hinweis an der Ecke (Text echt im DOM, Standard „Empfohlen“)
+        // „Hervorheben“: border in the accent color and a badge at the corner (real text in the DOM, default „Empfohlen“)
         $featured = !empty($it['featured']);
         $card .= $featured ? ' ncss-card--featured' : '';
         $badge = $featured ? (trim((string) ($it['badge'] ?? '')) ?: lt('Empfohlen')) : '';

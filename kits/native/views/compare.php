@@ -4,8 +4,8 @@ use Klxm\Fluid\Block;
 use Klxm\Fluid\InlineStyle;
 
 /**
- * Vorher/Nachher im Kit „NativeCSS“ mit <ncss-compare>: echter Regler (input range) über beiden Bildern, ohne JavaScript ein
- * statischer 50/50-Vergleich. „Vorher“ liegt immer links. CSS/JS: css/ncss-compare.css, ncss/js/compare.js.
+ * Before/after in the kit „NativeCSS“ with <ncss-compare>: real slider (input range) over both images, without JavaScript a
+ * static 50/50 comparison. „Vorher“ is always on the left. CSS/JS: css/ncss-compare.css, ncss/js/compare.js.
  * @var Block $b  @var array $d
  */
 $ratio = in_array($d['ratio'] ?? '', ['16:9', '3:2', '4:3', '1:1', '4:5', '3:4'], true) ? (string) $d['ratio'] : '16:9';

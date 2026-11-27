@@ -11,17 +11,17 @@ use Yakamara\YForm\Field\Textarea;
 use Yakamara\YForm\Table\ListConfig;
 use Yakamara\YForm\Table\Table;
 
-// Nur mit YForm (fluid läuft auch ohne)
+// Only with YForm (fluid also runs without)
 if (!class_exists(Table::class)) {
     return;
 }
 
 /**
- * Glossar der Website – EINE YForm-Tabelle (`console migrate` legt sie an): Begriff, Schreibweisen, Kurztext (Hinweisfenster)
- * und Text (ausführliche Erklärung aus Blöcken, Detailseite). Begriffe werden auf den Seiten automatisch markiert, wenn es
- * unter Website → Glossar eingeschaltet ist (Klxm\Fluid\Glossary\Glossary).
+ * The website's glossary – ONE YForm table (`console migrate` creates it): term, spellings, short text (tooltip)
+ * and text (detailed explanation from blocks, detail page). Terms are marked automatically on the pages when this is
+ * enabled under Website → Glossar (Klxm\Fluid\Glossary\Glossary).
  *
- * Eigene Felder: Klasse ableiten ist nicht nötig – ein Projekt kann mit Glossary::$store eine ganz andere Quelle setzen.
+ * Custom fields: no need to extend the class – a project can set an entirely different source with Glossary::$store.
  */
 #[AsTable('rex_fluid_glossary', label: 'Glossar', icon: 'fa-book')]
 final class GlossaryTable extends Table

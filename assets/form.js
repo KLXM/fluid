@@ -1,6 +1,6 @@
 /*
- * klxm/fluid – Verhalten der Block-Formulare (FieldForm): Felder je Variante, Wiederholgruppen.
- * Gemeinsam für das Backend (Slice bearbeiten) und den Editor auf der Website (window.BlocksForm.init).
+ * klxm/fluid – behavior of the block forms (FieldForm): fields per variant, repeaters.
+ * Shared by the backend (edit slice) and the editor on the website (window.BlocksForm.init).
  */
 (() => {
   'use strict';
@@ -19,7 +19,7 @@
     });
   }
 
-  // Wiederholgruppen: hinzufügen, entfernen, verschieben (Reihenfolge im Formular = Reihenfolge der Einträge)
+  // Repeaters: add, remove, move (order in the form = order of the entries)
   function initRepeater(rep, changed) {
     if (rep.dataset.blocksReady) return;
     rep.dataset.blocksReady = '1';
@@ -32,11 +32,11 @@
       if (addBtn) addBtn.disabled = max > 0 && list.children.length >= max;
     };
     addBtn?.addEventListener('click', () => {
-      // neue Einträge: freie Zahl als Schlüssel; der Server nummeriert neu
+      // new entries: free number as key; the server renumbers
       const item = toEl(tpl.innerHTML.replaceAll('__i__', String(1000 + n++)));
       list.append(item);
       item.open = true;
-      // Backend: aufklappbare Einträge (Collapse des Cores) brauchen je Eintrag eigene IDs (auch verschachtelte)
+      // Backend: collapsible entries (core collapse) need their own IDs per entry (nested ones too)
       item.querySelectorAll('.collapse[id]').forEach((el) => {
         const id = `${el.id}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
         item.querySelectorAll(`[data-target="#${CSS.escape(el.id)}"]`).forEach((t) => { t.dataset.target = '#' + id; t.setAttribute('aria-controls', id); });
@@ -62,25 +62,25 @@
     list.addEventListener('change', (e) => { if (e.target.matches('select')) e.target.dispatchEvent(new Event('input', { bubbles: true })); });
     list.addEventListener('input', (e) => {
       const item = e.target.closest('[data-blocks-item]');
-      // Titel im Kopf: <summary> (Website) bzw. Kopf des Eintrags (Backend) – nicht die verschachtelter Einträge
+      // title in the header: <summary> (website) or entry header (backend) – not those of nested entries
       const title = item?.querySelector(':scope > summary [data-blocks-item-title], :scope > .fluid-rep-item__head [data-blocks-item-title]');
-      // Auswahlfeld als Titel: Text der Option („Montag“ statt „1“)
+      // select field as title: text of the option („Montag“ instead of „1“)
       if (title && e.target.name?.endsWith(`[${title.dataset.field}]`) && e.target.value) title.textContent = e.target.selectedOptions?.[0]?.text || e.target.value;
     });
     sync();
   }
 
-  // ------------------------------------------------------------------ Medien- und Seitenauswahl (ohne Popup-Fenster)
-  // Backend: Medienpool und Linkmap des Cores als Overlay (rex.pick). Website: FrontendPicker (assets/picker, für jedes
-  // AddOn nutzbar) mit derselben Antwort [{ value, label }].
+  // ------------------------------------------------------------------ media and page picker (without popup windows)
+  // Backend: core media pool and linkmap as overlay (rex.pick). Website: FrontendPicker (assets/picker, usable by any
+  // AddOn) with the same answer [{ value, label }].
 
   /**
-   * Auswahl öffnen; Ergebnis: { value, name } oder null (ohne Auswahl geschlossen)
+   * Open the picker; result: { value, name } or null (closed without a selection)
    * @param {'media'|'link'} kind
    * @param {{types?: string[], category?: number, language?: number, value?: string}} opts
    */
   async function pick(kind, opts = {}) {
-    // Gastzugang ohne Backend (z. B. AddOn fluid_demo setzt window.fluidPickerOff): Hinweis statt Auswahl
+    // guest access without backend (e.g. AddOn fluid_demo sets window.fluidPickerOff): notice instead of picker
     if (window.fluidPickerOff) {
       document.dispatchEvent(new CustomEvent('fluid:notice', { detail: String(window.fluidPickerOff) }));
       return null;
@@ -98,9 +98,9 @@
     return kind === 'media' ? { value: item.value, name: item.label } : { value: 'redaxo://' + item.value, name: item.label };
   }
 
-  // ------------------------------------------------------------------ Bildeditor (Addon image_editor, optional)
-  // Skript erst bei Bedarf laden. Der Editor auf der Website hängt Dialog und CSS in seine Shadow-DOM-Ebene
-  // (Ereignis „blocks:image-editor“); ohne Abnehmer (Backend) kommt das CSS ins Dokument.
+  // ------------------------------------------------------------------ image editor (addon image_editor, optional)
+  // Load the script only when needed. The editor on the website puts dialog and CSS into its shadow DOM
+  // (event „blocks:image-editor“); without a receiver (backend) the CSS goes into the document.
   let ieLoading = null;
   async function imageEditor(cfg) {
     if (!window.ImageEditor) {
@@ -130,8 +130,8 @@
       const input = box.querySelector('input');
       const thumb = box.querySelector('[data-blocks-pick-thumb]');
       const label = box.querySelector('[data-blocks-pick-name]');
-      // Bearbeiten/Anpassen/Entfernen nur mit gewählter Datei
-      // hidden für die Website; im Backend setzt .rex-button display, dort blendet die Hilfsklasse des Cores aus
+      // edit/adjust/remove only with a selected file
+      // hidden for the website; in the backend .rex-button sets display, there the core helper class hides it
       const isVideo = () => /\.(mp4|m4v|mov|webm|mkv|ogv|avi)$/i.test(input.value);
       const tools = () => box.querySelectorAll('[data-blocks-pick-edit],[data-blocks-pick-adjust],[data-blocks-pick-clear],[data-blocks-pick-video]').forEach((b) => {
         const off = !input.value || (b.hasAttribute('data-blocks-pick-video') && !isVideo());
@@ -162,7 +162,7 @@
         if (res) set(res.value, res.name);
       });
       box.querySelector('[data-blocks-pick-clear]')?.addEventListener('click', () => set(''));
-      // AddOn video_editor: Video im Medienpool öffnen (neuer Tab, die Eingaben hier bleiben erhalten)
+      // AddOn video_editor: open the video in the media pool (new tab, the input here is kept)
       box.querySelector('[data-blocks-pick-video]')?.addEventListener('click', () => {
         if (!isVideo() || !box.dataset.veEdit) return;
         window.open(box.dataset.veEdit.replace(/&amp;/g, '&').replace('__FILE__', encodeURIComponent(input.value)), '_blank', 'noopener');
@@ -188,7 +188,7 @@
     });
   }
 
-  // YForm: Feldauswahl auf die gewählte Tabelle einschränken (Optionsgruppen anderer Tabellen ausblenden)
+  // YForm: restrict the field selection to the chosen table (hide option groups of other tables)
   function yformFields(form) {
     const table = form.querySelector('[data-yform-table]')?.value || '';
     form.querySelectorAll('[data-yform-field]').forEach((sel) => {
@@ -202,15 +202,15 @@
   }
 
 
-  // ------------------------------------------------------------------ Markierungen (Feld „Markierungen“, Block „Interaktives Bild“)
-  // Marker-Editor über der Wiederholgruppe (FieldForm::hotspots, Format Klxm\Fluid\Hotspots v1 wie KLXM Studio): Bild aus dem
-  // Bildfeld desselben Formulars, darüber alle Markierungen. Die Zeilen bleiben die Quelle der Werte – der Editor liest sie und
-  // schreibt Lage und Form zurück (Ereignis input, damit die Vorschau folgt).
-  //  - Klick ins Bild: neue Markierung an der Stelle (Umschalt + Klick: Eckpunkt an die gewählte Fläche anfügen).
-  //  - Ziehen verschiebt Markierungen, Ecken und Eckpunkte; Tastatur: Pfeile 1 %, mit Umschalt 5 %, mit Alt 0,1 %, Entf entfernt
-  //    (Markierung bzw. Eckpunkt), Eingabe öffnet die Zeile, Bild auf/ab wählt die vorige/nächste Markierung.
-  //  - Lage per CSSOM (keine style-Attribute im Markup). Weitere Editoren (FLUID_HOTSPOT_EDITORS) im Dialog, postMessage.
-  // Schnittstelle: window.BlocksHotspots.get(feld) → {v: 1, items}, .set(feld, daten), .normalize(daten).
+  // ------------------------------------------------------------------ markers (field „Markierungen“, block „Interaktives Bild“)
+  // Marker editor above the repeater (FieldForm::hotspots, format Klxm\Fluid\Hotspots v1 like KLXM Studio): image from the
+  // image field of the same form, all markers on top. The rows remain the source of the values – the editor reads them and
+  // writes position and shape back (input event, so that the preview follows).
+  //  - Click into the image: new marker at that spot (Shift + click: append a vertex to the selected area).
+  //  - Dragging moves markers, corners and vertices; keyboard: arrows 1 %, with Shift 5 %, with Alt 0.1 %, Del removes
+  //    (marker or vertex), Enter opens the row, Page Up/Down selects the previous/next marker.
+  //  - Position via CSSOM (no style attributes in the markup). Further editors (FLUID_HOTSPOT_EDITORS) in a dialog, postMessage.
+  // Interface: window.BlocksHotspots.get(field) → {v: 1, items}, .set(field, data), .normalize(data).
   const HS_SHAPES = ['point', 'circle', 'rect', 'poly'];
   const r2 = (v) => Math.round(v * 100) / 100;
   const clamp = (v, a = 0, b = 100) => Math.max(a, Math.min(b, v));
@@ -236,7 +236,7 @@
     }
     return [h.x, h.y];
   };
-  // Format v1 bereinigen (gleiche Regeln wie Klxm\Fluid\Hotspots::normalize – der Server prüft beim Speichern erneut)
+  // Sanitize format v1 (same rules as Klxm\Fluid\Hotspots::normalize – the server checks again on save)
   function hsNormalize(raw) {
     let data = raw;
     if (typeof data === 'string') { try { data = JSON.parse(data); } catch { data = null; } }
@@ -266,9 +266,9 @@
 
   function hsSetup(field, changed) {
     let cfg = {};
-    try { cfg = JSON.parse(field.dataset.hotspots || '{}'); } catch { /* leer */ }
+    try { cfg = JSON.parse(field.dataset.hotspots || '{}'); } catch { /* empty */ }
     const rootNode = field.getRootNode();
-    // Stylesheet einmal je Ebene (Dokument bzw. Shadow DOM des Editors)
+    // stylesheet once per root (document or shadow DOM of the editor)
     if (cfg.css && !rootNode.querySelector?.('link[data-hs-css]')) {
       const l = document.createElement('link');
       l.rel = 'stylesheet'; l.href = cfg.css; l.dataset.hsCss = '';
@@ -355,7 +355,7 @@
         + `<svg class="hs-ed__svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${svg}</svg>${pins}${handles}</div>`;
       frame = stage.querySelector('[data-hs-frame]');
       pos.forEach(([key, x, y]) => { const el = frame.querySelector(`[data-key="${key}"]`); if (el) at(el, x, y); });
-      // Kreise: Radius in % der Breite → senkrecht im Verhältnis des Bildes
+      // circles: radius in % of the width → vertically in the image's aspect ratio
       const img = frame.querySelector('img');
       const ratio = () => frame.querySelectorAll('ellipse[data-ratio]').forEach((el) => {
         const k = img.naturalWidth && img.naturalHeight ? img.naturalWidth / img.naturalHeight : 1;
@@ -509,7 +509,7 @@
       const sel = e.target.closest('select');
       const row = sel?.closest('[data-blocks-item]');
       if (!row || !sel.name.endsWith('[shape]')) { later(); return; }
-      // Form umgeschaltet: fehlende Maße aus der bisherigen Lage
+      // shape switched: missing dimensions from the previous position
       const g = read(row), x = g.x ?? 50, y = g.y ?? 50;
       if (g.shape === 'rect' && (g.w === null || g.h === null)) write(row, { x: clamp(x - 7.5, 0, 85), y: clamp(y - 7.5, 0, 85), w: 15, h: 15 });
       if (g.shape === 'circle' && g.r === null) write(row, { r: 6 });
@@ -526,7 +526,7 @@
     form.addEventListener?.('input', (e) => { if (e.target?.name === cfg.image) later(); });
     form.addEventListener?.('change', (e) => { if (e.target?.name === cfg.image) later(); });
 
-    // Weitere Editoren (Extension Point FLUID_HOTSPOT_EDITORS) im eingebetteten Fenster – Protokoll wie KLXM Studio
+    // Further editors (extension point FLUID_HOTSPOT_EDITORS) in an embedded window – protocol like KLXM Studio
     bar.innerHTML = (cfg.editors || []).map((x, k) => `<button type="button" class="blocks-btn" data-hs-editor="${k}"${x.title ? ` title="${escH(x.title)}"` : ''}>${escH(x.label)}</button>`).join('');
     bar.hidden = !(cfg.editors || []).length;
     bar.addEventListener('click', (e) => {
@@ -593,10 +593,10 @@
     normalize: hsNormalize,
   };
 
-  // ------------------------------------------------------------------ Listen-Vorlagen (Feld „Vorlage“, Data\ListTemplates)
-  // Kacheln der gewählten Tabelle zeigen; mit gewählter Vorlage die Felder ausblenden, die sie festlegt (data-keys).
-  // „Anpassen (Vorlage lösen)“ übernimmt die Werte der Vorlage in die Felder. Verwalten (nur Website, mit Recht): Speichern,
-  // Überschreiben, Umbenennen, Standard, Löschen über die API des Editors (window.FluidEditor.api).
+  // ------------------------------------------------------------------ list templates (field „Vorlage“, Data\ListTemplates)
+  // Show the tiles of the chosen table; with a chosen template hide the fields it defines (data-keys).
+  // „Anpassen (Vorlage lösen)“ copies the template values into the fields. Manage (website only, with permission): save,
+  // overwrite, rename, default, delete via the editor API (window.FluidEditor.api).
   function ltplBox(form) { return form.querySelector('[data-ltpl]'); }
   function ltplValue(box) { return box.querySelector('input[type=radio]:checked')?.value || ''; }
 
@@ -622,11 +622,11 @@
     if (manage && cur) manage.querySelector('[data-ltpl-op="default"]').textContent = cur.hasAttribute('data-default') ? 'Nicht mehr Standard' : 'Als Standard der Tabelle';
   }
 
-  // Werte der Vorlage in die Felder schreiben (Anpassen) – Auswahl, Häkchen, Text
+  // write the template values into the fields (adjust) – select, checkbox, text
   function ltplDetach(form, box, changed) {
     const r = box.querySelector('input[type=radio]:checked');
     let opts = {};
-    try { opts = JSON.parse(r?.dataset.options || '{}'); } catch { /* leer */ }
+    try { opts = JSON.parse(r?.dataset.options || '{}'); } catch { /* empty */ }
     const prefix = r?.name.replace(/\[template\]$/, '') || '';
     for (const [k, v] of Object.entries(opts)) {
       const el = form.querySelector(`[name="${CSS.escape(prefix + '[' + k + ']')}"]:not([type=hidden])`) || form.querySelector(`[name="${CSS.escape(prefix + '[' + k + ']')}"]`);
@@ -690,7 +690,7 @@
     ltplSync(form);
   }
 
-  // Tabelle gewechselt: Standard-Vorlage der neuen Tabelle wählen (falls es eine gibt)
+  // table changed: select the default template of the new table (if there is one)
   function ltplTable(form) {
     const box = ltplBox(form);
     if (!box) return;
@@ -721,7 +721,7 @@
   window.BlocksForm = { init };
   window.BlocksPick = { pick, imageEditor };
 
-  // Backend: neu eingefügtes Markup (Overlays, Wiederholgruppen …) meldet der Core mit „rex:ready“ am neuen Element
+  // Backend: the core reports newly inserted markup (overlays, repeaters …) with „rex:ready“ on the new element
   document.addEventListener('rex:ready', (e) => init(e.target instanceof Element ? e.target : document));
   if (document.readyState !== 'loading') init(document);
   else document.addEventListener('DOMContentLoaded', () => init(document));

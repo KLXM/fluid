@@ -31,34 +31,34 @@ use const JSON_UNESCAPED_SLASHES;
 use const JSON_UNESCAPED_UNICODE;
 
 /**
- * Formular aus dem Feldschema eines Blocks (Format der Studio-Kits).
+ * Form from the field schema of a block (format of the Studio kits).
  *
- * Das Schema entsteht aus den Feld-Attributen (Field\BlockSchema). Feldtypen: text, email, url, textarea, richtext,
- * select, bool, number, date, time, datetime, media, file, article, link, icon, geo, repeater (Collection) und die
- * Auswahlen für Blog, Medienkategorie und YForm. Optionen je Feld: name, label, type, help, required, default, max
- * (Zeichen), min/max_value/step (Zahl), rows, placeholder, options, multiple, width (half), variants (nur bei diesen
- * Darstellungen sichtbar), fields/item_label/title_field/min_items/max_items (repeater).
+ * The schema is built from the field attributes (Field\BlockSchema). Field types: text, email, url, textarea, richtext,
+ * select, bool, number, date, time, datetime, media, file, article, link, icon, geo, repeater (collection) and the
+ * selects for blog, media category and YForm. Options per field: name, label, type, help, required, default, max
+ * (characters), min/max_value/step (number), rows, placeholder, options, multiple, width (half), variants (visible only
+ * for these displays), fields/item_label/title_field/min_items/max_items (repeater).
  *
- * Feldnamen: `{prefix}[1][feld]` für die Felder, `{prefix}[2][option]` für die Abschnitts-Optionen. Im Backend
- * (BlockModule::input()) wie beim Core `slice[feld]` und `slice[tunes][option]` – das Formular des Cores liest sie in die
- * Eigenschaften des Moduls.
+ * Field names: `{prefix}[1][field]` for the fields, `{prefix}[2][option]` for the section options. In the backend
+ * (BlockModule::input()) like the core `slice[field]` and `slice[tunes][option]` – the core form reads them into the
+ * module's properties.
  */
 final class FieldForm
 {
     private static int $uid = 0;
 
-    /** Block, dessen Formular gerade entsteht (Feld „Vorlage“ braucht ihn) @var class-string<BlockModule>|null */
+    /** Block whose form is being built (field „Vorlage“ needs it) @var class-string<BlockModule>|null */
     private static ?string $module = null;
 
-    /** Daten des Formulars, das gerade entsteht @var array<string, mixed> */
+    /** Data of the form being built @var array<string, mixed> */
     private static array $data = [];
 
     /**
      * @param array<string, mixed> $data
      * @param array<string, mixed> $tunes
      */
-    /** @param bool $byProp Eingaben nach Eigenschaft benennen (Formular des Cores) statt nach Speicherschlüssel */
-    /** @param bool $lockable Sperre anbieten (Slices; nicht für Blöcke in Datensätzen) */
+    /** @param bool $byProp Name inputs by property (core form) instead of by storage key */
+    /** @param bool $lockable Offer locking (slices; not for blocks in records) */
     public static function render(string $module, array $data, array $tunes, string $prefix, bool $backend = true, string $dataKey = '1', string $tunesKey = '2', bool $byProp = false, bool $lockable = true): string
     {
         $p1 = '' === $dataKey ? $prefix : $prefix . '[' . $dataKey . ']';
@@ -78,7 +78,7 @@ final class FieldForm
             $h .= self::row('Darstellung', self::select($p1 . '[variant]', $variants, $variant, ['data-blocks-variant' => '']), '', false, 'variant');
         }
         $h .= self::fields($module::fields(), $data, $p1, $backend, $byProp);
-        // Layout: gezogene Spaltenbreiten (Griff auf der Website) beim Speichern des Formulars behalten
+        // Layout: keep dragged column widths (handle on the website) when saving the form
         if (is_array($data['widths'] ?? null) && is_array($data['widths']['w'] ?? null)) {
             $h .= '<input type="hidden" name="' . escape($p1 . '[widths][preset]') . '" value="' . escape((string) ($data['widths']['preset'] ?? '')) . '">';
             foreach (array_values($data['widths']['w']) as $i => $w) {
@@ -86,8 +86,8 @@ final class FieldForm
             }
         }
 
-        // Abschnitts-Optionen – Gestaltung nur mit Recht (Perm::DESIGN, Sperre Perm::DESIGN_FULL); ohne Recht bleiben die Werte
-        // als versteckte Felder erhalten (das Formular des Cores im Backend speichert alle Abschnitts-Optionen neu)
+        // Section options – design only with permission (Perm::DESIGN, lock Perm::DESIGN_FULL); without permission the values
+        // are kept as hidden fields (the core form in the backend saves all section options anew)
         $user = Editing::user() ?? Core::getUser();
         $design = null !== $user && Perm::can($user, Perm::DESIGN);
         $designFull = null !== $user && Perm::can($user, Perm::DESIGN_FULL);
@@ -121,14 +121,14 @@ final class FieldForm
         $space = ['none' => 'Kein', 'small' => 'Klein', 'normal' => 'Normal', 'large' => 'Groß'];
         $h .= self::row('Abstand oben', self::select($p2 . '[spaceTop]', $space, (string) ($tunes['spaceTop'] ?? 'normal')), '', true);
         $h .= self::row('Abstand unten', self::select($p2 . '[spaceBottom]', $space, (string) ($tunes['spaceBottom'] ?? 'normal')), '', true);
-        // Einblend-Effekt: nur, wenn das Kit welche anbietet (kit.php → 'reveal', z. B. Kit „NativeCSS“)
+        // Reveal effect: only if the kit offers any (kit.php → 'reveal', e.g. kit „NativeCSS“)
         if ([] !== ($reveal = $module::kit()->revealOptions())) {
             $h .= self::row('Einblend-Effekt', self::select($p2 . '[reveal]', ['' => 'Keiner'] + array_map(static fn (array $o) => (string) $o['label'], $reveal), (string) ($tunes['reveal'] ?? '')),
                 'Der Abschnitt erscheint beim Hereinscrollen. Sichtbar auf der veröffentlichten Seite, nicht beim Bearbeiten und nicht beim ersten Block. Wer „Bewegung reduzieren“ eingestellt hat, sieht ihn sofort.', false);
         }
         if ($module::nestable()) {
             $cols = ['' => 'Nicht in einem Layout', '1' => 'Spalte 1', '2' => 'Spalte 2', '3' => 'Spalte 3', '4' => 'Spalte 4'];
-            // neuer Block über „Block in Spalte n“ im Backend: Spalte vorgewählt
+            // new block via „Block in Spalte n“ in the backend: column preselected
             $col = (string) ($tunes['col'] ?? (SliceGrid::requestedCol() ?? ''));
             $h .= self::row('Spalte im Layout', self::select($p2 . '[col]', $cols, $col),
                 'Wirkt, wenn der Block direkt hinter einem Block „Layout (Spalten)“ steht (oder hinter weiteren Blöcken dieses Layouts).', false);
@@ -142,7 +142,7 @@ final class FieldForm
      * @param list<array<string, mixed>> $fields
      * @param array<string, mixed> $data
      */
-    /** Beliebige Felder (z. B. Website-Einstellungen) als Formular auf der Website */
+    /** Arbitrary fields (e.g. website settings) as a form on the website */
     public static function standalone(array $fields, array $data, string $base, bool $byProp = false): string
     {
         return '<div class="blocks-form" data-blocks-form>' . self::fields($fields, self::withDefaults($fields, $data), $base, false, $byProp) . '</div>';
@@ -187,37 +187,37 @@ final class FieldForm
                 . (isset($f['step']) ? ' step="' . escape((string) $f['step']) . '"' : '') . '>',
             'email' => '<input class="rex-input" type="email" id="' . $id . '" name="' . $n . '" value="' . escape((string) $value) . '"' . $req . $max . $ph . '>',
             'datetime' => '<input class="rex-input" type="datetime-local" id="' . $id . '" name="' . $n . '" value="' . escape(str_replace(' ', 'T', substr((string) $value, 0, 16))) . '"' . $req . '>',
-            // Seite (ArticlePicker des Cores): Linkmap, gespeichert wird die ID
+            // Page (core ArticlePicker): linkmap, the ID is saved
             'article' => Picker::link(self::nameId($name), $name, '' !== (string) $value && ctype_digit((string) $value) ? 'redaxo://' . $value : (string) $value, $backend),
-            // Medienpool und Linkmap (REDAXO-Popups); ID aus dem Feldnamen, damit neue Einträge von Wiederholgruppen eindeutig bleiben
+            // Media pool and linkmap (REDAXO popups); ID from the field name so new repeater entries stay unique
             'media', 'file' => Picker::media(self::nameId($name), $name, (string) $value, 'media' === $type, $backend, isset($f['types']) ? (array) $f['types'] : null),
-            // Medienkategorie des Medienpools (z. B. Downloads „alle Dateien einer Kategorie“)
+            // Media category of the media pool (e.g. downloads „alle Dateien einer Kategorie“)
             'mediacategory' => self::select($name, self::mediaCategories(), (string) $value, ['id' => $id], true),
-            // Tabelle aus YForm (Table Manager) – Formular-Block, Datenliste
+            // Table from YForm (Table Manager) – form block, data list
             'yform_table' => [] !== ($t = YFormBridge::tables())
                 ? self::select($name, $t, (string) $value, ['id' => $id, 'data-yform-table' => ''], !$req)
                 : '<p class="rex-field-note">' . (YFormBridge::available() ? 'Noch keine Tabelle – im Projekt eine Klasse mit #[AsTable] anlegen (siehe YForm-README).' : 'Dafür wird das AddOn YForm benötigt.') . '</p>',
             'yform_field' => self::yformField($name, (string) $value, $id),
-            // Blog (Kategorie mit „Blog / News“ in den Seiteneinstellungen); leer = alle Blogs
+            // Blog (category with „Blog / News“ in the page settings); empty = all blogs
             'blog' => [] !== ($bl = Blog::all())
                 ? self::select($name, ['' => 'Alle Blogs'] + $bl, (string) $value, ['id' => $id], false)
                 : '<p class="rex-field-note">Noch kein Blog – bei einer Menüseite in den Seiteneinstellungen „Blog / News“ anhaken.</p>',
-            // Formular aus YForm (#[AsForm]-Klasse im Projekt)
+            // Form from YForm (#[AsForm] class in the project)
             'yform_form' => [] !== ($fo = YFormBridge::forms())
                 ? self::select($name, $fo, (string) $value, ['id' => $id], !$req)
                 : '<p class="rex-field-note">' . (YFormBridge::available() ? 'Noch kein Formular – im Projekt eine Klasse mit #[AsForm] anlegen (siehe YForm-README).' : 'Dafür wird das AddOn YForm benötigt.') . '</p>',
             'time' => '<input class="rex-input" type="time" id="' . $id . '" name="' . $n . '" value="' . escape((string) $value) . '"' . $req . '>',
             'date' => '<input class="rex-input" type="date" id="' . $id . '" name="' . $n . '" value="' . escape((string) $value) . '"' . $req . '>',
-            // Standort „Breite, Länge“ mit Geokodierung aus den Adressfeldern (Website-Einstellungen)
+            // Location „Breite, Länge“ with geocoding from the address fields (website settings)
             'geo' => '<div class="blocks-geo rex-input-group"><input class="rex-input" type="text" id="' . $id . '" name="' . $n . '" value="' . escape((string) $value) . '" placeholder="51.4512, 6.6263" pattern="^-?\\d{1,2}(\\.\\d+)?,\\s*-?\\d{1,3}(\\.\\d+)?$" data-geo>'
                 . '<span class="rex-input-group-actions"><button type="button" class="blocks-btn rex-button" data-variant="field" data-geocode>Aus Adresse ermitteln</button></span></div>',
             'url' => '<input class="rex-input" type="url" id="' . $id . '" name="' . $n . '" value="' . escape((string) $value) . '"' . $req . $ph . ' placeholder="https://…">',
             'link' => Picker::link(self::nameId($name), $name, (string) $value, $backend),
             'repeater' => self::repeater($f, is_array($value) ? $value : [], $name, $backend, $byProp),
             'hidden' => '<input type="hidden" name="' . $n . '" value="' . escape((string) $value) . '">',
-            // Markierungen auf einem Bild (Field\Hotspots): Marker-Editor über einer Zeile je Markierung (assets/hotspots-field.js)
+            // Markers on an image (Field\Hotspots): marker editor above one row per marker (assets/hotspots-field.js)
             'hotspots' => self::hotspots($f, $value, $name, $backend, $byProp),
-            // Listen-Vorlage (Data\ListTemplates): Kacheln mit Vorschau, Verwaltung in der Seitenleiste
+            // List template (Data\ListTemplates): tiles with preview, managed in the sidebar
             'listtemplate' => null !== self::$module
                 ? ListTemplates::renderInput(self::$module, $name, (string) $value, (string) (self::$data['table'] ?? ''), $label, $help, $backend)
                 : '<input type="hidden" name="' . $n . '" value="' . escape((string) $value) . '">',
@@ -225,7 +225,7 @@ final class FieldForm
         };
 
         if ('hidden' === $type || 'listtemplate' === $type) {
-            return $input;   // Vorlage: Beschriftung und Hilfe stehen im fieldset
+            return $input;   // template: label and help are in the fieldset
         }
         if ('bool' === $type) {
             return $input . ('' !== $help ? '<p class="rex-field-note">' . escape($help) . '</p>' : '');
@@ -253,7 +253,7 @@ final class FieldForm
 
         $row = static function (array $item, string $key) use ($sub, $name, $itemLabel, $titleField, $backend, $byProp): string {
             $title = trim((string) ($item[$titleField] ?? ''));
-            // Auswahlfeld als Titel: Beschriftung der Option (z. B. „Montag“ statt „1“)
+            // Select field as title: label of the option (e.g. „Montag“ instead of „1“)
             foreach ($sub as $sf) {
                 if (($sf['name'] ?? '') === $titleField && 'select' === ($sf['type'] ?? '') && isset($sf['options'][$title])) {
                     $title = (string) $sf['options'][$title];
@@ -269,13 +269,13 @@ final class FieldForm
             }
             $titleAttr = 'data-blocks-item-title data-field="' . escape($titleProp) . '"';
             $fields = self::fields($sub, self::withDefaults($sub, $item), $name . '[' . $key . ']', $backend, $byProp);
-            // Knöpfe wie die Sammelfelder des Cores (CollectionInput): im Backend Icons, auf der Website Zeichen
+            // Buttons like the core collection fields (CollectionInput): icons in the backend, characters on the website
             $tool = static fn (string $attr, string $label, string $icon, string $sign, string $class = 'blocks-btn'): string => '<button type="button" class="' . $class . '" ' . $attr
                 . ' title="' . $label . '" aria-label="' . $label . '">' . ($backend ? '<i class="rex-icon ' . $icon . '" aria-hidden="true"></i>' : $sign) . '</button>';
 
             if ($backend) {
-                // eigene Komponente (fluid-rep-item, assets/form.css): einzeiliger Kopf mit Titel und Knopfgruppe des Cores;
-                // auf- und zuklappen übernimmt der Core (data-toggle="collapse", Hilfsklasse .collapse/.in)
+                // own component (fluid-rep-item, assets/form.css): single-line header with title and core button group;
+                // the core handles expanding and collapsing (data-toggle="collapse", helper class .collapse/.in)
                 $id = 'blocks-rep-' . self::nameId($name . '[' . $key . ']');
                 $open = '' === $title;
 
@@ -316,8 +316,8 @@ final class FieldForm
     }
 
     /**
-     * Feld „Markierungen“: Marker-Editor (Bild aus dem Bildfeld desselben Formulars, assets/hotspots-field.js) über einer
-     * Wiederholgruppe mit einer Zeile je Markierung. Die Zeilen sind die Werte; der Server macht daraus das Format v1.
+     * Field „Markierungen“: marker editor (image from the image field of the same form, assets/hotspots-field.js) above a
+     * repeater with one row per marker. The rows are the values; the server turns them into format v1.
      *
      * @param array<string, mixed> $f
      */
@@ -358,7 +358,7 @@ final class FieldForm
             $h .= '<option value="">' . escape($emptyLabel) . '</option>';
         }
         foreach ($options as $k => $label) {
-            if (is_array($label)) {   // Gruppe (Choice des Cores)
+            if (is_array($label)) {   // group (core choice)
                 $h .= '<optgroup label="' . escape((string) $k) . '">';
                 foreach ($label as $k2 => $l2) {
                     $h .= '<option value="' . escape((string) $k2) . '"' . (in_array((string) $k2, $selected, true) ? ' selected' : '') . '>' . escape((string) $l2) . '</option>';
@@ -372,7 +372,7 @@ final class FieldForm
         return $h . '</select>';
     }
 
-    /** Feld einer YForm-Tabelle („tabelle.feld“), gruppiert nach Tabelle; form.js blendet die Gruppen anderer Tabellen aus */
+    /** Field of a YForm table („table.field“), grouped by table; form.js hides the groups of other tables */
     private static function yformField(string $name, string $value, string $id): string
     {
         $h = '<select class="rex-input" name="' . escape($name) . '" id="' . $id . '" data-yform-field><option value="">–</option>';
@@ -388,7 +388,7 @@ final class FieldForm
         return $h . '</select>';
     }
 
-    /** @return array<int, string> Medienkategorien als Baum (eingerückt) */
+    /** @return array<int, string> Media categories as a tree (indented) */
     public static function mediaCategories(): array
     {
         $out = [];
@@ -403,7 +403,7 @@ final class FieldForm
         return $out;
     }
 
-    /** Element-ID aus dem Feldnamen (`f[1][items][__i__][image]` → `blocks_f_1_items___i___image`) */
+    /** Element ID from the field name (`f[1][items][__i__][image]` → `blocks_f_1_items___i___image`) */
     private static function nameId(string $name): string
     {
         return 'blocks_' . trim((string) preg_replace('~[^A-Za-z0-9_]+~', '_', $name), '_');
@@ -416,8 +416,8 @@ final class FieldForm
     }
 
     /**
-     * Eingaben (Seitenleiste, Bearbeiten auf der Seite) in die Speicherform der Felder des Cores bringen: Seite als ID,
-     * Zahl als Zahl, Ja/Nein als bool, Wiederholgruppen je Eintrag.
+     * Converts input (sidebar, editing on the page) to the storage format of the core fields: page as ID,
+     * number as number, yes/no as bool, repeaters per entry.
      *
      * @param list<array<string, mixed>> $fields
      * @param array<string, mixed> $data
@@ -445,7 +445,7 @@ final class FieldForm
     }
 
     /**
-     * Daten mit Standardwerten auffüllen; Listen neu nummerieren.
+     * Fills data with default values; renumbers lists.
      *
      * @param list<array<string, mixed>> $fields
      * @param array<string, mixed> $data
@@ -462,7 +462,7 @@ final class FieldForm
                 continue;
             }
             if ('repeater' === $type) {
-                // Vorgabe nur, wenn die Wiederholgruppe noch nie gespeichert wurde (neuer Block)
+                // Default only if the repeater has never been saved (new block)
                 $items = is_array($data[$name] ?? null) ? array_values($data[$name]) : (!array_key_exists($name, $data) && is_array($f['default'] ?? null) ? $f['default'] : []);
                 /** @var list<array<string, mixed>> $sub */
                 $sub = $f['fields'] ?? [];

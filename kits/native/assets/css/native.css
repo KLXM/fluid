@@ -1,10 +1,10 @@
 /*
- * Kit „NativeCSS“ – Brücke und Gestaltung (Layer „native“, liegt über allen Layern von NativeCSS und dem Grund-CSS von
- * fluid; Reihenfolge siehe template.view.php). Werte kommen aus der Design-Leiste von fluid (--f-…) und speisen die
- * Tokens von NativeCSS (--ncss-…): Vorlagen, Farben, Schriften und Radien gelten so für Rahmen und Blöcke gleichermaßen.
+ * Kit „NativeCSS“ – bridge and styling (layer „native“, above all layers of NativeCSS and the base CSS of fluid; order
+ * see template.view.php). Values come from the design bar of fluid (--f-…) and feed the tokens of NativeCSS (--ncss-…):
+ * presets, colours, fonts and radii thus apply equally to the frame and the blocks.
  */
 @layer native {
-  /* ------------------------------------------------------------------ Brücke: Design-Leiste → NativeCSS */
+  /* ------------------------------------------------------------------ Bridge: design bar → NativeCSS */
   :root {
     --ncss-color-brand: var(--f-a);
     --ncss-color-brand-contrast: var(--f-a-on);
@@ -27,12 +27,12 @@
     --ncss-container-max: calc(var(--f-wrap) + 2 * var(--f-gutter));
     color-scheme: light;
   }
-  /* Dunkles Schema nur, wenn die Design-Leiste es erlaubt (wie die --f-Werte) – light-dark() in NativeCSS folgt */
+  /* Dark scheme only if the design bar allows it (like the --f values) – light-dark() in NativeCSS follows */
   html.has-dark { color-scheme: light dark; }
   html.is-dark { color-scheme: dark; }
-  /* Darstellungs-Einstellungen der Besucher (<ncss-preferences>, Attribute am <html>): Farbschema-Wahl schlägt das Gerät
-     (die dunklen --f-Werte: Design::css() mit 'attr'), Kontrast und Lese-Schrift auch für die Blöcke von fluid (--f-…).
-     !important: gewinnt gegen die Design-Werte ohne Layer – wie die Regeln von NativeCSS selbst. */
+  /* Visitors' display settings (<ncss-preferences>, attributes on <html>): the chosen colour scheme beats the device
+     (the dark --f values: Design::css() with 'attr'), contrast and reading font also for the blocks of fluid (--f-…).
+     !important: wins against the unlayered design values – like the rules of NativeCSS itself. */
   html[data-theme="light"] { color-scheme: light; }
   html.has-dark[data-theme="dark"] { color-scheme: dark; }
   :root[data-contrast="more"] {
@@ -50,7 +50,7 @@
   .nv-brand__mark { display: grid; place-items: center; inline-size: 2.1rem; block-size: 2.1rem; border-radius: var(--ncss-radius-md);
     background: linear-gradient(135deg, var(--f-a), var(--f-b)); color: var(--f-a-on); font-size: 1rem; }
   .nv-brand__logo { display: block; }
-  /* SVG-Logos ohne eigene Breite: Höhe fest, Breite aus dem Seitenverhältnis */
+  /* SVG logos without their own width: fixed height, width from the aspect ratio */
   .nv-brand__img { display: block; block-size: 2.1rem; inline-size: auto; max-inline-size: 14rem; object-fit: contain; }
   .nv-brand--footer .nv-brand__img { block-size: 2rem; }
   .nv-brand__logo.nv-brand__logo--dark { display: none; }
@@ -65,25 +65,25 @@
   .nv-icon-link { display: inline-grid; place-items: center; inline-size: 2.5rem; block-size: 2.5rem; border-radius: var(--ncss-radius-full, 999px); color: var(--f-ink); }
   .nv-icon-link:hover { background: var(--f-surface); }
   .nv-icon-link .ico { inline-size: 1.25rem; block-size: 1.25rem; }
-  /* Kopfleiste immer EINE Zeile – Zeile oder Menü-Schaltfläche entscheidet NativeCSS (ab 1.3): ohne Skript per Container Query
-     an der Breite der Kopfzeile mit der Schwelle data-ncss-nav-fit (geschätzt in NativeKit::navFit(), template.view.php), danach
-     misst ncss/js/nav.js genau nach (data-ncss-nav-auto, hat Vorrang). Alle Wege setzen den Schalter --ncss-nav-compact an der
-     Nav und ihren Geschwistern in der Zeile (Leerzeichen = Menü-Schaltfläche). Muster:
-       --_x: var(--ncss-nav-compact) WERT-KOMPAKT; eigenschaft: var(--_x, WERT-ZEILE)
-     – jede Regel steht nur einmal da und stimmt mit und ohne JavaScript. Sprachen, Darstellung und Handlungsaufruf wandern nur
-     im Kompakt-Zustand ins Menü (sonst schüfe das Schrumpfen Platz und die Leiste wechselte hin und her). */
-  /* Menü: in der Zeile rechts neben der Marke; kompakt nur die Schaltfläche ganz rechts hinter den Werkzeugen */
+  /* Header always ONE row – NativeCSS decides between row and menu button (since 1.3): without script via container query
+     on the header width with the threshold data-ncss-nav-fit (estimated in NativeKit::navFit(), template.view.php), then
+     ncss/js/nav.js measures exactly (data-ncss-nav-auto, takes precedence). All paths set the switch --ncss-nav-compact on
+     the nav and its siblings in the row (space = menu button). Pattern:
+       --_x: var(--ncss-nav-compact) VALUE-COMPACT; property: var(--_x, VALUE-ROW)
+     – each rule appears only once and works with and without JavaScript. Languages, display and call to action move into
+     the menu only in the compact state (otherwise shrinking would free space and the bar would flip back and forth). */
+  /* Menu: in the row right of the brand; compact only the button at the far right behind the tools */
   .nv-nav { --_o: var(--ncss-nav-compact) 3; --_f: var(--ncss-nav-compact) 0 0 auto; --_m: var(--ncss-nav-compact) 0;
     order: var(--_o, 0); flex: var(--_f, 1 1 auto); margin-inline-start: var(--_m, auto); min-inline-size: 0;
     display: flex; justify-content: flex-end; }
   .nv-nav .ncss-nav-list { --_j: var(--ncss-nav-compact) flex-start; justify-content: var(--_j, flex-end); column-gap: 0; }
   .nv-nav .ncss-nav-item > a, .nv-nav .ncss-nav-item summary { --_p: var(--ncss-nav-compact) revert-layer; padding-inline: var(--_p, .5rem); }
-  /* kompakt: eine Zeile auch bei 360 px – Marke darf schrumpfen (Logo eingepasst, Name gekürzt), Werkzeuge und Menü bleiben */
+  /* compact: one row even at 360 px – the brand may shrink (logo fitted, name shortened), tools and menu stay */
   .nv-brand { --_f: var(--ncss-nav-compact) 0 1 auto; flex: var(--_f, 0 0 auto); min-inline-size: 0; }
   .nv-brand__logo { min-inline-size: 0; }
   .nv-brand .nv-brand__img { --_mw: var(--ncss-nav-compact) 100%; max-inline-size: var(--_mw, 14rem); }
   .nv-brand__name { --_ov: var(--ncss-nav-compact) hidden; min-inline-size: 0; overflow: var(--_ov, visible); text-overflow: ellipsis; white-space: nowrap; }
-  /* Sprachen, Handlungsaufruf, Darstellung: in der Leiste nur in der Zeilen-Ansicht, kompakt unten im Menü */
+  /* Languages, call to action, display: in the bar only in the row view, compact at the bottom of the menu */
   .nv-langs, .nv-head-cta, .nv-prefs:not(.nv-prefs--always) { --_d: var(--ncss-nav-compact) none; display: var(--_d, revert-layer); }
   .nv-nav__langs { --_d: var(--ncss-nav-compact) flex; display: var(--_d, none); margin-block-start: var(--f-s-l); }
   .nv-nav__cta { --_d: var(--ncss-nav-compact) flex; display: var(--_d, none); justify-content: center; margin-block-start: var(--f-s-l); }
@@ -101,19 +101,19 @@
   .nv-footer__bottom { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--f-s-s); }
   .nv-footer__bottom p { margin: 0; }
   .nv-footer__legal { display: flex; flex-wrap: wrap; gap: var(--f-s-m); }
-  /* Handlungsaufruf im Fußbereich: Button-Farben von fluid gegen die Linkfarbe des Fußes */
+  /* Call to action in the footer: button colours of fluid against the link colour of the footer */
   .nv-footer .nv-footer__action { margin: 0; }
   .nv-footer .nv-footer__action .btn--primary, .nv-footer .nv-footer__action .btn--primary:hover { color: var(--f-btn-ink); }
-  /* Haftende Kopfleiste am Seitenende: gleitet mit dem Anfang des Fußes weg, statt über Logo und Claim zu liegen (wie fluid,
-     f-hdr-yield). Browser ohne View-Timelines: wie bisher. */
+  /* Sticky header at the end of the page: slides away with the start of the footer instead of covering logo and claim
+     (like fluid, f-hdr-yield). Browsers without view timelines: as before. */
   @supports (animation-timeline: view()) and (timeline-scope: none) {
     body { timeline-scope: --nv-ftr; }
     .nv-footer { view-timeline: --nv-ftr block; view-timeline-inset: 0; }
     .nv-topbar { animation: nv-topbar-yield linear both; animation-timeline: --nv-ftr; animation-range: exit-crossing -8rem exit-crossing 0%; }
   }
   @keyframes nv-topbar-yield { from { translate: none; } to { translate: 0 calc(-100% - 1rem); } }
-  /* Dichte des Fußbereichs „Kompakt“ (Design → Form & Raum, Token footer_density wie fluid): weniger Abstand, Listen als Zeilen,
-     Adresse einzeilig (.nv-footer__address--line), Copyright und Rechtliches enger. „Normal“ = wie bisher. */
+  /* Footer density „Kompakt“ (Design → Form & Raum, token footer_density like fluid): less spacing, lists as rows,
+     address on one line (.nv-footer__address--line), copyright and legal tighter. „Normal“ = as before. */
   .fd-compact .nv-footer { padding-block: var(--f-s-xl) var(--f-s-m); container-type: inline-size; }
   .fd-compact .nv-footer .ncss-footer-inner { gap: var(--f-s-l); }
   .fd-compact .nv-footer .ncss-stack { gap: var(--f-s-xs); }
@@ -132,7 +132,7 @@
   }
   .nv-brand--footer .nv-brand__mark { inline-size: 1.8rem; block-size: 1.8rem; font-size: .875rem; }
 
-  /* ------------------------------------------------------------------ Einstieg */
+  /* ------------------------------------------------------------------ Intro */
   .nv-hero__title { text-wrap: balance; }
   .nv-hero__lead { max-inline-size: 40em; color: var(--f-muted); text-wrap: pretty; }
   .nv-hero__text { display: flex; flex-direction: column; align-items: flex-start; gap: var(--f-s-m); }
@@ -140,7 +140,7 @@
   .nv-hero .hl { font-style: normal; }
   .nv-hero__badge { font-size: var(--f-t-1); font-weight: 600; letter-spacing: .02em; }
 
-  /* „type“: großer Schriftzug, Betonung im Markenverlauf */
+  /* „type“: large lettering, emphasis in the brand gradient */
   .nv-hero--type { display: flex; flex-direction: column; gap: var(--f-s-2xl); }
   .nv-hero__display { margin: 0; color: var(--f-ink); font: var(--f-hw) clamp(2.75rem, 1rem + 9cqi, 8.5rem)/.98 var(--f-font-head); letter-spacing: -.035em; text-wrap: balance; }
   .nv-hero__display .hl {
@@ -149,7 +149,7 @@
   }
   .nv-hero--type .nv-hero__lead { font-size: var(--f-t1); }
 
-  /* „compact“: Seitenkopf der Unterseiten als getönte Kachel */
+  /* „compact“: page header of subpages as a tinted tile */
   .nv-hero--compact .nv-hero__text {
     padding: clamp(1.5rem, 1rem + 4cqi, 3.5rem);
     border: 1px solid var(--f-line); border-radius: var(--ncss-radius-lg);
@@ -169,7 +169,7 @@
   .nv-hero--split { align-items: center; }
   .nv-hero--split .nv-hero__media img, .nv-hero__media img { border-radius: var(--ncss-radius-lg); }
 
-  /* „fullbleed“: .ncss-hero über die volle Breite, Bild per <img>/<video> */
+  /* „fullbleed“: .ncss-hero across the full width, image via <img>/<video> */
   .sec--hero.v-fullbleed { padding-block: 0; }
   .nv-hero--bleed { min-block-size: min(88svh, 52rem); }
   .nv-hero--bleed .ncss-hero-media img, .nv-hero--bleed .ncss-hero-media picture, .nv-hero__video {
@@ -179,16 +179,16 @@
   .nv-hero--bleed .ncss-hero-content { margin-inline: max(var(--f-gutter), calc((100% - var(--f-wrap)) / 2)); margin-block: auto var(--f-s-2xl); max-inline-size: 36rem; }
   .nv-hero--bleed .ncss-hero-content--transparent { color: #fff; }
   .nv-hero--bleed .ncss-hero-content--transparent .nv-hero__title, .nv-hero--bleed .ncss-hero-content--transparent .nv-hero__lead { color: #fff; }
-  /* Karte in Seitenfarbe: auch in farbigen Abschnitten die Schrift der Seite (--f0-*, wie die Karten von fluid) – sonst hell auf hell */
+  /* Card in page colour: the page's text colour even in coloured sections (--f0-*, like fluid's cards) – else light on light */
   .nv-hero--bleed .ncss-hero-content--filled { --f-ink: var(--f0-ink); --f-text: var(--f0-text); --f-muted: var(--f0-muted); --f-link: var(--f0-link); --f-fg: var(--f0-ink); }
   .nv-hero--bleed .ncss-hero-content--filled .nv-hero__title { color: var(--f-ink); }
   .nv-hero--medium .ncss-hero-media::after { background: linear-gradient(to top, rgb(0 0 0 / 45%), rgb(0 0 0 / 0%) 70%); }
 
-  /* ------------------------------------------------------------------ Karten */
+  /* ------------------------------------------------------------------ Cards */
   .nv-cards { list-style: none; margin: 0; padding: 0; gap: var(--f-s-l); }
-  /* gleich hohe Karten ohne display am Eintrag – sonst schlüge dieser Layer das Ausblenden des Filters (display: none) */
+  /* Equal-height cards without display on the item – otherwise this layer would beat the filter's hiding (display: none) */
   .nv-cards__item > .ncss-card, .nv-cards > .ncss-card-container > .ncss-card { block-size: 100%; }
-  /* Karte in Seitenfarbe: auch in farbigen Abschnitten die Schrift der Seite (--f0-*, wie die Karten von fluid) – sonst hell auf hell */
+  /* Card in page colour: the page's text colour even in coloured sections (--f0-*, like fluid's cards) – else light on light */
   .nv-cards .ncss-card { --f-ink: var(--f0-ink); --f-text: var(--f0-text); --f-muted: var(--f0-muted); --f-link: var(--f0-link); --f-fg: var(--f0-ink); }
   .nv-cards .ncss-card { inline-size: 100%; background: var(--f-bg); color: var(--f-text); }
   .nv-cards .ncss-card-media .frame { margin: 0; border-radius: 0; }
@@ -200,24 +200,24 @@
   .nv-more { display: inline-flex; align-items: center; gap: .4em; color: var(--f-a); font-weight: 600; }
   .nv-more .ico { inline-size: 1em; block-size: 1em; transition: translate .15s; }
   .ncss-card--linked:hover .nv-more .ico { translate: .2em 0; }
-  /* Text auf dem Bild */
+  /* Text on the image */
   .nv-card--overlay { position: relative; overflow: clip; border: 0; color: #fff; }
-  /* NativeCSS gibt .ncss-card-media 16:9 – hier füllt das Bild die ganze Karte */
+  /* NativeCSS gives .ncss-card-media 16:9 – here the image fills the whole card */
   .nv-card--overlay .ncss-card-media { position: absolute; inset: 0; aspect-ratio: auto; block-size: 100%; }
   .nv-card--overlay .ncss-card-media .frame, .nv-card--overlay .ncss-card-media img { block-size: 100%; aspect-ratio: auto; object-fit: cover; }
   .nv-card--overlay .ncss-card-media::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgb(0 0 0 / 78%), rgb(0 0 0 / 45%) 40%, rgb(0 0 0 / 0%) 75%); }
-  /* Text unten auf dem dunklen Verlauf */
+  /* Text at the bottom on the dark gradient */
   .nv-card--overlay .ncss-card-body, .nv-card--overlay .ncss-card-footer { position: relative; flex: 0 0 auto; margin-block-start: auto; }
   .nv-card--overlay { display: flex; flex-direction: column; min-block-size: 22rem; }
   .nv-card--overlay .nv-card__title, .nv-card--overlay .nv-card__text, .nv-card--overlay .nv-card__eyebrow, .nv-card--overlay .nv-more { color: #fff; }
 
-  /* ------------------------------------------------------------------ Text + Bild */
-  /* Mittig nur nebeneinander (split.css: align-items über --ncss-split-align) – gestapelt bleibt stretch, sonst schrumpft die
-     Bildspalte auf die Breite ihres Inhalts: der Rahmen (.frame, Bild absolut) hätte 0 px und das Bild verschwände */
+  /* ------------------------------------------------------------------ Text + image */
+  /* Centred only side by side (split.css: align-items via --ncss-split-align) – stacked stays stretch, otherwise the
+     image column shrinks to the width of its content: the frame (.frame, image absolute) would be 0 px and the image gone */
   .nv-mt { gap: clamp(1.5rem, 1rem + 4cqi, 4.5rem); }
-  /* Bild füllt den Rahmen im gewählten Format (split.css setzt height: auto und überstimmt .frame img von fluid) */
+  /* Image fills the frame in the chosen format (split.css sets height: auto and overrides fluid's .frame img) */
   .nv-mt .ncss-split-media .frame img { height: 100%; }
-  /* Bild ausrichten (Feld valign): oben bzw. „mitlaufen“ = oben und – nur nebeneinander – haftend unter dem Kopf */
+  /* Align image (field valign): top or „mitlaufen“ = top and – only side by side – sticky below the header */
   @container ncss-split (min-width: 36rem) {
     .nv-mt:is(.nv-mt--va-top, .nv-mt--va-follow) .ncss-split-media { align-self: flex-start; }
     .nv-mt--va-follow .ncss-split-media { position: sticky; top: calc(var(--hdr-h, 4.25rem) + var(--f-s-l)); }
@@ -230,7 +230,7 @@
   .nv-mt--s-media .ncss-split-media { flex-grow: 1.4; }
   .nv-mt--s-mediaxl .ncss-split-media { flex-grow: 2; }
 
-  /* ------------------------------------------------------------------ Handlungsaufruf */
+  /* ------------------------------------------------------------------ Call to action */
   .nv-cta { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--f-s-l) var(--f-s-2xl);
     --ncss-tile-padding-block: clamp(2rem, 1.2rem + 4cqi, 4.5rem); --ncss-tile-padding-inline: clamp(1.5rem, 1rem + 4cqi, 4.5rem); }
   .nv-cta__text { flex: 1 1 28rem; display: flex; flex-direction: column; gap: var(--f-s-s); }
@@ -240,10 +240,10 @@
   .nv-cta--band .nv-cta__title, .nv-cta--band .nv-cta__lead { color: var(--f-a-on); }
   .nv-cta--band .btn--primary { background: var(--f-a-on); border-color: var(--f-a-on); color: var(--f-a); }
   .nv-cta--band .btn--secondary { border-color: currentColor; color: var(--f-a-on); background: transparent; }
-  /* Band auf einem schon farbigen Abschnitt (Akzent, zweite Farbe, dunkel): keine zweite Farbfläche */
+  /* Band on an already coloured section (accent, second colour, dark): no second colour area */
   :is(.bg-accent, .bg-secondary, .bg-dark) .nv-cta--band { background: transparent; color: inherit; --ncss-tile-padding-inline: 0; }
-  /* … Texte und Zweit-Knopf in der Schriftfarbe des Abschnitts. --f-a-on gehört zur Akzentfläche – auf einem dunkel getönten
-     Abschnitt wäre das dunkles Navy auf dunklem Grund */
+  /* … texts and secondary button in the section's text colour. --f-a-on belongs to the accent area – on a dark tinted
+     section that would be dark navy on a dark background */
   :is(.bg-accent, .bg-secondary, .bg-dark) .nv-cta--band :is(.nv-cta__title, .nv-cta__lead, .btn--secondary) { color: inherit; }
   .nv-cta--box { background: var(--f-surface); }
   .nv-cta--box .nv-cta__title { color: var(--f-ink); }
@@ -254,51 +254,51 @@
   .nv-faq--split .nv-faq__list { grid-column: span 2; }
   .nv-faq--stacked .nv-faq__list { max-inline-size: 52rem; margin-inline: auto; }
   .nv-faq__list { gap: var(--f-s-s); }
-  /* Karte in Seitenfarbe: auch in farbigen Abschnitten die Schrift der Seite (--f0-*, wie die Karten von fluid) – sonst hell auf hell */
+  /* Card in page colour: the page's text colour even in coloured sections (--f0-*, like fluid's cards) – else light on light */
   .nv-faq__item { background: var(--f-bg); border-color: var(--f-line); border-radius: var(--ncss-radius-md); color: var(--f0-text);
     --f-ink: var(--f0-ink); --f-text: var(--f0-text); --f-muted: var(--f0-muted); --f-link: var(--f0-link); --f-fg: var(--f0-ink); }
   .nv-faq__item summary { color: var(--f-ink); }
   .nv-faq__a { padding-block-start: var(--f-s-xs); }
   @container (max-width: 44rem) { .nv-faq--split .nv-faq__list { grid-column: auto; } }
 
-  /* ------------------------------------------------------------------ Blöcke von fluid im Stil von NativeCSS */
+  /* ------------------------------------------------------------------ Blocks of fluid in the style of NativeCSS */
   .feat.card, .card { border-radius: var(--ncss-radius-lg); }
   .eyebrow { letter-spacing: .06em; }
   .more-row { margin-block-start: var(--f-s-xl); }
 
-  /* ------------------------------------------------------------------ Neue Komponenten von NativeCSS (bei Bedarf geladen) */
-  /* Logos „Laufband“ (.ncss-marquee): Pause-Schaltfläche klein und mittig */
+  /* ------------------------------------------------------------------ New components of NativeCSS (loaded on demand) */
+  /* Logos „Laufband“ (.ncss-marquee): pause button small and centred */
   .nv-logos__marquee { --ncss-marquee-gap: var(--f-s-2xl); }
   .nv-logos__marquee .logos__item { list-style: none; }
   .nv-logos__pause { margin: var(--f-s-s) 0 0; text-align: center; }
   .nv-logos__toggle { font-size: var(--f-t-1); padding: .35em .9em; }
   .nv-logos__toggle[aria-pressed="true"] { background: var(--f-surface); }
 
-  /* Kennzahlen: Zahl beim Hochzählen ohne Springen der Breite */
+  /* Key figures: number counts up without the width jumping */
   .stat__value .ncss-count-up { font-variant-numeric: tabular-nums; }
 
-  /* Video & Audio, Vorher/Nachher: Player bzw. Vergleich in voller Breite des Inhalts, Bildunterschrift darunter */
+  /* Video & audio, before/after: player or comparison across the full content width, caption below */
   .nv-vplayer ncss-video-player, .nv-audio__fig, .nv-compare__fig { display: block; margin: 0; }
   .nv-audio__fig { max-inline-size: 52rem; }
   .nv-compare__fig ncss-compare { border-radius: var(--ncss-radius-lg); }
   .nv-audio__fig .video__cap, .nv-compare__fig .video__cap { margin-block-start: var(--f-s-s); color: var(--f-muted); font-size: var(--f-t-1); }
 
-  /* Scrollytelling (<ncss-scrolly>): Bühne unter der festen Kopfleiste, Abschnitte als Karten im Design von fluid */
+  /* Scrollytelling (<ncss-scrolly>): stage below the fixed header, sections as cards in fluid's design */
   .nv-scrolly ncss-scrolly { --ncss-scrolly-top: 4.5rem; margin-block-start: var(--f-s-l); }
   .nv-scrolly .ncss-scrolly-steps { margin: 0; padding-inline: 0; list-style: none; }
-  /* Karte in Seitenfarbe: auch in farbigen Abschnitten die Schrift der Seite (--f0-*, wie die Karten von fluid) – sonst hell auf hell */
+  /* Card in page colour: the page's text colour even in coloured sections (--f0-*, like fluid's cards) – else light on light */
   .nv-scrolly .ncss-scrolly-step > * { background: var(--f-bg);
     --f-ink: var(--f0-ink); --f-text: var(--f0-text); --f-muted: var(--f0-muted); --f-link: var(--f0-link); --f-fg: var(--f0-ink); }
-  /* Bildformat „auto“: jedes Bild ganz (Hochformat nicht höher als die Bühne) */
+  /* Image format „auto“: each image in full (portrait no taller than the stage) */
   .nv-scrolly--auto .ncss-scrolly-figure img { inline-size: auto; max-inline-size: 100%; max-block-size: calc(100svh - 6rem); margin-inline: auto; }
   .nv-scrolly__title { margin: 0 0 var(--f-s-xs); color: var(--f-ink); font-size: var(--f-t-3); }
 
-  /* Text + Bild „Morphing beim Scrollen“ (.ncss-morph): unter der festen Kopfleiste kleben */
+  /* Text + image „Morphing beim Scrollen“ (.ncss-morph): stick below the fixed header */
   .nv-morph .ncss-morph { --ncss-morph-top: 4.5rem; }
   .nv-morph .ncss-morph-media img { display: block; block-size: auto; }
   .nv-morph .ncss-morph-content > * + * { margin-block-start: var(--f-s-m); }
 
-  /* Ablauf „Zeitleiste“ (.ncss-timeline): Optionen „Kreise“ und „Farben“ des Blocks */
+  /* Process „Zeitleiste“ (.ncss-timeline): the block's options „Kreise“ and „Farben“ */
   .nv-timeline .ncss-timeline { --nv-tl-c: var(--f-a); --nv-tl-on: var(--f-a-on); }
   .nv-tl--c-neutral { --nv-tl-c: var(--f-ink) !important; --nv-tl-on: var(--f-bg) !important; }
   .nv-tl--c-alternate > .ncss-timeline-item:nth-child(even) { --nv-tl-c: var(--f-b); --nv-tl-on: var(--f-b-on); }
@@ -309,12 +309,12 @@
   .nv-tl--m-ring .ncss-timeline-marker { background: var(--f-bg) !important; }
   .nv-tl--m-dot .ncss-timeline-marker { --ncss-timeline-marker-color: var(--nv-tl-c); }
   .nv-timeline .ncss-timeline-marker .ico { inline-size: 1rem; block-size: 1rem; }
-  /* Datum im Nebentext des Abschnitts (NativeCSS nimmt den Wert der Seite – in farbigen Abschnitten zu schwach) */
+  /* Date in the section's secondary text (NativeCSS takes the page's value – too weak in coloured sections) */
   .nv-timeline .ncss-timeline-date { color: var(--f-muted); }
-  /* Paket-Karte in Seitenfarbe: auch in farbigen Abschnitten die Schrift der Seite (--f0-*, wie die Karten von fluid) */
+  /* Pricing card in page colour: the page's text colour even in coloured sections (--f0-*, like fluid's cards) */
   .nv-plans .ncss-pricing-plan { color: var(--f0-text);
     --f-ink: var(--f0-ink); --f-text: var(--f0-text); --f-muted: var(--f0-muted); --f-link: var(--f0-link); --f-fg: var(--f0-ink); }
 
-  /* Einblend-Effekt aus, wenn im Design „Dezente Animationen“ ausgeschaltet ist (Vorschau im Style-Editor) */
+  /* Fade-in effect off when „Dezente Animationen“ is switched off in the design (preview in the style editor) */
   html:not(.has-motion) .ncss-reveal { animation: none; clip-path: none; opacity: 1; translate: none; scale: none; }
 }

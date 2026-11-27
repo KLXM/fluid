@@ -1,7 +1,7 @@
 /*
- * YForm-Feld „Fluid-Blöcke“ (Data\FluidBlocks) in der Maske: Liste der Blöcke mit Hinzufügen, Bearbeiten (Formular des
- * Blocks wie auf der Website, über rex-api-call=fluid_blocks), Verschieben und Entfernen. Der Wert steht als JSON im
- * versteckten Feld und wird mit dem YForm-Formular gespeichert.
+ * YForm field „Fluid-Blöcke“ (Data\FluidBlocks) in the form: list of blocks with add, edit (the block's form as on
+ * the website, via rex-api-call=fluid_blocks), move and remove. The value is stored as JSON in the
+ * hidden field and saved with the YForm form.
  */
 (() => {
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -20,9 +20,9 @@
     const type = root.querySelector('[data-fbf-type]');
     let blocks = JSON.parse(input.value || '[]');
     let labels = cfg.labels || [];
-    let open = null;   // { index, li } – geöffneter Editor
+    let open = null;   // { index, li } – open editor
 
-    // Auswahl der Blocktypen nach Gruppen
+    // Selection of block types by group
     const groups = {};
     Object.entries(cfg.catalog).forEach(([k, v]) => { (groups[v.group || 'Blöcke'] ??= []).push([k, v.label]); });
     type.innerHTML = Object.entries(groups).map(([g, items]) => `<optgroup label="${esc(g)}">${items.map(([k, l]) => `<option value="${esc(k)}">${esc(l)}</option>`).join('')}</optgroup>`).join('');
@@ -62,7 +62,7 @@
         open = { index: i, box, isNew };
         window.BlocksForm?.init(box, () => {});
         window.RexTiptap?.upgrade?.(box);   // text fields (TipTap); its observer does the same for later fields
-        // Skripte des Cores (Widgets, Auswahllisten …) kennen das neue Markup erst durch „rex:ready“
+        // the core's scripts (widgets, select lists …) only know the new markup through „rex:ready“
         window.rex?.ready?.(box);
         box.querySelector('input, select, textarea, [contenteditable]')?.focus();
       } catch (err) {
@@ -82,7 +82,7 @@
       });
       try {
         const res = await post(cfg.api, fd);
-        // feste Kennung des Blocks behalten (Bearbeiten auf der Website)
+        // keep the block's fixed identifier (editing on the website)
         if (blocks[open.index]?.uid) res.item.uid = blocks[open.index].uid;
         blocks[open.index] = res.item;
         labels[open.index] = res.label;
@@ -133,14 +133,14 @@
       draw();
       sync();
     });
-    // Speichern der YForm-Maske mit offenem Block: erst übernehmen
+    // Saving the YForm form with an open block: apply it first
     root.closest('form')?.addEventListener('submit', (e) => {
       if (!open) return;
       e.preventDefault();
       alert('Bitte den geöffneten Block erst übernehmen oder abbrechen.');
       open.box.scrollIntoView({ block: 'center' });
     });
-    // Felder des geöffneten Blocks gehören nicht zum YForm-Formular
+    // Fields of the open block don't belong to the YForm form
     draw();
   };
   const scan = (scope = document) => scope.querySelectorAll('[data-fluid-blocks]').forEach(init);

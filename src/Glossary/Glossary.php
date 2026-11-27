@@ -33,19 +33,19 @@ use const ENT_HTML5;
 use const ENT_QUOTES;
 
 /**
- * Glossar der Website (nach KLXM Studio, Core\Glossary, MIT): EIN Glossar je Website – Begriffe mit Schreibweisen,
- * Kurztext und ausführlichem Text.
+ * The website's glossary (after KLXM Studio, Core\Glossary, MIT): ONE glossary per website – terms with spellings,
+ * short text and long text.
  *
- *  - Daten: Datenquelle GlossaryStore, Standard YForm-Tabelle rex_fluid_glossary (GlossaryTable). Andere Quelle:
+ *  - Data: data source GlossaryStore, by default the YForm table rex_fluid_glossary (GlossaryTable). Other source:
  *    `Glossary::$store = new MeinStore();` in Project::configure().
- *  - Markieren (Website → Glossar → „Begriffe automatisch markieren“, Standard aus): Annotator auf dem fertigen HTML jeder
- *    Seite (OUTPUT_FILTER), beim ersten Vorkommen je Seite (oder je Abschnitt), nie in Links, Überschriften (h1–h3), Knöpfen,
- *    Navigation, Kopf und Fuß, Code; Hinweisfenster per Popover. Nie im Bearbeiten-Modus und nie auf der eigenen Detailseite.
- *    Ausnehmen: data-glossary="off" an einem Element.
- *  - Übersicht und Detailseite: Block „Glossar“ (fluid.glossary, A–Z mit Suche). Seine Seite ist die Übersicht, jeder Begriff hat
- *    die Adresse {seite}/{slug}, z. B. /glossar/barrierefreiheit (Resolver, Sitemap, Canonical, DefinedTerm/DefinedTermSet).
- *  - Quick-Glossar im Editor (Menü ⋯ → Glossar, Alt+G): Begriffe suchen, markierten Text als neuen Begriff anlegen,
- *    „Gibt es schon?“ mit „Als Schreibweise hinzufügen“. Recht: Bearbeiten der Datenquelle (YForm-Tabellenrecht).
+ *  - Marking (Website → Glossar → „Begriffe automatisch markieren“, off by default): annotator on the finished HTML of each
+ *    page (OUTPUT_FILTER), at the first occurrence per page (or per section), never in links, headings (h1–h3), buttons,
+ *    navigation, header and footer, code; tooltip via popover. Never in edit mode and never on the term's own detail page.
+ *    Exclude: data-glossary="off" on an element.
+ *  - Overview and detail page: block „Glossar“ (fluid.glossary, A–Z with search). Its page is the overview, each term has
+ *    the URL {page}/{slug}, e.g. /glossar/barrierefreiheit (resolver, sitemap, canonical, DefinedTerm/DefinedTermSet).
+ *  - Quick glossary in the editor (menu ⋯ → Glossar, Alt+G): search terms, create a new term from the selected text,
+ *    „Gibt es schon?“ with „Als Schreibweise hinzufügen“. Permission: editing the data source (YForm table permission).
  */
 final class Glossary
 {
@@ -69,7 +69,7 @@ final class Glossary
         return self::store()->available();
     }
 
-    /** Automatisch markieren? (Website-Einstellung, Standard aus) */
+    /** Mark automatically? (website setting, off by default) */
     public static function enabled(): bool
     {
         return (bool) Settings::get('glossary', false) && self::available();
@@ -80,7 +80,7 @@ final class Glossary
         return (null !== $id ? Language::get($id) : Language::getCurrent())->code ?? 'de';
     }
 
-    /** @return list<array<string, mixed>> Begriffe der Sprache mit Adresse der Detailseite */
+    /** @return list<array<string, mixed>> Terms of the language with the detail page URL */
     public static function terms(?int $languageId = null, bool $all = false): array
     {
         $lang = $languageId ?? Language::getCurrentId();
@@ -91,7 +91,7 @@ final class Glossary
             self::store()->terms(self::language($lang), $all));
     }
 
-    /** Adresse eines Begriffs unter der Adresse der Übersicht (Adressformat des Routings) */
+    /** URL of a term below the overview's URL (routing's URL format) */
     public static function url(string $pageUrl, string $slug): string
     {
         $format = Router::config()->format;
@@ -99,7 +99,7 @@ final class Glossary
         return $format->strip($pageUrl) . '/' . $format->append($slug);
     }
 
-    /** Seite mit dem Block „Glossar“ (Übersicht, Live-Fassung) – null ohne */
+    /** Page with the block „Glossar“ (overview, live version) – null if none */
     public static function page(int $languageId): ?int
     {
         static $cache = [];
@@ -116,7 +116,7 @@ final class Glossary
         return $cache[$languageId];
     }
 
-    /** Begriff der Detailseite dieser Anfrage (oder null) */
+    /** Term of this request's detail page (or null) */
     public static function current(): ?array
     {
         return self::$current;
@@ -134,7 +134,7 @@ final class Glossary
         return rtrim(false !== $sp && $sp > self::SHORT_MAX * .6 ? mb_substr($cut, 0, $sp) : $cut, ' ,;:–-') . '…';
     }
 
-    /** @return list<string> Schreibweisen: eine je Zeile, oder durch Komma bzw. Semikolon getrennt */
+    /** @return list<string> Spellings: one per line, or separated by comma or semicolon */
     public static function splitVariants(string $s): array
     {
         $out = [];
@@ -152,7 +152,7 @@ final class Glossary
 
     public static function boot(): void
     {
-        // Website-Einstellungen: Reiter „Glossar“ (nur mit Datenquelle)
+        // Website settings: tab „Glossar“ (only with data source)
         Extension::register('FLUID_SETTINGS_SCHEMA', static function (ExtensionPoint $ep): array {
             $schema = (array) $ep->subject;
             if (!self::available()) {
@@ -167,7 +167,7 @@ final class Glossary
             return $schema;
         });
 
-        // Interaktives Bild: Glossar-Begriff einer Markierung (Feld „term“: Slug oder Begriff)
+        // Interactive image: glossary term of a marker (field „term“: slug or term)
         Extension::register('FLUID_HOTSPOT_TERM', static function (ExtensionPoint $ep): mixed {
             if (null !== $ep->subject || !self::available()) {
                 return $ep->subject;
@@ -182,7 +182,7 @@ final class Glossary
             return null;
         });
 
-        // Detailseite eines Begriffs: {Übersicht}/{slug}
+        // Detail page of a term: {overview}/{slug}
         Router::resolver(static function (string $full, int $lang): ?RouteMatch {
             if ('' === $full || !self::available() || null === ($page = self::page($lang))) {
                 return null;
@@ -210,7 +210,7 @@ final class Glossary
                 }
             }
         });
-        // Strukturierte Daten: DefinedTermSet (Übersicht) bzw. DefinedTerm (Detailseite)
+        // Structured data: DefinedTermSet (overview) or DefinedTerm (detail page)
         Extension::register('FLUID_STRUCTURED_DATA', static function (ExtensionPoint $ep): array {
             $data = (array) $ep->subject;
             $article = $ep->getParam('article');
@@ -236,8 +236,8 @@ final class Glossary
     // ------------------------------------------------------------------ Markieren
 
     /**
-     * Ganze Seite: Begriffe markieren und – nur wenn etwas markiert wurde – Stylesheet und Skript einbinden.
-     * Unverändert bei ausgeschaltetem Glossar, im Bearbeiten-Modus und bei Antworten, die keine Seite sind.
+     * Whole page: marks terms and – only if something was marked – includes stylesheet and script.
+     * Unchanged when the glossary is off, in edit mode and for responses that are not a page.
      */
     public static function annotate(string $html): string
     {
@@ -258,7 +258,7 @@ final class Glossary
         return self::assets($out);
     }
 
-    /** @return array<string, string> Feste Texte der Hinweisfenster (Sprache der Seite) */
+    /** @return array<string, string> Fixed texts of the tooltips (language of the page) */
     public static function labels(): array
     {
         $lt = static fn (string $s): string => function_exists('lt') ? (string) lt($s) : $s;
@@ -266,13 +266,13 @@ final class Glossary
         return ['more' => $lt('Mehr im Glossar'), 'close' => $lt('Erklärung schließen'), 'draft' => $lt('Entwurf'), 'newtab' => $lt('(öffnet in neuem Tab)')];
     }
 
-    /** Stylesheet und Skript des Glossars einbinden (einmal) */
+    /** Includes the glossary's stylesheet and script (once) */
     public static function assets(string $html): string
     {
         if (str_contains($html, '/glossary.js')) {
-            return $html;   // Seite mit dem Block „Glossar“: das Kit hat beides schon eingebunden
+            return $html;   // Page with the block „Glossar“: the kit has already included both
         }
-        // Dateien des Kits (css/glossary.css, js/glossary.js) – ein eigenes Kit kann sie ersetzen
+        // Files of the kit (css/glossary.css, js/glossary.js) – a custom kit can replace them
         $kit = Kit::active();
         $css = '<link rel="stylesheet" href="' . escape($kit->assetUrl('css/glossary.css')) . '">';
         $js = '<script src="' . escape($kit->assetUrl('js/glossary.js')) . '" defer></script>';
@@ -285,7 +285,7 @@ final class Glossary
 
     // ------------------------------------------------------------------ Quick-Glossar (Editor)
 
-    /** Für die Leiste: null ohne Glossar bzw. Recht */
+    /** For the toolbar: null without glossary or permission */
     public static function toolbar(?User $user): ?array
     {
         if (!self::available() || !self::store()->canEdit($user)) {

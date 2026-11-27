@@ -4,14 +4,14 @@ use Klxm\Fluid\Block;
 use Klxm\Fluid\Kit;
 
 /**
- * Text + Bild im Kit „NativeCSS“ (.ncss-split: nebeneinander, stapelt sich per Container Query – Bild links bzw. rechts
- * allein über die Reihenfolge im Markup). auto wechselt die Seite in einer Folge von „Text + Bild“-Blöcken wie bei fluid.
- * „split“ (randlos 50/50) und „overlap“ (Karte über großem Bild) kommen aus dem Kit fluid.
+ * Text + image in kit „NativeCSS“ (.ncss-split: side by side, stacks via container query – image left or right
+ * only via the order in the markup). auto alternates the side in a sequence of „Text + Bild“ blocks like fluid.
+ * „split“ (full-bleed 50/50) and „overlap“ (card over large image) come from kit fluid.
  * @var Block $b  @var array $d
  */
 $v = $b->variant() ?: 'auto';
-// „Morphing beim Scrollen“ (nur dieses Kit, kit.php → blocks): beim Bearbeiten als „Bild rechts“ – die hohe Scroll-Strecke
-// stört dort nur; für Besucher .ncss-morph von NativeCSS (bei „Bewegung reduzieren“ statisch nebeneinander)
+// „Morphing beim Scrollen“ (this kit only, kit.php → blocks): while editing as „Bild rechts“ – the long scroll distance
+// only gets in the way there; for visitors .ncss-morph of NativeCSS (with „Bewegung reduzieren“ static side by side)
 if ('morph' === $v && !is_editing()) {
     Kit::active()->markUsed('media_text', '@morph');
     $mpic = img(!empty($d['image']) ? (string) $d['image'] : null, '(min-width: 1080px) 1200px, 100vw', ['ratio' => (string) ($d['ratio'] ?? '') ?: '4:3']);
@@ -51,7 +51,7 @@ $body = fluid_head($b, 'nv-mt__head')
 $pic = fluid_image($d['image'] ?? null, '(min-width: 1080px) 600px, 100vw', $ratio, 'ncss-radius-lg');
 $media = '' !== $pic ? '<div class="ncss-split-media">' . $pic . '</div>' : '';
 $split = in_array($d['split'] ?? 'even', ['text', 'media', 'mediaxl'], true) ? ' nv-mt--s-' . $d['split'] : '';
-// Bild ausrichten: mitlaufen (Standard für neue Blöcke) · oben · mitte (bisher; bestehende Blöcke über DefaultChanges)
+// Image alignment: follow along (default for new blocks) · top · center (previous; existing blocks via DefaultChanges)
 $valign = in_array($d['valign'] ?? '', ['follow', 'top', 'center'], true) ? $d['valign'] : 'follow';
 ?>
 <div class="wrap">

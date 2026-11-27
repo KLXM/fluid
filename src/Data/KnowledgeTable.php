@@ -16,14 +16,14 @@ use Yakamara\YForm\Field\Textarea;
 use Yakamara\YForm\Table\ListConfig;
 use Yakamara\YForm\Table\Table;
 
-// Nur mit YForm (fluid läuft auch ohne)
+// Only with YForm (fluid also runs without)
 if (!class_exists(Table::class)) {
     return;
 }
 
 /**
- * Tabellenart „Wissen“ (Wissensbereich, Handbuch, Satzung …): Kapitel mit Kapitelbaum, Nummern, Bereich, Schlagworten,
- * verwandten Kapiteln, Glossar-Bezug, „Zuletzt geprüft“ und Inhalt aus Blöcken (Feld „Fluid-Blöcke“). Im Projekt ableiten:
+ * Table kind „Wissen“ (knowledge base, manual, statutes …): chapters with chapter tree, numbers, area, tags, related
+ * chapters, glossary reference, „Zuletzt geprüft“ and content from blocks (field „Fluid-Blöcke“). Extend in the project:
  *
  *     #[AsTable('rex_yf_handbuch', label: 'Handbuch', icon: 'fa-book-open')]
  *     final class HandbuchTable extends KnowledgeTable
@@ -31,18 +31,18 @@ if (!class_exists(Table::class)) {
  *         public function areas(): array { return ['start' => 'Erste Schritte', 'praxis' => 'Im Alltag']; }
  *     }
  *
- * Ausgabe über den Block „Datenliste“ (Data\Knowledge): Übersicht als Inhaltsverzeichnis oder Karten, Detailansicht mit
- * Kapitelnavigation. Eigene Felder: fields() überschreiben und `yield from parent::fields();`.
+ * Output via the block „Datenliste“ (Data\Knowledge): overview as table of contents or cards, detail view with
+ * chapter navigation. Custom fields: override fields() and `yield from parent::fields();`.
  */
 abstract class KnowledgeTable extends Table
 {
-    /** @return array<string, string> Bereiche (Schlüssel => Beschriftung; Reihenfolge = Reihenfolge im Inhaltsverzeichnis) */
+    /** @return array<string, string> areas (key => label; order = order in the table of contents) */
     public function areas(): array
     {
         return [];
     }
 
-    /** @return list<string> Blöcke im Inhalt (leer = alle) */
+    /** @return list<string> blocks in the content (empty = all) */
     public function contentBlocks(): array
     {
         return ['richtext', 'media_text', 'gallery', 'video', 'quote', 'faq', 'steps', 'features', 'downloads', 'hotspots', 'datalist', 'cta'];

@@ -6,8 +6,8 @@ use Klxm\Fluid\Chart\Attribute\AsChartEngine;
 use Klxm\Fluid\FluidAddon;
 
 /**
- * Standard-Engine: Apache ECharts (Apache-2.0), gebündelt und selbst gehostet – nur Linie, Balken, Torte, Canvas
- * (≈ 550 KB, gzip ≈ 180 KB, lädt erst, wenn ein Diagramm in Sichtweite kommt).
+ * Default engine: Apache ECharts (Apache-2.0), bundled and self-hosted – only line, bar, pie, canvas
+ * (≈ 550 KB, gzip ≈ 180 KB, loads only when a chart comes into view).
  */
 #[AsChartEngine('echarts')]
 final class EchartsEngine implements ChartEngine

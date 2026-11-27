@@ -26,27 +26,27 @@ use const FILTER_VALIDATE_BOOL;
 use const PREG_SPLIT_DELIM_CAPTURE;
 
 /**
- * Video-Links in der Lightbox (Vorbild KLXM Studio, Core\VideoLinks): Links auf YouTube- und Vimeo-Videos – Buttons der Blöcke,
- * Rich-Text, Handlungsaufrufe im Kopf und Fuß – öffnen nach Einwilligung den Player in einer Lightbox statt der Seite des Anbieters.
+ * Video links in the lightbox (modelled on KLXM Studio, Core\VideoLinks): links to YouTube and Vimeo videos – block buttons,
+ * rich text, calls to action in header and footer – open the player in a lightbox after consent instead of the provider's page.
  *
- *  - Website-Einstellung „Video-Links in Lightbox öffnen“ (Settings, `video_lightbox`, Standard aus).
- *  - Aus: Ausgabe unverändert – kein Attribut, kein Skript, keine Zusatzfelder im Editor.
- *  - An: inject() kennzeichnet jeden erkannten Video-Link mit data-video-lb="{anbieter}" + data-video-id="{id}" und bindet
- *    js/video-lightbox.js des Kits ein – nur, wenn die Seite solche Links hat. Das Skript prüft die Einwilligung beim Klick:
- *    AddOn consent_kit (window.ConsentKit.has(dienst), Dienste „youtube“/„vimeo“), sonst die Freigabe „künftig direkt laden“ des
- *    Video-Blocks (js/embed.js). Ohne Einwilligung bleibt der Link ein normaler Link – keine Anfrage an den Anbieter.
- *  - Ausnahme je Button: Zusatzfeld „{feld}_nolb“ hinter jedem Link-Feld (nur bei eingeschalteter Einstellung, Editor auf der
- *    Website), ausgewertet beim Ausgeben des Blocks (optOut); je Link im HTML: data-video-lb="off" am <a>.
- *  Erkannt werden nur Seiten-Links: youtube.com/watch?v=ID, youtube.com/shorts/ID, youtu.be/ID, vimeo.com/ID.
+ *  - Website setting „Video-Links in Lightbox öffnen“ (Settings, `video_lightbox`, off by default).
+ *  - Off: output unchanged – no attribute, no script, no extra fields in the editor.
+ *  - On: inject() marks each detected video link with data-video-lb="{provider}" + data-video-id="{id}" and includes
+ *    the kit's js/video-lightbox.js – only if the page has such links. The script checks consent on click:
+ *    addon consent_kit (window.ConsentKit.has(service), services „youtube“/„vimeo“), otherwise the video block's
+ *    „künftig direkt laden“ approval (js/embed.js). Without consent the link stays a normal link – no request to the provider.
+ *  - Exception per button: extra field „{feld}_nolb“ after each link field (only if the setting is enabled, editor on the
+ *    website), evaluated when rendering the block (optOut); per link in HTML: data-video-lb="off" on the <a>.
+ *  Only page links are detected: youtube.com/watch?v=ID, youtube.com/shorts/ID, youtu.be/ID, vimeo.com/ID.
  */
 final class VideoLinks
 {
     public const string SETTING = 'video_lightbox';
-    /** Endung des Zusatzfelds an Link-Feldern der Blöcke: „Video ohne Lightbox öffnen“ */
+    /** Suffix of the extra field on the blocks' link fields: „Video ohne Lightbox öffnen“ */
     public const string SUFFIX = '_nolb';
     public const array PROVIDERS = ['youtube' => 'YouTube', 'vimeo' => 'Vimeo'];
 
-    /** Für Tests: Einstellung erzwingen (null = gespeicherter Wert) */
+    /** For tests: forces the setting (null = stored value) */
     public static ?bool $force = null;
 
     public static function on(): bool
@@ -55,7 +55,7 @@ final class VideoLinks
     }
 
     /**
-     * Video eines Links: nur Seiten-Adressen der Anbieter (keine Player- oder Kanal-Links, keine reinen IDs).
+     * Video of a link: only the providers' page URLs (no player or channel links, no bare IDs).
      *
      * @return array{provider: string, id: string}|null
      */
@@ -92,8 +92,8 @@ final class VideoLinks
     }
 
     /**
-     * Block-Felder (Extension Point FLUID_BLOCK_DEFINITION, nur bei eingeschalteter Einstellung): hinter jedem Link-Feld
-     * (auch in Wiederholgruppen) das Zusatzfeld „Video ohne Lightbox öffnen“.
+     * Block fields (extension point FLUID_BLOCK_DEFINITION, only if the setting is enabled): the extra field „Video ohne
+     * Lightbox öffnen“ after each link field (also in repeater groups).
      *
      * @param list<array<string, mixed>> $fields
      * @return list<array<string, mixed>>
@@ -119,7 +119,7 @@ final class VideoLinks
     }
 
     /**
-     * Block-Ausgabe: Links auf Videos, deren Link-Feld „Ohne Lightbox öffnen“ trägt, mit data-video-lb="off" kennzeichnen.
+     * Block output: marks links to videos whose link field has „Ohne Lightbox öffnen“ with data-video-lb="off".
      *
      * @param array<array-key, mixed> $data
      */
@@ -142,7 +142,7 @@ final class VideoLinks
 
     /**
      * @param array<array-key, mixed> $data
-     * @return array<string, true> „anbieter:id“ der ausgenommenen Video-Links eines Blocks (auch in Wiederholgruppen)
+     * @return array<string, true> „provider:id“ of a block's excluded video links (also in repeater groups)
      */
     public static function optedOut(array $data): array
     {
@@ -165,8 +165,8 @@ final class VideoLinks
     }
 
     /**
-     * Erkannte Video-Links kennzeichnen. Ausgenommen: Links mit data-video-lb (z. B. „off“), der Link „Auf … ansehen“ der
-     * Zwei-Klick-Lösung (.vembed__ext) und alles in <script>, <template>, <noscript>, <textarea> und <consent-embed>.
+     * Marks detected video links. Excluded: links with data-video-lb (e.g. „off“), the link „Auf … ansehen“ of the
+     * two-click solution (.vembed__ext) and everything in <script>, <template>, <noscript>, <textarea> and <consent-embed>.
      */
     public static function enhance(string $html): string
     {
@@ -183,7 +183,7 @@ final class VideoLinks
                 continue;                          // Name des ausgenommenen Elements (zweite Klammer)
             }
             if (1 === $i % 3) {
-                $out .= $parts[$i];                // ausgenommener Bereich unverändert
+                $out .= $parts[$i];                // excluded area unchanged
                 continue;
             }
             $out .= preg_replace_callback('~<a\s(?![^>]*\bdata-video-lb=)[^>]*?\bhref="([^"]+)"[^>]*>~i', static function (array $x): string {
@@ -199,7 +199,7 @@ final class VideoLinks
         return $out;
     }
 
-    /** Seite ausliefern (FluidTemplate::render): Links kennzeichnen und Skript einbinden – bei ausgeschalteter Einstellung unverändert */
+    /** Delivers the page (FluidTemplate::render): marks links and includes the script – unchanged if the setting is off */
     public static function inject(string $html): string
     {
         if (!self::on() || Editing::active()) {

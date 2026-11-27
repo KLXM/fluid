@@ -14,9 +14,9 @@ use function dirname;
 use function in_array;
 
 /**
- * Media-Manager-Typ „fluid_poster“: Vorschaubild für Videos. Bei einem Video holt ffmpeg ein typisches Standbild,
- * bei einem Bild wird nur verkleinert – so passt der Typ für automatische und gewählte Vorschaubilder.
- * Ausgabe in der Breite höchstens 1600 px, AVIF/WebP je nach Browser; der Media Manager speichert das Ergebnis.
+ * Media manager type „fluid_poster“: poster image for videos. For a video, ffmpeg grabs a typical still frame,
+ * for an image it only downscales – so the type fits both automatic and chosen poster images.
+ * Output at most 1600 px wide, AVIF/WebP depending on the browser; the media manager stores the result.
  *
  *     MediaManager::getUrl('fluid_poster', 'film.mp4')
  */

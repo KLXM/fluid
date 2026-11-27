@@ -15,17 +15,17 @@ use const LOCK_EX;
 use const LOCK_UN;
 
 /**
- * Präsenz der Redaktion: wer arbeitet gerade wo – aus KLXM Studio (Core\Presence, MIT), unverändert bis auf die Ablage.
- * Bewusst klein und ohne Bezug zu Artikeln/Datensätzen – kennt nur die Schlüssel site/type/id/user und Zeitstempel.
- * Die Anbindung an fluid (Artikel, Rechte, Endpunkt, Leiste) steckt in PresenceApi.
+ * Presence of the editorial team: who is working where right now – from KLXM Studio (Core\Presence, MIT), unchanged except for the storage.
+ * Deliberately small and without reference to articles/records – only knows the keys site/type/id/user and timestamps.
+ * The connection to fluid (articles, permissions, endpoint, toolbar) lives in PresenceApi.
  *
  *   Presence::beat(['site' => 'default', 'type' => 'article', 'id' => '1:12', 'user' => '7'], ['name' => 'Anna B.', 'label' => 'Startseite', 'url' => '/?fluid_edit=1']);
  *   Presence::leave($key);                 Presence::list(['site' => 'default', 'type' => 'article', 'id' => '1:12']);
  *
- * Ablage: Cache des AddOns (presence/presence.json, eine Datei für die Installation),
- * Schreiben unter Dateisperre. Einträge ohne Meldung seit TTL Sekunden fallen heraus (Browser melden sich alle ~15 s).
- * Keine Historie: nur Name/Avatar, Ort und Zeitpunkt der letzten Meldung – nichts wird protokolliert.
- * Transport für schnelle Änderungen: Live, Kanal „presence:{site}“ (Version steigt beim Kommen und Gehen).
+ * Storage: cache of the AddOn (presence/presence.json, one file for the installation),
+ * written under a file lock. Entries without a beat for TTL seconds drop out (browsers report every ~15 s).
+ * No history: only name/avatar, location and time of the last beat – nothing is logged.
+ * Transport for fast changes: Live, channel „presence:{site}“ (version increases on join and leave).
  */
 final class Presence
 {
@@ -37,7 +37,7 @@ final class Presence
         return Path::addonCache('fluid', 'presence/presence.json');
     }
 
-    /** Eintrag melden/auffrischen. $meta: name, initials, avatar, label, url (frei wählbare Anzeige-Angaben). Ergebnis: neu? */
+    /** Report/refresh an entry. $meta: name, initials, avatar, label, url (freely chosen display data). Result: new? */
     public static function beat(array $who, array $meta = [], ?int $now = null): bool
     {
         $now ??= time();
@@ -58,7 +58,7 @@ final class Presence
         return $new;
     }
 
-    /** Beginn eines Eintrags setzen (Bearbeitungssperre übernehmen: vor den bisherigen Inhaber rücken) */
+    /** Set the start of an entry (take over the edit lock: move ahead of the previous holder) */
     public static function setSince(array $who, int $since): void
     {
         $k = self::key($who);
@@ -72,7 +72,7 @@ final class Presence
         Live::touch('presence:' . $who['site']);
     }
 
-    /** Abmelden (Seite verlassen) */
+    /** Sign off (leave the page) */
     public static function leave(array $who): void
     {
         $k = self::key($who);
@@ -88,8 +88,8 @@ final class Presence
     }
 
     /**
-     * Aktive Einträge, gefiltert nach beliebigen Schlüsseln (z. B. ['site' => 'default'] oder ['site' => …, 'type' => 'page', 'id' => '12']),
-     * neueste Meldung zuerst. Abgelaufene fallen weg.
+     * Active entries, filtered by any keys (e.g. ['site' => 'default'] or ['site' => …, 'type' => 'page', 'id' => '12']),
+     * newest beat first. Expired ones are dropped.
      * @return list<array>
      */
     public static function list(array $filter = [], ?int $now = null): array
@@ -128,7 +128,7 @@ final class Presence
         return is_array($d) ? $d : [];
     }
 
-    /** Lesen-Ändern-Schreiben unter Sperre; räumt Abgelaufenes mit auf */
+    /** Read-modify-write under lock; also clears out expired entries */
     private static function edit(callable $fn, ?int $now = null): void
     {
         $now ??= time();
@@ -156,7 +156,7 @@ final class Presence
         }
     }
 
-    // ------------------------------------------------------------------ Selbsttest (Status-Seite)
+    // ------------------------------------------------------------------ self test (status page)
 
     /** @return array{ok: int, fails: list<string>} */
     public static function selftest(): array

@@ -14,8 +14,8 @@ use function count;
 use function is_string;
 
 /**
- * Datenquellen des Kits für den Block „Diagramm“ – zugleich Beispiel für #[AsChartSource]:
- * eine statische Methode, die labels und series liefert. Die Werte kommen bei jedem Aufruf frisch.
+ * Data sources of the kit for the block „Diagramm“ – also an example of #[AsChartSource]:
+ * a static method that returns labels and series. The values are fresh on every call.
  */
 final class ChartSources
 {
@@ -32,7 +32,7 @@ final class ChartSources
         foreach ($rows as $row) {
             $key = (string) $row['module'];
             if ('fluid.layout' === $key) {
-                continue;   // Raster, kein Inhalt
+                continue;   // grid, no content
             }
             $labels[] = self::label($key);
             $data[] = (int) $row['n'];

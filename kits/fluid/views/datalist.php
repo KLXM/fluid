@@ -1,8 +1,8 @@
 <?php
 /**
- * Datenliste: Einträge einer YForm-Tabelle als Karten, Liste oder Tabelle (Tabelle = #[AsTable]-Klasse aus YForm; Markup und CSS wie der Studio-Block
- * „Datenliste“, css/data.css). Detailansicht auf derselben Seite über ?eintrag={id} (alle Felder als Liste).
- * Angemeldete Redakteure sehen im Bearbeiten-Modus „Bearbeiten“ je Eintrag und „Neuer Eintrag“ (YForm im Backend).
+ * Data list: entries of a YForm table as cards, list or table (table = #[AsTable] class from YForm; markup and CSS like the Studio block
+ * „Datenliste“, css/data.css). Detail view on the same page via ?eintrag={id} (all fields as a list).
+ * Logged-in editors see „Bearbeiten“ per entry and „Neuer Eintrag“ in edit mode (YForm in the backend).
  * @var Block $b  @var array $d
  */
 use Klxm\Fluid\Block;
@@ -44,7 +44,7 @@ $detailOn = !empty($d['detail']);
 $edit = is_editing() ? static fn (?int $id = null) => YFormBridge::editUrl($t, $id) : static fn (?int $id = null) => null;
 $editBtn = static fn (?string $url, string $label) => $url ? '<a class="fdl-edit" href="' . e($url) . '" target="_blank" rel="noopener">' . e($label) . '</a>' : '';
 $title = static fn ($row) => $titleF ? YFormBridge::text($row, $titleF) : '#' . $row->id;
-// Detailansicht mit schöner Adresse /seite/titel-ID (Data\Detail, Router)
+// detail view with clean URL /page/title-ID (Data\Detail, Router)
 $href = static fn ($row) => Detail::url($here, $title($row), $row->id);
 $pic = static fn ($row, string $sizes, string $ratio) => '' !== ($file = YFormBridge::file($row, $imageF)) ? img($file, $sizes, ['ratio' => $ratio]) : '';
 
@@ -52,13 +52,13 @@ $pic = static fn ($row, string $sizes, string $ratio) => '' !== ($file = YFormBr
 $entry = $detailOn ? Request::get('eintrag', 'int', 0) : 0;
 $row = $entry > 0 ? YFormBridge::row($t, $entry, $filterF, $filterV) : null;
 if ($entry > 0 && !$row && !is_editing()) {
-    // Eintrag gibt es nicht (mehr) bzw. erfüllt die Bedingung nicht: 404 wie eine fehlende Seite
+    // entry doesn't exist (anymore) or doesn't meet the condition: 404 like a missing page
     Response::setStatus(Response::HTTP_NOT_FOUND);
     echo '<div class="wrap"><p class="dl-empty">' . e(lt('Diesen Eintrag gibt es nicht mehr.')) . ' <a href="' . e($here) . '">' . e(lt('Zur Übersicht')) . '</a></p></div>';
 
     return;
 }
-// Wissensbereich (Tabellenart „Wissen“): Kapitel mit Kapitelnavigation
+// knowledge area (table type „Wissen“): chapters with chapter navigation
 if ($row && Knowledge::is($t)) {
     echo Knowledge::detail($b, $d, $t, $row, $here);
 
@@ -66,7 +66,7 @@ if ($row && Knowledge::is($t)) {
 }
 if ($row):
     $img = $pic($row, '(min-width: 1280px) 1200px, 100vw', '16:9');
-    // Seitenkopf (Titel, Beschreibung, Bild, Canonical, hreflang) kommt vom Resolver der Detailansicht (Data\Detail)
+    // page head (title, description, image, canonical, hreflang) comes from the detail view's resolver (Data\Detail)
 ?>
 <div class="wrap df df--head fdl-detail">
   <p class="df-back"><a href="<?= e($here) ?>">← <?= e(lt('Zur Übersicht')) ?></a></p>
@@ -75,12 +75,12 @@ if ($row):
     <?php if ($metaF && (($m = YFormBridge::html($row, $metaF)) !== '' || '' !== $metaInline)): ?><p class="df-meta"<?= $metaInline ?>><?= $m ?></p><?php endif ?>
     <h2 class="h2 df-title"<?= $titleF ? RecordInline::attrs($t, $row, $titleF) : '' ?>><?= e($title($row)) ?></h2>
     <?= $editBtn($edit($row->id), 'Eintrag bearbeiten') ?>
-    <?php // Termine: „In den Kalender“ als .ics (Data\Ics) – nur mit Datumsfeld und eingeschalteter Option
+    <?php // events: „In den Kalender“ as .ics (Data\Ics) – only with a date field and the option enabled
     if (!empty($d['ics']) && null !== Ics::dateField($t) && '' !== YFormBridge::sortValue($row, Ics::dateField($t))): ?>
     <p class="df-actions"><a class="btn btn--secondary btn--small" href="<?= e(Ics::url($b->articleId, $row->id)) ?>" download><?= icon('calendar-plus') ?><?= e(lt('In den Kalender')) ?></a></p>
     <?php endif ?>
     <?php
-    // Bild wechseln (Medienpool) – als Knopf am Bild, damit die Bildwerkzeuge (Bearbeiten, Anpassen …) frei bleiben
+    // change image (media pool) – as a button on the image, so the image tools (edit, adjust …) stay free
     $imgInline = $imageF ? RecordInline::attrs($t, $row, $imageF) : '';
     $imgBtn = '' !== $imgInline ? '<button type="button" class="fdl-recimg"' . $imgInline . '>' . e('' !== $img ? 'Bild wechseln' : '+ Bild wählen') . '</button>' : '';
     ?>
@@ -89,7 +89,7 @@ if ($row):
   <dl class="df-dl">
     <?php $blocksHtml = '';
     foreach (YFormBridge::detailFields($t) as $f):
-        // Feld „Fluid-Blöcke“: als Blöcke unter der Detailansicht (volle Breite), nicht als Text
+        // field „Fluid-Blöcke“: as blocks below the detail view (full width), not as text
         if ($f instanceof FluidBlocks) {
         $blocksHtml .= RecordBlocks::render($t, $row, $f, $b->articleId);
         continue;
@@ -97,7 +97,7 @@ if ($row):
         if ($same($f, $titleF) || $same($f, $imageF) || $same($f, $filterF)) {
         continue;
         }
-        // Bearbeitungsmodus: Textfelder direkt auf der Seite (Data\RecordInline) – auch leere, damit man sie füllen kann
+        // edit mode: text fields directly on the page (Data\RecordInline) – empty ones too, so they can be filled
         $inline = RecordInline::attrs($t, $row, $f);
         if (($h = YFormBridge::html($row, $f)) === '' && '' === $inline) {
         continue;
@@ -117,10 +117,10 @@ $opt = [
     'sort' => YFormBridge::field($t, (string) ($d['sort_field'] ?? '')), 'dir' => (string) ($d['sort_dir'] ?? 'asc'),
     'limit' => (int) ($d['limit'] ?? 0),
 ];
-// Blättern: „Höchstens“ = Einträge je Seite, ?seite=2 …
+// paging: „Höchstens“ = entries per page, ?seite=2 …
 $pg = !empty($d['pager']) && $opt['limit'] > 0 ? YFormBridge::page($t, $opt, Request::get('seite', 'int', 1), $opt['limit']) : null;
 $rows = $pg ? $pg['rows'] : YFormBridge::rows($t, $opt);
-// Wissensbereich als Karten oder Liste: Kapitel der obersten Ebene in der Reihenfolge des Kapitelbaums
+// knowledge area as cards or list: top-level chapters in the order of the chapter tree
 if (!$pg && in_array($layout, ['cards', 'list'], true) && Knowledge::is($t)) {
     $order = array_flip(Knowledge::tree($t, $d + ['_language' => Language::getCurrentId()])['roots']);
     $rows = array_values(array_filter($rows, static fn ($r) => isset($order[(int) $r->id])));
@@ -128,7 +128,7 @@ if (!$pg && in_array($layout, ['cards', 'list'], true) && Knowledge::is($t)) {
 }
 $cols = ['s' => 4, 'm' => 3, 'l' => 2][$d['size'] ?? 'm'] ?? 3;
 $hTag = '' !== trim((string) ($d['title'] ?? '')) ? 'h3' : 'h2';
-// Blättern ohne Seitenwechsel (Live::region – Links mit data-live-nav, ohne JavaScript normale Links)
+// paging without page change (Live::region – links with data-live-nav, normal links without JavaScript)
 $reload = $pg && $pg['pages'] > 1 ? Live::region($b) : '';
 ?>
 <div class="wrap dl dl--<?= e($layout) ?>"<?= $reload ?>>
@@ -147,7 +147,7 @@ $reload = $pg && $pg['pages'] > 1 ? Live::region($b) : '';
   <div class="dl-tablewrap tbl-scroll ncss-table-scroll ncss-scroll-shadow" role="region" tabindex="0" aria-label="<?= e(lt('Tabelle') . ('' !== trim((string) $d['title']) ? ': ' . strip_emphasis(trim((string) $d['title'])) : '')) ?>"><table class="dl-table"<?= !empty($d['table_sort']) && !is_editing() ? ' data-ncss-sort' : '' ?>>
     <thead><tr>
       <th scope="col"><?= e($titleF ? $titleF->translatedLabel() : lt('Eintrag')) ?></th>
-      <?php // Zahlen rechtsbündig, Typ fest statt erraten (Datum/Zahl, data-sort-value = gespeicherter Wert)
+      <?php // numbers right-aligned, type fixed instead of guessed (date/number, data-sort-value = stored value)
       $sortT = static fn ($f) => !empty($d['table_sort']) ? YFormBridge::sortType($f) : '';
       foreach ([$metaF, $textF] as $f): if (!$f || $same($f, $titleF)) {
       continue;
@@ -166,7 +166,7 @@ $reload = $pg && $pg['pages'] > 1 ? Live::region($b) : '';
     </tbody>
   </table></div>
   <?php else: ?>
-  <?php // Filter für Besucher (Feld „Filter für Besucher nach …“): Kategorien aus dem Feld, Leiste über der Liste (fluid_filter())
+  <?php // filter for visitors (field „Filter für Besucher nach …“): categories from the field, bar above the list (fluid_filter())
   $visF = YFormBridge::field($t, (string) ($d['visitor_filter'] ?? ''));
   $rowsL = is_array($rows) ? array_values($rows) : iterator_to_array($rows, false);
   $flt = $visF ? fluid_filter($b, array_map(static fn ($r) => trim(html_entity_decode(strip_tags(YFormBridge::html($r, $visF)))), $rowsL)) : ['bar' => '', 'item' => []];
@@ -197,4 +197,4 @@ $reload = $pg && $pg['pages'] > 1 ? Live::region($b) : '';
   <?php endif ?>
   <?php if ($new = $edit()): ?><p class="fdl-new"><?= $editBtn($new, '+ Neuer Eintrag') ?></p><?php endif ?>
 </div>
-<?= '' !== $reload ? Live::assets() : '' /* live.js nur, wenn die Liste nachladen kann */ ?>
+<?= '' !== $reload ? Live::assets() : '' /* live.js only if the list can load more */ ?>

@@ -1,8 +1,8 @@
 <?php
 /**
- * Glossar (Klxm\Fluid\Glossary\Glossary): Übersicht von A bis Z mit Suche – auf der Adresse eines Begriffs ({seite}/{slug}) seine
- * Detailseite mit Kurztext und ausführlicher Erklärung (Blöcke, im Bearbeiten-Modus bearbeitbar). Markup der Liste wie die
- * Datenliste (.dl-az), Begriffe als Beschreibungsliste.
+ * Glossary (Klxm\Fluid\Glossary\Glossary): A–Z overview with search – on a term's address ({seite}/{slug}) its
+ * detail page with short text and full explanation (blocks, editable in edit mode). List markup like the
+ * data list (.dl-az), terms as a description list.
  * @var Block $b  @var array $d
  */
 use Klxm\Fluid\Block;

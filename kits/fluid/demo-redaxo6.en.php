@@ -1,8 +1,8 @@
 <?php
 
 /*
- * Englische Texte der Demo „REDAXO 6“ – deutsch → englisch, für `php bin/console fluid:demo --set=redaxo6 --lang=en`.
- * Schlüssel sind die deutschen Texte aus demo-redaxo6.php (ändert sich dort ein Text, hier mitziehen).
+ * English texts of the demo „REDAXO 6“ – German → English, for `php bin/console fluid:demo --set=redaxo6 --lang=en`.
+ * Keys are the German texts from demo-redaxo6.php (if a text changes there, update it here).
  */
 
 return [
@@ -380,7 +380,7 @@ Rechte wie gewohnt' => 'Composer package
 Work version and history
 Permissions as usual',
     'REDAXO im Frontend, einfach.' => 'REDAXO on the website, simply.',
-    // Beispiel-Datensätze (YForm)
+    // Sample records (YForm)
     'Online-Demo: Bearbeiten auf der Website' => 'Online demo: editing on the website',
     'Eine Stunde fluid live: Texte direkt auf der Seite ändern, Blöcke einfügen, Design anpassen und veröffentlichen.
 
@@ -442,7 +442,7 @@ The data list shows them sorted by date, with an address of their own for each r
     'Medien: Video-Vorschaubilder und Untertitel' => 'Media: video thumbnails and subtitles',
     'Standbild per ffmpeg über den Media Manager, Untertitel aus dem Medienpool.' => 'Still frame via ffmpeg through the media manager, subtitles from the media pool.',
     'Beispielmeldung.' => 'Sample report.',
-    // navigation_array für REDAXO 6
+    // navigation_array for REDAXO 6
     '<p class="t-warn"><strong>In Entwicklung:</strong> REDAXO 6 entsteht im Branch 6.x von redaxo/core. Die Beispiele entsprechen dem Stand vom November 2026 – Namen und Details können sich bis zur Veröffentlichung noch ändern.</p><p>Das AddOn <a href="https://github.com/KLXM/navigation_array">navigation_array</a> gibt es jetzt auch für REDAXO 6 – mit derselben API wie in REDAXO 5: <code>BuildArray</code> liefert die Struktur als Array (catId, catName, url, active, current, children …) und lässt die Ausgabe ganz bei dir. Offline-Kategorien und solche ohne Recht fehlen. fluid baut sein Menü selbst damit.</p>' => '<p class="t-warn"><strong>In development:</strong> REDAXO 6 is being built in the 6.x branch of redaxo/core. The examples reflect the state of November 2026 – names and details may still change before the release.</p><p>The AddOn <a href="https://github.com/KLXM/navigation_array">navigation_array</a> is now available for REDAXO 6, too – with the same API as in REDAXO 5: <code>BuildArray</code> returns the structure as an array (catId, catName, url, active, current, children …) and leaves the output entirely to you. Offline categories and those without permission are left out. fluid builds its own menu with it.</p>',
     'Menüs, Brotkrumen und strukturierte Daten – mit navigation_array, jetzt auch für REDAXO 6.' => 'Menus, breadcrumbs and structured data – with navigation_array, now for REDAXO 6, too.',
     'Menü, Brotkrumen und strukturierte Daten als Array – mit navigation_array.' => 'Menu, breadcrumbs and structured data as an array – with navigation_array.',
@@ -450,7 +450,7 @@ The data list shows them sorted by date, with an address of their own for each r
     'Weitere Methoden: setStart(), setIgnore(), setCategoryFilterCallback(), setCustomDataCallback(), setIncludeArticles(), walk(), getCategory(), toJson().' => 'More methods: setStart(), setIgnore(), setCategoryFilterCallback(), setCustomDataCallback(), setIncludeArticles(), walk(), getCategory(), toJson().',
     '<p class="t-warn"><strong>In Entwicklung:</strong> REDAXO 6 entsteht im Branch 6.x von redaxo/core. Die Beispiele entsprechen dem Stand vom November 2026 – Namen und Details können sich bis zur Veröffentlichung noch ändern.</p><p>Das AddOn <a href="https://github.com/KLXM/navigation_array">navigation_array</a> gibt es jetzt auch für REDAXO 6 – neu gebaut für PHP 8.5: <code>Navigation</code> liefert die Struktur als typisierte Einträge (<code>NavigationItem</code>: name, url, active, current, children …), <code>walk()</code> rendert sie verschachtelt, die Ausgabe bleibt bei dir. Offline-Kategorien und solche ohne Recht fehlen. fluid baut sein Menü selbst damit.</p>' => '<p class="t-warn"><strong>In development:</strong> REDAXO 6 is being built in the 6.x branch of redaxo/core. The examples reflect the state of November 2026 – names and details may still change before the release.</p><p>The AddOn <a href="https://github.com/KLXM/navigation_array">navigation_array</a> is now available for REDAXO 6, too – rebuilt for PHP 8.5: <code>Navigation</code> returns the structure as typed items (<code>NavigationItem</code>: name, url, active, current, children …), <code>walk()</code> renders them nested, the output stays with you. Offline categories and those without permission are left out. fluid builds its own menu with it.</p>',
     'Optionen: start, depth, ignoreOffline, exclude, filter, data, articles, languageId. Außerdem items(), find(), breadcrumb(), jsonLd() und die Komponente NavigationMenu.' => 'Options: start, depth, ignoreOffline, exclude, filter, data, articles, languageId. Plus items(), find(), breadcrumb(), jsonLd() and the NavigationMenu component.',
-    // Eigenes Kit
+    // Custom kit
     'Eigenes Kit' => 'Custom kit',
     'Was ein Kit ist und wie man eins baut – vererbt von fluid, mit eigenen Views und eigenem CSS.' => 'What a kit is and how to build one – inherited from fluid, with its own views and CSS.',
     'Ein eigenes Kit bauen' => 'Building your own kit',
@@ -489,14 +489,14 @@ Every kit keeps its own design values',
     'Ein Kit für mehrere Projekte ist ein AddOn: REDAXO sucht Klassen mit #[AsKit] nur im Projekt und in aktiven AddOns. Die Dateien des Kits liegen neben der Kit-Klasse in src/.' => 'A kit for several projects is an AddOn: REDAXO looks for classes with #[AsKit] only in the project and in active AddOns. The files of the kit sit next to the kit class in src/.',
     'Nach composer require und console migrate steht das Kit in der Auswahl.' => 'After composer require and console migrate the kit is available for selection.',
     'filterable() zeigt ein Feld in der Suche neben der Liste im Backend – ohne filterable() gibt es dort keine Suche.' => 'filterable() shows a field in the search next to the list in the backend – without filterable() there is no search there.',
-    // Übersicht fluid, Kachel Technik
+    // Overview fluid, tile technology
     'AddOn für REDAXO 6' => 'AddOn for REDAXO 6',
     'fluid: Bearbeiten direkt auf der Website' => 'fluid: editing directly on the website',
     'Was die Redaktion damit kann, welche Blöcke es gibt – und wie Entwickler eigene Blöcke und Kits bauen.' => 'What editors can do with it, which blocks there are – and how developers build their own blocks and kits.',
     'Texte, Bilder, Blöcke und Design direkt auf der Seite – mit Entwurf und Veröffentlichen.' => 'Texts, images, blocks and design right on the page – with draft and publishing.',
     'Weitere Elemente des Kits: Logos, Bento, Reiter, Preise und mehr.' => 'More elements of the kit: logos, bento, tabs, pricing and more.',
     'Das Fundament: Namespaces, Module und Templates als Klassen, AddOns mit Composer, Symfony-Komponenten.' => 'The foundation: namespaces, modules and templates as classes, AddOns with Composer, Symfony components.',
-    // Adressen (Routing)
+    // URLs (routing)
     'Adressen' => 'Addresses',
     'Feste Adressen, Kurzlinks, Weiterleitungen, Sitemap und Seitenkopf – auch für Einträge anderer AddOns.' => 'Fixed addresses, short links, redirects, sitemap and page head – also for entries of other AddOns.',
     'Schöne Adressen – für Seiten und Daten' => 'Clean addresses – for pages and data',
@@ -519,7 +519,7 @@ Every kit keeps its own design values',
     'Von X/Twitter kommt nur twitter:card – Titel, Text und Bild liest X aus Open Graph.' => 'From X/Twitter only twitter:card is used – X reads title, text and image from Open Graph.',
     'Später austauschbar' => 'Replaceable later',
     '<p>Der Rewriter liegt in <code>src/Routing/</code> und kennt nichts von fluid. Er kann ein eigenes AddOn werden – oder durch yrewrite und ein URL-AddOn ersetzt werden, sobald sie das Nötige können. Quellen, Endpunkte und Erweiterungen sprechen nur mit ihm, nicht mit fluid; ein Wechsel betrifft dann einen Adapter, nicht jedes AddOn.</p>' => '<p>The rewriter lives in <code>src/Routing/</code> and knows nothing about fluid. It can become an AddOn of its own – or be replaced by yrewrite and a URL AddOn once they can do what is needed. Sources, endpoints and extensions only talk to it, not to fluid; a switch then affects one adapter, not every AddOn.</p>',
-    // Umstieg von REDAXO 5
+    // Switching from REDAXO 5
     'Umstieg von REDAXO 5' => 'Moving from REDAXO 5',
     'Umstieg von REDAXO 5: vergleichen und planen' => 'Moving from REDAXO 5: compare and plan',
     'Was in REDAXO 6 anders ist – und wie ein Projekt Schritt für Schritt hinüberkommt.' => 'What is different in REDAXO 6 – and how a project moves across step by step.',
@@ -659,18 +659,18 @@ completely: modules, templates, schema',
     'package:install/activate, install:download, config:set
 migrate (auch :status, :make, :cleanup), content:rebuild-references, mailer:test, system:check' => 'package:install/activate, install:download, config:set
 migrate (also :status, :make, :cleanup), content:rebuild-references, mailer:test, system:check',
-    // Umstieg: Veröffentlichen
+    // Switching: publishing
     'Deployment' => 'Deployment',
     'Veröffentlichen: So kommt ein Projekt auf den Server' => 'Publishing: how a project gets onto the server',
     '<p>In REDAXO 5 kamen AddOns über den Installer und Änderungen an der Datenbank per Hand oder mit ydeploy auf den Server. In REDAXO 6 liegt alles im Code: Composer bringt Core und AddOns, <code>console migrate</code> bringt die Datenbank auf den Stand des Codes. Jeder Weg auf den Server macht im Kern dasselbe – nur wo Composer und <code>migrate</code> laufen, unterscheidet sich.</p><h3>Mit Shell auf dem Server</h3><p>Neuen Stand holen, <code>composer install --no-dev</code>, <code>cache:clear</code>, <code>migrate</code> – siehe unten. Einfach und schnell; nötig sind SSH und Composer beim Hoster.</p><h3>Deployer, z. B. mit ydeploy</h3><p><a href="https://deployer.org">Deployer</a> legt jede Fassung in einen eigenen Ordner und schaltet per Symlink um – mit Rollback. ydeploy von Yakamara bringt dafür eine Konfiguration für REDAXO und gleicht die Datenbank per <code>ydeploy:diff</code> und <code>ydeploy:migrate</code> ab. Stand 10.11.2026 ist ydeploy für REDAXO 5 (ab 5.13). In REDAXO 6 übernimmt <code>console migrate</code> den Abgleich der Datenbank; Deployer selbst lässt sich genauso nutzen.</p><h3>Nur SFTP oder FTP: klxm_deploy</h3><p>Für Webspaces ohne Shell und Composer: klxm_deploy baut den Stand lokal mit <code>composer install --no-dev</code>, lädt nur geänderte Dateien hoch (viele auf einmal als ZIP) und gleicht danach die Datenbank über den Web-Zugang des Cores an (<code>REX_MIGRATE_TOKEN</code>, nicht im Modus hardened). Es läuft nur lokal, im Backend und in der Konsole. klxm_deploy ist in Entwicklung und noch nicht veröffentlicht.</p><h3>Automatisch per CI</h3><p>Dieselben Schritte als Pipeline (GitHub Actions, Gitea …): bei jedem Push auf den Hauptzweig bauen, testen und ausrollen.</p>' => '<p>In REDAXO 5, AddOns came to the server via the installer and database changes by hand or with ydeploy. In REDAXO 6, everything lives in the code: Composer brings the core and AddOns, <code>console migrate</code> brings the database in line with the code. Every way to the server does essentially the same – only where Composer and <code>migrate</code> run differs.</p><h3>With a shell on the server</h3><p>Fetch the new state, <code>composer install --no-dev</code>, <code>cache:clear</code>, <code>migrate</code> – see below. Simple and fast; it needs SSH and Composer at the host.</p><h3>Deployer, e.g. with ydeploy</h3><p><a href="https://deployer.org">Deployer</a> puts every release into its own folder and switches via symlink – with rollback. ydeploy by Yakamara brings a configuration for REDAXO and syncs the database with <code>ydeploy:diff</code> and <code>ydeploy:migrate</code>. As of 10 November 2026, ydeploy is for REDAXO 5 (from 5.13). In REDAXO 6, <code>console migrate</code> takes over syncing the database; Deployer itself can be used the same way.</p><h3>SFTP or FTP only: klxm_deploy</h3><p>For web spaces without shell and Composer: klxm_deploy builds the state locally with <code>composer install --no-dev</code>, uploads only changed files (many at once as a ZIP) and then syncs the database via the core’s web access (<code>REX_MIGRATE_TOKEN</code>, not in hardened mode). It runs only locally, in the backend and on the console. klxm_deploy is in development and not released yet.</p><h3>Automatically via CI</h3><p>The same steps as a pipeline (GitHub Actions, Gitea …): build, test and roll out on every push to the main branch.</p>',
     'Ein Deploy mit Shell' => 'A deploy with a shell',
     'Die Reihenfolge, die auch diese Demo nutzt.' => 'The order this demo uses, too.',
     'Im Modus hardened ist der Web-Zugang für migrate abgeschaltet – dann nur über die Konsole.' => 'In hardened mode, web access for migrate is switched off – then only via the console.',
-    // Umstieg: Agent
+    // Switching: agent
     'Empfehlung' => 'Recommendation',
     'Den Umstieg von einem Agenten erledigen lassen' => 'Let an agent do the move',
     '<p>Ein großer Teil des Umstiegs ist Handwerk mit klaren Regeln: Module und Templates in Klassen umschreiben, YForm-Tabellen beschreiben, Inhalte übertragen, Adressen weiterleiten. Genau das kann ein KI-Agent (z. B. Claude Code) zügig und gründlich erledigen – mit dir als Prüfer.</p><ul><li><strong>Kontext geben:</strong> das Projekt in REDAXO 5, ein frisches Projekt in REDAXO 6, diese Seite und die Anleitung für Agenten, die der Core mitbringt (<code>AGENTS.md</code> in redaxo/core).</li><li><strong>Erst planen lassen:</strong> Bestand aufnehmen, für jedes AddOn einen Ersatz oder YForm/fluid vorschlagen – du entscheidest, bevor Code entsteht.</li><li><strong>In kleinen Schritten, im Git:</strong> je Modul, Template oder Tabelle ein Commit. So bleibt jeder Schritt nachvollziehbar und umkehrbar.</li><li><strong>Vergleichen statt glauben:</strong> alle Adressen der alten Sitemap auf beiden Websites abrufen und die Ausgaben vergleichen lassen – Abweichungen sind die Liste der offenen Punkte.</li><li><strong>Grenzen ziehen:</strong> lokal und auf einer Kopie der Daten arbeiten lassen; Zugangsdaten, Server und Veröffentlichen bleiben bei dir.</li></ul>' => '<p>A large part of the move is craft with clear rules: rewriting modules and templates as classes, describing YForm tables, transferring content, redirecting addresses. That is exactly what an AI agent (e.g. Claude Code) can do quickly and thoroughly – with you as the reviewer.</p><ul><li><strong>Give context:</strong> the REDAXO 5 project, a fresh REDAXO 6 project, this page and the guide for agents that the core ships (<code>AGENTS.md</code> in redaxo/core).</li><li><strong>Let it plan first:</strong> take stock, suggest a replacement or YForm/fluid for every AddOn – you decide before any code is written.</li><li><strong>In small steps, in Git:</strong> one commit per module, template or table. Every step stays traceable and reversible.</li><li><strong>Compare instead of trusting:</strong> have it fetch all addresses of the old sitemap on both websites and compare the output – the differences are the list of open items.</li><li><strong>Draw the lines:</strong> let it work locally and on a copy of the data; credentials, servers and publishing stay with you.</li></ul>',
-    // Collection statt MBlock
+    // Collection instead of MBlock
     'Statt MBlock' => 'Instead of MBlock',
     'Wiederholgruppen mit Collection' => 'Repeating groups with Collection',
     'Ein Feld des Cores für Listen von Einträgen: Jeder Eintrag ist ein Objekt einer kleinen Klasse mit eigenen Feldern.' => 'A core field for lists of entries: every entry is an object of a small class with its own fields.',
@@ -681,7 +681,7 @@ migrate (also :status, :make, :cleanup), content:rebuild-references, mailer:test
     'Von MBlock zu Collection' => 'From MBlock to Collection',
     'Wiederholgruppen werden zum Feld Collection des Cores: ein Modul mit einer Eintragsklasse wie auf der Seite „Module und Templates“. Die Daten aus MBlock lassen sich beim Übernehmen der Inhalte direkt umsetzen.' => 'Repeating groups become the core’s Collection field: a module with an entry class as on the page “Modules and templates”. The MBlock data can be converted directly while transferring the content.',
     'Für jedes Modul mit MBlock einmal die Zuordnung der Felder festlegen – den Rest erledigt eine Schleife über alle Slices.' => 'Define the field mapping once per module with MBlock – a loop over all slices does the rest.',
-    // Diagramme
+    // Diagrams
     'Diagramme' => 'Charts',
     'Balken, Linie, Torte – von Hand oder live aus Daten, mit austauschbarer Engine.' => 'Bar, line, pie – entered by hand or live from data, with a swappable engine.',
     'Diagramme mit *austauschbarer Engine*' => 'Charts with a *swappable engine*',
@@ -713,7 +713,7 @@ migrate (also :status, :make, :cleanup), content:rebuild-references, mailer:test
     'Eine Klasse mit #[AsChartEngine] nennt das ES-Modul, die Konfiguration wählt es – wie die Policies von REDAXO 6.' => 'A class with #[AsChartEngine] names the ES module, the configuration picks it – like the policies of REDAXO 6.',
     'Vorlage für eine eigene Engine: resources/js/charts-echarts.mjs in fluid.' => 'Template for an engine of your own: resources/js/charts-echarts.mjs in fluid.',
     '<h3>Eigenes Format statt Bibliothek</h3><p>Blöcke und AddOns beschreiben ein Diagramm mit <code>type</code>, <code>labels</code> und <code>series</code> – nie im Format einer Bibliothek. Wer die Engine tauscht, ändert keinen Aufrufer.</p><h3>Erst laden, wenn es sichtbar wird</h3><p>Der Lader (<code>charts.mjs</code>, wenige KB) holt die Engine erst, wenn ein Diagramm in Sichtweite kommt. Seiten ohne Diagramm laden nichts.</p><h3>Barrierearm</h3><p>Jedes Diagramm hat einen Satz für Screenreader und die Werte als Tabelle („Als Tabelle anzeigen“). Ohne JavaScript bleibt die Tabelle stehen.</p><h3>Farben aus dem Kit</h3><p>Reihenfarben kommen aus CSS-Variablen (<code>--chart-1</code> … <code>--chart-8</code>), Text und Linien aus der Umgebung – hell wie dunkel, auch in dunklen Abschnitten.</p><h3>Bearbeiten auf der Website</h3><p>Der Block „Diagramm“ hat gewöhnliche Felder des Cores: Beschriftungen, Reihen als Collection, Art, Zahlenformat. Werte ändern sich in der Seitenleiste und erscheinen sofort.</p>' => '<h3>Own format instead of a library</h3><p>Blocks and AddOns describe a chart with <code>type</code>, <code>labels</code> and <code>series</code> – never in the format of a library. Swapping the engine changes no caller.</p><h3>Loaded when it becomes visible</h3><p>The loader (<code>charts.mjs</code>, a few KB) fetches the engine only when a chart comes into view. Pages without a chart load nothing.</p><h3>Accessible</h3><p>Every chart has a sentence for screen readers and the values as a table (“Show as table”). Without JavaScript the table remains.</p><h3>Colours from the kit</h3><p>Series colours come from CSS variables (<code>--chart-1</code> … <code>--chart-8</code>), text and lines from the surroundings – light and dark, also in dark sections.</p><h3>Editing on the website</h3><p>The “Diagramm” block has ordinary core fields: labels, series as a collection, type, number format. Values change in the sidebar and appear at once.</p>',
-    // Galerie und Slider
+    // Gallery and slider
     'Slider' => 'Slider',
     'fluid in Bildern' => 'fluid in pictures',
     'Barrierearm nach dem Muster „Carousel“ von WAI-ARIA: Pfeile, Punkte, Tastatur und Wischen. Automatisch weiter nur mit Pause-Knopf – Halt bei Maus und Fokus, aus bei „Bewegung reduzieren“.' => 'Accessible, following the WAI-ARIA “Carousel” pattern: arrows, dots, keyboard and swiping. Automatic advance only with a pause button – it stops on hover and focus and stays off with “reduce motion”.',
@@ -731,7 +731,7 @@ migrate (also :status, :make, :cleanup), content:rebuild-references, mailer:test
     'Linkmap' => 'Link map',
     'Block, hell' => 'Block, light',
     'Block, dunkel' => 'Block, dark',
-    // Abschnitte & Spalten
+    // Sections & columns
     'Abschnitte & Spalten' => 'Sections & columns',
     'Hintergründe, Spalten, Raster und flexible Kacheln – mit Beispielen.' => 'Backgrounds, columns, grids and flexible tiles – with examples.',
     'Abschnitte, Spalten und *Raster*' => 'Sections, columns and *grids*',
@@ -802,7 +802,7 @@ migrate (also :status, :make, :cleanup), content:rebuild-references, mailer:test
     '<p>Raster ⅓ × 3, „Gestreckt“: alle Spalten gleich hoch.</p>' => '<p>Grid ⅓ × 3, “stretched”: all columns the same height.</p>',
     '<p>Ein anderer Hintergrund als das Layout macht einen Block in der Spalte zur Karte.</p>' => '<p>A background different from the layout turns a block in a column into a card.</p>',
     '<p>Auch Akzentfarbe und Dunkel gehen – die Schrift passt sich an.</p>' => '<p>Accent colour and dark work too – the text adapts.</p>',
-    // Abschnitte & Spalten: Backend
+    // Sections & columns: backend
     'Im Backend' => 'In the backend',
     'Spalten auch in der Slice-Liste' => 'Columns in the slice list too',
     'Wer im Backend arbeitet, sieht den Aufbau wie auf der Website: Die Blöcke eines Layouts stehen nebeneinander in ihren Spalten – und bleiben echte Slices mit allen Knöpfen des Cores.' => 'Working in the backend, you see the structure as on the website: the blocks of a layout stand side by side in their columns – and remain real slices with all the core’s buttons.',
@@ -812,7 +812,7 @@ migrate (also :status, :make, :cleanup), content:rebuild-references, mailer:test
     'Bearbeiten im Overlay – das Raster bleibt stehen' => 'Editing in an overlay – the grid stays in place',
     'Was das Backend dazu kann' => 'What the backend adds',
     '<ul><li><strong>Spalten oder Baum:</strong> Ein Umschalter je Layout wechselt zwischen Raster und eingerückter Liste – im Browser gemerkt.</li><li><strong>Schwebende Leiste:</strong> Titel, Bearbeiten, ↑ ↓ und ⋯ erscheinen bei Zeiger oder Tastaturfokus, wie die Blockleiste auf der Website.</li><li><strong>Zwischenablage:</strong> Verdoppeln, Kopieren, Ausschneiden und Einfügen für alle Blöcke und Module – dieselbe Zwischenablage wie auf der Website, auch seitenübergreifend. Ausschneiden entfernt das Original erst nach dem Einfügen.</li><li><strong>In Spalten einfügen:</strong> „+ Block in Spalte n“ wählt die Spalte im Formular vor; Einfügen hinter einem Spalten-Block landet in derselben Spalte.</li><li><strong>Übersicht:</strong> Vorschauen sind in der Höhe begrenzt und in sich scrollbar; ein Layout offline zeigt, dass seine Blöcke auf der Website ebenfalls fehlen.</li><li><strong>Ohne Eingriff in den Core:</strong> Fragment, Extension Points und eine API-Funktion – hell und dunkel, ohne Inline-Styles.</li></ul>' => '<ul><li><strong>Columns or tree:</strong> a switch per layout toggles between grid and indented list – remembered in the browser.</li><li><strong>Floating bar:</strong> title, edit, ↑ ↓ and ⋯ appear on hover or keyboard focus, like the block bar on the website.</li><li><strong>Clipboard:</strong> duplicate, copy, cut and paste for all blocks and modules – the same clipboard as on the website, across pages too. Cutting removes the original only after pasting.</li><li><strong>Pasting into columns:</strong> “+ Block in Spalte n” preselects the column in the form; pasting after a column block lands in the same column.</li><li><strong>Overview:</strong> previews are limited in height and scroll within; an offline layout shows that its blocks are missing on the website too.</li><li><strong>No changes to the core:</strong> a fragment, extension points and an API function – light and dark, without inline styles.</li></ul>',
-    // Seite „Video“
+    // Page „Video“
     'Video-Block, Hintergrundvideo und der Video-Editor im Medienpool – mit einem Kätzchen.' => 'Video block, background video and the video editor in the media pool – with a kitten.',
     'fluid · Video' => 'fluid · Video',
     'Videos, die *mitspielen*' => 'Videos that *play along*',
@@ -890,7 +890,7 @@ Shift everything by a few seconds',
     'Videos im eigenen Template' => 'Videos in your own template',
     'Ein fertiges <video> mit Poster, Fassungen und Untertiteln – oder die Teile einzeln.' => 'A complete <video> with poster, versions and subtitles – or the parts one by one.',
     'Die Fassungen erscheinen als <source> mit Media-Query: 480p bis 640 px Breite, 720p bis 1280 px, darüber WebM und 1080p.' => 'The versions appear as <source> with a media query: 480p up to 640 px width, 720p up to 1280 px, above that WebM and 1080p.',
-    // Video & Audio, Vorher/Nachher (NativeCSS-Komponenten)
+    // Video & audio, before/after (NativeCSS components)
     'Vorher/Nachher' => 'Before/after',
     'Ein Regler, zwei Bilder' => 'One slider, two pictures',
     'Den Griff ziehen – oder mit Tab hinspringen und die Pfeiltasten nutzen. Im Kit NativeCSS öffnet sich der Abschnitt beim Hereinscrollen wie ein Vorhang (Abschnitt → Einblend-Effekt).' => 'Drag the handle – or tab to it and use the arrow keys. In the NativeCSS kit the section opens like a curtain as it scrolls in (Section → Reveal effect).',
@@ -962,7 +962,7 @@ Shift everything by a few seconds',
     'Zwei Zeilen genügen: KitHead schreibt Titel, SEO-Angaben, Styles und Skripte des Kits – erst wenn die Seite fertig ist, also nur für die Elemente, die sie wirklich nutzt.' => 'Two lines are enough: KitHead writes title, SEO tags, styles and scripts of the kit – once the page is done, so only for the elements it really uses.',
     'Ohne KitHead funktionieren Bearbeiten auf der Website und normale Module trotzdem.' => 'Without KitHead, editing on the website and ordinary modules still work.',
     'Neu · TipTap' => 'New · TipTap',
-        '<p>Texte schreibt fluid jetzt mit TipTap – direkt auf der Seite, in der Seitenleiste und im Backend derselbe moderne Editor. Klick in den Text, die Leiste schwebt darüber, Formate erscheinen in der echten Gestaltung.</p>' => '<p>fluid now writes text with TipTap – the same modern editor right on the page, in the sidebar and in the backend. Click into the text, the toolbar floats above it, formats appear in the real design.</p>',
+    '<p>Texte schreibt fluid jetzt mit TipTap – direkt auf der Seite, in der Seitenleiste und im Backend derselbe moderne Editor. Klick in den Text, die Leiste schwebt darüber, Formate erscheinen in der echten Gestaltung.</p>' => '<p>fluid now writes text with TipTap – the same modern editor right on the page, in the sidebar and in the backend. Click into the text, the toolbar floats above it, formats appear in the real design.</p>',
     'Ein Editor für Website, Backend und YForm' => 'One editor for website, backend and YForm',
     'Profile als PHP-Klassen – versioniert im Git' => 'Profiles as PHP classes – versioned in Git',
     'Bestehende Texte bleiben, wie sie sind' => 'Existing texts stay as they are',

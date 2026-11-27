@@ -3,10 +3,10 @@
 namespace Klxm\Fluid\Routing\Seo;
 
 /**
- * Meta-Angaben einer Seite bzw. eines Eintrags – daraus entsteht der Seitenkopf ({@see Head::render()}).
+ * Meta data of a page or entry – the page head is built from it ({@see Head::render()}).
  *
- * Reihenfolge: Seite (Name, Adresse, Sprachen) → ArticleMeta (z. B. SEO-Felder der Seite) → Eintrag einer Quelle bzw.
- * eines Resolvers → Head::override() (Blöcke) → PageMetaResolved (letzte Änderungen). Leere Werte überschreiben nie.
+ * Order: page (name, address, languages) → ArticleMeta (e.g. the page's SEO fields) → entry of a source or
+ * resolver → Head::override() (blocks) → PageMetaResolved (final changes). Empty values never override.
  */
 final class PageMeta
 {
@@ -14,13 +14,13 @@ final class PageMeta
     public array $tags = [];
 
     /**
-     * @param string|null $title Titel der Seite (og:title); der Titel im Browser-Tab ist Titel + Name der Website
-     * @param string|null $documentTitle eigener, vollständiger Titel im Browser-Tab (ersetzt Titel + Name der Website)
-     * @param string|null $image Bild: Datei des Medienpools oder absolute Adresse
-     * @param string $type og:type, z. B. website, article, product
-     * @param string|null $url kanonische, absolute Adresse
-     * @param array<string, string> $alternates hreflang => absolute Adresse (inkl. x-default)
-     * @param list<array<string, mixed>> $jsonLd Knoten für den @graph (schema.org)
+     * @param string|null $title title of the page (og:title); the title in the browser tab is title + website name
+     * @param string|null $documentTitle own, complete title in the browser tab (replaces title + website name)
+     * @param string|null $image image: media pool file or absolute URL
+     * @param string $type og:type, e.g. website, article, product
+     * @param string|null $url canonical absolute URL
+     * @param array<string, string> $alternates hreflang => absolute URL (incl. x-default)
+     * @param list<array<string, mixed>> $jsonLd nodes for the @graph (schema.org)
      */
     public function __construct(
         public ?string $title = null,
@@ -43,7 +43,7 @@ final class PageMeta
         public array $jsonLd = [],
     ) {}
 
-    /** Gesetzte Werte von $other übernehmen (leere Zeichenketten und null nicht); Tags und JSON-LD kommen dazu */
+    /** Take over the set values of $other (not empty strings and null); tags and JSON-LD are added */
     public function merge(self $other): static
     {
         foreach (['title', 'documentTitle', 'siteName', 'description', 'image', 'imageAlt', 'imageWidth', 'imageHeight', 'imageType', 'url', 'locale', 'noindex', 'nofollow', 'published', 'modified'] as $k) {
@@ -51,11 +51,11 @@ final class PageMeta
                 $this->$k = $other->$k;
             }
         }
-        // neuer Titel ohne eigenen Tab-Titel: der alte Tab-Titel (z. B. SEO-Titel der Listenseite) passt nicht mehr
+        // new title without own tab title: the old tab title (e.g. SEO title of the list page) no longer fits
         if (null !== $other->title && '' !== $other->title && null === $other->documentTitle) {
             $this->documentTitle = null;
         }
-        // neues Bild: Maße des alten gelten nicht mehr
+        // new image: the old dimensions no longer apply
         if (null !== $other->image && '' !== $other->image && null === $other->imageWidth) {
             $this->imageWidth = $this->imageHeight = null;
             $this->imageType = $other->imageType;

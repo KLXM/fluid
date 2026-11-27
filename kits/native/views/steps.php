@@ -4,12 +4,12 @@ use Klxm\Fluid\Block;
 use Klxm\Fluid\Kit;
 
 /**
- * Ablauf / Zeitleiste im Kit „NativeCSS“: „Zeitleiste“ mit .ncss-timeline von NativeCSS (Datum, Markierung als Punkt oder
- * Symbol des Schritts, ab ~40rem Containerbreite abwechselnd links/rechts). „Nummerierte Schritte“ und „Prozess mit
- * Pfeilen“ kommen aus dem Kit fluid – der Stepper von NativeCSS zeigt einen Fortschritt (erledigt/aktuell/offen), das
- * passt nicht zu einer Anleitung. Optionen: „Kreise“ → Markierung mit Nummer (bzw. Symbol) gefüllt/zart/Rand, „Kleiner
- * Punkt“ ohne Nummer; „Farben“ → Akzent, abwechselnd oder neutral; „Animation“ → Einträge einblenden (wie die Website),
- * „Linie wächst“ → .ncss-reveal (Wischen von oben) an der Zeitleiste, „Keine“ ohne. Bewegung reduzieren: keine Animation.
+ * Steps / timeline in kit „NativeCSS“: „Zeitleiste“ with .ncss-timeline of NativeCSS (date, marker as dot or
+ * icon of the step, alternating left/right from ~40rem container width). „Nummerierte Schritte“ and „Prozess mit
+ * Pfeilen“ come from kit fluid – the NativeCSS stepper shows progress (done/current/open), which
+ * doesn't suit instructions. Options: „Kreise“ → marker with number (or icon) filled/subtle/outline, „Kleiner
+ * Punkt“ without number; „Farben“ → accent, alternating or neutral; „Animation“ → fade in entries (like the website),
+ * „Linie wächst“ → .ncss-reveal (wipe from the top) on the timeline, „Keine“ none. Reduced motion: no animation.
  * @var Block $b  @var array $d
  */
 if ('timeline' !== $b->variant()) {

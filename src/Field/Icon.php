@@ -7,16 +7,16 @@ use Redaxo\Core\Form\Field\Text as CoreText;
 use Redaxo\Core\View\Renderable;
 
 /**
- * Symbol aus dem Satz des Kits (Name, z. B. „sparkle“).
+ * Icon from the kit's set (name, e.g. „sparkle“).
  *
- * Nur in fluid (eigener Name). In gewöhnlichen Formularen des Cores verhält es sich wie das Feld, von dem es erbt.
+ * Only in fluid (own name). In ordinary core forms it behaves like the field it extends.
  */
 #[Attribute(Attribute::TARGET_PROPERTY)]
 class Icon extends CoreText implements FluidField
 {
     /**
-     * @param 'half'|null $width fluid: halbe Breite im Formular
-     * @param list<string>|null $variants fluid: nur in diesen Darstellungen des Blocks
+     * @param 'half'|null $width fluid: half width in the form
+     * @param list<string>|null $variants fluid: only in these displays of the block
      */
     public function __construct(
         string|Renderable $label,

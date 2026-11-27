@@ -1,13 +1,13 @@
 /**
- * Live-Aktualisierung (Klxm\Fluid\Live, aus KLXM Studio Core\Live, MIT): eine EventSource für alle [data-live]-Elemente der Seite.
- * Ereignis „v“ = {abo: version}. Neuere Version → Element mit data-live-src neu laden ([data-live-list] tauschen, neue
- * [data-live-id] markieren und ansagen), sonst nur „cms:live“ am Element auslösen (für eigenes JavaScript von Kits/Erweiterungen).
- * Anhalten: [data-live-pause] (Änderungen werden gesammelt und beim Fortsetzen geladen). Ausgeblendeter Tab: Verbindung zu.
+ * Live updates (Klxm\Fluid\Live, from KLXM Studio Core\Live, MIT): one EventSource for all [data-live] elements of the page.
+ * Event "v" = {abo: version}. Newer version → reload element with data-live-src (swap [data-live-list], mark and announce new
+ * [data-live-id]), otherwise only dispatch "cms:live" on the element (for own JavaScript of kits/extensions).
+ * Pausing: [data-live-pause] (changes are collected and loaded on resume). Hidden tab: connection closed.
  *
- * Neu laden auf Aktion (Live::region): [data-live-region] mit data-live-src. Links [data-live-nav] und GET-Formulare
- * [data-live-nav] holen den Block mit ihren Parametern neu und tauschen ihn aus (pushState); Eingabefelder [data-live-input]
- * nach einer Pause (data-live-delay, Standard 350 ms, replaceState), erst ab data-live-min Zeichen. Zurück/Vor lädt passend nach. Fokus bleibt im Feld bzw.
- * geht an den Block, Ansage über eine Statuszeile (aria-live). Fehler → normaler Seitenaufruf.
+ * Reload on action (Live::region): [data-live-region] with data-live-src. Links [data-live-nav] and GET forms
+ * [data-live-nav] fetch the block again with their parameters and swap it (pushState); input fields [data-live-input]
+ * after a pause (data-live-delay, default 350 ms, replaceState), only from data-live-min characters. Back/forward reloads accordingly. Focus stays in the field or
+ * moves to the block, announcement via a status line (aria-live). Error → normal page load.
  */
 (() => {
   const me = document.currentScript;
@@ -42,7 +42,7 @@
       [...fresh.attributes].forEach((a) => { if (a.name !== 'data-live-list') cur.setAttribute(a.name, a.value); });
       announce(el, n);
       el.dispatchEvent(new CustomEvent('cms:live-updated', { bubbles: true, detail: { added: n } }));
-    } catch { /* nächste Version versucht es erneut */ } finally {
+    } catch { /* next version tries again */ } finally {
       delete el.dataset.liveBusy;
       if (el.dataset.liveAgain) { delete el.dataset.liveAgain; refresh(el); }
     }
@@ -93,7 +93,7 @@
   connect();
 })();
 
-// ---------------------------------------------------------------- Neu laden auf Aktion (Live::region)
+// ---------------------------------------------------------------- Reload on action (Live::region)
 function cmsLiveRegions(me) {
   if (!document.querySelector('[data-live-region]') || !window.fetch || !history.pushState) return;
   let ctrl = null, timer = 0, sr = null, lastSearch = location.search;
@@ -127,7 +127,7 @@ function cmsLiveRegions(me) {
       lastSearch = location.search;
       fresh.dispatchEvent(new CustomEvent('cms:content-replaced', { bubbles: true }));
       const again = keep && document.getElementById(keep);
-      if (again) { again.focus({ preventScroll: true }); if (sel) try { again.setSelectionRange(sel[0], sel[1]); } catch { /* kein Textfeld */ } }
+      if (again) { again.focus({ preventScroll: true }); if (sel) try { again.setSelectionRange(sel[0], sel[1]); } catch { /* not a text field */ } }
       else if (focusRegion) {
         fresh.setAttribute('tabindex', '-1');
         fresh.focus({ preventScroll: true });
@@ -165,13 +165,13 @@ function cmsLiveRegions(me) {
     const f = inp?.form, region = inp && regionOf(inp);
     if (!f || !region || !f.matches('[data-live-nav]')) return;
     clearTimeout(timer);
-    // erst ab data-live-min Zeichen (leeres Feld = zurücksetzen) – vorher keine Anfrage
+    // only from data-live-min characters (empty field = reset) – no request before that
     const len = inp.value.trim().length;
     if (len && len < (+inp.dataset.liveMin || 0)) return;
     timer = setTimeout(() => load(regionOf(document.getElementById(inp.id) || inp) || region, formUrl(f), 'replace', false), +inp.dataset.liveDelay || 350);
   });
   addEventListener('popstate', () => {
-    if (location.search === lastSearch) return;   // nur Sprungmarke geändert
+    if (location.search === lastSearch) return;   // only the anchor changed
     document.querySelectorAll('[data-live-region]').forEach((region) => load(region, location.href, 'none', false));
   });
 }

@@ -17,9 +17,9 @@ use Redaxo\Core\MediaPool\Media;
 use const FILTER_VALIDATE_EMAIL;
 
 /**
- * Angaben von fluid für den Seitenkopf des Routings (Routing\Seo\Head): Bild für soziale Netzwerke mit image_editor
- * (1200 × 630 als JPEG um den Fokuspunkt) und schema.org (StructuredData). Bausteine ergänzen eigene Knoten über
- * FLUID_STRUCTURED_DATA, eigene Tags über den Extension Point PageMetaResolved des Routings.
+ * fluid's data for the routing's page head (Routing\Seo\Head): image for social networks with image_editor
+ * (1200 × 630 as JPEG around the focal point) and schema.org (StructuredData). Components add their own nodes via
+ * FLUID_STRUCTURED_DATA, custom tags via the routing's extension point PageMetaResolved.
  */
 final class Head
 {
@@ -28,7 +28,7 @@ final class Head
     public static function resolved(PageMetaResolved $ep): PageMeta
     {
         $m = $ep->subject;
-        // Netzwerke: 1200 × 630 als JPEG um den Fokuspunkt (LinkedIn kann kein WebP)
+        // Networks: 1200 × 630 as JPEG around the focal point (LinkedIn can't handle WebP)
         if (null !== $m->image && '' !== $m->image && !preg_match('~^https?://~i', $m->image) && class_exists(ImageEditor::class)
             && ($media = Media::get($m->image)) && null !== ($share = ImageEditor::shareUrl($media->fileName))) {
             $m->imageAlt ??= Alt::of($media) ?: null;
@@ -44,7 +44,7 @@ final class Head
         return $m;
     }
 
-    /** schema.org-Knoten der Organisation: Name, Logo, Adresse, Telefon, E-Mail, Geo, Öffnungszeiten, Social Media */
+    /** schema.org node of the organization: name, logo, address, phone, email, geo, opening hours, social media */
     public static function organizationNode(): array
     {
         $s = static fn (string $k) => trim((string) Settings::get($k, ''));

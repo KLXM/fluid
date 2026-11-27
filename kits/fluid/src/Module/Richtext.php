@@ -3,7 +3,7 @@
 namespace Klxm\Fluid\Kit\Fluid\Module;
 
 use Klxm\Fluid\Field\AsBlock;
-use Klxm\Fluid\Field\Checkbox;   // Klasse dieses Blocks heißt Richtext
+use Klxm\Fluid\Field\Checkbox;   // this block's class is called Richtext
 use Klxm\Fluid\Field\Choice;
 use Klxm\Fluid\Field\RichText as RichTextField;
 use Klxm\Fluid\Field\Text;

@@ -1,18 +1,18 @@
 /*
- * fluid – Versionen einer Seite ansehen, vergleichen und wiederherstellen (übernommen aus KLXM Studio, resources/js/versions.mjs).
- * Geladen erst beim Öffnen (editor.js → import()).
+ * fluid – view, compare and restore versions of a page (taken from KLXM Studio, resources/js/versions.mjs).
+ * Loaded only when opened (editor.js → import()).
  *
- *   open({ data, restore, css })   data = Antwort von ?fluid_api=version_view (Versions::view), restore(id) → Promise
+ *   open({ data, restore, css })   data = response of ?fluid_api=version_view (Versions::view), restore(id) → Promise
  *
- * Aufbau: links die Zeitleiste – Karten nach Tagen gruppiert (oben „Jetzt“), je Karte Uhrzeit, Art, Person und was sich an
- * den Blöcken geändert hat; rechts die echte Seite im Iframe (?fluid_version=…), Umschalter Desktop/Mobil, „Gegenüberstellen“
- * (links live, rechts der gewählte Stand, Scrollen gekoppelt) und „Änderungen hervorheben“ (&fluid_mark=1 → data-vdiff).
- * Tastatur: ↑/↓ in der Zeitleiste, Pos1/Ende, Esc schließt. „Wiederherstellen“ holt den Stand in den Entwurf.
+ * Layout: on the left the timeline – cards grouped by day („Jetzt“ on top), each card with time, kind, person and what
+ * changed in the blocks; on the right the real page in an iframe (?fluid_version=…), desktop/mobile toggle, „Gegenüberstellen“
+ * (live on the left, the selected state on the right, coupled scrolling) and „Änderungen hervorheben“ (&fluid_mark=1 → data-vdiff).
+ * Keyboard: ↑/↓ in the timeline, Home/End, Esc closes. „Wiederherstellen“ brings the state into the draft.
  */
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const fill = (s, p = {}) => Object.entries(p).reduce((x, [k, v]) => x.replaceAll('{' + k + '}', String(v)), String(s ?? ''));
 const SVG = {
-  // Uhr im Kopf: Zifferblatt mit Strichen, Stunden- und Minutenzeiger (drehen per JS zur Zeit des gewählten Stands)
+  // Clock in the header: dial with ticks, hour and minute hands (rotated via JS to the time of the selected state)
   clock: '<svg class="vs-clock" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="18" class="vs-clock__face"/>'
     + Array.from({ length: 12 }, (_, i) => `<line x1="20" y1="${i % 3 ? 4.5 : 3.5}" x2="20" y2="${i % 3 ? 6.5 : 7.5}" class="vs-clock__tick" transform="rotate(${i * 30} 20 20)"/>`).join('')
     + '<line x1="20" y1="20" x2="20" y2="11" class="vs-clock__h" data-hand="h"/><line x1="20" y1="21.5" x2="20" y2="6.5" class="vs-clock__m" data-hand="m"/><circle cx="20" cy="20" r="1.8" class="vs-clock__pin"/></svg>',
@@ -46,7 +46,7 @@ export async function open({ data: source, restore: restoreFn, css: cssUrl = '',
   const root = host.attachShadow({ mode: 'open' });
   const css = document.createElement('link');
   css.rel = 'stylesheet';
-  // Versionierte Adresse vom Server (asset(), ?v=…) – sonst bliebe nach Updates das alte Stylesheet im Browser-Cache
+  // Versioned URL from the server (asset(), ?v=…) – otherwise the old stylesheet would stay in the browser cache after updates
   css.href = cssUrl || new URL('versions.css', import.meta.url).href;
   root.append(css);
   const vs = document.createElement('div');
@@ -66,7 +66,7 @@ export async function open({ data: source, restore: restoreFn, css: cssUrl = '',
     opener?.focus?.({ preventScroll: true });
   }
   vs.querySelector('[data-close]').addEventListener('click', close);
-  vs.addEventListener('click', e => { if (e.target === vs) close(); });   // Klick neben das Fenster
+  vs.addEventListener('click', e => { if (e.target === vs) close(); });   // Click outside the window
   document.addEventListener('keydown', onKey, true);
 
   let data;
@@ -78,21 +78,21 @@ export async function open({ data: source, restore: restoreFn, css: cssUrl = '',
     return;
   }
   const T = TEXTS;
-  const L = (k, p) => fill(T[k] ?? k, p);   // Texte vom Server (VersionsController::texts)
+  const L = (k, p) => fill(T[k] ?? k, p);   // Texts from the server (VersionsController::texts)
   const V = data.versions || [];
   const isEntry = data.kind === 'entry';
   let cur = V.length > 1 ? 1 : 0, busy = false, mobile = false;
   if (startKey) { const k = V.findIndex(v => v.id === startKey); if (k >= 0) cur = k; }
-  let mark = true;   // Änderungen hervorheben (gegenüber dem vorherigen Stand) – gemerkt je Browser
-  let cmp = false;   // Gegenüberstellen: links live (Seite) bzw. jetzt (Eintrag), rechts der gewählte Stand
-  try { mark = localStorage.getItem('cms-versions-mark') !== '0'; cmp = localStorage.getItem('cms-versions-cmp') === '1'; } catch { /* privates Fenster */ }
+  let mark = true;   // Highlight changes (compared to the previous state) – remembered per browser
+  let cmp = false;   // Side by side: live (page) or now (entry) on the left, the selected state on the right
+  try { mark = localStorage.getItem('cms-versions-mark') !== '0'; cmp = localStorage.getItem('cms-versions-cmp') === '1'; } catch { /* private window */ }
 
   vs.querySelector('#vs-t').textContent = L('title');
   vs.querySelector('[data-close]').setAttribute('aria-label', L('close'));
   vs.querySelector('[data-sub]').textContent = [data.title, V.length - 1 === 1 ? L('count1') : L('count', { n: V.length - 1 })].filter(Boolean).join(' · ');
   vs.querySelector('[data-wait]').remove();
 
-  // Zeitleiste: Tage als Gruppen, Karten als Optionen einer Liste
+  // Timeline: days as groups, cards as options of a list
   const days = [];
   V.forEach((v, i) => {
     const day = v.day === data.today ? L('today') : v.day;
@@ -156,7 +156,7 @@ export async function open({ data: source, restore: restoreFn, css: cssUrl = '',
   const renderPage = v => {
     if (!iframe) {
       iframe = document.createElement('iframe');
-      // Vorschau oben beginnen (Kits mit sanftem Scrollen/Ankern würden sonst mitten auf der Seite starten); markierte Blöcke hervorheben
+      // Start the preview at the top (kits with smooth scrolling/anchors would otherwise start mid-page); highlight marked blocks
       iframe.addEventListener('load', () => {
         load.hidden = true;
         try { iframe.contentWindow.scrollTo({ top: 0, behavior: 'instant' }); decorate(iframe.contentDocument); } catch { /* */ }
@@ -168,11 +168,11 @@ export async function open({ data: source, restore: restoreFn, css: cssUrl = '',
     load.hidden = false;
     iframe.src = mark && !v.diff?.first ? v.preview_mark : v.preview;
   };
-  // Gegenüberstellen: links live (Seite: veröffentlichte Fassung) bzw. jetzt (Eintrag) – einmal geladen, Scrollen gekoppelt
+  // Side by side: live (page: published version) or now (entry) on the left – loaded once, coupled scrolling
   const paneLive = vs.querySelector('[data-pane-live]'), winLive = vs.querySelector('[data-win-live]');
   let liveFrame = null, leader = null;
-  // Gekoppeltes Scrollen: nur die Seite, die gerade bedient wird, führt (sonst schaukeln sich beide auf). Abgleich am selben Block
-  // (Abschnitte mit id, z. B. b-…/Anker): gleicher Block oben, gleiche Lage darin; ohne gemeinsamen Block nach Anteil der Höhe.
+  // Coupled scrolling: only the side currently being used leads (otherwise both keep pushing each other). Matched on the same block
+  // (sections with an id, e.g. b-…/anchor): same block on top, same position within; without a shared block by share of height.
   const anchorAt = (doc, y) => {
     let best = null;
     for (const el of doc.querySelectorAll('body [id]')) {
@@ -204,7 +204,7 @@ export async function open({ data: source, restore: restoreFn, css: cssUrl = '',
       const w = a.contentWindow, d = a.contentDocument;
       if (!w || w._vsCoupled === b) return;
       w._vsCoupled = b;
-      d.documentElement.style.scrollBehavior = 'auto';   // kein sanftes Scrollen in der Vorschau (sonst Nachlaufen beim Abgleich)
+      d.documentElement.style.scrollBehavior = 'auto';   // no smooth scrolling in the preview (otherwise it lags behind when syncing)
       const lead = () => { leader = a; };
       ['wheel', 'touchstart', 'pointerdown', 'keydown'].forEach(t => d.addEventListener(t, lead, { passive: true, capture: true }));
       a.addEventListener('pointerenter', lead);
@@ -235,7 +235,7 @@ export async function open({ data: source, restore: restoreFn, css: cssUrl = '',
     }
   }
 
-  // Blöcke mit data-vdiff (Admin\VersionsController, ?mark=1): farbiger Rahmen + Abzeichen „Neu“/„Geändert“ (CSSOM – CSP-tauglich)
+  // Blocks with data-vdiff (Admin\VersionsController, ?mark=1): colored outline + badge „Neu“/„Geändert“ (CSSOM – CSP-safe)
   const COLORS = { new: '#1F8A4C', changed: '#C2410C' };
   function decorate(doc) {
     if (!doc || !mark) return;
@@ -254,7 +254,7 @@ export async function open({ data: source, restore: restoreFn, css: cssUrl = '',
     });
     els[0]?.scrollIntoView({ block: 'start', behavior: 'instant' });
   }
-  // Zeile über der Vorschau: was sich gegenüber dem vorherigen Stand geändert hat
+  // Line above the preview: what changed compared to the previous state
   function diffLine(v) {
     const el = vs.querySelector('[data-diff]'), d = v.diff || {};
     if (!mark) { el.hidden = true; return; }
@@ -268,7 +268,7 @@ export async function open({ data: source, restore: restoreFn, css: cssUrl = '',
     el.textContent = t; el.hidden = false;
   }
 
-  // Uhr: Winkel fortlaufend (nicht modulo), damit die Zeiger zurück- bzw. vorwärts laufen – älter = rückwärts, mit Extrarunden je Abstand
+  // Clock: continuous angle (not modulo) so the hands run backward or forward – older = backward, with extra turns per distance
   const hands = { h: vs.querySelector('[data-hand="h"]'), m: vs.querySelector('[data-hand="m"]') };
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   let clockTs = Math.floor(Date.now() / 1000), angH = 0, angM = 0;
@@ -282,15 +282,15 @@ export async function open({ data: source, restore: restoreFn, css: cssUrl = '',
     if (!v?.hm) return;
     const [hh, mm] = v.hm, dir = (v.ts ?? clockTs) < clockTs ? -1 : 1;
     const days = Math.abs((v.ts ?? clockTs) - clockTs) / 86400;
-    const extra = reduce ? 0 : Math.min(3, Math.floor(days));   // Extrarunden des Minutenzeigers
+    const extra = reduce ? 0 : Math.min(3, Math.floor(days));   // Extra turns of the minute hand
     const step = (cur, target, full) => {
-      let d = ((target - cur) % full + full) % full;   // 0 … full vorwärts
-      if (dir < 0 && d) d -= full;                       // rückwärts
+      let d = ((target - cur) % full + full) % full;   // 0 … full forward
+      if (dir < 0 && d) d -= full;                       // backward
       return cur + d + dir * extra * full;
     };
     angM = step(angM, mm * 6, 360);
     angH = step(angH, (hh % 12) * 30 + mm * 0.5, 360) ;
-    // Kalenderblatt: blättert um, wenn sich der Tag ändert (älter = nach unten weg, neuer = nach oben)
+    // Calendar sheet: flips when the day changes (older = away downward, newer = upward)
     const cal = vs.querySelector('.vs-cal'), key = v.dm ? v.dm.join(' ') : '';
     if (cal && v.dm && cal.dataset.key !== key) {
       const fill = () => { vs.querySelector('[data-cal-d]').textContent = v.dm[0]; vs.querySelector('[data-cal-m]').textContent = v.dm[1]; cal.dataset.key = key; };
@@ -325,7 +325,7 @@ export async function open({ data: source, restore: restoreFn, css: cssUrl = '',
     renderCompare();
   };
 
-  // Rückfrage und Wiederherstellen
+  // Confirm and restore
   function ask(on) {
     vs.querySelector('[data-confirm]').hidden = !on;
     if (on) vs.querySelector('[data-yes]').focus();
@@ -358,7 +358,7 @@ export async function open({ data: source, restore: restoreFn, css: cssUrl = '',
   vs.querySelector('[data-mark]').addEventListener('change', e => {
     mark = e.target.checked;
     try { localStorage.setItem('cms-versions-mark', mark ? '1' : '0'); } catch { /* */ }
-    select(cur);   // neu zeichnen (Seiten: Vorschau mit bzw. ohne Markierung)
+    select(cur);   // redraw (pages: preview with or without marking)
   });
   vs.querySelectorAll('[data-dev]').forEach(b => b.addEventListener('click', () => {
     mobile = b.dataset.dev === 'mobile';
@@ -378,7 +378,7 @@ export async function open({ data: source, restore: restoreFn, css: cssUrl = '',
     if (inList && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) { e.preventDefault(); select(cur + (e.key === 'ArrowDown' ? 1 : -1), true); return; }
     if (inList && e.key === 'Home') { e.preventDefault(); select(0, true); return; }
     if (inList && e.key === 'End') { e.preventDefault(); select(V.length - 1, true); return; }
-    if (e.key === 'Tab') {   // Fokus bleibt im Dialog
+    if (e.key === 'Tab') {   // Focus stays in the dialog
       const f = [...root.querySelectorAll('button:not([disabled]):not([tabindex="-1"]),input,iframe')].filter(x => x.getClientRects().length);
       if (!f.length) return;
       const a = root.activeElement;

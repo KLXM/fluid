@@ -1,4 +1,4 @@
-/* Blog: Übersicht (Block „Beiträge“) und Beitragsseiten – Karten/Liste aus data.css */
+/* Blog: overview (block „Beiträge“) and post pages – cards/list from data.css */
 .posts .dl-meta time { font-variant-numeric: tabular-nums; }
 .post-badge { margin-left: .4em; padding: .05em .45em; border-radius: 99px; font-size: .8em; background: var(--c-muted-bg, rgb(0 0 0 / .07)); }
 .posts-new { margin: 0 0 1rem; }
@@ -17,7 +17,7 @@
 .post-tags a:hover { border-color: currentColor; }
 .post-tags a[aria-current] { background: var(--c-accent, #4f46e5); border-color: var(--c-accent, #4f46e5); color: var(--c-on-accent, #fff); }
 .post-tags__n { opacity: .65; font-size: .85em; }
-/* Beitragsseite */
+/* Post page */
 .post-head { padding-block: clamp(2rem, 6cqi, 4rem) clamp(1rem, 3cqi, 2rem); }
 .post-head .wrap { max-width: 52rem; }
 .post-head__back { margin: 0 0 1rem; font-size: .9rem; }

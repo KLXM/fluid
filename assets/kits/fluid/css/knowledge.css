@@ -1,5 +1,5 @@
-/* Wissensbereich (Klxm\Fluid\Data\Knowledge): Inhaltsverzeichnis, Detailansicht mit Kapitelnavigation – Stile „Magazin“ und
-   „Sachlich“. Nur auf Seiten mit Kapiteln (@knowledge bzw. Datenliste „Inhaltsverzeichnis“). Tokens des Kits (--f-*). */
+/* Knowledge area (Klxm\Fluid\Data\Knowledge): table of contents, detail view with chapter navigation – styles „Magazin“ and
+   „Sachlich“. Only on pages with chapters (@knowledge or data list „Inhaltsverzeichnis“). Kit tokens (--f-*). */
 .kn-toc{display:grid;gap:var(--f-s-xl);max-width:52rem}
 .kn-toc__area{margin:0 0 var(--f-s-s);color:var(--f-ink);font:var(--f-hw) var(--f-t2)/1.2 var(--f-font-head)}
 .kn-toc__list{margin:0;padding:0;list-style:none}
@@ -42,7 +42,7 @@
 .kn--sachlich .kn-title{font-size:max(var(--f-t2),min(var(--f-t4),6cqi))}
 .kn-content{min-width:0}
 .kn-content{container-type:inline-size}
-/* Blöcke im Kapitel: in der Spalte des Inhalts, ohne eigenen Rand und Abstand nach außen */
+/* Blocks in the chapter: in the content column, without their own outer border and spacing */
 .kn-content>.sec,.kn-content>.df-blocks>.sec{padding-block:0 var(--f-s-l)}
 .kn-content>.sec:last-child,.kn-content>.df-blocks>.sec:last-child{padding-bottom:0}
 .kn-content .sec>.wrap{width:100%;max-width:none;margin-inline:0}
@@ -61,7 +61,7 @@
 .kn-drawer__sum{display:flex;align-items:center;min-height:2.75rem;padding:0 .9rem;border:1px solid var(--f-line-strong);border-radius:var(--f-btn-r);color:var(--f-ink);font-weight:650;cursor:pointer}
 .kn-drawer__sum:focus-visible{outline:2px solid var(--f-focus,var(--f-a));outline-offset:2px}
 .kn-drawer__body{display:grid;gap:var(--f-s-m);padding-top:var(--f-s-s)}
-/* Breite Fenster: immer offen – per ::details-content auch ohne JavaScript; ältere Browser öffnen per Skript (Zusammenfassung bleibt dann) */
+/* Wide windows: always open – via ::details-content even without JavaScript; older browsers open via script (the summary then stays) */
 @media (min-width:64rem){
   .kn-drawer__body{padding-top:0}
   @supports selector(::details-content){.kn-drawer::details-content{content-visibility:visible;display:block;height:auto}.kn-drawer__sum{display:none}}

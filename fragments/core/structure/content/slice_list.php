@@ -4,8 +4,8 @@ use Klxm\Fluid\Backend\SliceGrid;
 use Redaxo\Core\View\Fragment;
 
 /**
- * Slice-Liste des Backends (überschreibt das Fragment des Cores, gleiche Variablen): setzt die Panels der Spalten-Blöcke
- * in das Raster ihres Layouts (Klxm\Fluid\Backend\SliceGrid). Ohne Layouts unverändert.
+ * Backend slice list (overrides the core fragment, same variables): inserts the panels of the column blocks
+ * into their layout's grid (Klxm\Fluid\Backend\SliceGrid). Unchanged without layouts.
  *
  * - string $content  The rendered HTML of all slice <li> elements
  *

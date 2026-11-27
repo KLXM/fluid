@@ -35,20 +35,20 @@ use function strlen;
 use const ICONV_MIME_DECODE_CONTINUE_ON_ERROR;
 
 /**
- * Baustein „Mail“: alles, was fluid mit dem Mailer des Cores macht (Redaxo\Core\Mailer, Symfony Mailer).
+ * Module „Mail“: everything fluid does with the core mailer (Redaxo\Core\Mailer, Symfony Mailer).
  *
- *  - status()   Einrichtung auf einen Blick (Statusseite): Versand, Absender, Umleitung, Protokoll, Archiv, letzte Fehler
- *  - test()     Testmail an eine Adresse
- *  - failed()/resend()   nicht gesendete Mails aus dem Archiv (not_sent_*.eml) erneut senden – an X-Envelope-To
- *                        (inklusive Bcc, ab redaxo/core#6755), sonst An und Kopie
- *  - layout()   HTML-Mail im Stil der Website (Logo, Akzentfarbe des Kits, Kontakt im Fuß) – für Formular-Mails
- *  - purgeArchive()   Cronjob: archivierte Mails nach „Mails aufbewahren (Tage)“ löschen (Datenschutz)
+ *  - status()   setup at a glance (status page): sending, sender, redirect, log, archive, last errors
+ *  - test()     test mail to an address
+ *  - failed()/resend()   resend unsent mails from the archive (not_sent_*.eml) – to X-Envelope-To
+ *                        (including Bcc, since redaxo/core#6755), otherwise To and Cc
+ *  - layout()   HTML mail in the style of the website (logo, accent color of the kit, contact in the footer) – for form mails
+ *  - purgeArchive()   cronjob: delete archived mails after „Mails aufbewahren (Tage)“ (privacy)
  *
- * Eigenständig (später als eigenes AddOn denkbar): braucht nur den Core und die Website-Einstellungen von fluid.
+ * Self-contained (could later become its own AddOn): needs only the core and the website settings of fluid.
  */
 final class Mail
 {
-    /** Standard für „Mails aufbewahren (Tage)“, wenn nichts eingestellt ist */
+    /** Default for „Mails aufbewahren (Tage)“ if nothing is set */
     public const int KEEP_DAYS = 90;
 
     /**
@@ -61,7 +61,7 @@ final class Mail
             'log' => (string) (Env::get('REX_MAILER_LOG') ?? 'errors'), 'archive' => Env::getBool('REX_MAILER_ARCHIVE'), 'error' => '', 'errors' => []];
         try {
             $mailer = Core::getMailer();
-            // ohne Zugangsdaten: SMTP-Transporte geben nur Schema, Host und Port aus
+            // without credentials: SMTP transports only output scheme, host and port
             $out['transport'] = (string) $mailer->transport;
             $out['configured'] = !str_starts_with($out['transport'], 'null://');
             $out['from'] = $mailer->defaultFrom?->toString() ?? '';
@@ -84,7 +84,7 @@ final class Mail
         return $out;
     }
 
-    /** Testmail; gibt '' bei Erfolg zurück, sonst die Fehlermeldung */
+    /** Test mail; returns '' on success, otherwise the error message */
     public static function test(string $to): string
     {
         try {
@@ -99,10 +99,10 @@ final class Mail
         }
     }
 
-    // ------------------------------------------------------------------ nicht gesendete Mails
+    // ------------------------------------------------------------------ unsent mails
 
     /**
-     * Nicht gesendete Mails im Archiv (REX_MAILER_ARCHIVE), neueste zuerst.
+     * Unsent mails in the archive (REX_MAILER_ARCHIVE), newest first.
      *
      * @return list<array{file: string, time: int, to: string, subject: string}>
      */
@@ -129,9 +129,9 @@ final class Mail
     }
 
     /**
-     * Nicht gesendete Mail erneut senden. Empfänger aus To, Cc und Bcc; die Bcc-Kopfzeile wird vor dem Senden entfernt
-     * (sonst sähen alle Empfänger die Bcc-Adressen). Bei Erfolg verliert die Datei das Präfix „not_sent_“.
-     * Gibt '' bei Erfolg zurück, sonst die Fehlermeldung.
+     * Resend an unsent mail. Recipients from To, Cc and Bcc; the Bcc header is removed before sending
+     * (otherwise all recipients would see the Bcc addresses). On success the file loses the prefix „not_sent_“.
+     * Returns '' on success, otherwise the error message.
      */
     public static function resend(string $relative): string
     {
@@ -142,7 +142,7 @@ final class Mail
         $raw = (string) File::get($file);
         [$head, $body] = array_pad(preg_split("~\r?\n\r?\n~", $raw, 2) ?: [], 2, '');
         $headers = self::unfold($head);
-        // Empfänger: X-Envelope-To (vermerkt der Core seit redaxo/core#6755, inklusive Bcc), sonst An, Kopie, Bcc
+        // recipients: X-Envelope-To (noted by the core since redaxo/core#6755, including Bcc), otherwise To, Cc, Bcc
         $recipients = [];
         foreach (isset($headers['x-envelope-to']) ? ['x-envelope-to'] : ['to', 'cc', 'bcc'] as $name) {
             foreach (self::addresses($headers[$name] ?? '') as $a) {
@@ -153,7 +153,7 @@ final class Mail
         if (!$recipients || null === $from) {
             return 'Empfänger oder Absender fehlen in der Mail.';
         }
-        // Bcc und X-Envelope-To (samt Folgezeilen) aus dem Kopf entfernen – sonst sähen alle die Bcc-Adressen
+        // remove Bcc and X-Envelope-To (including continuation lines) from the header – otherwise everyone would see the Bcc addresses
         $cleanHead = (string) preg_replace('~^(?:Bcc|X-Envelope-To):.*(?:\r?\n[ \t].*)*\r?\n?~mi', '', $head);
         try {
             Core::getMailer()->send(new RawMessage($cleanHead . "\r\n\r\n" . $body), new Envelope(new Address($from), array_values($recipients)), archive: false);
@@ -174,7 +174,7 @@ final class Mail
         return ['to' => implode(', ', self::addresses($h['x-envelope-to'] ?? (($h['to'] ?? '') . ',' . ($h['cc'] ?? '')))), 'subject' => $subject];
     }
 
-    /** @return array<string, string> Kopfzeilen (Kleinbuchstaben), Folgezeilen zusammengefügt */
+    /** @return array<string, string> header lines (lowercase), continuation lines joined */
     private static function unfold(string $head): array
     {
         $out = [];
@@ -187,7 +187,7 @@ final class Mail
         return $out;
     }
 
-    /** @return list<string> E-Mail-Adressen aus einer Adress-Kopfzeile */
+    /** @return list<string> email addresses from an address header */
     private static function addresses(string $value): array
     {
         preg_match_all('~[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}~', $value, $m);
@@ -200,7 +200,7 @@ final class Mail
         return ltrim(substr($file, strlen(MailArchive::folder())), '/');
     }
 
-    /** Pfad im Archiv – nur echte not_sent_*.eml unterhalb des Archivs */
+    /** Path in the archive – only real not_sent_*.eml below the archive */
     private static function absolute(string $relative): ?string
     {
         if (!preg_match('~^\d{4}/\d{2}/not_sent_[\w-]+\.eml$~', $relative)) {
@@ -214,8 +214,8 @@ final class Mail
     // ------------------------------------------------------------------ Layout
 
     /**
-     * HTML-Mail im Stil der Website: Logo bzw. Name, Akzentfarbe aus dem Design des Kits, Inhalt, Fuß mit Anschrift und
-     * Impressum. Tabellen und Inline-Stile, damit es auch in Outlook und Webmailern hält.
+     * HTML mail in the style of the website: logo or name, accent color from the kit design, content, footer with address and
+     * imprint. Tables and inline styles, so that it holds up in Outlook and webmail too.
      */
     public static function layout(string $title, string $contentHtml): string
     {
@@ -227,7 +227,7 @@ final class Mail
         $surface = self::hex((string) $design->get('surface'), '#F4F5F8');
         $name = Settings::name();
         $logo = (string) Settings::get('logo', '');
-        // SVG zeigen Gmail und Outlook in Mails nicht an – dann der Name als Schriftzug
+        // Gmail and Outlook don't show SVG in mails – then the name as lettering
         $logoUrl = '' !== $logo && !str_ends_with(strtolower($logo), '.svg') && ($m = Media::get($logo)) ? Router::absolute($m->getUrl()) : '';
         $brand = '' !== $logoUrl
             ? '<img src="' . escape($logoUrl) . '" alt="' . escape($name) . '" height="40" style="display:block;height:40px;width:auto;border:0">'
@@ -237,7 +237,7 @@ final class Mail
         $imprintUrl = '' !== $imprint && function_exists('link_href') ? Router::absolute(link_href($imprint)) : '';
         $font = 'font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif';
 
-        // kein <title>: der Textteil entsteht aus dem HTML (strip_tags) und hätte ihn sonst doppelt
+        // no <title>: the text part is created from the HTML (strip_tags) and would contain it twice
         return '<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>'
             . '<body style="margin:0;padding:0;background:' . $surface . '">'
             . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:' . $surface . '"><tr><td align="center" style="padding:24px 12px">'
@@ -256,9 +256,9 @@ final class Mail
         return preg_match('~^#[0-9A-Fa-f]{3,8}$~', $value) ? $value : $fallback;
     }
 
-    // ------------------------------------------------------------------ Aufbewahrung
+    // ------------------------------------------------------------------ retention
 
-    /** Cronjob: archivierte Mails löschen, die älter sind als „Mails aufbewahren (Tage)“ (0 = nie löschen) */
+    /** Cronjob: delete archived mails older than „Mails aufbewahren (Tage)“ (0 = never delete) */
     #[AsCronjob('fluid_mail_archive_purge', '@daily')]
     public static function purgeArchive(): string
     {

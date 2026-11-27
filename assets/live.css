@@ -1,4 +1,4 @@
-/* Live-Aktualisierung (Core\Live): Statuszeile mit Pause und Markierung neuer Einträge. Farben von der Umgebung (currentColor). */
+/* Live updates (Core\Live): status line with pause and marking of new entries. Colors from the surroundings (currentColor). */
 .cms-live-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:0 0 16px;font-size:.875rem}
 .cms-live-dot{width:9px;height:9px;border-radius:50%;background:#e03131;box-shadow:0 0 0 0 rgb(224 49 49 / .5)}
 .cms-live-label{font-weight:700;letter-spacing:.08em;text-transform:uppercase}
@@ -19,7 +19,7 @@
 @media (prefers-reduced-motion:reduce){.is-live-new::after{animation-duration:6s}}
 @media (forced-colors:active){.cms-live-dot{background:CanvasText}.is-live-new::after{box-shadow:0 0 0 2px Highlight}}
 
-/* Neu laden auf Aktion (Core\Live::region): kurz gedämpft während des Ladens, Ansage nur für Screenreader */
+/* Reload on action (Core\Live::region): briefly dimmed while loading, announcement for screen readers only */
 [data-live-region][aria-busy=true]{opacity:.55;transition:opacity .15s}
 [data-live-region]:focus{outline:none}
 .cms-live-sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}

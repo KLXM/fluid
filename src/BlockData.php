@@ -16,17 +16,17 @@ use const JSON_UNESCAPED_SLASHES;
 use const JSON_UNESCAPED_UNICODE;
 
 /**
- * Blöcke als Daten – ohne Artikel und Slices, z. B. im YForm-Feld „Fluid-Blöcke“ (Data\FluidBlocks).
+ * Blocks as data – without articles and slices, e.g. in the YForm field „Fluid-Blöcke“ (Data\FluidBlocks).
  *
- * Wert: Liste von ['module' => 'fluid.hero', 'data' => [...], 'tunes' => [...]] (als JSON gespeichert). Dieselben Blöcke,
- * Felder und Ausgaben wie auf den Seiten – nur ohne Layout-Spalten (die brauchen Slices).
+ * Value: list of ['module' => 'fluid.hero', 'data' => [...], 'tunes' => [...]] (stored as JSON). The same blocks,
+ * fields and outputs as on the pages – only without layout columns (they need slices).
  *
- *     echo BlockData::render($record->get('inhalt'));   // in einem Template oder einer eigenen Detailansicht
+ *     echo BlockData::render($record->get('inhalt'));   // in a template or a custom detail view
  */
 final class BlockData
 {
     /**
-     * Liste der Blöcke; `uid` = feste Kennung je Block (für das Bearbeiten auf der Website), fehlt bei alten Daten.
+     * List of blocks; `uid` = fixed identifier per block (for editing on the website), missing in old data.
      *
      * @return list<array{module: string, data: array<string, mixed>, tunes: array<string, mixed>, uid?: string}>
      */
@@ -47,7 +47,7 @@ final class BlockData
         return $out;
     }
 
-    /** Fehlende Kennungen ergänzen (doppelte werden neu vergeben) */
+    /** Add missing identifiers (duplicates are reassigned) */
     public static function withUids(array $blocks): array
     {
         $seen = [];
@@ -76,10 +76,10 @@ final class BlockData
     }
 
     /**
-     * Blöcke, die in Daten stehen dürfen: alle verfügbaren Blöcke außer Layout-Spalten.
+     * Blocks allowed in data: all available blocks except layout columns.
      *
-     * @param list<string>|null $allowed nur diese Typen (z. B. ['richtext', 'media_text']) bzw. Modul-Schlüssel
-     * @return array<string, class-string<BlockModule>> Modul-Schlüssel => Modul
+     * @param list<string>|null $allowed only these types (e.g. ['richtext', 'media_text']) or module keys
+     * @return array<string, class-string<BlockModule>> module key => module
      */
     public static function modules(?array $allowed = null): array
     {
@@ -107,7 +107,7 @@ final class BlockData
         return null !== $m && !is_a($m, LayoutBlock::class, true) ? $m : null;
     }
 
-    /** Alle Blöcke als Abschnitte – ohne Bearbeiten-Markup der Seite (die Blöcke gehören zu einem Datensatz) */
+    /** All blocks as sections – without the page's editing markup (the blocks belong to a record) */
     public static function render(mixed $value, string $idPrefix = 'bd', int $articleId = 0): string
     {
         $blocks = self::decode($value);
@@ -132,7 +132,7 @@ final class BlockData
         });
     }
 
-    /** Klartext aller Textfelder (Liste im Backend, Suche, Mails) */
+    /** Plain text of all text fields (list in the backend, search, mails) */
     public static function text(mixed $value): string
     {
         $headings = [];
@@ -146,7 +146,7 @@ final class BlockData
         return trim(implode(' ', [...$headings, ...$text]));
     }
 
-    /** Kurzbezeichnung eines Blocks für Listen: „Text – Erste Überschrift …“ */
+    /** Short label of a block for lists: „Text – Erste Überschrift …“ */
     public static function label(array $item): string
     {
         $m = self::module((string) ($item['module'] ?? ''));
@@ -161,7 +161,7 @@ final class BlockData
         return $m::label() . ('' !== $first ? ' – ' . mb_strimwidth($first, 0, 60, '…') : '');
     }
 
-    /** @internal Auswahl für die Oberfläche: [Schlüssel => [Bezeichnung, Gruppe, Hilfe]] */
+    /** @internal Choice for the interface: [key => [label, group, help]] */
     public static function catalog(?array $allowed = null): array
     {
         $out = [];

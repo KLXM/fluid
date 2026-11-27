@@ -1,7 +1,7 @@
-/* Wissensbereich (Klxm\Fluid\Data\Knowledge): Suche in der Kapitelnavigation – blendet Kapitel ohne Treffer aus (Umlaute und
-   Akzente egal), Oberkapitel von Treffern bleiben sichtbar. Ohne JavaScript bleibt das Suchfeld verborgen. */
+/* Knowledge base (Klxm\Fluid\Data\Knowledge): search in the chapter navigation – hides chapters without matches (umlauts and
+   accents don't matter), parent chapters of matches stay visible. Without JavaScript the search field stays hidden. */
 (() => {
-  // Kapitelnavigation: auf breiten Fenstern immer offen (die Zusammenfassung ist dort ausgeblendet)
+  // Chapter navigation: always open on wide windows (the summary is hidden there)
   const wide = matchMedia('(min-width: 64rem)');
   const drawers = () => document.querySelectorAll('[data-kn-drawer]').forEach((d) => { if (wide.matches) d.open = true; });
   drawers();

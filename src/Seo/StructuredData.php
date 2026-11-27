@@ -23,12 +23,12 @@ use const ENT_HTML5;
 use const ENT_QUOTES;
 
 /**
- * Strukturierte Daten (schema.org, JSON-LD) als verknüpfter @graph je Seite (Modell aus KLXM Studio – Core\StructuredData):
- *  - Organisation: vollständig auf der Startseite, sonst als Verweis (Website-Einstellungen, Head::organizationNode).
- *  - WebSite, WebPage, BreadcrumbList: automatisch.
- *  - Blöcke erklären ihre Daten im Kit: 'jsonld' => ['type' => 'faq', 'items' => 'items', 'question' => 'q', 'answer' => 'a']
- *    oder eine Funktion fn(Block $b): ?array. Gesammelt beim Rendern (nicht im Bearbeiten-Modus).
- *  - Weitere Knoten (Blog, Geo-Koordinaten …) ergänzen die Bausteine über den Extension Point FLUID_STRUCTURED_DATA.
+ * Structured data (schema.org, JSON-LD) as a linked @graph per page (modeled on KLXM Studio – Core\StructuredData):
+ *  - Organization: complete on the start page, otherwise as a reference (website settings, Head::organizationNode).
+ *  - WebSite, WebPage, BreadcrumbList: automatic.
+ *  - Blocks declare their data in the kit: 'jsonld' => ['type' => 'faq', 'items' => 'items', 'question' => 'q', 'answer' => 'a']
+ *    or a function fn(Block $b): ?array. Collected during rendering (not in edit mode).
+ *  - Components add further nodes (blog, geo coordinates …) via the extension point FLUID_STRUCTURED_DATA.
  */
 final class StructuredData
 {
@@ -65,7 +65,7 @@ final class StructuredData
     }
 
     /**
-     * @param PageMeta|null $meta Angaben des Seitenkopfs – auf der Adresse eines Eintrags dessen Adresse, Titel, Text
+     * @param PageMeta|null $meta data of the page head – on an entry's address its address, title, text
      * @return array<string, mixed>
      */
     public static function graph(Article $article, ?PageMeta $meta = null): array
@@ -94,7 +94,7 @@ final class StructuredData
             }
         }
         if ($entry && null !== $meta) {
-            $crumbs[] = [(string) $meta->title, $url];   // Eintrag unter der Seite
+            $crumbs[] = [(string) $meta->title, $url];   // entry below the page
         }
         $s = PageSettings::get($article->id, $article->languageId);
         $page = array_filter([

@@ -18,20 +18,20 @@ use function Redaxo\Core\View\escape;
 use const JSON_UNESCAPED_SLASHES;
 use const JSON_UNESCAPED_UNICODE;
 
-// Nur mit YForm (fluid läuft auch ohne)
+// Only with YForm (fluid also runs without)
 if (!class_exists(Field::class)) {
     return;
 }
 
 /**
- * YForm-Feld „Fluid-Blöcke“: Inhalt aus den Blöcken von fluid – in jeder YForm-Tabelle.
+ * YForm field „Fluid-Blöcke“: content from the blocks of fluid – in any YForm table.
  *
  *     yield FluidBlocks::new('inhalt')->label('Inhalt');
- *     yield FluidBlocks::new('inhalt')->label('Inhalt')->blocks('richtext', 'media_text', 'video');   // nur diese Blöcke
+ *     yield FluidBlocks::new('inhalt')->label('Inhalt')->blocks('richtext', 'media_text', 'video');   // only these blocks
  *
- * Gespeichert als JSON (longtext): [{module, data, tunes}, …]. Bearbeiten in der YForm-Maske mit denselben Feldern
- * wie auf der Website (Medienpool, Linkmap, Text-Editor). Ausgabe: `BlockData::render($record->get('inhalt'))` – die
- * Detailansicht der Datenliste macht das automatisch. Layout-Spalten gibt es hier nicht (sie brauchen Slices).
+ * Stored as JSON (longtext): [{module, data, tunes}, …]. Edited in the YForm form with the same fields as on the
+ * website (media pool, linkmap, text editor). Output: `BlockData::render($record->get('inhalt'))` – the data list's
+ * detail view does this automatically. There are no layout columns here (they need slices).
  */
 final class FluidBlocks extends Field
 {
@@ -42,10 +42,10 @@ final class FluidBlocks extends Field
     protected function init(): void
     {
         $this->listed = false;
-        $this->filterable = true;   // Suche der Liste im Backend: Text der Blöcke
+        $this->filterable = true;   // Search of the list in the backend: text of the blocks
     }
 
-    /** Nur diese Blöcke anbieten (Typ wie „richtext“ oder Modul-Schlüssel wie „fluid.richtext“) */
+    /** Offer only these blocks (type like „richtext“ or module key like „fluid.richtext“) */
     public function blocks(string ...$types): static
     {
         $this->allowed = $types;

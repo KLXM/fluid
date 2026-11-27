@@ -21,17 +21,17 @@ use function count;
 use function in_array;
 
 /**
- * Versionen einer Seite (Modell aus KLXM Studio – Pages::addRevision), gespeichert in der Historie-Tabelle des Cores
- * (rex_article_slice_history, Spalte revision):
+ * Versions of a page (model from KLXM Studio – Pages::addRevision), stored in the core history table
+ * (rex_article_slice_history, column revision):
  *
- *  - Live-Version = Archiv: Jede Live-Schaltung legt den Stand an, der live geht („Veröffentlicht“). Lag die bisherige
- *    Live-Version noch nicht im Archiv (z. B. im Backend direkt geändert), wird sie vorher gesichert.
- *  - Arbeitsversion = Zwischenstände zum Rückgängigmachen (Speichern, vor dem Wiederherstellen/Verwerfen). Sie waren nie
- *    veröffentlicht und werden bei der Live-Schaltung geleert.
- *  - Wiederherstellen schreibt einen Stand in den Entwurf – live geht er erst mit „Veröffentlichen“, Korrekturen davor
- *    sind möglich. Der aktuelle Entwurf wird vorher selbst gesichert (nichts geht verloren).
+ *  - Live version = archive: every publish stores the state that goes live („Veröffentlicht“). If the previous
+ *    live version was not yet in the archive (e.g. changed directly in the backend), it is saved first.
+ *  - Working version = intermediate states for undo (save, before restore/discard). They were never
+ *    published and are cleared on publish.
+ *  - Restore writes a state into the draft – it only goes live with „Veröffentlichen“, corrections before that
+ *    are possible. The current draft is saved first (nothing is lost).
  *
- * Je Seite und Fassung bleiben die letzten KEEP Stände.
+ * The last KEEP states are kept per page and version.
  */
 final class Versions
 {
@@ -40,36 +40,36 @@ final class Versions
     public const array TYPES = ['fluid_save' => 'Gespeichert', 'fluid_published' => 'Veröffentlicht', 'fluid_publish' => 'Vor dem Veröffentlichen',
         'fluid_restore' => 'Vor dem Wiederherstellen', 'fluid_discard' => 'Vor dem Verwerfen'];
 
-    // ------------------------------------------------------------------ Versionen-Ansicht (wie KLXM Studio: Zeitleiste, Vorschau, Vergleich)
+    // ------------------------------------------------------------------ versions view (like KLXM Studio: timeline, preview, comparison)
 
-    /** Vorschau eines Stands auf der Website: ?fluid_version=now|live|<revision>-<YmdHis> (&fluid_mark=1 hebt Änderungen hervor) */
+    /** Preview of a state on the website: ?fluid_version=now|live|<revision>-<YmdHis> (&fluid_mark=1 highlights changes) */
     public const string PARAM = 'fluid_version';
-    /** Speichern innerhalb dieser Sekunden fasst ein Stand zusammen (Tippen, mehrere Blöcke) */
+    /** Saves within this many seconds are merged into one state (typing, several blocks) */
     private const int MERGE = 120;
 
-    /** Spalten, die zum Inhalt eines Blocks gehören (für Vergleich und Gleichheit von Ständen) */
+    /** Columns that make up the content of a block (for comparing states and checking them for equality) */
     private const array META = ['id', 'slice_id', 'article_id', 'language_id', 'revision', 'priority', 'createdate', 'updatedate', 'createuser', 'updateuser', 'history_type', 'history_date', 'history_user'];
 
-    /** @var array{revision: int, date: ?string}|null Stand, den die laufende Anfrage zeigt */
+    /** @var array{revision: int, date: ?string}|null state shown by the current request */
     public static ?array $preview = null;
 
-    /** @var array<int, string> Slice-ID → new|changed (Hervorhebung in der Vorschau) */
+    /** @var array<int, string> slice ID → new|changed (highlighting in the preview) */
     public static array $marks = [];
 
     /**
-     * Live-Schaltung: Arbeitsversion live schalten ($copy), den Stand, der live geht, ins Archiv – und die Zwischenstände der
-     * Arbeitsversion leeren. Die bisherige Live-Version wird vorher gesichert, falls sie noch nicht im Archiv liegt.
+     * Publish: make the working version live ($copy), archive the state that goes live – and clear the intermediate
+     * states of the working version. The previous live version is saved first if it is not yet in the archive.
      *
-     * @param callable(): void $copy kopiert die Arbeitsversion in die Live-Version
+     * @param callable(): void $copy copies the working version into the live version
      */
     public static function publish(int $articleId, int $languageId, callable $copy): void
     {
         if (!self::archived($articleId, $languageId)) {
-            // eine Sekunde früher: Stände unterscheidet die Historie nur nach ihrem Zeitpunkt
+            // one second earlier: the history tells states apart only by their timestamp
             self::snapshot($articleId, $languageId, ArticleRevision::LIVE, 'fluid_publish', date(Sql::FORMAT_DATETIME, time() - 1));
         }
         $copy();
-        // je Veröffentlichung ein Stand – außer es ging unverändert live (dann liegt er schon im Archiv)
+        // one state per publish – unless it went live unchanged (then it is already in the archive)
         if (!self::archived($articleId, $languageId)) {
             self::snapshot($articleId, $languageId, ArticleRevision::LIVE, 'fluid_published');
         }
@@ -78,7 +78,7 @@ final class Versions
             [$articleId, $languageId, ArticleRevision::WORK]);
     }
 
-    /** Liegt die aktuelle Live-Version schon als letzter Stand im Archiv? (gleiche Blöcke, Reihenfolge, Status, Werte) */
+    /** Is the current live version already the last state in the archive? (same blocks, order, status, values) */
     private static function archived(int $articleId, int $languageId): bool
     {
         ArticleSliceHistory::checkTables();
@@ -98,21 +98,21 @@ final class Versions
         return $norm($live) === $norm($archive);
     }
 
-    /** @param string|null $date Zeitpunkt des Stands (Standard: jetzt) */
+    /** @param string|null $date time of the state (default: now) */
     public static function snapshot(int $articleId, int $languageId, int $revision, string $type, ?string $date = null): void
     {
         ArticleSliceHistory::checkTables();
         $sql = Sql::factory();
         $table = ArticleSliceHistory::getTable();
         $user = Core::getUser()->login ?? Editing::user()->login ?? '';
-        // Speichern kurz hintereinander: letzten eigenen Stand ersetzen statt neuen anlegen
+        // saves in quick succession: replace the own last state instead of creating a new one
         if ('fluid_save' === $type) {
             $last = $sql->getArray('SELECT history_date, history_user, history_type FROM ' . $table . ' WHERE article_id = ? AND language_id = ? AND revision = ? ORDER BY history_date DESC LIMIT 1', [$articleId, $languageId, $revision])[0] ?? null;
             if ($last && 'fluid_save' === $last['history_type'] && $last['history_user'] === $user && time() - strtotime((string) $last['history_date']) < self::MERGE) {
                 $sql->setQuery('DELETE FROM ' . $table . ' WHERE article_id = ? AND language_id = ? AND revision = ? AND history_date = ?', [$articleId, $languageId, $revision, $last['history_date']]);
             }
         }
-        // Stände unterscheidet die Historie nur nach ihrem Zeitpunkt (Sekunde): belegt → nächste freie Sekunde
+        // the history tells states apart only by their timestamp (second): taken → next free second
         $time = null !== $date ? (int) strtotime($date) : time();
         while ($sql->getArray('SELECT 1 FROM ' . $table . ' WHERE article_id = ? AND language_id = ? AND revision = ? AND history_date = ? LIMIT 1',
             [$articleId, $languageId, $revision, date(Sql::FORMAT_DATETIME, $time)])) {
@@ -124,7 +124,7 @@ final class Versions
         foreach ($rows ?: [['__empty' => true]] as $row) {
             $ins = Sql::factory()->setTable($table);
             if (isset($row['__empty'])) {
-                // leere Seite: Markierungszeile, damit der Stand sichtbar und wiederherstellbar ist
+                // empty page: marker row so that the state is visible and restorable
                 $ins->setValues(array_intersect_key(['article_id' => $articleId, 'language_id' => $languageId, 'revision' => $revision, 'slice_id' => 0, 'module' => '', 'content_section_id' => 1, 'priority' => 0, 'status' => 0,
                     'createdate' => $date, 'updatedate' => $date, 'createuser' => $user, 'updateuser' => $user], array_flip($cols)));
             } else {
@@ -138,7 +138,7 @@ final class Versions
             }
             $ins->setValue('history_type', $type)->setValue('history_date', $date)->setValue('history_user', $user)->insert();
         }
-        // Aufräumen: nur die letzten KEEP Stände je Seite/Fassung
+        // clean up: only the last KEEP states per page/version
         $dates = array_column($sql->getArray('SELECT DISTINCT history_date FROM ' . $table . ' WHERE article_id = ? AND language_id = ? AND revision = ? ORDER BY history_date DESC', [$articleId, $languageId, $revision]), 'history_date');
         if (count($dates) > self::KEEP) {
             $sql->setQuery('DELETE FROM ' . $table . ' WHERE article_id = ? AND language_id = ? AND revision = ? AND history_date < ?', [$articleId, $languageId, $revision, $dates[self::KEEP - 1]]);
@@ -162,7 +162,7 @@ final class Versions
         ], $rows);
     }
 
-    /** Stand in den Entwurf zurückholen (aktueller Entwurf wird vorher gesichert) */
+    /** Bring a state back into the draft (the current draft is saved first) */
     public static function restore(int $articleId, int $languageId, string $date, int $fromRevision): void
     {
         $table = ArticleSliceHistory::getTable();
@@ -177,7 +177,7 @@ final class Versions
         $cols = array_map(static fn ($c) => $c->name, Table::get('rex_article_slice')->getColumns());
         foreach ($rows as $row) {
             if (0 === (int) $row['slice_id']) {
-                continue;   // Markierung „leere Seite“
+                continue;   // marker „empty page“
             }
             $ins = Sql::factory()->setTable('rex_article_slice');
             foreach ($cols as $c) {
@@ -187,7 +187,7 @@ final class Versions
             }
             $ins->setValue('revision', $target)->insert();
             if ($slice = ArticleSlice::getArticleSliceById((int) $ins->getLastId(), $languageId, $target)) {
-                ArticleSliceReference::update($slice);   // Verweise des Cores (Löschschutz)
+                ArticleSliceReference::update($slice);   // core references (delete protection)
             }
         }
         ArticleCache::delete($articleId, $languageId);
@@ -210,8 +210,8 @@ final class Versions
     }
 
     /**
-     * Stände einer Seite, neueste zuerst. Erster Eintrag ist „Jetzt“ (Entwurf bzw. live); ältere Stände mit gleichem Inhalt
-     * wie ein neuerer fallen weg.
+     * States of a page, newest first. The first entry is „Jetzt“ (draft or live); older states with the same content
+     * as a newer one are dropped.
      *
      * @return list<array{key: string, now: bool, revision: int, date: string, type: string, user: string, blocks: array<int, string>, modules: array<int, string>}>
      */
@@ -239,11 +239,11 @@ final class Versions
         $rows = $sql->getArray('SELECT * FROM rex_article_slice WHERE article_id = ? AND language_id = ? AND revision = ? ORDER BY content_section_id, priority', [$articleId, $languageId, $revision]);
         [$blocks, $modules] = $sig($rows);
         $changed = array_filter(array_column($rows, 'updatedate'));
-        // Wiederherstellen kopiert alte Zeilen (alte updatedate) – „Jetzt“ ist mindestens so neu wie der neueste gesicherte Stand
+        // restore copies old rows (old updatedate) – „Jetzt“ is at least as new as the newest saved state
         $changed[] = (string) ($sql->getArray('SELECT MAX(history_date) AS d FROM ' . $table . ' WHERE article_id = ? AND language_id = ?', [$articleId, $languageId])[0]['d'] ?? '');
         $changed = array_filter($changed);
         $out = [['key' => 'now', 'now' => true, 'revision' => $revision, 'date' => $changed ? (string) max($changed) : date(Sql::FORMAT_DATETIME), 'type' => 'now', 'user' => '', 'blocks' => $blocks, 'modules' => $modules]];
-        // gleich = gleiche Blöcke in gleicher Reihenfolge (IDs zählen nicht: Live-Fassung hat eigene Slice-IDs)
+        // equal = same blocks in the same order (IDs don't count: the live version has its own slice IDs)
         $seen = [md5((string) json_encode(array_values($blocks))) => true];
 
         $groups = $sql->getArray('SELECT history_date, revision, MAX(history_type) AS history_type, MAX(history_user) AS history_user FROM ' . $table
@@ -254,7 +254,7 @@ final class Versions
             [$blocks, $modules] = $sig($rows);
             $hash = md5((string) json_encode(array_values($blocks)));
             if (isset($seen[$hash])) {
-                continue;   // gleicher Inhalt wie ein neuerer Stand
+                continue;   // same content as a newer state
             }
             $seen[$hash] = true;
             $out[] = ['key' => self::key((int) $g['revision'], (string) $g['history_date']), 'now' => false, 'revision' => (int) $g['revision'], 'date' => (string) $g['history_date'],
@@ -265,9 +265,9 @@ final class Versions
     }
 
     /**
-     * Unterschied zweier Stände je Block: neu, geändert, entfernt (Bezeichnungen der entfernten Blöcke).
-     * Zuordnung erst über die Slice-ID, dann über gleichen Inhalt, dann über Blocktyp in Reihenfolge – Veröffentlichen und
-     * Wiederherstellen legen die Blöcke mit neuen IDs an.
+     * Difference between two states per block: new, changed, removed (labels of the removed blocks).
+     * Matched first by slice ID, then by equal content, then by block type in order – publish and
+     * restore create the blocks with new IDs.
      *
      * @param array<int, string> $blocks
      * @param array<int, string> $modules
@@ -281,8 +281,8 @@ final class Versions
         if (null === $base) {
             return $out;
         }
-        $open = $base;            // noch nicht zugeordnete Blöcke des älteren Stands
-        $pending = [];            // Blöcke ohne Partner nach ID
+        $open = $base;            // blocks of the older state not yet matched
+        $pending = [];            // blocks without a partner by ID
         foreach ($blocks as $id => $hash) {
             if (isset($open[$id])) {
                 if ($open[$id] !== $hash) {
@@ -295,7 +295,7 @@ final class Versions
         }
         foreach ($pending as $id => $hash) {
             if (false !== $match = array_search($hash, $open, true)) {
-                unset($open[$match], $pending[$id]);   // gleicher Inhalt, nur neue ID
+                unset($open[$match], $pending[$id]);   // same content, only a new ID
             }
         }
         foreach ($pending as $id => $hash) {
@@ -330,7 +330,7 @@ final class Versions
         return is_a($m, BlockModule::class, true) ? $m::label() : $m::name();
     }
 
-    /** Daten für die Versionen-Ansicht im Editor (assets/editor/versions.js) */
+    /** Data for the versions view in the editor (assets/editor/versions.js) */
     public static function view(Article $article): array
     {
         $states = self::states($article->id, $article->languageId);
@@ -342,7 +342,7 @@ final class Versions
             $d = self::diff($st['blocks'], $st['modules'], $older['blocks'] ?? null, $older['modules'] ?? []);
             $versions[] = [
                 'id' => $st['key'], 'now' => $st['now'],
-                // Fassung: Zwischenstand des Entwurfs (wird beim Veröffentlichen geleert) oder veröffentlichter Stand (Archiv)
+                // version: intermediate state of the draft (cleared on publish) or published state (archive)
                 'stage' => $st['now'] ? null : (ArticleRevision::WORK === (int) $st['revision'] ? 'draft' : 'live'),
                 ...self::when($st['date'], $now),
                 'note' => $st['now'] ? (self::isWorkVersion() && self::hasChanges($article) ? 'Entwurf mit unveröffentlichten Änderungen' : 'Aktueller Stand') : (self::TYPES[$st['type']] ?? 'Gespeichert'),
@@ -371,7 +371,7 @@ final class Versions
         return $sig(ArticleRevision::WORK) !== $sig(ArticleRevision::LIVE);
     }
 
-    /** Zeitangaben eines Stands: day (Gruppe der Zeitleiste), time, ago, at, ts, hm (Uhr), dm (Kalenderblatt) */
+    /** Time values of a state: day (timeline group), time, ago, at, ts, hm (clock), dm (calendar sheet) */
     private static function when(string $date, int $now): array
     {
         $ts = strtotime($date) ?: $now;
@@ -392,8 +392,8 @@ final class Versions
     }
 
     /**
-     * Abfrage der Blöcke für die Vorschau eines älteren Stands: statt rex_article_slice die Zeilen aus der Historie
-     * (slice_id als id, damit Anker und Hervorhebung zu den Blöcken passen).
+     * Query of the blocks for the preview of an older state: the rows from the history instead of rex_article_slice
+     * (slice_id as id, so that anchors and highlighting match the blocks).
      */
     public static function sliceQuery(string $query): string
     {
@@ -414,7 +414,7 @@ final class Versions
         return (string) preg_replace('/FROM\s+rex_article_slice\b/', 'FROM ' . $derived, $query, 1);
     }
 
-    /** Hervorhebung: data-vdiff am äußersten Element eines Blocks */
+    /** Highlighting: data-vdiff on the outermost element of a block */
     public static function markSlice(string $html, int $sliceId): string
     {
         if (!isset(self::$marks[$sliceId])) {
@@ -424,7 +424,7 @@ final class Versions
         return (string) preg_replace('~^(\s*<[a-zA-Z][a-zA-Z0-9-]*)(?=[\s>/])~', '$1 data-vdiff="' . self::$marks[$sliceId] . '"', $html, 1);
     }
 
-    /** Hervorhebungen für die Vorschau: Unterschied des Stands zum nächstälteren */
+    /** Highlights for the preview: difference between the state and the next older one */
     public static function prepareMarks(int $articleId, int $languageId, string $key): void
     {
         $states = self::states($articleId, $languageId);

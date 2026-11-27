@@ -1,5 +1,5 @@
 <?php
-/** Kennzahlen: row (große Zahlen, Trennlinien) · cards · split (Überschrift neben den Zahlen, Sidebar-Muster). @var \Klxm\Fluid\Block $b  @var array $d */
+/** Key figures: row (large numbers, dividers) · cards · split (heading next to the numbers, sidebar pattern). @var \Klxm\Fluid\Block $b  @var array $d */
 $v = $b->variant() ?: 'row';
 $items = array_values((array) ($d['items'] ?? []));
 ?>

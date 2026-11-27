@@ -4,9 +4,9 @@ use Klxm\Fluid\Block;
 use Klxm\Fluid\Hotspots;
 
 /**
- * Interaktives Bild (Klxm\Fluid\Hotspots): Bild mit nummerierten Knöpfen und Hinweisfenstern (<button popovertarget>), Flächen als
- * SVG, darunter die Liste aller Markierungen (Telefon sichtbar, sonst für Screenreader). Lage ohne style-Attribute (CSP).
- * Beim Bearbeiten öffnen die Knöpfe nichts (das Skript lädt nicht) – Markierungen setzt der Editor in der Seitenleiste.
+ * Interactive image (Klxm\Fluid\Hotspots): image with numbered buttons and popups (<button popovertarget>), areas as
+ * SVG, below the list of all markers (visible on phones, otherwise for screen readers). Position without style attributes (CSP).
+ * While editing the buttons open nothing (the script doesn't load) – markers are set by the editor in the sidebar.
  * @var Block $b  @var array $d
  */
 $file = (string) ($d['image'] ?? '');

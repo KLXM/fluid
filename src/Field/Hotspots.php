@@ -14,9 +14,9 @@ use Redaxo\Core\View\Renderable;
 use function is_string;
 
 /**
- * Markierungen auf einem Bild (Block „Interaktives Bild“): Eigenschaft vom Typ array im Format Klxm\Fluid\Hotspots
- * (Version 1, wie KLXM Studio). In fluid mit dem Marker-Editor (Bild aus dem Bildfeld `image` desselben Formulars, darunter
- * eine Zeile je Markierung); in gewöhnlichen Formularen des Cores als JSON-Text. Gespeichert wird immer das bereinigte Format.
+ * Markers on an image (block „Interaktives Bild“): property of type array in the format Klxm\Fluid\Hotspots
+ * (version 1, like KLXM Studio). In fluid with the marker editor (image from the image field `image` of the same form,
+ * below it one row per marker); in ordinary core forms as JSON text. The cleaned format is always stored.
  *
  *     #[MediaPicker('Bild', preview: true)]
  *     public ?Media $image = null;
@@ -28,8 +28,8 @@ use function is_string;
 class Hotspots extends Field implements FluidField
 {
     /**
-     * @param string $image fluid: Schlüssel des Bildfelds im selben Formular
-     * @param list<string>|null $variants fluid: nur in diesen Darstellungen des Blocks
+     * @param string $image fluid: key of the image field in the same form
+     * @param list<string>|null $variants fluid: only in these displays of the block
      */
     public function __construct(
         string|Renderable $label,
@@ -66,7 +66,7 @@ class Hotspots extends Field implements FluidField
         return Format::json($value);
     }
 
-    /** Formularzeilen des Marker-Editors (FieldForm) oder JSON → Format */
+    /** Form rows of the marker editor (FieldForm) or JSON → format */
     #[Override]
     public function fromRaw(string|array|null $raw, ValueType $type): array
     {

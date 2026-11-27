@@ -1,5 +1,5 @@
-/* Block „Formular“ (YForm): Markup von YForm (form-group, control-label, help-block, has-error, alert) im Stil der
-   öffentlichen Formulare des Kits (css/dataform.css, .dff). Bearbeiten-Knöpfe der Datenliste (.fdl-edit). */
+/* Block „Formular“ (YForm): YForm markup (form-group, control-label, help-block, has-error, alert) in the style of the
+   public forms of the kit (css/dataform.css, .dff). Edit buttons of the data list (.fdl-edit). */
 .fform--split{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,20rem),1fr));gap:var(--f-s-xl);align-items:start}
 .fform--split .sec-head{margin-bottom:0}
 .fform__body{min-width:0}
@@ -21,13 +21,13 @@
 .dff-done:focus{outline:none}
 section:has(>.fform),section:has(>.dl),section:has(>.fdl-detail){scroll-margin-top:5.5rem}
 
-/* YForm 6 (Theme aus YFormBridge::theme): Checkbox mit Meldung darunter, Pflicht-Markierung, leere Klassen */
+/* YForm 6 (theme from YFormBridge::theme): checkbox with message below, required marker, empty classes */
 .fyf .dff-check{flex-wrap:wrap}
 .fyf .dff-check>.dff-err,.fyf .dff-check>.dff-help{flex-basis:100%}
 .fyf .dff-check label{display:flex;align-items:flex-start;gap:.6rem;font-weight:400;cursor:pointer}
 .fyf .yform-required-mark{color:var(--f-danger,#b42318)}
 .fyf .dff-grid{grid-template-columns:1fr}
-/* Breiten aus dem YForm-Layout (Theme: dff-c--1 … 12): nebeneinander, sobald die Zeile breit genug ist */
+/* Widths from the YForm layout (theme: dff-c--1 … 12): side by side as soon as the row is wide enough */
 .fyf .dff-grid:has(>.dff-c){container-type:inline-size;grid-template-columns:repeat(12,minmax(0,1fr))}
 .fyf .dff-c{grid-column:span 12;min-width:0}
 @container (min-width:30rem){
@@ -36,7 +36,7 @@ section:has(>.fform),section:has(>.dl),section:has(>.fdl-detail){scroll-margin-t
 .fyf .dff-c--9{grid-column:span 9}.fyf .dff-c--10{grid-column:span 10}.fyf .dff-c--11{grid-column:span 11}
 }
 .fyf .dff-actions{margin-top:var(--f-s-s)}
-/* Mehrstufige Formulare (js/formsteps.js) – ohne JavaScript alle Schritte untereinander */
+/* Multi-step forms (js/formsteps.js) – without JavaScript all steps stacked */
 .dff-steps { display: none; }
 .dff-pane + .dff-pane { margin-top: 1.5rem; }
 .dff-progress { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; margin: 0 0 1.5rem; padding: 0; list-style: none; font-size: .9rem; color: var(--f-muted); }

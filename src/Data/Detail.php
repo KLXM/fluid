@@ -19,18 +19,18 @@ use Yakamara\YForm\Field\Textarea;
 use function array_key_exists;
 
 /**
- * Detailansicht der Datenliste mit schöner Adresse: /{seite}/{titel}-{id} statt ?eintrag={id}.
+ * Detail view of the data list with a pretty address: /{seite}/{titel}-{id} instead of ?eintrag={id}.
  *
- * Der Router fragt match() für Adressen, die keine Seite sind: Endet die Adresse auf „-{Zahl}“ und hat die Seite davor
- * eine Datenliste mit Detailansicht, zeigt er diese Seite mit dem Eintrag. Alte Links ?eintrag={id} leiten per 301 um.
+ * The router asks match() for addresses that are not a page: if the address ends in „-{Zahl}“ and the page before it
+ * has a data list with detail view, it shows that page with the entry. Old links ?eintrag={id} redirect with 301.
  */
 final class Detail
 {
     public const string PARAM = 'eintrag';
 
     /**
-     * Beim Routing anmelden: Detailansicht /seite/titel-ID (falscher Titel-Teil → 301), alter Link ?eintrag=ID → 301,
-     * Detailseiten in der sitemap.xml.
+     * Register with the routing: detail view /seite/titel-ID (wrong title part → 301), old link ?eintrag=ID → 301,
+     * detail pages in the sitemap.xml.
      */
     public static function boot(): void
     {
@@ -44,7 +44,7 @@ final class Detail
             if (null === $title) {
                 return null;
             }
-            // dieselbe Sache in anderen Sprachen: Seite mit Datenliste, Eintrag erfüllt dort die Bedingung
+            // the same thing in other languages: page with a data list where the entry meets the condition
             $alternates = [];
             foreach (Language::getAll() as $l) {
                 $c = $l->id === $lang ? $cfg : self::config($pid, $l->id);
@@ -54,7 +54,7 @@ final class Detail
                 }
             }
 
-            // Titel lassen sich ändern (auch zurück): Weiterleitung auf die richtige Adresse nicht zwischenspeichern
+            // Titles can change (also back): do not cache the redirect to the correct address
             return new RouteMatch($pid, $lang, [self::PARAM => $eid], self::url(Router::url($pid, $lang), $title, $eid),
                 cacheRedirect: false, meta: self::meta($cfg, $eid, $title), alternates: $alternates);
         });
@@ -74,7 +74,7 @@ final class Detail
         });
     }
 
-    /** Einstellungen der ersten Datenliste mit Detailansicht auf einer Seite (Live-Fassung) */
+    /** Settings of the first data list with detail view on a page (live version) */
     public static function config(int $articleId, int $languageId): ?array
     {
         static $cache = [];
@@ -85,12 +85,12 @@ final class Detail
                 [$articleId, $languageId, ArticleRevision::LIVE]);
             foreach ($rows as $r) {
                 $d = BlockModule::stored($r['data'])['values'];
-                // Listen-Vorlage: Bild- und Textfeld der Vorlage (Titel, Bedingung und Adressen bleiben beim Block)
+                // List template: image and text field of the template (title, condition and addresses stay with the block)
                 if (null !== ($cls = BlockModule::classFor((string) $r['module']))) {
                     $d = ListTemplates::resolve($cls, $d);
                 }
                 if (!empty($d['detail']) && '' !== (string) ($d['table'] ?? '')) {
-                    $cache[$key] = $d + ['_language' => $languageId];   // Sprache der Seite (Feld „Sprache“ der Tabelle)
+                    $cache[$key] = $d + ['_language' => $languageId];   // Language of the page (field „Sprache“ of the table)
                     break;
                 }
             }
@@ -99,7 +99,7 @@ final class Detail
         return $cache[$key];
     }
 
-    /** Letzter Teil der Adresse: „titel-des-eintrags-12“ */
+    /** Last part of the address: „titel-des-eintrags-12“ */
     public static function slug(string $title, int $id): string
     {
         $s = substr(Routes::slugify($title), 0, 80);
@@ -107,7 +107,7 @@ final class Detail
         return ('' !== trim($s, '-') ? rtrim($s, '-') . '-' : '') . $id;
     }
 
-    /** Adresse eines Eintrags unter der Adresse seiner Seite – im Adressformat des Routings (/daten/titel-5.html) */
+    /** Address of an entry below its page's address – in the routing's address format (/daten/titel-5.html) */
     public static function url(string $pageUrl, string $title, int $id): string
     {
         [$path, $query] = array_pad(explode('?', $pageUrl, 2), 2, '');
@@ -116,7 +116,7 @@ final class Detail
         return $format->strip($path) . '/' . $format->append(self::slug($title, $id)) . ('' !== $query ? '?' . $query : '');
     }
 
-    /** Meta-Angaben eines Eintrags für den Seitenkopf: Titel, Beschreibung (Textfeld), Bild */
+    /** Meta data of an entry for the page head: title, description (text field), image */
     public static function meta(array $config, int $id, string $title): PageMeta
     {
         $t = YFormBridge::table((string) $config['table']);
@@ -136,7 +136,7 @@ final class Detail
         );
     }
 
-    /** Adresse ohne Seite: [Seiten-ID, Eintrags-ID], wenn sie auf eine Detailansicht passt */
+    /** Address without page: [page ID, entry ID] if it matches a detail view */
     public static function match(string $full, int $languageId): ?array
     {
         if (!preg_match('~^(?:(.*)/)?(?:[a-z0-9-]*-)?(\d+)$~', $full, $m)) {
@@ -147,7 +147,7 @@ final class Detail
         return null !== $page && null !== self::config($page, $languageId) ? [$page, (int) $m[2]] : null;
     }
 
-    /** Alle Einträge einer Datenliste mit Detailansicht: [[id, titel], …] (Sitemap) */
+    /** All entries of a data list with detail view: [[id, title], …] (sitemap) */
     public static function entries(array $config, int $limit = 1000): array
     {
         $t = YFormBridge::table((string) $config['table']);
@@ -160,7 +160,7 @@ final class Detail
         return array_map(static fn ($r) => [(int) $r->id, $f ? YFormBridge::text($r, $f) : ''], $rows);
     }
 
-    /** Titel eines Eintrags für die Adresse (Titelfeld der Datenliste) */
+    /** Title of an entry for the address (title field of the data list) */
     public static function title(array $config, int $id): ?string
     {
         $t = YFormBridge::table((string) $config['table']);

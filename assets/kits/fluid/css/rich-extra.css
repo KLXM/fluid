@@ -1,5 +1,5 @@
-/* Neuere Absatz-Stile der Formatierungsleiste (Core\Sanitizer::P_EXTRA) – neutrale Vorlage für Kits ohne eigene Regeln.
-   Null-Spezifität (:where), Farben aus den Rich-Text-Variablen des Kits (--rt-*) oder neutral; Kit kann css/rich-extra.css mitbringen. */
+/* Newer paragraph styles of the formatting toolbar (Core\Sanitizer::P_EXTRA) – neutral template for kits without own rules.
+   Zero specificity (:where), colors from the kit's rich text variables (--rt-*) or neutral; a kit can bring css/rich-extra.css. */
 :where(p.t-tip,p.t-warn){--rx:var(--rt-success,#1A7240);margin-block:1em;padding:.8em 1.1em;border-left:3px solid var(--rx);border-radius:6px;background:color-mix(in srgb,var(--rx) 10%,transparent)}
 :where(p.t-warn){--rx:var(--rt-warning,#A15C00)}
 :where(p.t-kicker){margin-bottom:.35em;color:var(--rt-accent,currentColor);font-size:.8em;font-weight:650;letter-spacing:.09em;line-height:1.3;text-transform:uppercase}

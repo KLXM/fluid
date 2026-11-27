@@ -12,13 +12,13 @@ use Redaxo\Core\Security\BackendLogin;
 use Redaxo\Core\Security\User;
 
 /**
- * Zustand „Bearbeiten auf der Website“ für die laufende Anfrage.
+ * State „Bearbeiten auf der Website“ for the current request.
  *
- * - `user()`: angemeldeter Backend-Benutzer mit Recht auf den aktuellen Artikel (sonst null) – nur dann gibt es die Leiste.
- * - `active()`: Bearbeiten-Modus (`?fluid_edit=1`) – Blöcke geben dann `data-edit`-Attribute aus und die Seite wird
- *   live aus der Datenbank gerendert (Arbeitsversion), nicht aus dem Cache.
+ * - `user()`: logged-in backend user with permission for the current article (otherwise null) – only then is there a toolbar.
+ * - `active()`: edit mode (`?fluid_edit=1`) – blocks then output `data-edit` attributes and the page is
+ *   rendered live from the database (working version), not from the cache.
  *
- * Außerhalb des Frontends (Backend, Cache-Erzeugung, Konsole) ist beides immer aus, damit der Cache nie Bearbeiten-Markup enthält.
+ * Outside the frontend (backend, cache generation, console) both are always off, so the cache never contains edit markup.
  */
 final class Editing
 {
@@ -40,9 +40,9 @@ final class Editing
             return null;
         }
         $user = BackendLogin::createUser();
-        // Gastzugang (FLUID_GUEST_USER, z. B. AddOn fluid_demo): Besucher ohne Anmeldung bekommen die Rechte eines Benutzers.
-        // Nie mit Admin-Rechten. Schreibende Aktionen von Gästen führt fluid nur aus, wenn ein AddOn sie über FLUID_API_ACTION
-        // übernimmt (z. B. in einer Transaktion, die zurückgerollt wird) – sonst lehnt Api sie ab.
+        // guest access (FLUID_GUEST_USER, e.g. AddOn fluid_demo): visitors without login get the permissions of a user.
+        // Never with admin permissions. fluid only runs write actions of guests if an AddOn takes them over via
+        // FLUID_API_ACTION (e.g. in a transaction that is rolled back) – otherwise Api rejects them.
         if (!$user) {
             $guest = Extension::dispatch(new ExtensionPoint('FLUID_GUEST_USER', null));
             if ($guest instanceof User && !$guest->admin) {
@@ -62,7 +62,7 @@ final class Editing
         return self::$user = $user;
     }
 
-    /** Gastzugang: die Person ist nicht angemeldet, sondern arbeitet über FLUID_GUEST_USER (z. B. Demo) */
+    /** Guest access: the person is not logged in but works via FLUID_GUEST_USER (e.g. demo) */
     public static function isGuest(): bool
     {
         self::user();
@@ -71,8 +71,8 @@ final class Editing
     }
 
     /**
-     * Revision, in der Gäste arbeiten (z. B. live, wenn ein AddOn alle Änderungen in einer Transaktion zurückrollt).
-     * Ohne Angabe wie angemeldete Benutzer (FluidAddon::revision()).
+     * Revision in which guests work (e.g. live, if an AddOn rolls back all changes in a transaction).
+     * If not set, like logged-in users (FluidAddon::revision()).
      */
     public static function guestRevision(?int $revision): void
     {
@@ -85,16 +85,16 @@ final class Editing
         return self::isGuest() ? self::$guestRevision : null;
     }
 
-    /** Bearbeiten-Modus angefordert und erlaubt */
+    /** Edit mode requested and allowed */
     public static function requested(): bool
     {
-        // Bearbeitungssperre: hält jemand anderes die Seite, nur Ansehen – auch mit ?fluid_edit=1
+        // edit lock: if someone else holds the page, view only – even with ?fluid_edit=1
         return 1 === Request::get(self::PARAM, 'int', 0) && null !== self::user() && null === self::lockedBy();
     }
 
     /**
-     * Bearbeitungssperre: Eintrag der Person, die die aktuelle Seite gerade hält – null, wenn sie frei ist oder man sie
-     * selbst hält.
+     * Edit lock: entry of the person currently holding the current page – null if it is free or held
+     * by oneself.
      *
      * @return array<string, mixed>|null
      */
@@ -105,13 +105,13 @@ final class Editing
         return null !== $article ? EditLock::blockedFor($article) : null;
     }
 
-    /** Gerade wird Bearbeiten-Markup ausgegeben (Seite im Bearbeiten-Modus oder Vorschau eines Blocks) */
+    /** Edit markup is being output right now (page in edit mode or preview of a block) */
     public static function active(): bool
     {
         return self::$rendering;
     }
 
-    /** Bearbeiten-Markup für die Dauer von $fn ausschalten (Blöcke aus Daten, die nicht auf der Seite bearbeitet werden) */
+    /** Turn edit markup off for the duration of $fn (blocks from data that is not edited on the page) */
     public static function without(callable $fn): mixed
     {
         $old = self::$rendering;
@@ -123,7 +123,7 @@ final class Editing
         }
     }
 
-    /** @internal Bearbeiten-Markup für die Dauer von $fn einschalten (Vorschau einzelner Blöcke) */
+    /** @internal Turn edit markup on for the duration of $fn (preview of single blocks) */
     public static function render(callable $fn): mixed
     {
         $old = self::$rendering;
@@ -135,14 +135,14 @@ final class Editing
         }
     }
 
-    /** @internal MCP-Server: Aktionen im Namen des Benutzers eines Zugangsschlüssels (Protokoll, Versionen) */
+    /** @internal MCP server: actions on behalf of the user of an access key (log, versions) */
     public static function actAs(?User $user): void
     {
         self::$user = $user;
         self::$resolved = true;
     }
 
-    /** @internal vom Addon beim Start im Bearbeiten-Modus gesetzt */
+    /** @internal set by the addon on start in edit mode */
     public static function start(): void
     {
         self::$rendering = true;

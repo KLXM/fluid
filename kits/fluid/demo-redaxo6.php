@@ -4,9 +4,9 @@ use Klxm\FluidDemo\FluidVersion;
 use Redaxo\Core\Filesystem\Path;
 
 /*
- * Demo-Inhalte „REDAXO 6“ für das Kit fluid – `php bin/console fluid:demo --set=redaxo6 --replace`.
- * Stand: REDAXO 6 in Entwicklung (redaxo/core, Branch 6.x). Nur Aussagen, die sich im Code des Branches nachprüfen lassen.
- * Blöcke mit 'children' => [[Spalte, Block], …] werden als Layout mit Spalten-Blöcken (echte Slices) angelegt.
+ * Demo content „REDAXO 6“ for the kit fluid – `php bin/console fluid:demo --set=redaxo6 --replace`.
+ * Status: REDAXO 6 in development (redaxo/core, branch 6.x). Only statements verifiable in the branch's code.
+ * Blocks with 'children' => [[column, block], …] are created as a layout with column blocks (real slices).
  */
 
 $cta = [
@@ -20,8 +20,8 @@ $cta = [
     ],
 ];
 
-// YForm (nur wenn installiert): Beispielzeilen für die Seite „Daten“. Die Tabellen und das Formular sind Klassen im
-// Projekt (#[AsTable]/#[AsForm], Vorlagen in examples/yform) – YForm legt die Tabellen bei `console migrate` an.
+// YForm (only if installed): sample rows for the page „Daten“. The tables and the form are classes in the
+// project (#[AsTable]/#[AsForm], templates in examples/yform) – YForm creates the tables on `console migrate`.
 $yform = [
     'rex_yf_termin' => ['rows' => [
         ['title' => 'Online-Demo: Bearbeiten auf der Website', 'date' => '2026-11-12', 'place' => 'Online', 'image' => 'fluid-formular-schritte.jpg', 'text' => "Eine Stunde fluid live: Texte direkt auf der Seite ändern, Blöcke einfügen, Design anpassen und veröffentlichen.\n\nBeispieltermin – zeigt, wie eine YForm-Tabelle als Datenliste erscheint.", 'online' => true],
@@ -30,7 +30,7 @@ $yform = [
         ['title' => 'Entwurf: noch nicht veröffentlicht', 'date' => '2026-12-17', 'place' => 'Online', 'image' => null, 'text' => 'Dieser Eintrag ist offline und erscheint nicht in der Liste.', 'online' => false],
     ]],
     'rex_yf_anfrage' => ['rows' => []],
-    // Projekte (examples/yform/ProjectTable) – Seite „Projekte“: Fallstudien aus Blöcken (Feld „Fluid-Blöcke“)
+    // projects (examples/yform/ProjectTable) – page „Projekte“: case studies made of blocks (field „Fluid-Blöcke“)
     'rex_yf_project' => ['rows' => [
         ['title' => 'Stadtwerke Musterstadt: Portal in drei Sprachen', 'client' => 'Stadtwerke Musterstadt', 'year' => 2026, 'image' => 'fluid-website.jpg', 'online' => true,
             'teaser' => 'Ein Portal, drei Sprachen, eine Redaktion: Tarife, Störungsmeldungen und Neuigkeiten – gepflegt direkt auf der Website.',
@@ -72,7 +72,7 @@ $yform = [
     ]],
 ];
 
-// Codebeispiele der Seiten unter „REDAXO 6“ (geprüft gegen redaxo/core 6.x und YForm 6.x)
+// code examples of the pages under „REDAXO 6“ (checked against redaxo/core 6.x and YForm 6.x)
 $code = [
     'create' => <<<'CODE'
         composer create-project redaxo/project:6.x-dev mein-projekt
@@ -221,11 +221,11 @@ $code = [
             }
         }
         CODE,
-    // gewöhnliches Modul: die Datei, die auch im Projekt liegt (examples/module)
+    // ordinary module: the file that is also in the project (examples/module)
     'nmodule' => (string) file_get_contents(__DIR__ . '/../../examples/module/HinweisModule.php'),
-    // derselbe Hinweis als Block: die Datei, die auch im Projekt liegt
+    // the same hint as a block: the file that is also in the project
     'hblock' => (string) file_get_contents(__DIR__ . '/../../examples/block/Hinweis.php'),
-    // Adressen (Routing): die Datei, die auch im Projekt liegt (examples/routing)
+    // addresses (routing): the file that is also in the project (examples/routing)
     'rnews' => (string) file_get_contents(__DIR__ . '/../../examples/routing/NewsRoutes.php'),
     'udeploy' => <<<'CODE'
         # Sicherung der Datenbank – Verbindungsdaten liefert die Konsole
@@ -365,31 +365,31 @@ $code = [
         }
         CODE,
     'tiptapProfile' => <<<'CODE'
-use Klxm\Tiptap\AsProfile;
-use Klxm\Tiptap\ProfileDefinition;
+        use Klxm\Tiptap\AsProfile;
+        use Klxm\Tiptap\ProfileDefinition;
 
-#[AsProfile('tiptap.fluid', 'fluid')]
-final class FluidProfile extends ProfileDefinition
-{
-    public function config(): array
-    {
-        return [
-            'toolbar' => [
-                ['heading', 'blockStyle'],
-                ['bold', 'italic', 'highlight', 'inlineStyle'],
-                ['link', 'unlink'],
-                ['bulletList', 'orderedList', 'listStyle', 'blockquote'],
-            ],
-            'blockStyles' => [
-                ['label' => 'Hervorgehoben', 'class' => 't-lead', 'element' => 'p'],
-                ['label' => 'Hinweis-Box', 'class' => 't-note', 'element' => 'p'],
-            ],
-            'inlineStyles' => [['label' => 'Akzentfarbe', 'class' => 'c-accent']],
-            'listStyles' => [['label' => 'Häkchen-Liste', 'class' => 'check', 'list' => 'ul']],
-        ];
-    }
-}
-CODE,
+        #[AsProfile('tiptap.fluid', 'fluid')]
+        final class FluidProfile extends ProfileDefinition
+        {
+            public function config(): array
+            {
+                return [
+                    'toolbar' => [
+                        ['heading', 'blockStyle'],
+                        ['bold', 'italic', 'highlight', 'inlineStyle'],
+                        ['link', 'unlink'],
+                        ['bulletList', 'orderedList', 'listStyle', 'blockquote'],
+                    ],
+                    'blockStyles' => [
+                        ['label' => 'Hervorgehoben', 'class' => 't-lead', 'element' => 'p'],
+                        ['label' => 'Hinweis-Box', 'class' => 't-note', 'element' => 'p'],
+                    ],
+                    'inlineStyles' => [['label' => 'Akzentfarbe', 'class' => 'c-accent']],
+                    'listStyles' => [['label' => 'Häkchen-Liste', 'class' => 'check', 'list' => 'ul']],
+                ];
+            }
+        }
+        CODE,
     'rendpoint' => <<<'CODE'
         final class Calendar
         {
@@ -607,7 +607,7 @@ CODE,
         # Demo-Inhalte mit Bildern und Design „REDAXO · Blau“ (nur in einer leeren Installation)
         php bin/console fluid:demo --set=redaxo6 --media --design=redaxo
         CODE,
-    // eigener Block: die Datei, die auch im Projekt liegt (examples/block)
+    // custom block: the file that is also in the project (examples/block)
     'fblock' => (string) file_get_contents(__DIR__ . '/../../examples/block/Teaser.php'),
     'beModule' => <<<'CODE'
         <?php
@@ -883,7 +883,7 @@ $c = static fn (string $key, string $file, string $lang): array => ['file' => $f
 
 return [
     'yform' => $yform,
-    // Website-Einstellungen (nur, wo noch nichts eingetragen ist)
+    // website settings (only where nothing is set yet)
     'settings' => ['org_name' => 'REDAXO 6 Demo', 'tagline' => 'REDAXO im Frontend, einfach.', 'search_page' => '/suche'],
     'pages' => [
         // ------------------------------------------------------------------ Startseite
@@ -892,7 +892,7 @@ return [
             'blocks' => [
                 ['type' => 'hero', 'data' => [
                     'variant' => 'type',
-                    // Release von fluid in der Dachzeile – der Platzhalter braucht das AddOn fluid_demo (sonst bliebe er roh stehen)
+                    // fluid release in the eyebrow – the placeholder needs the addon fluid_demo (otherwise it would remain raw)
                     'eyebrow' => class_exists(FluidVersion::class) ? 'fluid {fluid-version} · REDAXO 6 in Entwicklung' : 'REDAXO 6 · in Entwicklung',
                     'title' => 'REDAXO im Frontend, *einfach*.',
                     'text' => 'REDAXO 6 räumt unter der Haube auf: PHP 8.5, Composer, Module und Templates als PHP-Klassen. Das macht etwas möglich, das in REDAXO lange gefehlt hat – Seiten direkt auf der Website bearbeiten, mit echten Slices. REDAXO 6 ist noch in Entwicklung – es kann sich noch einiges ändern.',
@@ -906,7 +906,7 @@ return [
                     'button_label' => 'Zur Meldung', 'button_link' => '/tiptap-meets-fluid',
                     'button2_label' => 'TipTap auf GitHub', 'button2_link' => 'https://github.com/KLXM/tiptap',
                     'image' => 'fluid-tiptap-seite.jpg', 'ratio' => '16:9', 'split' => 'media']],
-                // Trailer direkt unter dem Einstieg (nur wenn die Datei im Medienpool liegt – sie gehört nicht zum Kit: fluid:demo --media-dir=…)
+                // trailer right below the intro (only if the file is in the media pool – it is not part of the kit: fluid:demo --media-dir=…)
                 ...(is_file(Path::media('fluid-trailer-redaxo6.mp4')) ? [
                     ['type' => 'video', 'tunes' => ['background' => 'dark'], 'data' => ['variant' => 'cinema', 'eyebrow' => 'Trailer',
                         'title' => 'fluid in fünf Minuten', 'intro' => '', 'video_url' => '', 'video_file' => 'fluid-trailer-redaxo6.mp4', 'poster' => 'fluid-trailer-redaxo6.jpg',
@@ -967,7 +967,7 @@ return [
             ],
         ],
 
-        // ------------------------------------------------------------------ REDAXO 6 (Übersicht mit Unterseiten)
+        // ------------------------------------------------------------------ REDAXO 6 (overview with subpages)
         [
             'slug' => 'redaxo-6', 'title' => 'REDAXO 6', 'menu' => true,
             'blocks' => [
@@ -994,7 +994,7 @@ return [
             ],
         ],
 
-        // ------------------------------------------------------------------ Was sich ändert
+        // ------------------------------------------------------------------ What changes
         [
             'slug' => 'was-sich-aendert', 'title' => 'Was sich ändert', 'menu' => true, 'parent' => 'redaxo-6',
             'blocks' => [
@@ -1357,7 +1357,7 @@ vollständig: Module, Templates, Schema'],
                     'items' => [
                         $c('hblock', 'src/Block/Hinweis.php', 'php'),
                     ]]],
-                // derselbe Hinweis als Block – nur, wenn examples/block/Hinweis.php im Projekt liegt
+                // the same hint as a block – only if examples/block/Hinweis.php is in the project
                 ['type' => 'hinweis', 'data' => ['headline' => 'Derselbe Hinweis als fluid-Block', 'text' => 'Diesen Text direkt hier auf der Seite ändern – alle Felder stehen wie bei jedem Block in der Seitenleiste.', 'kind' => 'ok', 'strong' => false, 'until' => '', 'link' => '', 'image' => '']],
                 $cta,
             ],
@@ -1407,7 +1407,7 @@ vollständig: Module, Templates, Schema'],
             ],
         ],
 
-        // ------------------------------------------------------------------ fluid (Übersicht mit Unterseiten)
+        // ------------------------------------------------------------------ fluid (overview with subpages)
         [
             'slug' => 'fluid', 'title' => 'fluid', 'menu' => true,
             'blocks' => [
@@ -1476,7 +1476,7 @@ vollständig: Module, Templates, Schema'],
             ],
         ],
 
-        // ------------------------------------------------------------------ Elemente (Blöcke des Kits im Einsatz)
+        // ------------------------------------------------------------------ Elements (the kit's blocks in use)
         [
             'slug' => 'elemente', 'title' => 'Elemente', 'renamed_from' => ['Bausteine'], 'menu' => true, 'parent' => 'fluid',
             'blocks' => [
@@ -1523,12 +1523,12 @@ vollständig: Module, Templates, Schema'],
                         ['image' => 'redaxo6-backend-block-dunkel.jpg', 'caption' => 'Block, dunkel'],
                     ],
                     'columns' => '3', 'ratio' => '16:9', 'captions' => true, 'lightbox' => true]],
-                // Einblend-Effekt (Abschnitt): wirkt im Kit „NativeCSS“, im Kit fluid gibt es die Option nicht
+                // reveal effect (section): works in the kit „NativeCSS“, the kit fluid has no such option
                 ['type' => 'compare', 'tunes' => ['reveal' => 'curtain'], 'data' => ['eyebrow' => 'Vorher/Nachher', 'title' => 'Ein Regler, zwei Bilder',
                     'intro' => 'Den Griff ziehen – oder mit Tab hinspringen und die Pfeiltasten nutzen. Im Kit NativeCSS öffnet sich der Abschnitt beim Hereinscrollen wie ein Vorhang (Abschnitt → Einblend-Effekt).',
                     'before' => 'pexels-wohnzimmer-vorher.jpg', 'after' => 'pexels-wohnzimmer-nachher.jpg', 'label_before' => 'Vorher', 'label_after' => 'Nachher', 'ratio' => '3:2',
                     'caption' => 'Foto: Curtis Adams, Pexels (Pexels-Lizenz). „Vorher“ ist dasselbe Foto, für das Beispiel flau bearbeitet.']],
-                // Runde 2: Filter und „Hervorheben“ bei Karten, Preisliste, Zeitleiste, Kundenstimmen, sortierbare Tabelle
+                // round 2: filter and „Hervorheben“ for cards, price list, timeline, testimonials, sortable table
                 ['type' => 'cards', 'data' => ['variant' => 'image', 'eyebrow' => 'Karten', 'title' => 'Filtern und hervorheben', 'intro' => 'Kategorie je Karte, „Filter nach Kategorie“ am Block – und eine Karte hervorgehoben.',
                     'size' => 'm', 'ratio' => '16:9', 'filter' => true, 'more_label' => '', 'more_link' => '', 'items' => [
                         ['image' => 'redaxo6-backend-struktur.jpg', 'eyebrow' => '', 'title' => 'Struktur', 'text' => 'Seiten und Kategorien im Baum.', 'link_label' => '', 'link' => '', 'category' => 'Backend', 'featured' => false, 'badge' => ''],
@@ -1554,7 +1554,7 @@ vollständig: Module, Templates, Schema'],
                 ['type' => 'datalist', 'data' => ['variant' => 'table', 'eyebrow' => 'Tabelle', 'title' => 'Sortierbar und scrollbar', 'intro' => 'Ein Klick auf einen Spaltenkopf sortiert. Ist die Tabelle breiter als der Platz, scrollt sie – mit Schatten an der Kante.',
                     'table' => 'rex_yf_termin', 'title_field' => 'rex_yf_termin.title', 'image_field' => '', 'text_field' => 'rex_yf_termin.place', 'meta_field' => 'rex_yf_termin.date',
                     'filter_field' => 'rex_yf_termin.online', 'filter_value' => '1', 'sort_field' => 'rex_yf_termin.date', 'sort_dir' => 'asc', 'limit' => 0, 'size' => 'm', 'detail' => false, 'empty_text' => '', 'table_sort' => true]],
-                // Darstellung „Morphing beim Scrollen“ gibt es nur im Kit NativeCSS – im Kit fluid erscheint der Block wie „Bild rechts“
+                // display „Morphing beim Scrollen“ exists only in the kit NativeCSS – in the kit fluid the block appears like „Bild rechts“
                 ['type' => 'media_text', 'data' => ['variant' => 'morph', 'eyebrow' => 'Text + Bild', 'title' => 'Morphing beim Scrollen',
                     'text' => '<p>Im Kit NativeCSS startet das Bild groß und rückt beim Scrollen zur Seite – der Text erscheint daneben. Wer „Bewegung reduzieren“ eingestellt hat, sieht Bild und Text gleich nebeneinander.</p>',
                     'list' => "Darstellung „Morphing beim Scrollen“ im Block „Text + Bild“\nNur CSS, ohne Skript", 'image' => 'pexels-wohnzimmer-nachher.jpg', 'ratio' => '3:2', 'split' => 'even',
@@ -1802,7 +1802,7 @@ vollständig: Module, Templates, Schema'],
         [
             'slug' => 'video', 'title' => 'Video', 'menu' => true, 'parent' => 'fluid',
             'blocks' => [
-                // Kätzchen von Pixabay – liegt nicht im Kit: fluid:demo --media-dir=… (ohne die Datei ein Einstieg ohne Video)
+                // kitten from Pixabay – not part of the kit: fluid:demo --media-dir=… (without the file an intro without video)
                 is_file(Path::media('kaetzchen.mp4'))
                     ? ['type' => 'hero', 'data' => ['variant' => 'fullbleed', 'eyebrow' => 'fluid · Video',
                         'title' => 'Videos, die *mitspielen*', 'text' => 'Hintergrundvideo, Player mit Untertiteln und Transkript, Fassungen für jeden Bildschirm – und ein Video-Editor im Medienpool, der schneidet, optimiert und Untertitel schreibt.',
@@ -1896,7 +1896,7 @@ vollständig: Module, Templates, Schema'],
             ],
         ],
 
-        // ------------------------------------------------------------------ Suche (nicht im Menü – Lupe im Kopf)
+        // ------------------------------------------------------------------ Search (not in the menu – magnifier in the header)
         [
             'slug' => 'suche', 'title' => 'Suche', 'menu' => false,
             'blocks' => [
@@ -1920,7 +1920,7 @@ vollständig: Module, Templates, Schema'],
             ],
         ],
 
-        // ------------------------------------------------------------------ Presse: Kurzmeldungen aus YForm (Datenliste, Blättern, Detailseiten)
+        // ------------------------------------------------------------------ Press: news items from YForm (data list, paging, detail pages)
         [
             'slug' => 'presse', 'title' => 'Presse', 'menu' => true, 'requires' => 'yform',
             'blocks' => [
@@ -1930,7 +1930,7 @@ vollständig: Module, Templates, Schema'],
             ],
         ],
 
-        // ------------------------------------------------------------------ Projekte: Fallstudien aus Blöcken im YForm-Datensatz (Feld „Fluid-Blöcke“)
+        // ------------------------------------------------------------------ Projects: case studies made of blocks in the YForm record (field „Fluid-Blöcke“)
         [
             'slug' => 'projekte', 'title' => 'Projekte', 'menu' => true, 'requires' => 'yform',
             'blocks' => [
@@ -1942,7 +1942,7 @@ vollständig: Module, Templates, Schema'],
             ],
         ],
 
-        // ------------------------------------------------------------------ Anmeldung: eigenes Formular mit drei Schritten (BuiltForm, YForm)
+        // ------------------------------------------------------------------ Registration: own form with three steps (BuiltForm, YForm)
         [
             'slug' => 'anmeldung', 'title' => 'Anmeldung', 'menu' => false, 'requires' => 'yform',
             'blocks' => [
@@ -1967,7 +1967,7 @@ vollständig: Module, Templates, Schema'],
             ],
         ],
 
-        // ------------------------------------------------------------------ Blog: Menüseite mit „Blog / News“, Beiträge = Seiten darin
+        // ------------------------------------------------------------------ Blog: menu page with „Blog / News“, posts = pages inside it
         [
             'slug' => 'neuigkeiten', 'title' => 'Neuigkeiten', 'menu' => true, 'blog' => true,
             'blocks' => [

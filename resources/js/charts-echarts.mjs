@@ -1,10 +1,10 @@
 /**
- * Engine „echarts“ für Klxm\Fluid\Chart\Chart (aus KLXM Studio) – die einzige Datei, die ECharts kennt (Apache ECharts, Apache-2.0, gebündelt und selbst
- * gehostet, nur Linie/Balken/Torte, Canvas). Vertrag jeder Engine:
+ * Engine „echarts“ for Klxm\Fluid\Chart\Chart (from KLXM Studio) – the only file that knows ECharts (Apache ECharts, Apache-2.0, bundled and
+ * self-hosted, only line/bar/pie, canvas). Contract of every engine:
  *   export function render(el, spec, theme) → { update(theme, {animation, print}?), resize(), dispose(), image()? }
  * spec = Chart::normalize() (type, labels, series[{name, data}], title, description, format, unit, stacked, height, locale)
- * theme = { colors[], ink, muted, grid, bg, font, dark } aus CSS-Variablen (assets/js/charts.mjs).
- * Tooltip: eigenes HTML nur mit Klassen (keine style-Attribute – strenge CSP der Website), Farbpunkt über .cms-chart-c{0…7}.
+ * theme = { colors[], ink, muted, grid, bg, font, dark } from CSS variables (assets/js/charts.mjs).
+ * Tooltip: own HTML with classes only (no style attributes – the website's strict CSP), color dot via .cms-chart-c{0…7}.
  */
 import { init, use } from 'echarts/core';
 import { LineChart, BarChart, PieChart } from 'echarts/charts';
@@ -51,15 +51,15 @@ function option(spec, t, o = {}) {
     legend: many ? { show: true, type: 'scroll', top: 0, left: 0, right: 0, pageIconColor: t.muted, pageIconInactiveColor: t.grid, pageTextStyle: text, icon: 'roundRect', itemWidth: 10, itemHeight: 10, itemGap: 16, textStyle: { ...text, color: t.ink } } : { show: false } };
 
   if (pie) {
-    // Bild für Druck/PDF (o.print): Legende vollständig daneben statt blätternd darüber
+    // Image for print/PDF (o.print): full legend beside it instead of paged above
     const side = o.print && many;
     return { ...base, legend: side ? { ...base.legend, type: 'plain', orient: 'vertical', left: 0, top: 'middle', right: 'auto' } : base.legend,
       series: [{ type: 'pie', radius: spec.type === 'donut' ? (side ? ['42%', '72%'] : ['50%', '78%']) : ['0%', side ? '72%' : '78%'], center: side ? ['72%', '50%'] : ['50%', '57%'],
-      itemStyle: { borderColor: t.bg, borderWidth: 2, borderRadius: 4 }, label: { show: false }, labelLine: { show: false },   // Zuordnung über Legende + Tooltip (keine abgeschnittenen Beschriftungen)
+      itemStyle: { borderColor: t.bg, borderWidth: 2, borderRadius: 4 }, label: { show: false }, labelLine: { show: false },   // mapping via legend + tooltip (no truncated labels)
       data: spec.labels.map((l, i) => ({ name: l, value: spec.series[0]?.data[i] ?? 0 })) }] };
   }
   const cat = { type: 'category', data: spec.labels, axisLine: { lineStyle: { color: t.grid } }, axisTick: { show: false }, axisLabel: { ...text, hideOverlap: true } };
-  const whole = spec.series.every((x) => x.data.every((v) => v === null || Number.isInteger(v)));   // nur ganze Zahlen → keine 0,2-Schritte
+  const whole = spec.series.every((x) => x.data.every((v) => v === null || Number.isInteger(v)));   // whole numbers only → no 0.2 steps
   const val = { type: 'value', minInterval: whole && spec.format !== 'percent' ? 1 : undefined, splitLine: { lineStyle: { color: t.grid } }, axisLabel: { ...text, formatter: (v) => fmt(v) } };
   const dots = spec.labels.length <= 31;
   return {

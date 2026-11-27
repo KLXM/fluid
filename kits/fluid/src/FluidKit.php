@@ -10,8 +10,8 @@ use Redaxo\Core\Filesystem\Url;
 use function dirname;
 
 /**
- * Kit „fluid“: breakpointlos, für viele Projektarten (aus KLXM Studio). Grund-Kit, von dem alle anderen erben.
- * Seine Assets liegen im AddOn unter assets/kits/fluid/ und werden mit dem AddOn veröffentlicht.
+ * Kit „fluid“: breakpoint-free, for many kinds of projects (from KLXM Studio). Base kit all others inherit from.
+ * Its assets live in the AddOn under assets/kits/fluid/ and are published with the AddOn.
  */
 #[AsKit('fluid', 'Fluid')]
 final class FluidKit extends Kit
@@ -43,6 +43,6 @@ final class FluidKit extends Kit
     #[Override]
     protected function publish(): void
     {
-        // veröffentlicht der Core mit den Assets des AddOns
+        // published by the core with the AddOn's assets
     }
 }

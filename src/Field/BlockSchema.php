@@ -13,12 +13,12 @@ use function preg_replace;
 use function strtolower;
 
 /**
- * Definition eines Blocks aus den Attributen seiner Klasse: #[AsBlock] an der Klasse, Feld-Attribute des Cores an den
- * Eigenschaften (wie bei jedem Modul des Cores; die gleichnamigen Felder von fluid sind Unterklassen mit optionalen
- * Ergänzungen, siehe FluidField). Reihenfolge: geerbte Eigenschaften zuerst, dann die der Klasse.
+ * Definition of a block from its class's attributes: #[AsBlock] on the class, core field attributes on the
+ * properties (as with every core module; fluid's fields of the same name are subclasses with optional
+ * additions, see FluidField). Order: inherited properties first, then those of the class.
  *
- * Ergebnis ist das Feldschema von fluid (Format von Form\FieldForm) – daraus entstehen Seitenleiste, Formular im Backend
- * und das Bearbeiten direkt auf der Seite. Gespeichert und eingelesen wird wie beim Core (flach je Feldschlüssel).
+ * The result is fluid's field schema (format of Form\FieldForm) – the sidebar, the backend form and
+ * on-page editing are built from it. Saving and loading work as in the core (flat per field key).
  *
  * @internal
  */
@@ -58,7 +58,7 @@ final class BlockSchema
     }
 
     /**
-     * Felder einer Klasse (Block oder Eintrag einer Collection) als Feldschema.
+     * Fields of a class (block or collection entry) as field schema.
      *
      * @param class-string $class
      * @return list<array<string, mixed>>
@@ -77,7 +77,7 @@ final class BlockSchema
                 }
                 $attr = $prop->getAttributes(Core\Field::class, ReflectionAttribute::IS_INSTANCEOF)[0] ?? null;
                 if (null === $attr || is_a($attr->getName(), Stored::class, true)) {
-                    continue;   // keine Feld-Eigenschaft bzw. interne Werte (Darstellung, Abschnitt)
+                    continue;   // not a field property, or internal values (display, section)
                 }
                 $out[] = self::field($attr->newInstance(), $prop);
             }
@@ -86,7 +86,7 @@ final class BlockSchema
         return $out;
     }
 
-    /** Schlüssel wie beim Core: `key`, sonst der Name der Eigenschaft in snake_case (`$maxItems` → `max_items`) */
+    /** Key as in the core: `key`, otherwise the property name in snake_case (`$maxItems` → `max_items`) */
     public static function key(Core\Field $field, string $property): string
     {
         return $field->key ?? strtolower((string) preg_replace('/(?<=[a-z0-9])[A-Z]|(?<=[A-Z])[A-Z](?=[a-z])/', '_$0', $property));
@@ -95,7 +95,7 @@ final class BlockSchema
     /** @return array<string, mixed> */
     private static function field(Core\Field $f, ReflectionProperty $prop): array
     {
-        // prop: Name der Eigenschaft – das Formular des Cores erwartet die Eingaben darunter (Backend, Seitenleiste für Module)
+        // prop: name of the property – the core form expects the input under it (backend, sidebar for modules)
         $s = ['name' => self::key($f, $prop->getName()), 'prop' => $prop->getName(), 'label' => (string) $f->label, 'type' => 'text'];
         if ($f->required) {
             $s['required'] = true;
@@ -120,9 +120,9 @@ final class BlockSchema
             $f instanceof Core\Collection => ['type' => 'repeater', 'fields' => self::fields($f->item), 'min_items' => $f->min, 'max_items' => $f->max] + $s,
             default => $s,
         };
-        // Ergänzungen von fluid (Breite, Darstellungen, Platzhalter, eigener Feldtyp …) überschreiben
+        // fluid's additions (width, displays, placeholder, own field type …) override
         $s = $own + $s;
-        // Standardwert: Vorgabe der Eigenschaft (wie beim Core)
+        // default value: the property's default (as in the core)
         $default = $prop->hasDefaultValue() ? $prop->getDefaultValue() : null;
         if (null !== $default && '' !== $default && [] !== $default && !(false === $default && 'bool' === $s['type'])) {
             $s['default'] = $default;

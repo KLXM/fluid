@@ -7,7 +7,7 @@ use Klxm\Fluid\Field\MediaPicker;
 use Klxm\Fluid\Field\Text;
 use Redaxo\Core\MediaPool\Media;
 
-/** Eintrag von „Untertitel und Kapitel (eigene Videodatei)“ im Block Video */
+/** Entry of „Untertitel und Kapitel (eigene Videodatei)“ in the block Video */
 final class VideoTrack
 {
     #[MediaPicker('Datei (.vtt oder .srt)', required: true, types: ['vtt', 'srt'])]

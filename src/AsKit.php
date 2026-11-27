@@ -5,21 +5,21 @@ namespace Klxm\Fluid;
 use Attribute;
 
 /**
- * Meldet ein Kit bei fluid an (wie `#[AsModule]` für Module): im Projekt (`src/`) oder in einem eigenen Composer-Paket.
+ * Registers a kit with fluid (like `#[AsModule]` for modules): in the project (`src/`) or in its own Composer package.
  *
  *     #[AsKit('nature', 'Nature')]
  *     final class NatureKit extends Kit {}
  *
- * Ein Kit erbt vom Kit `parent` (Standard: `fluid`) und bringt nur mit, was es ändert: CSS, einzelne Views, das
- * Template, Design-Optionen oder Blöcke. Alles andere kommt vom Eltern-Kit. `bin/console fluid:kit:create` legt eins an.
+ * A kit inherits from the kit `parent` (default: `fluid`) and only brings what it changes: CSS, individual views, the
+ * template, design options or blocks. Everything else comes from the parent kit. `bin/console fluid:kit:create` creates one.
  */
 #[Attribute(Attribute::TARGET_CLASS)]
 final readonly class AsKit
 {
     /**
-     * @param non-empty-string $key Schlüssel des Kits (Kleinbuchstaben, Ziffern, `-`), z. B. `nature`
-     * @param non-empty-string $label Name in der Kit-Auswahl
-     * @param string|null $parent Eltern-Kit; `null` = `fluid` (nur das Kit `fluid` selbst hat keins)
+     * @param non-empty-string $key Key of the kit (lowercase letters, digits, `-`), e.g. `nature`
+     * @param non-empty-string $label Name in the kit picker
+     * @param string|null $parent Parent kit; `null` = `fluid` (only the kit `fluid` itself has none)
      */
     public function __construct(
         public string $key,

@@ -20,9 +20,9 @@ use function is_int;
 use function is_scalar;
 
 /**
- * Interne Werte eines Blocks, die kein Feld im Formular sind: Darstellung (`variant`), Abschnitts-Optionen (`tunes`) und
- * gezogene Spaltenbreiten des Layouts (`widths`). Gespeichert wie jedes Feld des Cores unter seinem Schlüssel in der
- * JSON-Spalte `data` des Slices; das Formular zeichnet fluid (Form\FieldForm).
+ * Internal values of a block that are not form fields: display (`variant`), section options (`tunes`) and
+ * dragged column widths of the layout (`widths`). Stored like every core field under its key in the
+ * JSON column `data` of the slice; fluid renders the form (Form\FieldForm).
  *
  * @internal
  */
@@ -87,7 +87,7 @@ final class Stored extends Field
     }
 
     /**
-     * Formularwerte aufräumen: durchnummerierte Listen (Wiederholgruppen) neu zählen.
+     * Cleans up form values: renumbers numbered lists (repeaters).
      *
      * @param array<array-key, mixed> $a
      * @return array<array-key, mixed>

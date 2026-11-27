@@ -6,9 +6,9 @@ use Redaxo\Core\Content\ExtensionPoint\ArticleUsageCheck;
 use Redaxo\Core\ExtensionPoint\Extension;
 
 /**
- * Kategorie „Seitenvorlagen“ schützen: nicht löschbar, solange fluid installiert ist (der Schutz hängt an diesem
- * Extension Point – ohne fluid ist sie eine gewöhnliche Kategorie). Wer sie im Backend sieht, regelt das Strukturrecht
- * des Cores; auf der Website (Seitenbaum, Suche, Entwürfe) blendet fluid sie aus, verwaltet wird dort im Dialog „Vorlagen …“.
+ * Protect the category „Seitenvorlagen“: not deletable while fluid is installed (the protection hangs on this
+ * extension point – without fluid it is an ordinary category). Who sees it in the backend is governed by the core's
+ * structure permission; on the website (page tree, search, drafts) fluid hides it, it is managed in the dialog „Vorlagen …“.
  */
 final class PageTemplatesGuard
 {

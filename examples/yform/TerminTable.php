@@ -15,7 +15,7 @@ use Yakamara\YForm\Form\Layout\Tab;
 use Yakamara\YForm\Table\ListConfig;
 use Yakamara\YForm\Table\Table;
 
-/** Demo „Termine“ für den fluid-Block „Datenliste“ (Seite „Daten“) */
+/** Demo „Termine“ for the fluid block „Datenliste“ (page „Daten“) */
 #[AsTable('rex_yf_termin', label: 'Termine (Beispiel)', icon: 'fa-calendar')]
 final class TerminTable extends Table
 {
@@ -27,11 +27,11 @@ final class TerminTable extends Table
         yield Media::new('image')->label('Bild')->types('jpg', 'jpeg', 'png', 'webp', 'avif');
         yield Textarea::new('text')->label('Beschreibung');
         yield Checkbox::new('online')->label('Online')->default(true)->filterable();
-        // Sprache: die Datenliste zeigt nur Einträge der aktuellen Sprache (leer = alle Sprachen)
+        // Language: the data list shows only entries of the current language (empty = all languages)
         yield FluidLanguage::new('lang');
     }
 
-    /** Maske im Backend: zwei Reiter, Zeilen mit Breiten in Zwölfteln (alternativ im Designer, YForm → Tabellen) */
+    /** Backend form: two tabs, rows with widths in twelfths (alternatively in the designer, „YForm → Tabellen“) */
     public function layout(Layout $layout): Layout
     {
         return $layout

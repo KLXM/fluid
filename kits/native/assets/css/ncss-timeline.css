@@ -1,2 +1,2 @@
-/* NativeCSS components/timeline.css – nur auf Seiten, die es brauchen (kit.php → assets). Layer wie in ncss.css von NativeCSS. */
+/* NativeCSS components/timeline.css – only on pages that need it (kit.php → assets). Layers as in NativeCSS's ncss.css. */
 @import url("../ncss/components/timeline.css") layer(components);

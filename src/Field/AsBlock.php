@@ -5,40 +5,40 @@ namespace Klxm\Fluid\Field;
 use Attribute;
 
 /**
- * Angaben zum Block an der Klasse – die Felder stehen als Attribute an den Eigenschaften (siehe {@see Field}).
+ * Block settings on the class – the fields are attributes on the properties (see {@see Field}).
  *
  *     #[AsModule('fluid.hinweis', 'Hinweis')]
  *     #[AsBlock(icon: 'info', group: 'Inhalt', nestable: true, variants: ['info' => 'Information', 'warn' => 'Warnung'])]
  *     final class Hinweis extends FluidBlock { … }
  *
- * Beschriftung: Name des Moduls (AsModule), außer `label:` ist angegeben.
+ * Label: name of the module (AsModule), unless `label:` is given.
  */
 #[Attribute(Attribute::TARGET_CLASS)]
 final class AsBlock
 {
     public function __construct(
         public readonly string $icon = 'square',
-        /** Gruppe in der Blockauswahl (Kopf, Inhalt, Website, Daten …) */
+        /** Group in the block selection (Kopf, Inhalt, Website, Daten …) */
         public readonly string $group = 'Inhalt',
         public readonly ?string $help = null,
         public readonly ?string $label = null,
-        /** @var array<string, string> Varianten: Schlüssel => Beschriftung (erste = Standard) */
+        /** @var array<string, string> Variants: key => label (first = default) */
         public readonly array $variants = [],
         /** @var array<string, string> Wann welche Variante? (Handbuch) */
         public readonly array $variantHelp = [],
-        /** @var bool|list<string> In einer Spalte des Blocks „Layout“ erlaubt – ganz oder nur diese Varianten */
+        /** @var bool|list<string> Allowed in a column of the block „Layout“ – entirely or only these variants */
         public readonly bool|array $nestable = false,
-        /** @var list<array<string, string>> Griffe auf der Seite (field, target, class, apply, label) */
+        /** @var list<array<string, string>> Handles on the page (field, target, class, apply, label) */
         public readonly array $drags = [],
-        /** Benötigtes AddOn (z. B. 'yform') – sonst fehlt der Block in der Auswahl */
+        /** Required addon (e.g. 'yform') – otherwise the block is missing from the selection */
         public readonly ?string $requires = null,
-        /** Teil der Seite ohne Neuladen aktualisieren (Blättern, Filter; Live::region) */
+        /** Update part of the page without reloading (paging, filters; Live::region) */
         public readonly bool $reload = false,
-        /** Hintergrund neuer Blöcke */
+        /** Background of new blocks */
         public readonly ?string $background = null,
         /** @var array<string, string>|null Strukturierte Daten (schema.org), z. B. ['type' => 'faq', …] */
         public readonly ?array $jsonld = null,
-        /** @var bool|list<string> Listen-Vorlagen (Data\ListTemplates): true bzw. Liste weiterer Felder, die beim Block bleiben */
+        /** @var bool|list<string> List templates (Data\ListTemplates): true or list of further fields that stay with the block */
         public readonly bool|array $listTemplate = false,
     ) {}
 }

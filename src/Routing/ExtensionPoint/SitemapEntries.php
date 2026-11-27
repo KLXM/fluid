@@ -6,7 +6,7 @@ use Klxm\Fluid\Routing\Domain;
 use Redaxo\Core\ExtensionPoint\ExtensionPoint;
 
 /**
- * Alle Einträge der sitemap.xml einer Domain – hinzufügen, ändern, entfernen.
+ * All entries of a domain's sitemap.xml – add, change, remove.
  *
  * @extends ExtensionPoint<list<array{loc: string, lastmod: int|null, alternates: array<string, string>, images?: list<string>}>>
  */

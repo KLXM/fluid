@@ -3,9 +3,9 @@
 use Klxm\Fluid\Block;
 
 /**
- * Vorher/Nachher: zwei Bilder übereinander, Regler (echtes <input type="range">: Maus, Touch, Tastatur, Screenreader)
- * verschiebt die Trennlinie. Ohne JavaScript nebeneinander. Markup: fluid_compare() (functions.php), CSS css/hx-compare.css,
- * Skript js/compare.js. Das Kit „NativeCSS“ nimmt <ncss-compare>.
+ * Before/after: two images on top of each other, a slider (real <input type="range">: mouse, touch, keyboard, screen reader)
+ * moves the dividing line. Side by side without JavaScript. Markup: fluid_compare() (functions.php), CSS css/hx-compare.css,
+ * script js/compare.js. The kit „NativeCSS“ uses <ncss-compare>.
  * @var Block $b  @var array $d
  */
 $ratio = in_array($d['ratio'] ?? '', ['16:9', '3:2', '4:3', '1:1', '4:5', '3:4'], true) ? (string) $d['ratio'] : '16:9';

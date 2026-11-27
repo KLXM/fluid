@@ -43,8 +43,8 @@ use function is_string;
 use const PHP_URL_PATH;
 
 /**
- * Seiten und Blöcke für den MCP-Server – dieselben Wege wie der Editor auf der Website (Entwurf, Versionen, Aktivität).
- * Prüft Rechte über Access; Fehler als ApiError (Meldung geht an den Client).
+ * Pages and blocks for the MCP server – the same paths as the editor on the website (draft, versions, activity).
+ * Checks permissions via Access; errors as ApiError (the message goes to the client).
  */
 final class Content
 {
@@ -52,7 +52,7 @@ final class Content
         private readonly Access $access,
     ) {}
 
-    /** Adressen absolut (Werkzeuge außerhalb der Website können mit /pfad nichts anfangen) */
+    /** Absolute addresses (tools outside the website can't use /path) */
     public static function abs(string $url): string
     {
         if (str_starts_with($url, 'http') || !Core::hasRequest()) {
@@ -76,7 +76,7 @@ final class Content
         return Language::getStartId();
     }
 
-    /** Seite aus ID, Pfad/URL oder „home“ */
+    /** Page from ID, path/URL or „home“ */
     public function article(mixed $ref, int $lang): Article
     {
         $id = match (true) {
@@ -107,7 +107,7 @@ final class Content
         return $out;
     }
 
-    /** @return list<array<string, mixed>> Seitenbaum (öffentlich: nur online) */
+    /** @return list<array<string, mixed>> page tree (public: online only) */
     public function tree(int $lang): array
     {
         $filter = function (array $nodes) use (&$filter, $lang): array {
@@ -134,7 +134,7 @@ final class Content
     }
 
     /**
-     * Blöcke einer Seite. Öffentlich immer die veröffentlichte Fassung ohne Offline-Blöcke, sonst Entwurf (Standard) oder live.
+     * Blocks of a page. Public always gets the published version without offline blocks, otherwise draft (default) or live.
      *
      * @return list<array<string, mixed>>
      */
@@ -167,7 +167,7 @@ final class Content
         return $out;
     }
 
-    /** @return array<string, array<string, mixed>> Blocktypen mit Feldern (für add_block/update_block) */
+    /** @return array<string, array<string, mixed>> block types with fields (for add_block/update_block) */
     public function blockTypes(?string $only = null): array
     {
         $out = [];
@@ -190,7 +190,7 @@ final class Content
     }
 
     /**
-     * Felder in knapper Form: name, type, label, required, options, fields (Wiederholgruppe).
+     * Fields in compact form: name, type, label, required, options, fields (repeater).
      *
      * @param array<mixed> $fields
      * @return list<array<string, mixed>>
@@ -227,14 +227,14 @@ final class Content
         return $out;
     }
 
-    // ------------------------------------------------------------------ Schreiben (immer in den Entwurf)
+    // ------------------------------------------------------------------ Writing (always into the draft)
 
     private function writable(Article $a): void
     {
         if (!$this->access->canWritePage($a)) {
             throw new ApiError('Dieser Zugang darf die Seite „' . $a->name . '“ nicht ändern.');
         }
-        // Bearbeitungssperre: Schlüssel ohne Person gelten als fremd
+        // Edit lock: keys without a person count as foreign
         EditLock::assert($a, $this->access->user->id ?? false);
     }
 
@@ -263,7 +263,7 @@ final class Content
     }
 
     /**
-     * Nur bekannte Felder übernehmen, Rich-Text durch denselben Filter wie die Ausgabe.
+     * Takes over known fields only, rich text through the same filter as the output.
      *
      * @param array<mixed> $fields
      * @param array<mixed> $data
@@ -329,7 +329,7 @@ final class Content
         Activity::log('save', $a->id, $label . ' (MCP)');
     }
 
-    /** Gesperrte Blöcke (Klxm\Fluid\Lock) ändert auch der MCP-Server nur mit dem Recht „Blöcke gestalten und sperren“ */
+    /** The MCP server, too, changes locked blocks (Klxm\Fluid\Lock) only with „Blöcke gestalten und sperren“ */
     private function unlocked(ArticleSlice $s): void
     {
         if (Lock::locked(BlockModule::tunesOf($s)) && (null === $this->access->user || !Perm::can($this->access->user, Perm::DESIGN_FULL))) {
@@ -343,7 +343,7 @@ final class Content
         $this->writable($a);
         $m = $this->module($type);
         if ($after < 0) {
-            // ans Ende: hinter die letzte Einheit
+            // at the end: after the last unit
             $after = (int) (Sql::factory()->getArray('SELECT id FROM rex_article_slice WHERE article_id = ? AND language_id = ? AND revision = ? ORDER BY priority DESC LIMIT 1',
                 [$a->id, $a->languageId, FluidAddon::revision()])[0]['id'] ?? 0);
         }
@@ -363,7 +363,7 @@ final class Content
         $this->module($s->moduleKey);
         $this->unlocked($s);
         Versions::snapshot($a->id, $a->languageId, FluidAddon::revision(), 'fluid_save');
-        ContentHandler::deleteSlice($s->id);   // Spalten-Blöcke eines Layouts räumt FluidAddon (SliceDeleting) mit ab
+        ContentHandler::deleteSlice($s->id);   // FluidAddon (SliceDeleting) removes the column blocks of a layout as well
         ArticleCache::delete($a->id, $a->languageId);
         Activity::log('delete', $a->id, BlockModule::classFor($s->moduleKey)::label() . ' (MCP)');
 
@@ -409,7 +409,7 @@ final class Content
         return ['published' => true, 'url' => self::abs($a->getUrl())];
     }
 
-    /** Neue Seite (offline) unter einem Menüpunkt (0/leer = oberste Ebene); menu = als Menüpunkt (Kategorie) */
+    /** New page (offline) below a menu item (0/empty = top level); menu = as menu item (category) */
     public function createPage(string $name, int $parent, bool $menu, int $lang, int $template = 0): array
     {
         if (!$this->access->write) {

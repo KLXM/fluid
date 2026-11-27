@@ -27,18 +27,18 @@ use const ENT_HTML5;
 use const ENT_QUOTES;
 
 /**
- * Wissensbereich (nach KLXM Studio, Core\Data\Knowledge und KnowledgeLd, MIT – schlanke erste Fassung): Kapitel einer
- * YForm-Tabelle der Art „Wissen“ (Data\KnowledgeTable) im Block „Datenliste“.
+ * Knowledge base (after KLXM Studio, Core\Data\Knowledge and KnowledgeLd, MIT – lean first version): chapters of a
+ * YForm table of the kind „Wissen“ (Data\KnowledgeTable) in the block „Datenliste“.
  *
- *  - Gliederung: Oberkapitel (Feld parent) → Unterkapitel, Geschwister nach sort, dann Titel. Nummern automatisch („2.1.3“),
- *    je Kapitel überschreibbar (Feld number). tree() liefert Knoten, Wurzeln und die Lesereihenfolge.
- *  - Übersicht: Datenliste in der Darstellung „Inhaltsverzeichnis“ (Bereiche, Kapitel, Unterkapitel) oder „Karten“.
- *  - Detailansicht: detail() – Kapitelnavigation (Seitenleiste mit Suche, Kapitelbaum, „In diesem Kapitel“ aus den h2 des
- *    Inhalts), Inhalt aus Blöcken (auf der Website bearbeitbar), Schlagworte, Glossar-Begriffe, verwandte Kapitel, „Zuletzt
- *    geprüft“, Vor/Zurück. Zwei Stile: „Magazin“ (Einstieg mit Bild über die volle Breite) und „Sachlich“ (große Nummer, kompakt).
- *  - Strukturierte Daten: Article (Kapitel, isPartOf Sammlung, position, keywords, articleSection, about = DefinedTerm des Glossars),
- *    WebPage mit lastReviewed, auf der Übersicht CollectionPage mit hasPart in Lesereihenfolge.
- *  - Datenquelle: chapters() liest über YForm – die einzige Stelle, die ein anderes Backend ersetzen müsste.
+ *  - Outline: parent chapter (field parent) → subchapter, siblings by sort, then title. Numbers automatic („2.1.3“),
+ *    overridable per chapter (field number). tree() returns nodes, roots and the reading order.
+ *  - Overview: data list in the display „Inhaltsverzeichnis“ (areas, chapters, subchapters) or „Karten“.
+ *  - Detail view: detail() – chapter navigation (sidebar with search, chapter tree, „In diesem Kapitel“ from the h2 of the
+ *    content), content from blocks (editable on the website), tags, glossary terms, related chapters, „Zuletzt
+ *    geprüft“, previous/next. Two styles: „Magazin“ (intro with full-width image) and „Sachlich“ (large number, compact).
+ *  - Structured data: Article (chapter, isPartOf collection, position, keywords, articleSection, about = DefinedTerm of the glossary),
+ *    WebPage with lastReviewed, on the overview CollectionPage with hasPart in reading order.
+ *  - Data source: chapters() reads via YForm – the only place another backend would have to replace.
  */
 final class Knowledge
 {
@@ -52,12 +52,12 @@ final class Knowledge
         return null !== $t && class_exists(KnowledgeTable::class) && $t instanceof KnowledgeTable;
     }
 
-    // ------------------------------------------------------------------ Daten
+    // ------------------------------------------------------------------ Data
 
     /**
-     * Kapitel der Tabelle (online, Sprache der Seite; mit Bedingung der Datenliste) als einfache Arrays.
+     * Chapters of the table (online, language of the page; with the data list's condition) as plain arrays.
      *
-     * @param array<string, mixed>|null $cfg Daten der Datenliste (Bedingung, Titelfeld)
+     * @param array<string, mixed>|null $cfg data of the data list (condition, title field)
      * @return list<array{id: int, parent: int, title: string, number: string, sort: int, area: string}>
      */
     public static function chapters(Table $t, ?array $cfg = null, ?int $languageId = null): array
@@ -81,7 +81,7 @@ final class Knowledge
     }
 
     /**
-     * Kapitelbaum: nodes (id => Knoten mit number, depth, children), roots (oberste Ebene), order (Lesereihenfolge).
+     * Chapter tree: nodes (id => node with number, depth, children), roots (top level), order (reading order).
      *
      * @param array<string, mixed>|null $cfg
      * @return array{nodes: array<int, array<string, mixed>>, roots: list<int>, order: list<int>}
@@ -94,7 +94,7 @@ final class Knowledge
     }
 
     /**
-     * Baum aus Kapiteln bauen (auch für den Selbsttest): Unbekannte Oberkapitel und Schleifen machen ein Kapitel zur Wurzel.
+     * Build a tree from chapters (also for the self-test): unknown parent chapters and loops make a chapter a root.
      *
      * @param list<array{id: int, parent: int, title: string, number: string, sort: int, area: string}> $rows
      * @return array{nodes: array<int, array<string, mixed>>, roots: list<int>, order: list<int>}
@@ -108,7 +108,7 @@ final class Knowledge
         $byParent = [];
         foreach ($nodes as $id => $n) {
             $p = $n['parent'];
-            // Schleife (A → B → A) oder fehlendes Oberkapitel: oberste Ebene
+            // Loop (A → B → A) or missing parent chapter: top level
             for ($seen = [$id => true], $x = $p; $x > 0 && isset($nodes[$x]) && !isset($seen[$x]); $x = $nodes[$x]['parent']) {
                 $seen[$x] = true;
             }
@@ -142,7 +142,7 @@ final class Knowledge
         return ['nodes' => $nodes, 'roots' => $roots, 'order' => $order];
     }
 
-    /** @param array{nodes: array<int, array<string, mixed>>} $tree @return list<array<string, mixed>> Oberkapitel von außen nach innen */
+    /** @param array{nodes: array<int, array<string, mixed>>} $tree @return list<array<string, mixed>> parent chapters from outside in */
     public static function ancestors(array $tree, int $id): array
     {
         $out = [];
@@ -153,7 +153,7 @@ final class Knowledge
         return $out;
     }
 
-    /** @param array{nodes: array<int, array<string, mixed>>, order: list<int>} $tree @return array{0: ?array<string, mixed>, 1: ?array<string, mixed>} vorheriges, nächstes Kapitel */
+    /** @param array{nodes: array<int, array<string, mixed>>, order: list<int>} $tree @return array{0: ?array<string, mixed>, 1: ?array<string, mixed>} previous, next chapter */
     public static function neighbours(array $tree, int $id): array
     {
         $i = array_search($id, $tree['order'], true);
@@ -164,7 +164,7 @@ final class Knowledge
         return [$tree['nodes'][$tree['order'][$i - 1] ?? 0] ?? null, $tree['nodes'][$tree['order'][$i + 1] ?? 0] ?? null];
     }
 
-    /** Abschnitte (h2) eines Inhalts: Anker setzen, wo keiner ist @return array{0: string, 1: list<array{id: string, title: string}>} */
+    /** Sections (h2) of a content: set anchors where there are none @return array{0: string, 1: list<array{id: string, title: string}>} */
     public static function sections(string $html, string $prefix = 'kn-s'): array
     {
         $list = [];
@@ -189,12 +189,12 @@ final class Knowledge
         return [$html, $list];
     }
 
-    // ------------------------------------------------------------------ Ausgabe
+    // ------------------------------------------------------------------ Output
 
     /**
-     * Inhaltsverzeichnis (Datenliste, Darstellung „Inhaltsverzeichnis“): Bereiche → Kapitel → Unterkapitel mit Nummern.
+     * Table of contents (data list, display „Inhaltsverzeichnis“): areas → chapters → subchapters with numbers.
      *
-     * @param array<string, mixed> $d Daten der Datenliste
+     * @param array<string, mixed> $d data of the data list
      */
     public static function toc(Block $b, array $d, Table $t, string $pageUrl): string
     {
@@ -214,7 +214,7 @@ final class Knowledge
                 . '<span class="kn-toc__n">' . escape($n['number']) . '</span><span class="kn-toc__t">' . escape($n['title']) . '</span></a>'
                 . ('' !== $kids ? '<ol class="kn-toc__list" role="list">' . $kids . '</ol>' : '') . '</li>';
         };
-        // Bereiche: Wurzeln nach Bereich gruppieren (Reihenfolge der Bereiche), ohne Bereich zuletzt
+        // Areas: group roots by area (order of the areas), those without area last
         $groups = [];
         foreach ($tree['roots'] as $id) {
             $groups[(string) $tree['nodes'][$id]['area']][] = $id;
@@ -231,9 +231,9 @@ final class Knowledge
     }
 
     /**
-     * Detailansicht eines Kapitels mit Kapitelnavigation.
+     * Detail view of a chapter with chapter navigation.
      *
-     * @param array<string, mixed> $d Daten der Datenliste
+     * @param array<string, mixed> $d data of the data list
      */
     public static function detail(Block $b, array $d, Table $t, Record $row, string $pageUrl): string
     {
@@ -249,14 +249,14 @@ final class Knowledge
         $teaser = trim((string) $row->get('teaser'));
         $inline = static fn (string $f): string => $t->hasField($f) ? RecordInline::attrs($t, $row, $t->getField($f)) : '';
 
-        // Inhalt (Blöcke, im Bearbeiten-Modus bearbeitbar) und seine Abschnitte
+        // Content (blocks, editable in edit mode) and its sections
         $content = '';
         if ($t->hasField('content') && ($f = $t->getField('content')) instanceof FluidBlocks) {
             $content = RecordBlocks::render($t, $row, $f, $b->articleId);
         }
         [$content, $sections] = self::sections($content);
 
-        // Seitenleiste: Suche, Kapitelbaum (aktueller Zweig aufgeklappt), Abschnitte
+        // Sidebar: search, chapter tree (current branch expanded), sections
         $active = [...array_column(self::ancestors($tree, $id), 'id'), $id];
         $navItem = static function (int $nid) use (&$navItem, $tree, $active, $id, $url): string {
             $n = $tree['nodes'][$nid];
@@ -274,7 +274,7 @@ final class Knowledge
         $sid = $b->domId() . '-kn';
         $side = '<nav class="kn-side" aria-label="' . escape(lt('Kapitel')) . '">'
             . '<p class="kn-side__back"><a href="' . escape($pageUrl) . '">' . escape(lt('Inhaltsverzeichnis')) . '</a></p>'
-            // Telefon: zugeklappt (Kapitel stehen sonst vor dem Inhalt), breite Fenster: offen (js/knowledge.js, Zusammenfassung ausgeblendet)
+            // Phone: collapsed (otherwise the chapters come before the content), wide windows: open (js/knowledge.js, summary hidden)
             . '<details class="kn-drawer" data-kn-drawer><summary class="kn-drawer__sum">' . escape(lt('Kapitel') . ' ' . $node['number'] . ' · ' . lt('Navigation')) . '</summary><div class="kn-drawer__body">'
             . '<div class="kn-search" data-kn-search hidden><label class="sr-only" for="' . escape($sid) . '-q">' . escape(lt('Kapitel suchen')) . '</label>'
             . '<input class="kn-search__input" id="' . escape($sid) . '-q" type="search" placeholder="' . escape(lt('Kapitel suchen')) . '" autocomplete="off"><p class="kn-search__count" role="status" data-kn-count data-none="' . escape(lt('Keine Kapitel gefunden.')) . '" data-one="' . escape(lt('1 Kapitel')) . '" data-many="' . escape(lt('{n} Kapitel')) . '"></p></div>'
@@ -283,9 +283,9 @@ final class Knowledge
                 . implode('', array_map(static fn (array $s) => '<li><a href="#' . escape($s['id']) . '">' . escape($s['title']) . '</a></li>', $sections)) . '</ul></div>' : '')
             . '</div></details></nav>';
 
-        // Kopf
+        // Header
         $img = $t->hasField('image') ? YFormBridge::file($row, $t->getField('image')) : '';
-        $hx = null === $b->prev ? 'h1' : 'h2';   // erster Block der Seite: Hauptüberschrift
+        $hx = null === $b->prev ? 'h1' : 'h2';   // first block of the page: main heading
         $hTitle = '<' . $hx . ' class="kn-title"' . $inline('title') . '>' . escape((string) $row->get('title')) . '</' . $hx . '>';
         if ('magazin' === $style) {
             $head = '<header class="kn-hero">'
@@ -302,7 +302,7 @@ final class Knowledge
             $head = str_replace($hTitle, '<' . $hx . ' class="kn-title"' . $inline('title') . '><span class="sr-only">' . escape(lt('Kapitel') . ' ' . $node['number']) . ': </span>' . escape((string) $row->get('title')) . '</' . $hx . '>', $head);
         }
 
-        // Fuß: Schlagworte, Begriffe, verwandte Kapitel, Zuletzt geprüft, Vor/Zurück
+        // Footer: tags, terms, related chapters, last reviewed, previous/next
         $foot = '';
         $tags = $t->hasField('tags') ? array_values(array_filter(array_map('trim', explode(',', (string) $row->get('tags'))))) : [];
         if ($tags) {
@@ -340,7 +340,7 @@ final class Knowledge
             . '</article></div></div>';
     }
 
-    /** @return list<array{id: int, term: string, url: ?string}> Glossar-Begriffe eines Kapitels */
+    /** @return list<array{id: int, term: string, url: ?string}> glossary terms of a chapter */
     public static function terms(Table $t, Record $row): array
     {
         if (!$t->hasField('terms')) {
@@ -360,7 +360,7 @@ final class Knowledge
         return $out;
     }
 
-    /** @param array{nodes: array<int, array<string, mixed>>} $tree @return list<array<string, mixed>> verwandte Kapitel (online, im Baum) */
+    /** @param array{nodes: array<int, array<string, mixed>>} $tree @return list<array<string, mixed>> related chapters (online, in the tree) */
     public static function related(Table $t, Record $row, array $tree, int $max = 6): array
     {
         if (!$t->hasField('related')) {
@@ -376,7 +376,7 @@ final class Knowledge
         return $out;
     }
 
-    // ------------------------------------------------------------------ Strukturierte Daten
+    // ------------------------------------------------------------------ Structured data
 
     public static function boot(): void
     {
@@ -443,7 +443,7 @@ final class Knowledge
                     }
                 }
                 $data['@graph'][] = $article_;
-                // Brotkrumen: Oberkapitel zwischen Übersicht und Kapitel
+                // Breadcrumbs: parent chapters between overview and chapter
                 $up = self::ancestors($tree, $entry);
                 foreach ($data['@graph'] as $j => $crumb) {
                     if ('BreadcrumbList' === ($crumb['@type'] ?? '') && $up) {

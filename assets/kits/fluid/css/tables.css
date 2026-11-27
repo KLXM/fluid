@@ -1,8 +1,8 @@
 /*
- * Kit fluid: Tabellen in Fließtext, Datenliste und Paketvergleich (fluid_tables(), @table) – waagerecht scrollbar mit
- * weichem Schatten an der Kante, solange es dort weitergeht (scroll-getriebene Animation; ältere Browser: ohne Schatten),
- * und die Schaltflächen von js/table-sort.js (NativeCSS, „Spalten sortierbar“). Im Kit NativeCSS übernehmen das
- * helpers/scroll-shadow.css und components/table-sort.css.
+ * Kit fluid: tables in body text, data list and package comparison (fluid_tables(), @table) – horizontally scrollable
+ * with a soft shadow at the edge while there is more (scroll-driven animation; older browsers: without shadow),
+ * and the buttons of js/table-sort.js (NativeCSS, „Spalten sortierbar“). In the kit NativeCSS
+ * helpers/scroll-shadow.css and components/table-sort.css handle this.
  */
 .tbl-scroll { overflow-x: auto; margin-block: 1.25em; }
 .tbl-scroll > table { margin: 0; }
@@ -22,7 +22,7 @@
     animation-range: 0 3rem, calc(100% - 3rem) 100%;
   }
 }
-/* Sortieren (js/table-sort.js erzeugt Schaltfläche, Pfeil und Ansage) */
+/* Sorting (js/table-sort.js creates button, arrow and announcement) */
 .ncss-table-sort-button { display: inline-flex; align-items: center; gap: .4em; inline-size: 100%; padding: 0; border: 0; background: none; color: inherit; font: inherit; letter-spacing: inherit; text-transform: inherit; text-align: inherit; cursor: pointer; }
 th[data-sort-align="end"] .ncss-table-sort-button { justify-content: flex-end; }
 .ncss-table-sort-button:focus-visible { outline: 2px solid var(--f-a); outline-offset: 2px; border-radius: 2px; }

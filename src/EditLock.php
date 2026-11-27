@@ -10,21 +10,21 @@ use function sprintf;
 use function usort;
 
 /**
- * Bearbeitungssperre (Website → Einstellungen → Redaktion, Standard aus; braucht die Präsenz) – aus KLXM Studio
+ * Edit lock (Website → Einstellungen → Redaktion, off by default; requires presence) – from KLXM Studio
  * (Core\EditLock, MIT).
  *
- * Gesperrt hält, wer eine Seite in einer Sprache am längsten ohne Unterbrechung im Bearbeiten-Modus hat – abgeleitet aus
- * der Präsenz (Herzschlag etwa alle 15 s, frei spätestens Presence::TTL Sekunden nach dem Schließen). Keine eigene
- * Tabelle, keine hängenden Sperren. Wer gesperrt ist, sieht die Seite nur an (auch mit ?fluid_edit=1); Speichern über den
- * Editor, die Seitenleiste und MCP lehnt fluid mit HTTP 423 ab. Administratoren übernehmen mit take(): Ihr Eintrag rückt
- * vor den bisherigen Inhaber, der es beim nächsten Herzschlag erfährt. Gäste (Gastzugang) und Abläufe ohne Person
- * (Konsole, Cronjob) sperrt nichts. Das Backend des Cores kennt die Sperre nicht.
+ * The lock is held by whoever has had a page in one language in edit mode the longest without interruption – derived from
+ * presence (heartbeat about every 15 s, released at most Presence::TTL seconds after closing). No own table, no stale
+ * locks. Whoever is locked out only views the page (even with ?fluid_edit=1); fluid rejects saving via the editor, the
+ * sidebar and MCP with HTTP 423. Administrators take over with take(): their entry moves ahead of the previous holder,
+ * who learns about it on the next heartbeat. Guests (guest access) and processes without a person (console, cronjob)
+ * lock nothing. The core's backend doesn't know about the lock.
  */
 final class EditLock
 {
     public const string TYPE = 'article';
 
-    /** Selbsttest: an/aus unabhängig von der Einstellung */
+    /** Self-test: on/off regardless of the setting */
     private static ?bool $force = null;
 
     public static function on(): bool
@@ -39,14 +39,14 @@ final class EditLock
         }
     }
 
-    /** Schlüssel der Präsenz für eine Seite in einer Sprache („Sprache:Artikel“) */
+    /** Presence key for a page in one language („language:article“) */
     public static function id(Article $article): string
     {
         return $article->languageId . ':' . $article->id;
     }
 
     /**
-     * Inhaber der Sperre: aktiver Eintrag der Präsenz mit dem frühesten Beginn – oder null.
+     * Lock holder: active presence entry with the earliest start – or null.
      *
      * @return array<string, mixed>|null
      */
@@ -62,21 +62,21 @@ final class EditLock
     }
 
     /**
-     * Sperrt jemand anderes die Seite für diese Person? Eintrag des Inhabers, sonst null.
+     * Does someone else lock the page for this person? Entry of the holder, otherwise null.
      *
-     * @param int|false|null $userId ID der Person; false = MCP-Schlüssel ohne Person (gilt immer als fremd), null = wer
-     *     gerade angemeldet ist
+     * @param int|false|null $userId ID of the person; false = MCP key without a person (always counts as someone else),
+     *     null = whoever is currently logged in
      * @return array<string, mixed>|null
      */
     public static function blockedFor(Article $article, int|false|null $userId = null): ?array
     {
         if (null === $userId) {
             if (Editing::isGuest()) {
-                return null;   // Gäste speichern nie dauerhaft
+                return null;   // Guests never save permanently
             }
             $userId = Editing::user()?->id;
             if (null === $userId) {
-                return null;   // ohne Person (Konsole, Cronjob)
+                return null;   // without a person (console, cronjob)
             }
         }
         $holder = self::holder($article);
@@ -94,9 +94,9 @@ final class EditLock
     }
 
     /**
-     * Speichern verhindern, wenn jemand anderes die Seite sperrt (HTTP 423).
+     * Prevent saving when someone else locks the page (HTTP 423).
      *
-     * @param int|false|null $userId siehe blockedFor()
+     * @param int|false|null $userId see blockedFor()
      */
     public static function assert(Article $article, int|false|null $userId = null): void
     {
@@ -106,7 +106,7 @@ final class EditLock
         }
     }
 
-    /** Darf die Person eine fremde Sperre übernehmen? (Administration) */
+    /** May the person take over someone else's lock? (administration) */
     public static function canTake(?User $user = null): bool
     {
         $user ??= Editing::user();
@@ -115,9 +115,9 @@ final class EditLock
     }
 
     /**
-     * Sperre übernehmen: der eigene Eintrag der Präsenz (muss bestehen) rückt vor den bisherigen Inhaber.
+     * Take over the lock: the own presence entry (must exist) moves ahead of the previous holder.
      *
-     * @param bool $log in der Aktivität vermerken (der Selbsttest nicht)
+     * @param bool $log record in the activity log (the self-test doesn't)
      */
     public static function take(Article $article, int $userId, bool $log = true): bool
     {
@@ -134,8 +134,8 @@ final class EditLock
     }
 
     /**
-     * Selbsttest (fluid:selftest): Inhaber, Sperre beim Speichern, MCP ohne Person, Übernehmen, abgeschaltet. Arbeitet mit
-     * Einträgen der Präsenz für eine Seite, die es nicht gibt, und räumt sie wieder ab.
+     * Self-test (fluid:selftest): holder, lock on save, MCP without a person, take over, disabled. Works with
+     * presence entries for a page that doesn't exist and cleans them up again.
      *
      * @return array{ok: int, fails: list<string>}
      */
@@ -154,7 +154,7 @@ final class EditLock
         if (null === $article) {
             return ['ok' => 0, 'fails' => ['Sperre – keine Startseite für den Test']];
         }
-        // Test-Personen ohne Konto: IDs, die es nicht gibt
+        // Test persons without an account: IDs that don't exist
         $a = 990001;
         $b = 990002;
         $who = static fn (int $u): array => ['site' => PresenceApi::SITE, 'type' => self::TYPE, 'id' => self::id($article), 'user' => (string) $u];

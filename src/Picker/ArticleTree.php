@@ -8,14 +8,14 @@ use Redaxo\Core\Content\StructurePermission;
 use Redaxo\Core\Security\User;
 
 /**
- * Seitenauswahl auf der Website (FrontendPicker): Kategorien und Artikel der Struktur, wie die Linkmap des Cores.
- * Ohne das Recht `linkmap[all_categories]` sieht die Person nur ihre Mountpoints (ab dort als oberste Ebene).
+ * Page picker on the website (FrontendPicker): categories and articles of the structure, like the core's linkmap.
+ * Without the permission `linkmap[all_categories]` the user sees only their mount points (as the top level).
  */
 final class ArticleTree
 {
     /**
-     * Seiten in der Reihenfolge der Struktur. `parent`: Kategorie, in der die Seite steht (0 = oberste Ebene);
-     * `cat`: Startartikel einer Kategorie – sie trägt die Unterkategorien und Artikel.
+     * Pages in structure order. `parent`: category the page is in (0 = top level);
+     * `cat`: start article of a category – it carries the subcategories and articles.
      *
      * @return list<array{id: int, name: string, path: string, online: bool, parent: int, cat: bool}>
      */

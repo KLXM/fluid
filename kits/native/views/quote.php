@@ -4,9 +4,9 @@ use Klxm\Fluid\Block;
 use Klxm\Fluid\Kit;
 
 /**
- * Zitat / Stimmen im Kit „NativeCSS“: „Groß“ als hervorgehobene Kundenstimme (.ncss-testimonial--featured), „Raster“ als
- * Raster gleich hoher Karten mit bündiger Personenzeile (.ncss-testimonial-grid) – figure/blockquote/figcaption, der
- * Name als Text (nicht <cite>). „Wischbares Band“ und „Laufband“ kommen aus dem Kit fluid.
+ * Quote / testimonials in the kit „NativeCSS“: „Groß“ as a featured testimonial (.ncss-testimonial--featured), „Raster“ as
+ * a grid of equal-height cards with an aligned person row (.ncss-testimonial-grid) – figure/blockquote/figcaption, the
+ * name as text (not <cite>). „Wischbares Band“ and „Laufband“ come from the kit fluid.
  * @var Block $b  @var array $d
  */
 $v = $b->variant() ?: 'single';

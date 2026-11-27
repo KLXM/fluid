@@ -7,17 +7,17 @@ use function in_array;
 use function Redaxo\Core\View\escape;
 
 /**
- * Ein Tag im Seitenkopf. Tags mit demselben Schlüssel ersetzen sich – so kann ein AddOn oder das Projekt jede Angabe
- * des Routings überschreiben (z. B. og:title) oder eigene ergänzen:
+ * A tag in the page head. Tags with the same key replace each other – so an AddOn or the project can override any value
+ * of the routing (e.g. og:title) or add its own:
  *
  *     HeadTag::meta('theme-color', '#0a5')
  *     HeadTag::property('og:video', 'https://…')
  *     HeadTag::link('preconnect', 'https://fonts.example.org')
- *     HeadTag::html('matomo', '<script src="…" defer></script>')   nur aus Code, nie aus Eingaben von Redakteuren
+ *     HeadTag::html('matomo', '<script src="…" defer></script>')   only from code, never from editor input
  */
 final readonly class HeadTag
 {
-    /** link-Arten, die es je Seite nur einmal gibt (Schlüssel ohne Adresse) */
+    /** link types that exist only once per page (key without URL) */
     private const array UNIQUE_LINKS = ['canonical', 'icon', 'apple-touch-icon', 'manifest', 'license', 'author'];
 
     /** @param array<string, string|int|bool|null> $attrs */
@@ -46,13 +46,13 @@ final readonly class HeadTag
         return new self($key, 'link', ['rel' => $rel, 'href' => $href] + $attrs);
     }
 
-    /** Fertiges HTML unter einem eigenen Schlüssel – nur für Code (Projekt, AddOns), nicht für Eingaben */
+    /** Ready-made HTML under its own key – only for code (project, AddOns), not for input */
     public static function html(string $key, string $html): self
     {
         return new self('html:' . $key, 'html', [], $html);
     }
 
-    /** Tag entfernen: derselbe Schlüssel, leerer Inhalt (z. B. HeadTag::remove('property:og:image')) */
+    /** Remove a tag: the same key, empty content (e.g. HeadTag::remove('property:og:image')) */
     public static function remove(string $key): self
     {
         return new self($key, 'remove');

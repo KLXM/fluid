@@ -24,24 +24,24 @@ use const LOCK_UN;
 use const PHP_SAPI;
 
 /**
- * Live-Aktualisierung (Server-Sent Events) und „Neu laden auf Aktion“ – Modell aus KLXM Studio (Core\Live, MIT),
- * gleiche Attribute, Kanäle und Skripte (assets/live.js, assets/live.css).
+ * Live updates (server-sent events) and „Neu laden auf Aktion“ – model from KLXM Studio (Core\Live, MIT), same
+ * attributes, channels and scripts (assets/live.js, assets/live.css).
  *
- * Kanäle sind Namen, deren Version sich bei Änderungen erhöht – der Stream überträgt nur Versionen, nie Inhalte:
- *   page:{id}               Seite (automatisch beim Veröffentlichen)
- *   presence:{site}         Präsenz der Redaktion (Presence: Kommen und Gehen)
- *   ext:{addon}:…           eigene Kanäle: Live::touch('ext:shop:lager')
- * Abos sind signiert (HMAC) – Besucher können keine beliebigen Kanäle abfragen.
+ * Channels are names whose version increases on changes – the stream only transmits versions, never content:
+ *   page:{id}               page (automatically on publishing)
+ *   presence:{site}         presence of the editors (Presence: coming and going)
+ *   ext:{addon}:…           custom channels: Live::touch('ext:shop:lager')
+ * Subscriptions are signed (HMAC) – visitors cannot query arbitrary channels.
  *
- * Neu laden auf Aktion (Filtern, Blättern, Suche ohne Seitenwechsel), im View eines Blocks mit 'reload' => true im Kit:
+ * Reload on action (filtering, paging, search without page change), in a block's view with 'reload' => true in the kit:
  *   <div class="wrap …"<?= Live::region($b) ?>> … <a href="?seite=2#…" data-live-nav> … <form method="get" data-live-nav> <input data-live-input>
  *   … </div><?= Live::assets() ?>
- * live.js holt den Block über die Seitenadresse mit ?fluid_block={slice} und den Parametern des Links bzw. Formulars
- * (JSON {html}) und tauscht [data-live-region] aus – Verlauf, Zurück, Fokus und Ansage ([data-live-count]) inklusive.
- * Ohne JavaScript bleiben es normale Links und Formulare. Die Parameter prüft der Block selbst; fluid_block ist reserviert.
+ * live.js fetches the block via the page URL with ?fluid_block={slice} and the parameters of the link or form
+ * (JSON {html}) and replaces [data-live-region] – history, back, focus and announcement ([data-live-count]) included.
+ * Without JavaScript they stay normal links and forms. The block checks the parameters itself; fluid_block is reserved.
  *
- * Betrieb: ein offener Stream belegt einen PHP-Worker – deshalb kurz (20 s) und höchstens MAX_STREAMS gleichzeitig; darüber
- * und auf dem Entwicklungsserver (php -S) antwortet /fluid-live sofort mit den Versionen und längerem retry (= Nachfragen).
+ * Operation: an open stream occupies a PHP worker – hence short (20 s) and at most MAX_STREAMS at once; beyond that
+ * and on the development server (php -S) /fluid-live answers immediately with the versions and a longer retry (= polling).
  */
 final class Live
 {
@@ -52,7 +52,7 @@ final class Live
 
     private static bool $assets = false;
 
-    /** @internal Endpunkt der Live-Aktualisierung (SSE) – vor der Domain-Umleitung */
+    /** @internal Endpoint of the live updates (SSE) – before the domain redirect */
     #[AsEndpoint('/' . self::PATH, early: true)]
     public static function serve(): void
     {
@@ -66,7 +66,7 @@ final class Live
         return Path::addonCache('fluid', 'live/' . substr(sha1($channel), 0, 24) . '.v');
     }
 
-    /** Kanäle als geändert markieren (Version = Zeitstempel in ms, steigt immer) */
+    /** Marks channels as changed (version = timestamp in ms, always increasing) */
     public static function touch(string ...$channels): void
     {
         foreach (array_unique($channels) as $c) {
@@ -128,7 +128,7 @@ final class Live
         return $p . '.' . self::sign($p);
     }
 
-    /** @return list<string>|null Kanäle eines Abos oder null (Signatur falsch) */
+    /** @return list<string>|null Channels of a subscription or null (invalid signature) */
     public static function channels(string $token): ?array
     {
         if (!preg_match('~^([A-Za-z0-9_-]{1,800})\.([a-f0-9]{20})$~', $token, $m) || !hash_equals(self::sign($m[1]), $m[2])) {
@@ -145,7 +145,7 @@ final class Live
         return Routing\Router::base() . '/' . self::PATH;
     }
 
-    /** @param list<string> $channels Attribute fürs Element (Abo, Version, optional Adresse zum Nachladen) – im Bearbeiten leer */
+    /** @param list<string> $channels Attributes for the element (subscription, version, optional reload URL) – empty while editing */
     public static function attrs(array $channels, string $src = ''): string
     {
         if (Editing::active() || !$channels) {
@@ -156,7 +156,7 @@ final class Live
             . ('' !== $src ? ' data-live-src="' . escape($src) . '"' : '');
     }
 
-    /** Skript und Stile (einmal je Seite) – im View nach dem Element ausgeben */
+    /** Script and styles (once per page) – output in the view after the element */
     public static function assets(): string
     {
         if (self::$assets || Editing::active()) {
@@ -165,7 +165,7 @@ final class Live
         self::$assets = true;
         $a = FluidAddon::instance();
         $v = static fn (string $f) => is_file($p = $a->getPath('assets/' . $f)) ? '?v=' . substr(md5((string) filemtime($p)), 0, 8) : '';
-        $lt = static fn (string $t) => function_exists('lt') ? lt($t) : $t;   // Übersetzung des Kits (functions.php)
+        $lt = static fn (string $t) => function_exists('lt') ? lt($t) : $t;   // the kit's translation (functions.php)
 
         return '<link rel="stylesheet" href="' . escape($a->getAssetsUrl('live.css') . $v('live.css')) . '">'
             . '<script src="' . escape($a->getAssetsUrl('live.js') . $v('live.js')) . '" defer data-live-endpoint="' . escape(self::endpoint()) . '"'
@@ -173,8 +173,8 @@ final class Live
     }
 
     /**
-     * Neu laden auf Aktion: Attribute für das äußere Element eines Blocks mit 'reload' => true. Links/Formulare darin mit
-     * data-live-nav, Eingabefelder mit data-live-input (Pause data-live-delay, ms). Im Bearbeiten und für Blöcke aus Daten leer.
+     * Reload on action: attributes for the outer element of a block with 'reload' => true. Links/forms inside with
+     * data-live-nav, inputs with data-live-input (pause data-live-delay, ms). Empty while editing and for blocks from data.
      */
     public static function region(Block $b): string
     {
@@ -185,7 +185,7 @@ final class Live
         return ' data-live-region="' . escape($b->domId()) . '" data-live-src="' . escape($src) . '"';
     }
 
-    /** Adresse, unter der der Block der veröffentlichten Seite neu gerendert wird */
+    /** URL at which the block of the published page is re-rendered */
     public static function src(Block $b): string
     {
         if (!$b->slice) {
@@ -197,7 +197,7 @@ final class Live
 
     // ------------------------------------------------------------------ Endpunkte
 
-    /** Stream möglich? Der Entwicklungsserver (php -S) hat meist nur einen Worker – dann Nachfragen statt offener Verbindung */
+    /** Stream possible? The development server (php -S) usually has only one worker – then polling instead of an open connection */
     private static function streaming(): bool
     {
         return 'cli-server' !== PHP_SAPI || (int) getenv('PHP_CLI_SERVER_WORKERS') > 1;
@@ -234,7 +234,7 @@ final class Live
         };
         $slot = self::streaming() ? self::slot() : null;
         if (null === $slot) {
-            // Nachfragen: Versionen sofort, der Browser verbindet sich nach retry neu
+            // Polling: versions right away, the browser reconnects after retry
             echo "retry: 15000\n";
             $send('v', $versions());
             $send('bye', ['poll' => true]);
@@ -272,7 +272,7 @@ final class Live
         exit;
     }
 
-    /** @return resource|null freier Platz für einen Stream (Dateisperre) */
+    /** @return resource|null free slot for a stream (file lock) */
     private static function slot()
     {
         $dir = Path::addonCache('fluid', 'live/slots');
@@ -293,8 +293,8 @@ final class Live
     }
 
     /**
-     * {Seitenadresse}?fluid_block={slice}[&weitere] (FE_OUTPUT): Block der veröffentlichten Seite neu rendern – nur Blöcke
-     * mit 'reload' bzw. 'live' im Kit. Weitere Parameter liest der Block wie beim normalen Aufruf aus der Anfrage.
+     * {page URL}?fluid_block={slice}[&more] (FE_OUTPUT): re-renders the block of the published page – only blocks with
+     * 'reload' or 'live' in the kit. The block reads further parameters from the request as in a normal call.
      */
     public static function block(): never
     {
@@ -304,7 +304,7 @@ final class Live
         $module = $slice && $slice->articleId === $article->id && 1 === $slice->status ? BlockModule::classFor($slice->moduleKey) : null;
         $def = null !== $module ? $module::definition() : [];
         $parent = null !== $module ? Layout::parentOf($slice) : null;
-        // nur, was Besucher auf der Seite sehen: Block online, Layout darüber (Spalten-Block) ebenfalls
+        // only what visitors see on the page: block online, and the layout above it (column block) too
         if (null === $module || (empty($def['reload']) && empty($def['live'])) || ($parent && 1 !== $parent->status)) {
             self::json(['error' => 'Nicht gefunden.'], 404);
         }

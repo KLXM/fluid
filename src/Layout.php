@@ -11,20 +11,20 @@ use function is_array;
 use function Redaxo\Core\View\escape;
 
 /**
- * Block „Layout“: Blöcke in Spalten nebeneinander (Konzept aus KLXM Studio, Core\Layout).
+ * Block „Layout“: blocks side by side in columns (concept from KLXM Studio, Core\Layout).
  *
- * In REDAXO bleiben die Blöcke der Spalten echte Slices: Sie stehen direkt hinter dem Layout-Slice und tragen in den
- * Abschnitts-Optionen (value2) `col` = Spalte 1–4. Die Gruppe endet beim ersten Slice ohne `col`. So behalten sie Rechte,
- * Arbeitsversion, Historie, Online/Offline und ihr Formular im Backend; Kopieren und Veröffentlichen erhalten die Reihenfolge.
+ * In REDAXO the column blocks remain real slices: they follow the layout slice directly and carry `col` = column 1–4
+ * in their section options (value2). The group ends at the first slice without `col`. This way they keep permissions,
+ * working version, history, online/offline and their backend form; copying and publishing keep the order.
  *
- * Ausgabe: Der Layout-Slice gibt das Raster mit seinen Spalten-Blöcken aus; diese selbst geben auf oberster Ebene nichts aus.
- * Ein Spalten-Block mit `col` ohne Layout davor (z. B. nach dem Löschen des Layouts) erscheint ganz normal als eigener Abschnitt.
+ * Output: the layout slice renders the grid with its column blocks; these render nothing on the top level themselves.
+ * A column block with `col` but no layout before it (e.g. after deleting the layout) appears as a normal section.
  */
 final class Layout
 {
     public const string TYPE = 'layout';
 
-    /** Raster: Schlüssel → Anteile je Spalte */
+    /** Grid: key → shares per column */
     public const array PRESETS = [
         '1-1' => [1, 1], '2-1' => [2, 1], '1-2' => [1, 2], '1-1-1' => [1, 1, 1], '1-1-1-1' => [1, 1, 1, 1], '1-3' => [1, 3], '3-1' => [3, 1],
     ];
@@ -32,12 +32,12 @@ final class Layout
         '1-1' => '½ + ½', '2-1' => '⅔ + ⅓', '1-2' => '⅓ + ⅔', '1-1-1' => '⅓ × 3', '1-1-1-1' => '¼ × 4', '1-3' => '¼ + ¾', '3-1' => '¾ + ¼',
     ];
 
-    /** Gezogene Spaltenbreiten in Zwölfteln (Griff zwischen den Spalten, wie Core\Layout in Studio) */
+    /** Dragged column widths in twelfths (handle between the columns, like Core\Layout in Studio) */
     public const int UNITS = 12;
     public const int MIN_UNITS = 2;
 
     /**
-     * Gezogene Breiten prüfen: nur gültig für das Raster, mit dem sie gezogen wurden (anderes Raster = Breiten des Rasters).
+     * Validates dragged widths: only valid for the grid they were dragged in (other grid = the grid's widths).
      *
      * @return array{preset: string, w: list<int>}|null
      */
@@ -59,7 +59,7 @@ final class Layout
         return ['preset' => $preset, 'w' => $v];
     }
 
-    /** @return list<int> Gewichte der Spalten: gezogene Breiten oder die des Rasters */
+    /** @return list<int> Column weights: dragged widths or those of the grid */
     public static function weights(array $data): array
     {
         $p = self::preset($data);
@@ -67,7 +67,7 @@ final class Layout
         return self::cleanWidths($data['widths'] ?? null, $p)['w'] ?? self::PRESETS[$p];
     }
 
-    /** @return list<int> Breiten in Zwölfteln (für den Griff im Editor) */
+    /** @return list<int> Widths in twelfths (for the handle in the editor) */
     public static function units(array $data): array
     {
         $w = self::weights($data);
@@ -88,7 +88,7 @@ final class Layout
         return count(self::PRESETS[self::preset($data)]);
     }
 
-    /** Spalte eines Slices (1–4) bzw. 0, wenn er nicht für ein Layout markiert ist */
+    /** Column of a slice (1–4), or 0 if it is not marked for a layout */
     public static function col(ArticleSlice $slice): int
     {
         return max(0, (int) (BlockModule::tunesOf($slice)['col'] ?? 0));
@@ -100,7 +100,7 @@ final class Layout
     }
 
     /**
-     * Spalten-Blöcke eines Layouts (in Reihenfolge, auch offline).
+     * Column blocks of a layout (in order, offline ones too).
      *
      * @return list<ArticleSlice>
      */
@@ -114,7 +114,7 @@ final class Layout
         return $out;
     }
 
-    /** Layout, in dessen Spalte der Slice steht – oder null */
+    /** Layout in whose column the slice sits – or null */
     public static function parentOf(ArticleSlice $slice): ?ArticleSlice
     {
         if (0 === self::col($slice)) {
@@ -135,8 +135,8 @@ final class Layout
     }
 
     /**
-     * Raster mit den Spalten-Blöcken (Inhalt des Layout-Abschnitts).
-     * Mehr Spalten in den Blöcken als im Raster: Diese Blöcke stehen in der letzten Spalte (nichts geht verloren).
+     * Grid with the column blocks (content of the layout section).
+     * More columns in the blocks than in the grid: these blocks go into the last column (nothing gets lost).
      */
     public static function render(Block $layout): string
     {

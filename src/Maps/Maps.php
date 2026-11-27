@@ -21,12 +21,12 @@ use const JSON_UNESCAPED_UNICODE;
 use const M_PI;
 
 /**
- * Karten mit MapLibre GL und OpenFreeMap – vollständig über den eigenen Proxy (aus KLXM Studio – Core\Maps):
+ * Maps with MapLibre GL and OpenFreeMap – entirely via the own proxy (from KLXM Studio – Core\Maps):
  *
- *  - Stil, Kacheln, Schriften und Symbole kommen von /proxy/ofm/… – Besucher haben keinen Kontakt zu Dritten,
- *    keine Einwilligung, keine Cookies. MapLibre (~800 KB) lädt erst, wenn die Karte in Sichtweite kommt.
- *  - Kartengebiet: Detailkacheln (ab Zoom 9) liefert der Proxy nur rund um Orte, die auf der Website als Karte vorkommen.
- *  - Geokodierung (Adresse → Koordinaten) nur für angemeldete Redakteure, serverseitig über Nominatim.
+ *  - Style, tiles, fonts and symbols come from /proxy/ofm/… – visitors have no contact with third parties,
+ *    no consent, no cookies. MapLibre (~800 KB) only loads when the map comes into view.
+ *  - Map area: the proxy only delivers detail tiles (from zoom 9) around places that appear as a map on the website.
+ *  - Geocoding (address → coordinates) only for logged-in editors, server-side via Nominatim.
  */
 final class Maps
 {
@@ -37,7 +37,7 @@ final class Maps
 
     private static bool $assets = false;
 
-    /** Geo-Koordinaten der Website in den schema.org-Knoten der Organisation (Startseite) */
+    /** Geo coordinates of the website in the organization's schema.org node (start page) */
     public static function boot(): void
     {
         Extension::register('FLUID_STRUCTURED_DATA', static function (ExtensionPoint $ep): array {
@@ -53,7 +53,7 @@ final class Maps
         });
     }
 
-    /** Text in der Sprache der Seite (lt() des Kits, sonst Deutsch) */
+    /** Text in the page's language (the kit's lt(), otherwise German) */
     private static function t(string $text, array $vars = []): string
     {
         return function_exists('lt') ? lt($text, $vars) : strtr($text, array_combine(array_map(static fn ($k) => '{' . $k . '}', array_keys($vars)), array_values($vars)) ?: []);
@@ -75,7 +75,7 @@ final class Maps
         ]);
     }
 
-    /** "51.16, 10.45" | ['lat'=>…, 'lng'=>…] → [lat, lng] oder null */
+    /** "51.16, 10.45" | ['lat'=>…, 'lng'=>…] → [lat, lng] or null */
     public static function parse(mixed $v): ?array
     {
         if (is_array($v)) {
@@ -127,7 +127,7 @@ final class Maps
         FluidAddon::instance()->setConfig('map_areas', array_slice($areas, -200));
     }
 
-    /** Guard für /proxy/ofm: Kachel liegt im erlaubten Gebiet? */
+    /** Guard for /proxy/ofm: is the tile within the allowed area? */
     public static function allowTile(string $path): bool
     {
         if (!preg_match('~^planet/[\w.-]+/(\d+)/(\d+)/(\d+)\.pbf$~', $path, $m)) {
@@ -202,7 +202,7 @@ final class Maps
         $cfg = [
             'style' => self::styleUrl($o['style'] ?? null), 'styleDark' => self::styleUrl('dark'),
             'center' => [$p[1], $p[0]], 'zoom' => $zoom, 'bounds' => self::bounds($p), 'label' => $label,
-            // absolut: map.mjs lädt MapLibre per import() – relative Adressen gälten vom Modul aus
+            // absolute: map.mjs loads MapLibre via import() – relative URLs would resolve from the module
             'vendor' => self::abs($addon->getAssetsUrl('vendor/maplibre/')), 'css' => self::abs($addon->getAssetsUrl('vendor/maplibre/maplibre-gl.css')),
             'i18n' => ['NavigationControl.ZoomIn' => 'Vergrößern', 'NavigationControl.ZoomOut' => 'Verkleinern', 'NavigationControl.ResetBearing' => 'Nach Norden ausrichten',
                 'FullscreenControl.Enter' => 'Vollbild', 'FullscreenControl.Exit' => 'Vollbild beenden', 'AttributionControl.ToggleAttribution' => 'Quellenangaben',

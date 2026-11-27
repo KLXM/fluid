@@ -12,8 +12,8 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use function count;
 
 /**
- * Geänderte Standardwerte von Blockfeldern in gespeicherte Blöcke schreiben (Klxm\Fluid\DefaultChanges). Läuft auch bei
- * `console migrate`; hier zum Nachsehen (--dry-run) oder für Projekte, die migrate nicht ausführen.
+ * Writes changed defaults of block fields into stored blocks (Klxm\Fluid\DefaultChanges). Also runs on
+ * `console migrate`; here for checking (--dry-run) or for projects that don't run migrate.
  */
 #[AsCommand(name: 'fluid:upgrade:defaults', description: 'Bestehende Blöcke behalten ihr Aussehen, wenn sich Standardwerte von Blockfeldern ändern (läuft auch bei migrate)')]
 final class UpgradeDefaultsCommand extends AbstractCommand

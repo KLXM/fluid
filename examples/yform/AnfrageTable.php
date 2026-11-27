@@ -12,7 +12,7 @@ use Yakamara\YForm\Field\Textarea;
 use Yakamara\YForm\Table\ListConfig;
 use Yakamara\YForm\Table\Table;
 
-/** Demo „Anfragen“: Einträge des Formulars AnfrageForm (fluid-Postfach „Anfragen“) */
+/** Demo „Anfragen“: entries of the form AnfrageForm (fluid inbox „Anfragen“) */
 #[AsTable('rex_yf_anfrage', label: 'Anfragen (Beispiel)', icon: 'fa-envelope')]
 final class AnfrageTable extends Table
 {

@@ -1,23 +1,23 @@
 /*
- * Play/Pause-Schalter für Hintergrundvideos (fluid_video_toggle() in kits/fluid/functions.php – Einstieg „Vollflächig“ der Kits
- * fluid und NativeCSS, Video „Morphing“ im Kit NativeCSS). Lädt nur auf Seiten mit Hintergrundvideo (kit.php → assets, @videotoggle);
- * ein Kit ersetzt die Datei mit eigener css/video-toggle.css. Übernommen aus KLXM Studio (resources/css/video-toggle.css, MIT).
+ * Play/pause toggle for background videos (fluid_video_toggle() in kits/fluid/functions.php – intro „Vollflächig“ of the kits
+ * fluid and NativeCSS, video „Morphing“ in the kit NativeCSS). Loaded only on pages with a background video (kit.php → assets,
+ * @videotoggle); a kit replaces the file with its own css/video-toggle.css. Taken from KLXM Studio (resources/css/video-toggle.css, MIT).
  *
- * Runder Symbol-Knopf unten rechts im Rahmen (der Rahmen braucht position: relative), mindestens 44 × 44 px, halbtransparente
- * dunkle Fläche mit hellem Rand – das Symbol erreicht auf jedem Videobild mindestens 3:1 (weiß auf ≥ 60 % Schwarz: ≥ 5,9:1),
- * doppelter Fokusring (hell + dunkel). Gestaltung mit button:where() (Spezifität eines Elements – jede Klassen-Regel eines Kits
- * gewinnt); nur Symbolgröße, Symbolwechsel und versteckter Text haben Spezifität. Datei ohne @layer.
+ * Round icon button at the bottom right of the frame (the frame needs position: relative), at least 44 × 44 px, semi-transparent
+ * dark surface with a light border – the icon reaches at least 3:1 on any video frame (white on ≥ 60 % black: ≥ 5.9:1),
+ * double focus ring (light + dark). Styling with button:where() (specificity of an element – any class rule of a kit
+ * wins); only icon size, icon switching and hidden text have specificity. File without @layer.
  *
- * Tokens (überall setzbar, z. B. :root oder der Rahmen des Einstiegs; Standard in Klammern):
- *   --hx-vt-size (2.75rem)          Größe des Knopfs (Mindestmaß; mit Text wächst er in der Breite)
- *   --hx-vt-icon (1.25rem)          Größe des Symbols
- *   --hx-vt-bg (rgb(0 0 0/.6))      Fläche          --hx-vt-bg-hover (rgb(0 0 0/.78))   Fläche bei Maus
- *   --hx-vt-fg (#fff)               Symbol + Text
- *   --hx-vt-border (rgb(255 255 255/.8))  Randfarbe  --hx-vt-border-width (2px)
- *   --hx-vt-radius (999px)          Rundung
- *   --hx-vt-x (1rem), --hx-vt-y (1rem)    Abstand zum rechten bzw. unteren Rand
- *   --hx-vt-focus (#fff), --hx-vt-focus-halo (#000), --hx-vt-focus-width (3px)   Fokusring
- *   --hx-vt-font-size (.875rem)     Text bei „Symbol mit Text“
+ * Tokens (settable anywhere, e.g. :root or the intro's frame; default in parentheses):
+ *   --hx-vt-size (2.75rem)          button size (minimum; with text it grows in width)
+ *   --hx-vt-icon (1.25rem)          icon size
+ *   --hx-vt-bg (rgb(0 0 0/.6))      surface        --hx-vt-bg-hover (rgb(0 0 0/.78))   surface on hover
+ *   --hx-vt-fg (#fff)               icon + text
+ *   --hx-vt-border (rgb(255 255 255/.8))  border color  --hx-vt-border-width (2px)
+ *   --hx-vt-radius (999px)          rounding
+ *   --hx-vt-x (1rem), --hx-vt-y (1rem)    distance to the right and bottom edge
+ *   --hx-vt-focus (#fff), --hx-vt-focus-halo (#000), --hx-vt-focus-width (3px)   focus ring
+ *   --hx-vt-font-size (.875rem)     text for „Symbol mit Text“
  */
 button:where(.hx-vt){position:absolute;z-index:2;inset-block-end:var(--hx-vt-y,1rem);inset-inline-end:var(--hx-vt-x,1rem);
   display:inline-flex;align-items:center;justify-content:center;gap:.5rem;box-sizing:border-box;
@@ -31,10 +31,10 @@ button:where(.hx-vt):hover{background:var(--hx-vt-bg-hover,rgb(0 0 0/.78))}
 button:where(.hx-vt):focus-visible{outline:var(--hx-vt-focus-width,3px) solid var(--hx-vt-focus,#fff);outline-offset:2px;
   box-shadow:0 0 0 calc(var(--hx-vt-focus-width,3px) + 4px) var(--hx-vt-focus-halo,#000)}
 .hx-vt .hx-ico{flex:none;width:var(--hx-vt-icon,1.25rem);height:var(--hx-vt-icon,1.25rem);--ico-2-opacity:.35}
-/* Läuft → Pause-Symbol; angehalten (.is-paused) → Play-Symbol (mit Spezifität, damit allgemeine .ico-Regeln nie beide zeigen) */
+/* Playing → pause icon; paused (.is-paused) → play icon (with specificity so general .ico rules never show both) */
 .hx-vt .hx-ico--play,.hx-vt.is-paused .hx-ico--pause{display:none}
 .hx-vt.is-paused .hx-ico--play{display:block}
-/* „Symbol“: Text nur für Screenreader (zugänglicher Name, wechselt mit dem Zustand); „Symbol mit Text“: sichtbar daneben */
+/* „Symbol“: text for screen readers only (accessible name, changes with the state); „Symbol mit Text“: visible next to it */
 :where(.hx-vt--icon) .hx-vt__label{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 button:where(.hx-vt--text){padding-inline:.8rem 1.1rem}
 @media (forced-colors:active){button:where(.hx-vt){border-color:ButtonText;background:ButtonFace;color:ButtonText;-webkit-backdrop-filter:none;backdrop-filter:none}}

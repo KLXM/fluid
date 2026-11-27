@@ -15,10 +15,10 @@ use function in_array;
 use const ENT_QUOTES;
 
 /**
- * Rich Text sicher ausgeben – Klassenvertrag der Formatierungsleiste aus KLXM Studio (Core\Sanitizer):
+ * Output rich text safely – class contract of the formatting bar from KLXM Studio (Core\Sanitizer):
  *   <p class="t-lead|t-small|t-note|t-tip|t-warn|t-kicker|t-center">, <span class="c-accent|c-muted|c-success|c-warning|c-danger">,
- *   <ul class="check">, <mark>, <code>, <sup>, <sub>, Überschriften h2–h4, Zitat, Listen, Links (auch data-link="redaxo://ID").
- * Keine style-Attribute; Links auf Artikel bekommen bei der Ausgabe die aktuelle Adresse.
+ *   <ul class="check">, <mark>, <code>, <sup>, <sub>, headings h2–h4, quote, lists, links (also data-link="redaxo://ID").
+ * No style attributes; links to articles get the current address on output.
  */
 final class RichText
 {
@@ -31,7 +31,7 @@ final class RichText
         if ('' === $html) {
             return '';
         }
-        // Reiner Text aus einem Textfeld → Absätze
+        // Plain text from a text field → paragraphs
         if (!preg_match('~<(p|h[2-4]|ul|ol|blockquote)\b~i', $html)) {
             $html = '<p>' . preg_replace('~\R{2,}~', '</p><p>', nl2br(htmlspecialchars($html, ENT_QUOTES), false)) . '</p>';
         }
@@ -44,7 +44,7 @@ final class RichText
         }, $html);
         $html = Str::sanitizeHtml($html, self::config());
 
-        // Klassen auf den Vertrag beschränken
+        // Restrict classes to the contract
         $html = (string) preg_replace_callback('~<(p|span|ul)\b([^>]*)\sclass="([^"]*)"~i', static function (array $m): string {
             $keep = array_filter(explode(' ', $m[3]), static fn (string $c) => match (strtolower($m[1])) {
                 'p' => in_array($c, self::P_CLASSES, true),
@@ -55,8 +55,8 @@ final class RichText
             return '<' . $m[1] . $m[2] . ($keep ? ' class="' . implode(' ', $keep) . '"' : '');
         }, $html);
 
-        // Links: aktuelle Adresse aus data-link – redaxo://ID (Seite), media://datei (Medienpool), detail://seite/id und
-        // route://quelle/id (Datensatz)
+        // Links: current address from data-link – redaxo://ID (page), media://datei (media pool), detail://seite/id and
+        // route://quelle/id (record)
         return (string) preg_replace_callback('~<a\b([^>]*)>~i', static function (array $m): string {
             $attrs = $m[1];
             if (!preg_match('~\sdata-link="([^"]+)"~', $attrs, $l)) {
@@ -88,7 +88,7 @@ final class RichText
         }, (string) $html);
     }
 
-    /** Adresse zu einem gespeicherten Linkziel ('#' wenn es das Ziel nicht mehr gibt, null bei unbekanntem Format) */
+    /** Address for a stored link target ('#' if the target no longer exists, null for an unknown format) */
     public static function linkUrl(string $ref): ?string
     {
         if (preg_match('~^redaxo://(\d+)(?:-(\d+))?(#[\w-]+)?$~', $ref, $r)) {

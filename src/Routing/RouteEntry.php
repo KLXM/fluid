@@ -3,22 +3,22 @@
 namespace Klxm\Fluid\Routing;
 
 /**
- * Eine gespeicherte Adresse einer Quelle: ein Eintrag (Datensatz, Produkt …) in einer Sprache, angezeigt von einer Seite.
+ * A stored address of a source: an entry (record, product …) in one language, shown by a page.
  *
- * Der Pfad entsteht beim Neuaufbau: Pfad der Seite + „/“ + Slug (eindeutig gemacht mit -2, -3 …). Ein Slug darf „/“
- * enthalten (z. B. „2026/titel“); die Teile werden wie Seitennamen bereinigt.
+ * The path is created on rebuild: path of the page + „/“ + slug (made unique with -2, -3 …). A slug may contain „/“
+ * (e.g. „2026/titel“); the parts are cleaned like page names.
  */
 final readonly class RouteEntry
 {
     /**
-     * @param string $source Kennung der Quelle
-     * @param string $id ID des Eintrags in der Quelle
-     * @param int $articleId Seite, unter der die Adresse liegt und die den Eintrag anzeigt
-     * @param array<string, scalar> $params Parameter, die die Seite beim Aufruf bekommt (Request und $_GET)
-     * @param int|null $modified Zeitpunkt der letzten Änderung (Sitemap)
-     * @param bool $sitemap in die sitemap.xml aufnehmen
-     * @param list<string> $images Bilder für die Sitemap (Dateien des Medienpools oder absolute Adressen)
-     * @param string|null $path vom Router vergebener Pfad (ohne Sprachpräfix und Endung) – nur beim Lesen gesetzt
+     * @param string $source identifier of the source
+     * @param string $id ID of the entry in the source
+     * @param int $articleId page under which the address lies and which shows the entry
+     * @param array<string, scalar> $params parameters the page receives when called (request and $_GET)
+     * @param int|null $modified time of the last change (sitemap)
+     * @param bool $sitemap include in the sitemap.xml
+     * @param list<string> $images images for the sitemap (media pool files or absolute addresses)
+     * @param string|null $path path assigned by the router (without language prefix and suffix) – set only when reading
      */
     public function __construct(
         public string $source,
@@ -33,7 +33,7 @@ final readonly class RouteEntry
         public ?string $path = null,
     ) {}
 
-    /** Schlüssel „quelle:id“ (z. B. für den Editor) */
+    /** Key „quelle:id“ (e.g. for the editor) */
     public function key(): string
     {
         return $this->source . ':' . $this->id;

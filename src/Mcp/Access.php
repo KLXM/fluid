@@ -13,15 +13,15 @@ use function in_array;
 use function is_array;
 
 /**
- * Wer fragt – und was darf er? Zwei Arten:
+ * Who is asking – and what may they do? Two kinds:
  *
- * - **Schlüssel** (Bearer-Token): handelt als REDAXO-Benutzer, dessen Rechte gelten; scope read/write, ggf. veröffentlichen.
- * - **Öffentlich** (ohne Schlüssel): nur wenn der Admin es einschaltet und nur, was er freigibt – online-Seiten (live),
- *   Suche, Blog, ausgewählte YForm-Tabellen. Nie Entwürfe, nie schreiben.
+ * - **Key** (bearer token): acts as a REDAXO user whose permissions apply; scope read/write, optionally publish.
+ * - **Public** (without key): only if the admin enables it and only what they release – online pages (live),
+ *   search, blog, selected YForm tables. Never drafts, never writing.
  */
 final class Access
 {
-    /** Einstellungen (Backend → fluid → MCP), alles standardmäßig aus */
+    /** Settings (Backend → fluid → MCP), everything off by default */
     public const array DEFAULTS = [
         'enabled' => false,
         'public' => false,
@@ -29,7 +29,7 @@ final class Access
         'public_search' => true,
         'public_blog' => true,
         'public_tables' => [],
-        // YForm-Tabellen für Schlüssel: Tabellenname => read|write (fehlend = kein Zugriff)
+        // YForm tables for keys: table name => read|write (missing = no access)
         'tables' => [],
         'instructions' => '',
     ];
@@ -78,7 +78,7 @@ final class Access
             . ($this->write ? 'lesen und ändern (Entwurf)' . ($this->publish ? ', veröffentlichen' : ', ohne Veröffentlichen') : 'nur lesen');
     }
 
-    /** Darf diese Seite lesen? Öffentlich: nur online; Schlüssel: Strukturrecht des Benutzers */
+    /** May read this page? Public: only online; key: the user's structure permission */
     public function canReadPage(Article $a): bool
     {
         if ($this->isPublic()) {
@@ -118,7 +118,7 @@ final class Access
         return null !== $this->user && Perm::can($this->user, $perm);
     }
 
-    /** Zugriff auf eine YForm-Tabelle: 'read', 'write' oder null */
+    /** Access to a YForm table: 'read', 'write' or null */
     public function table(string $name): ?string
     {
         $cfg = self::config();

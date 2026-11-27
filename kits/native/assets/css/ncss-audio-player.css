@@ -1,2 +1,2 @@
-/* NativeCSS components/audio-player.css – nur auf Seiten, die es brauchen (kit.php → assets). Layer wie in ncss.css von NativeCSS. */
+/* NativeCSS components/audio-player.css – only on pages that need it (kit.php → assets). Layers as in NativeCSS's ncss.css. */
 @import url("../ncss/components/audio-player.css") layer(components);

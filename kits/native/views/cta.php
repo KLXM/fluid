@@ -4,10 +4,10 @@ use Klxm\Fluid\Block;
 use Klxm\Fluid\Kit;
 
 /**
- * Handlungsaufruf im Kit „NativeCSS“:
- *   band  Farbfläche in Markenfarbe (.ncss-tile--brand, heller Text automatisch)
- *   box   Karte mit Rahmen auf getönter Fläche (.ncss-tile--muted)
- * „split“ (mit Bild) und „big“ (großer Schriftzug) kommen aus dem Kit fluid.
+ * Call to action in the kit „NativeCSS“:
+ *   band  colored area in the brand color (.ncss-tile--brand, light text automatically)
+ *   box   card with border on a tinted area (.ncss-tile--muted)
+ * „split“ (with image) and „big“ (large lettering) come from the kit fluid.
  * @var Block $b  @var array $d
  */
 $v = in_array($b->variant(), ['band', 'box', 'split', 'big'], true) ? $b->variant() : 'band';

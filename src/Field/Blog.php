@@ -7,16 +7,16 @@ use Redaxo\Core\Form\Field\Choice as CoreChoice;
 use Redaxo\Core\View\Renderable;
 
 /**
- * Blog (Kategorie mit „Blog / News“ in den Seiteneinstellungen); leer = alle Blogs.
+ * Blog (category with „Blog / News“ in the page settings); empty = all blogs.
  *
- * Nur in fluid (eigener Name). In gewöhnlichen Formularen des Cores verhält es sich wie das Feld, von dem es erbt.
+ * Only in fluid (own name). In ordinary core forms it behaves like the field it extends.
  */
 #[Attribute(Attribute::TARGET_PROPERTY)]
 class Blog extends CoreChoice implements FluidField
 {
     /**
-     * @param 'half'|null $width fluid: halbe Breite im Formular
-     * @param list<string>|null $variants fluid: nur in diesen Darstellungen des Blocks
+     * @param 'half'|null $width fluid: half width in the form
+     * @param list<string>|null $variants fluid: only in these variants of the block
      */
     public function __construct(
         string|Renderable $label,

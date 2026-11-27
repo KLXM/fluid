@@ -3,8 +3,8 @@
 use Klxm\Fluid\Block;
 
 /**
- * Fließtext / Artikel. standard: Lesebreite · article: Lesebreite + Inhaltsverzeichnis als Seitenspalte (Sidebar-Muster:
- * steht neben dem Text, sobald Platz ist, sonst darüber) · columns: CSS-Spalten mit Mindestbreite (column-width).
+ * Body text / article. standard: reading width · article: reading width + table of contents as a side column (sidebar
+ * pattern: beside the text when there is room, otherwise above) · columns: CSS columns with minimum width (column-width).
  * @var Block $b  @var array $d
  */
 $v = $b->variant() ?: 'standard';
@@ -16,7 +16,7 @@ if ('article' === $v) {
 $showToc = 'article' === $v && !empty($d['toc']) && count(array_filter($toc, static fn ($t) => 2 === $t['level'])) >= 2;
 $meta = trim((string) ($d['meta'] ?? ''));
 $measure = in_array($d['measure'] ?? 'normal', ['narrow', 'wide', 'full'], true) && 'columns' !== $v ? ' prose--m-' . $d['measure'] : '';
-// Einblenden beim Scrollen (Feld reveal): ganzer Block bzw. Absätze nacheinander (site.js setzt data-reveal an die Absätze) – nicht im Editor
+// Reveal on scroll (field reveal): whole block or paragraphs one by one (site.js sets data-reveal on the paragraphs) – not in the editor
 $reveal = is_editing() ? 'off' : (string) ($d['reveal'] ?? 'off');
 $prose = '<div class="prose' . (!empty($d['dropcap']) ? ' prose--dropcap' : '') . ('columns' === $v ? ' prose--columns' : '') . $measure . '"' . ('paragraphs' === $reveal ? ' data-reveal-children' : '') . $b->edit('text', 'rich') . '>' . $html . '</div>';
 ?>

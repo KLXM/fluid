@@ -35,31 +35,31 @@ use function var_export;
 use const JSON_UNESCAPED_UNICODE;
 
 /**
- * Gespeicherte Adressen (Modell aus KLXM Studio – Core\Pages):
+ * Stored addresses (model from KLXM Studio – Core\Pages):
  *
- *  - Seiten (rex_fluid_route): je Sprache ein fester Slug. Er entsteht beim Anlegen aus dem Namen und bleibt beim
- *    Umbenennen gleich (stabile Adressen); ändern lässt er sich über setSlug(). path = Slugs der Elternkategorien + eigener
- *    Slug, Startseite = ''.
- *  - Einträge der Quellen (rex_fluid_route_entry): Pfad der Seite + Slug des Eintrags ({@see RouteSource}).
- *  - Pfade werden nach Strukturänderungen neu berechnet (rebuild); geänderte Pfade bekommen automatisch eine
- *    301-Weiterleitung. Gespeichert wird ohne Sprachpräfix (/en/…) und ohne Endung ({@see UrlFormat}).
- *  - Cache: Adressen der Seiten als PHP-Datei (OPcache) – eine Datei für alle Seiten, eine je Quelle (erst bei Bedarf
- *    geladen). Eine Adresse, die keine Seite ist, kostet eine indizierte Abfrage.
+ *  - Pages (rex_fluid_route): one fixed slug per language. It is created from the name and stays the same on renaming
+ *    (stable addresses); it can be changed via setSlug(). path = slugs of the parent categories + own slug,
+ *    start page = ''.
+ *  - Entries of the sources (rex_fluid_route_entry): path of the page + slug of the entry ({@see RouteSource}).
+ *  - Paths are recalculated after structure changes (rebuild); changed paths automatically get a 301 redirect.
+ *    Stored without language prefix (/en/…) and without suffix ({@see UrlFormat}).
+ *  - Cache: addresses of the pages as a PHP file (OPcache) – one file for all pages, one per source (loaded only on
+ *    demand). An address that is not a page costs one indexed query.
  */
 final class Routes
 {
     public const string TABLE = 'rex_fluid_route';
     public const string ENTRY_TABLE = 'rex_fluid_route_entry';
 
-    /** @var array<int, array<int, array{0: string, 1: string, 2: bool}>>|null Seite => Sprache => [slug, path, Menüpunkt] */
+    /** @var array<int, array<int, array{0: string, 1: string, 2: bool}>>|null page => language => [slug, path, menu item] */
     private static ?array $pages = null;
 
     private static bool $volatile = false;
 
-    /** @var array<int, array<string, int>>|null Sprache => path => Seite */
+    /** @var array<int, array<string, int>>|null language => path => page */
     private static ?array $byPath = null;
 
-    /** @var array<string, array<string, array<int, array{0: string, 1: int}>>> Quelle => ID => Sprache => [path, Seite] */
+    /** @var array<string, array<string, array<int, array{0: string, 1: int}>>> source => ID => language => [path, page] */
     private static array $entries = [];
 
     // ------------------------------------------------------------------ Slugs
@@ -75,7 +75,7 @@ final class Routes
         return trim($s, '-') ?: 'seite';
     }
 
-    /** Slug mit „/“ (Einträge): jeder Teil bereinigt, leere fallen weg */
+    /** Slug with „/“ (entries): each part cleaned, empty ones are dropped */
     public static function slugifyPath(string $s): string
     {
         $parts = array_filter(array_map('trim', explode('/', $s)), static fn (string $p) => '' !== $p);
@@ -83,9 +83,9 @@ final class Routes
         return implode('/', array_map(self::slugify(...), $parts)) ?: 'seite';
     }
 
-    // ------------------------------------------------------------------ Seiten
+    // ------------------------------------------------------------------ Pages
 
-    /** Pfad ('' = Startseite) einer Seite in einer Sprache – oder null */
+    /** Path ('' = start page) of a page in a language – or null */
     public static function path(int $articleId, int $languageId): ?string
     {
         return self::pages()[$articleId][$languageId][1] ?? null;
@@ -96,19 +96,19 @@ final class Routes
         return self::pages()[$articleId][$languageId][0] ?? null;
     }
 
-    /** Menüpunkt (Startartikel einer Kategorie)? – für die Endung im gemischten Format */
+    /** Menu item (start article of a category)? – for the suffix in the mixed format */
     public static function isCategory(int $articleId, int $languageId): bool
     {
         return self::pages()[$articleId][$languageId][2] ?? false;
     }
 
-    /** Seite zu einem Pfad (ohne Sprachpräfix, ohne Endung, ohne Schrägstriche außen) */
+    /** Page for a path (without language prefix, without suffix, without outer slashes) */
     public static function find(string $path, int $languageId): ?int
     {
         return self::byPath()[$languageId][$path] ?? null;
     }
 
-    /** Wie find(), aber ohne Groß-/Kleinschreibung (für die Weiterleitung auf die kanonische Schreibweise) */
+    /** Like find(), but case-insensitive (for the redirect to the canonical spelling) */
     public static function findInsensitive(string $path, int $languageId): ?int
     {
         $want = mb_strtolower($path);
@@ -122,7 +122,7 @@ final class Routes
     }
 
     /**
-     * Alle Seiten mit Adresse: Seite => Sprache => ['slug' => …, 'path' => …].
+     * All pages with an address: page => language => ['slug' => …, 'path' => …].
      *
      * @return array<int, array<int, array{slug: string, path: string}>>
      */
@@ -131,7 +131,7 @@ final class Routes
         return array_map(static fn (array $byLang) => array_map(static fn (array $r) => ['slug' => $r[0], 'path' => $r[1]], $byLang), self::pages());
     }
 
-    /** Eigenen Slug setzen (Seiteneinstellungen); leer = aus dem Namen. Gibt den tatsächlich vergebenen Slug zurück. */
+    /** Set a custom slug (page settings); empty = from the name. Returns the slug actually assigned. */
     public static function setSlug(int $articleId, int $languageId, string $slug): string
     {
         return self::setAddress($articleId, $languageId, $slug, self::options($articleId, $languageId)->ownPath);
@@ -170,9 +170,9 @@ final class Routes
     }
 
     /**
-     * Pfade aller Seiten neu berechnen (nach Strukturänderungen), danach die Quellen, wenn sich ein Pfad geändert hat.
-     * Fehlende Slugs entstehen aus dem Namen, gleiche Slugs auf einer Ebene werden durchnummeriert (-2, -3 …).
-     * Gelöschte Seiten fallen heraus.
+     * Recalculate the paths of all pages (after structure changes), then the sources if a path has changed.
+     * Missing slugs are created from the name, equal slugs on one level are numbered (-2, -3 …).
+     * Deleted pages are dropped.
      */
     public static function rebuild(bool $sources = false): void
     {
@@ -220,7 +220,7 @@ final class Routes
                     $sql->setQuery('INSERT INTO ' . self::TABLE . ' (article_id, language_id, slug, path) VALUES (?, ?, ?, ?)
                         ON DUPLICATE KEY UPDATE slug = VALUES(slug), path = VALUES(path)', [$id, $lang, $slug, $path]);
                     if (null === $r['route'] || $path !== (string) $r['route']) {
-                        $sources = true;   // Einträge unter dieser Seite bekommen einen neuen Pfad
+                        $sources = true;   // Entries below this page get a new path
                     }
                     if (null !== $r['route'] && $path !== (string) $r['route']) {
                         $changes[] = ['target' => 'redaxo://' . $id, 'lang' => $lang, 'old' => (string) $r['route'], 'new' => $path, 'online' => 1 === (int) $r['status']];
@@ -228,7 +228,7 @@ final class Routes
                 }
             }
         }
-        // Gelöschte Seiten/Sprachen entfernen
+        // Remove deleted pages/languages
         foreach ($sql->getArray('SELECT article_id, language_id FROM ' . self::TABLE) as $e) {
             if (!isset($keep[$e['article_id'] . '|' . $e['language_id']])) {
                 $sql->setQuery('DELETE FROM ' . self::TABLE . ' WHERE article_id = ? AND language_id = ?', [$e['article_id'], $e['language_id']]);
@@ -241,7 +241,7 @@ final class Routes
             foreach (Sources::all() as $key => $_) {
                 self::rebuildSource($key, false);
             }
-            // Einträge von Quellen, die es nicht mehr gibt (AddOn entfernt)
+            // Entries of sources that no longer exist (AddOn removed)
             $known = array_keys(Sources::all());
             $sql->setQuery('DELETE FROM ' . self::ENTRY_TABLE . ($known ? ' WHERE source NOT IN (' . implode(',', array_fill(0, count($known), '?')) . ')' : ''), $known);
         }
@@ -268,7 +268,7 @@ final class Routes
         return [Language::getStartId(), $rest];
     }
 
-    /** Sprachpräfix ('' für die Startsprache, sonst '/en') */
+    /** Language prefix ('' for the start language, else '/en') */
     public static function prefix(int $languageId): string
     {
         if (Language::count() < 2 || $languageId === Language::getStartId()) {
@@ -278,27 +278,27 @@ final class Routes
         return '/' . (Language::get($languageId)->code ?? (string) $languageId);
     }
 
-    // ------------------------------------------------------------------ Einträge der Quellen
+    // ------------------------------------------------------------------ Entries of the sources
 
-    /** Pfad eines Eintrags (ohne Sprachpräfix und Endung) – oder null */
+    /** Path of an entry (without language prefix and suffix) – or null */
     public static function entryPath(string $source, string $id, int $languageId): ?string
     {
         return self::entriesOf($source)[$id][$languageId][0] ?? null;
     }
 
-    /** Seite, die einen Eintrag anzeigt – oder null */
+    /** Page that shows an entry – or null */
     public static function entryArticle(string $source, string $id, int $languageId): ?int
     {
         return self::entriesOf($source)[$id][$languageId][1] ?? null;
     }
 
-    /** @return list<int> Sprachen, in denen es einen Eintrag gibt */
+    /** @return list<int> languages in which an entry exists */
     public static function entryLanguages(string $source, string $id): array
     {
         return array_keys(self::entriesOf($source)[$id] ?? []);
     }
 
-    /** Eintrag zu einem Pfad (ohne Sprachpräfix, ohne Endung) – Groß-/Kleinschreibung egal, der Router leitet dann um */
+    /** Entry for a path (without language prefix, without suffix) – case-insensitive, the router then redirects */
     public static function findEntry(string $path, int $languageId): ?RouteEntry
     {
         try {
@@ -311,7 +311,7 @@ final class Routes
     }
 
     /**
-     * Gespeicherte Einträge (Sitemap): alle bzw. einer Quelle.
+     * Stored entries (sitemap): all or those of one source.
      *
      * @return iterable<RouteEntry>
      */
@@ -330,9 +330,9 @@ final class Routes
     }
 
     /**
-     * Alle Einträge einer Quelle neu berechnen. Gibt die Zahl der Adressen zurück.
+     * Recalculate all entries of a source. Returns the number of addresses.
      *
-     * @param bool $notify Extension Point RoutesRebuilt auslösen
+     * @param bool $notify trigger the extension point RoutesRebuilt
      */
     public static function rebuildSource(string $key, bool $notify = true): int
     {
@@ -373,7 +373,7 @@ final class Routes
         return count($new);
     }
 
-    /** Einzelne Einträge speichern bzw. neu berechnen (z. B. nach dem Speichern eines Datensatzes) */
+    /** Store or recalculate single entries (e.g. after saving a record) */
     public static function put(RouteEntry ...$entries): void
     {
         $touched = [];
@@ -396,7 +396,7 @@ final class Routes
         }
     }
 
-    /** Eintrag entfernen (alle Sprachen bzw. eine) */
+    /** Remove an entry (all languages or one) */
     public static function remove(string $source, string $id, ?int $languageId = null): void
     {
         Sql::factory()->setQuery('DELETE FROM ' . self::ENTRY_TABLE . ' WHERE source = ? AND entity = ?' . (null !== $languageId ? ' AND language_id = ?' : ''),
@@ -405,7 +405,7 @@ final class Routes
         self::writeEntryCache($source);
     }
 
-    /** Pfad eines Eintrags: Seite + Slug, eindeutig gegen Seiten und andere Einträge; null = Seite ohne Adresse */
+    /** Path of an entry: page + slug, unique against pages and other entries; null = page without address */
     private static function entryPathFor(RouteEntry $e, array &$taken): ?string
     {
         $page = self::path($e->articleId, $e->languageId);
@@ -423,7 +423,7 @@ final class Routes
     }
 
     /**
-     * Belegte Pfade (klein geschrieben): Seiten und Einträge anderer Quellen bzw. andere Einträge derselben Quelle.
+     * Occupied paths (lower case): pages and entries of other sources or other entries of the same source.
      *
      * @return array<int, array<string, true>>
      */
@@ -479,14 +479,14 @@ final class Routes
         self::reset();
     }
 
-    /** Gespeicherte Adressen im Speicher vergessen (z. B. nach Änderungen durch einen anderen Prozess) */
+    /** Forget the stored addresses in memory (e.g. after changes by another process) */
     public static function reset(): void
     {
         self::$pages = self::$byPath = null;
         self::$entries = [];
     }
 
-    /** Cache der Seiten verwerfen (nach dem Neuaufbau) */
+    /** Discard the cache of the pages (after rebuilding) */
     private static function invalidate(): void
     {
         self::reset();
@@ -509,7 +509,7 @@ final class Routes
                 $out[(int) $r['article_id']][(int) $r['language_id']] = [(string) $r['slug'], (string) $r['path'], null !== $r['category'] && '' !== (string) $r['path']];
             }
         } catch (Throwable) {
-            return self::$pages = [];   // Tabelle noch nicht angelegt
+            return self::$pages = [];   // Table not created yet
         }
         self::write('pages.php', $out);
 
@@ -586,7 +586,7 @@ final class Routes
         return is_array($data) ? $data : null;
     }
 
-    /** Cache-Datei schreiben bzw. löschen (null) */
+    /** Write or delete (null) the cache file */
     private static function write(string $name, ?array $data): void
     {
         if (!Router::config()->cache || self::$volatile) {

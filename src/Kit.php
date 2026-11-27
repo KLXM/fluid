@@ -22,30 +22,30 @@ use function Redaxo\Core\View\escape;
 use function str_contains;
 
 /**
- * Ein Kit: Gestaltung (Template, CSS, JS) und die Ausgaben der Blöcke (deren Felder stehen in den Blockklassen).
+ * A kit: design (template, CSS, JS) and the block outputs (their fields are defined in the block classes).
  *
- * Aufbau eines Kits (Ordner, {@see Path()}):
- *   kit.php           Definition: label, backgrounds, assets (CSS je Blocktyp), blocks (Ergänzungen je Blocktyp, z. B. Varianten),
- *                     css (weitere Stylesheets für jede Seite), design (Style-Editor)
- *   functions.php     Hilfsfunktionen der Ausgaben (wird einmal geladen)
- *   views/{typ}.php   Ausgabe je Blocktyp (`$b` = Block, `$d` = Daten)
- *   template.view.php Seitenrahmen (optional, sonst der des Eltern-Kits)
- *   assets/           CSS, JS, Bilder – fluid veröffentlicht sie nach `assets/fluid-kits/{kit}/`
+ * Structure of a kit (folder, {@see Path()}):
+ *   kit.php           definition: label, backgrounds, assets (CSS per block type), blocks (additions per block type, e.g. variants),
+ *                     css (more stylesheets for every page), design (style editor)
+ *   functions.php     helper functions for the outputs (loaded once)
+ *   views/{typ}.php   output per block type (`$b` = block, `$d` = data)
+ *   template.view.php page frame (optional, otherwise the parent kit's)
+ *   assets/           CSS, JS, images – fluid publishes them to `assets/fluid-kits/{kit}/`
  *
- * Kits werden mit {@see AsKit} angemeldet und erben von einem Eltern-Kit (Standard: `fluid`). Was ein Kit nicht selbst
- * mitbringt – kit.php-Einträge, Views, Template, Assets, Hilfsfunktionen –, kommt vom Eltern-Kit. In kit.php steht
- * dessen Definition als `$parent` bereit. Welches Kit die Website nutzt, steht in den Website-Einstellungen
- * ({@see active()}); alle Block-Module zeigen sich im gewählten Kit, die Inhalte bleiben beim Wechsel erhalten.
+ * Kits are registered with {@see AsKit} and inherit from a parent kit (default: `fluid`). Whatever a kit does not
+ * provide itself – kit.php entries, views, template, assets, helper functions – comes from the parent kit. In kit.php
+ * its definition is available as `$parent`. Which kit the website uses is set in the website settings
+ * ({@see active()}); all block modules appear in the chosen kit, content is kept when switching.
  */
 abstract class Kit
 {
-    /** Das Grund-Kit, von dem alle anderen erben */
+    /** The base kit all others inherit from */
     public const string DEFAULT = 'fluid';
 
     /** @var array<class-string<self>, self> */
     private static array $instances = [];
 
-    /** @var array<string, class-string<self>>|null Schlüssel => Klasse */
+    /** @var array<string, class-string<self>>|null key => class */
     private static ?array $registry = null;
 
     private static ?string $activeKey = null;
@@ -57,7 +57,7 @@ abstract class Kit
 
     private ?AsKit $attribute = null;
 
-    /** @var array<string, true> In dieser Anfrage benutzte Blocktypen (für das CSS je Block) */
+    /** @var array<string, true> Block types used in this request (for the CSS per block) */
     private array $used = [];
 
     final private function __construct() {}
@@ -68,12 +68,12 @@ abstract class Kit
         return self::$instances[static::class] ??= new static();
     }
 
-    // ------------------------------------------------------------------ Anmeldung und Auswahl
+    // ------------------------------------------------------------------ Registration and selection
 
     /**
-     * Alle angemeldeten Kits (`#[AsKit]` im Projekt, in fluid und in Composer-Paketen).
+     * All registered kits (`#[AsKit]` in the project, in fluid and in Composer packages).
      *
-     * @return array<string, self> Schlüssel => Kit, `fluid` zuerst
+     * @return array<string, self> key => kit, `fluid` first
      */
     public static function all(): array
     {
@@ -98,8 +98,8 @@ abstract class Kit
     }
 
     /**
-     * Das Kit der Website: Website-Einstellung „Kit“, anpassbar per Extension Point FLUID_KIT (z. B. je Domain).
-     * Unbekannte Schlüssel fallen auf `fluid` zurück.
+     * The website's kit: website setting „Kit“, adjustable via the extension point FLUID_KIT (e.g. per domain).
+     * Unknown keys fall back to `fluid`.
      */
     public static function active(): self
     {
@@ -112,14 +112,14 @@ abstract class Kit
         return self::get(self::$activeKey) ?? FluidKit::instance();
     }
 
-    /** Auswahl neu bestimmen (nach dem Speichern der Einstellung, in Tests) */
+    /** Determine the selection again (after saving the setting, in tests) */
     public static function reset(): void
     {
         self::$activeKey = null;
         self::$registry = null;
     }
 
-    /** @return array<string, string> Schlüssel => Name, für die Kit-Auswahl */
+    /** @return array<string, string> key => name, for the kit selection */
     public static function options(): array
     {
         $out = [];
@@ -132,19 +132,19 @@ abstract class Kit
 
     // ------------------------------------------------------------------ Angaben des Kits
 
-    /** Schlüssel des Kits, z. B. `fluid` (aus `#[AsKit]`) */
+    /** Key of the kit, e.g. `fluid` (from `#[AsKit]`) */
     public function key(): string
     {
         return $this->attribute()->key ?? static::class;
     }
 
-    /** Name in der Auswahl: `#[AsKit]`, sonst `label` aus kit.php */
+    /** Name in the selection: `#[AsKit]`, otherwise `label` from kit.php */
     public function label(): string
     {
         return $this->attribute()->label ?? (string) ($this->definition()['label'] ?? $this->key());
     }
 
-    /** Eltern-Kit (Standard `fluid`); das Kit `fluid` selbst hat keins */
+    /** Parent kit (default `fluid`); the kit `fluid` itself has none */
     public function parent(): ?self
     {
         if (self::DEFAULT === $this->key()) {
@@ -152,7 +152,7 @@ abstract class Kit
         }
         $parent = self::get($this->attribute()->parent ?? self::DEFAULT) ?? FluidKit::instance();
 
-        // keine Schleifen: ein Kit, das (über Umwege) von sich selbst erbt, hängt direkt an fluid
+        // no loops: a kit that (indirectly) inherits from itself is attached directly to fluid
         $seen = [];
         for ($p = $parent; null !== $p && self::DEFAULT !== $p->key(); $p = $p->parent()) {
             if ($p === $this || in_array($p, $seen, true)) {
@@ -165,7 +165,7 @@ abstract class Kit
     }
 
     /**
-     * Das Kit und seine Vorfahren, das Kit selbst zuerst.
+     * The kit and its ancestors, the kit itself first.
      *
      * @return list<self>
      */
@@ -179,13 +179,13 @@ abstract class Kit
         return $out;
     }
 
-    /** Ordner des Kits – Standard: Ordner der Kit-Klasse */
+    /** Folder of the kit – default: folder of the kit class */
     public function path(string $file = ''): string
     {
         return dirname((string) new ReflectionClass($this)->getFileName()) . ('' !== $file ? '/' . $file : '');
     }
 
-    /** Datei des Kits oder seiner Vorfahren (z. B. `views/hero.php`, `template.view.php`); null = keine */
+    /** File of the kit or its ancestors (e.g. `views/hero.php`, `template.view.php`); null = none */
     final public function file(string $file): ?string
     {
         foreach ($this->lineage() as $kit) {
@@ -215,8 +215,8 @@ abstract class Kit
     }
 
     /**
-     * Definition eines Kits über die des Eltern-Kits legen: Einträge ersetzen; Blöcke, Hintergründe und die
-     * CSS-Abbildung je Blocktyp werden je Schlüssel ergänzt; `css` (Stylesheets für jede Seite) wird angehängt.
+     * Lay a kit's definition over its parent's: entries replace; blocks, backgrounds and the CSS mapping
+     * per block type are merged per key; `css` (stylesheets for every page) is appended.
      *
      * @param array<string, mixed> $parent
      * @param array<string, mixed> $own
@@ -242,8 +242,8 @@ abstract class Kit
     }
 
     /**
-     * Angaben des Kits zu einem Blocktyp (kit.php 'blocks'), die über die Definition der Blockklasse gelegt werden –
-     * z. B. zusätzliche Varianten mit eigener View. Leer = Block wie in seiner Klasse.
+     * The kit's settings for a block type (kit.php 'blocks'), laid over the block class's definition –
+     * e.g. additional variants with their own view. Empty = block as defined in its class.
      *
      * @return array<string, mixed>
      */
@@ -254,8 +254,8 @@ abstract class Kit
     }
 
     /**
-     * Angaben eines Kits über eine Blockdefinition legen: `variants` und `variant_help` werden ergänzt, `fields` angehängt,
-     * alles andere ersetzt.
+     * Lay a kit's settings over a block definition: `variants` and `variant_help` are merged, `fields` appended,
+     * everything else replaced.
      *
      * @param array<string, mixed> $def
      * @param array<string, mixed> $overlay
@@ -290,7 +290,7 @@ abstract class Kit
         return $this->definition()['backgrounds'] ?? ['white' => 'Standard'];
     }
 
-    /** View eines Blocktyps – aus dem Kit oder einem Vorfahren */
+    /** View of a block type – from the kit or an ancestor */
     final public function view(string $type): string
     {
         return $this->file('views/' . $type . '.php') ?? $this->path('views/' . $type . '.php');
@@ -298,7 +298,7 @@ abstract class Kit
 
     // ------------------------------------------------------------------ Assets
 
-    /** URL eines Assets (`css/site.css` …) – aus dem Kit oder einem Vorfahren, mit Versionskennung */
+    /** URL of an asset (`css/site.css` …) – from the kit or an ancestor, with version tag */
     final public function assetUrl(string $file): string
     {
         foreach ($this->lineage() as $kit) {
@@ -311,7 +311,7 @@ abstract class Kit
         return $this->publicAssetUrl($file);
     }
 
-    /** Lokale Quelldatei eines Assets (aus dem Kit oder einem Vorfahren) */
+    /** Local source file of an asset (from the kit or an ancestor) */
     final public function assetPath(string $file): string
     {
         foreach ($this->lineage() as $kit) {
@@ -323,15 +323,15 @@ abstract class Kit
         return $this->sourceAsset($file);
     }
 
-    /** Quelle der Assets dieses Kits (ohne Vorfahren) */
+    /** Source of this kit's assets (without ancestors) */
     protected function sourceAsset(string $file): string
     {
         return $this->path('assets/' . $file);
     }
 
     /**
-     * Öffentliche URL eines Assets dieses Kits. Kits außerhalb von fluid werden nach `assets/fluid-kits/{kit}/`
-     * veröffentlicht – bei `console migrate` komplett, sonst je Datei, sobald sie fehlt oder sich geändert hat.
+     * Public URL of an asset of this kit. Kits outside fluid are published to `assets/fluid-kits/{kit}/` –
+     * completely on `console migrate`, otherwise per file as soon as it is missing or has changed.
      */
     protected function publicAssetUrl(string $file): string
     {
@@ -344,7 +344,7 @@ abstract class Kit
         return Url::assets('fluid-kits/' . $this->key() . '/' . $file);
     }
 
-    /** Assets aller Kits veröffentlichen (bei `console migrate`) */
+    /** Publish the assets of all kits (on `console migrate`) */
     public static function publishAll(): void
     {
         foreach (self::all() as $kit) {
@@ -359,7 +359,7 @@ abstract class Kit
         }
     }
 
-    /** Wurde in dieser Anfrage ein Blocktyp bzw. Schlüssel (`@tablesort` …) ausgegeben? */
+    /** Was a block type or key (`@tablesort` …) output in this request? */
     final public function used(string $key): bool
     {
         return isset($this->used[$key]);
@@ -374,7 +374,7 @@ abstract class Kit
     }
 
     /**
-     * Stylesheets für jede Seite: `css` aus kit.php (Eltern-Kit zuerst), z. B. das eigene CSS eines abgeleiteten Kits.
+     * Stylesheets for every page: `css` from kit.php (parent kit first), e.g. the own CSS of a derived kit.
      *
      * @return list<string> URLs
      */
@@ -384,8 +384,8 @@ abstract class Kit
     }
 
     /**
-     * CSS-Dateien der in dieser Anfrage ausgegebenen Blöcke (Abbildung `assets` in kit.php, wie bei Studio).
-     * Im Bearbeiten-Modus alle, damit neu eingefügte Blöcke sofort gestaltet sind.
+     * CSS files of the blocks output in this request (mapping `assets` in kit.php, as in Studio).
+     * In edit mode all of them, so newly inserted blocks are styled immediately.
      *
      * @return list<string> URLs
      */
@@ -409,7 +409,7 @@ abstract class Kit
         return $urls;
     }
 
-    /** @return list<string> URLs der Skripte benutzter Blöcke */
+    /** @return list<string> URLs of the scripts of used blocks */
     final public function blockJs(): array
     {
         $urls = [];
@@ -425,8 +425,8 @@ abstract class Kit
     }
 
     /**
-     * Einblend-Effekte für Abschnitte (kit.php → 'reveal': Schlüssel => ['label' => …, 'class' => …, 'attr' => …]).
-     * Leer = das Kit bietet keine an, dann fehlt „Einblend-Effekt“ unter Abschnitt.
+     * Reveal effects for sections (kit.php → 'reveal': key => ['label' => …, 'class' => …, 'attr' => …]).
+     * Empty = the kit offers none; then „Einblend-Effekt“ is missing under section.
      *
      * @return array<string, array{label: string, class: string, attr?: string}>
      */
@@ -515,7 +515,7 @@ abstract class Kit
     }
 
     /**
-     * Stylesheets der gewählten Design-Optionen (kit.php → 'design_css': css/opt-{option}-{wert}.css, sofern vorhanden).
+     * Stylesheets of the chosen design options (kit.php → 'design_css': css/opt-{option}-{wert}.css, if present).
      *
      * @return list<string> URLs
      */
@@ -549,7 +549,7 @@ abstract class Kit
         return $this->attribute;
     }
 
-    /** Hilfsfunktionen laden – die der Vorfahren zuerst, damit ein Kit sie nutzen kann */
+    /** Load helper functions – ancestors' first, so a kit can use them */
     private function loadFunctions(): void
     {
         if ($this->functionsLoaded) {

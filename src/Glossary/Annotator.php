@@ -14,66 +14,66 @@ use const PHP_URL_HOST;
 use const PREG_SPLIT_DELIM_CAPTURE;
 
 /**
- * Übernommen aus KLXM Studio (Core\Glossary\Annotator, MIT) – unverändert bis auf Namespace und Escaping.
+ * Taken from KLXM Studio (Core\Glossary\Annotator, MIT) – unchanged except for namespace and escaping.
  *
- * Markiert Glossar-Begriffe im fertigen HTML (serverseitig, ohne DOM-Bibliothek, vor dem Seiten-Cache).
+ * Marks glossary terms in the finished HTML (server-side, without DOM library, before the page cache).
  *
- * Regeln:
- *  - Nur lesbarer Inhalt: Gibt es ein <main>, nur darin. Nie in Links, Buttons, Formularfeldern, Beschriftungen, <summary>,
- *    Code (<code>, <pre>, <kbd>, <samp>), <abbr>/<dfn>, Navigation, Seitenkopf/-fuß (header/footer außerhalb von
- *    main/article/section), Überschriften h1…h{headings}, versteckten Bereichen (hidden, aria-hidden, inert, .sr-only …),
- *    bearbeitbaren Bereichen (contenteditable, Redaktionsnotizen) und Bereichen mit data-glossary="off".
- *  - Je Begriff nur das erste Vorkommen – je Seite (mode „page“) oder je Abschnitt <section>/<article> (mode „section“).
- *  - Wortgrenzen mit Unicode (Umlaute, ß), längste Variante zuerst; Abkürzungen (mehrere Großbuchstaben, z. B. SPF, IPv6,
- *    MTA-STS) nur in genau dieser Schreibweise (+ Plural-s), Wörter ohne Rücksicht auf Groß-/Kleinschreibung (+ übliche
- *    Endungen ab 4 Zeichen in der Sprache der Seite, Option lang: Englisch -s/-es bzw. y → ies, sonst die deutschen Endungen).
- *    "In Anführungszeichen" erzwingt die genaue Schreibweise ohne Endungen.
- *  - Bereits markierte Stellen (Hülle .gl) werden übersprungen – zweimal anwenden ändert nichts.
+ * Rules:
+ *  - Readable content only: if there is a <main>, only inside it. Never in links, buttons, form fields, labels, <summary>,
+ *    code (<code>, <pre>, <kbd>, <samp>), <abbr>/<dfn>, navigation, page header/footer (header/footer outside of
+ *    main/article/section), headings h1…h{headings}, hidden areas (hidden, aria-hidden, inert, .sr-only …),
+ *    editable areas (contenteditable, editorial notes) and areas with data-glossary="off".
+ *  - Only the first occurrence per term – per page (mode „page“) or per <section>/<article> (mode „section“).
+ *  - Unicode word boundaries (umlauts, ß), longest variant first; abbreviations (several capitals, e.g. SPF, IPv6,
+ *    MTA-STS) only in exactly this spelling (+ plural s), words case-insensitively (+ common
+ *    endings from 4 characters in the page language, option lang: English -s/-es or y → ies, otherwise German endings).
+ *    "In quotes" forces the exact spelling without endings.
+ *  - Already marked spots (wrapper .gl) are skipped – applying twice changes nothing.
  *
- * Ausgabe je Treffer (Disclosure/„Toggletip“, keine role=tooltip – das Fenster enthält einen Link):
+ * Output per match (disclosure/"toggletip", no role=tooltip – the popup contains a link):
  *   <span class="gl"><button type="button" class="gl-term" popovertarget="gl-1" aria-expanded="false" aria-controls="gl-1">SPF</button>
- *   <span class="gl-pop" id="gl-1" popover>…Begriff, Kurz-Erklärung, „Mehr im Glossar →“…</span></span>
+ *   <span class="gl-pop" id="gl-1" popover>…term, short explanation, „Mehr im Glossar →“…</span></span>
  *
- * Begriffe: list<array{id: int, key: string, term: string, short: string, url: ?string, variants: list<string>, draft?: bool}>
+ * Terms: list<array{id: int, key: string, term: string, short: string, url: ?string, variants: list<string>, draft?: bool}>
  */
 final class Annotator
 {
-    /** Elemente, in denen nie markiert wird (Inhalt bleibt unberührt) */
+    /** Elements in which nothing is ever marked (content stays untouched) */
     private const SKIP_TAGS = ['a', 'button', 'label', 'summary', 'legend', 'select', 'option', 'textarea', 'input', 'kbd', 'samp', 'var',
         'abbr', 'dfn', 'nav', 'dialog', 'time', 'output', 'meter', 'progress', 'map', 'canvas', 'audio', 'video', 'picture', 'title'];
-    /** Bereiche, die ungelesen übernommen werden (Rohtext oder Code) */
-    // Rohtext-Bereiche und Kommentare; (?|…) hält die Gruppen gleich (Kommentar: Gruppe 2 leer) – sonst verschob ein Kommentar die
-    // Teile von preg_split und der Text danach galt als Rohtext (z. B. Kommentare der Fragmente im Debug-Modus: keine Markierung)
+    /** Areas taken over unread (raw text or code) */
+    // Raw text areas and comments; (?|…) keeps the groups equal (comment: group 2 empty) – otherwise a comment shifted the
+    // parts of preg_split and the text after it counted as raw text (e.g. fragment comments in debug mode: no marking)
     private const RAW = '~(?|(<(script|style|textarea|template|svg|math|noscript|iframe|object|select|pre|code|head)\b[^>]*>.*?</\2\s*>)|(<!--.*?-->)())~is';
-    /** Klassen versteckter bzw. technischer Bereiche */
+    /** Classes of hidden or technical areas */
     private const SKIP_CLASSES = ['gl', 'gl-pop', 'sr-only', 'visually-hidden', 'screen-reader-text', 'sr-text', 'cms-note', 'skip-link', 'notranslate'];
-    /** Klassen von Etiketten (Dachzeile, Schlagwort, Badge, Chip) – Endung des Klassennamens */
+    /** Classes of labels (eyebrow, tag, badge, chip) – suffix of the class name */
     private const LABEL_CLASS = '~(^|[-_])(eyebrow|kicker|overline|badge|chip|chips|tag|tags|pill|label)$~';
     private const SKIP_ROLES = ['button', 'link', 'navigation', 'banner', 'contentinfo', 'tab', 'tablist', 'menu', 'menubar', 'menuitem', 'option',
         'switch', 'checkbox', 'radio', 'search', 'toolbar', 'tooltip', 'treeitem', 'textbox', 'combobox', 'listbox', 'dialog', 'alertdialog', 'img', 'math'];
     private const VOID = ['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'source', 'track', 'wbr', 'param'];
-    /** Optional geschlossene Elemente: ein neues gleichartiges schließt das offene */
+    /** Optionally closed elements: a new one of the same kind closes the open one */
     private const AUTO_CLOSE = ['p' => ['p'], 'li' => ['li'], 'dt' => ['dt', 'dd'], 'dd' => ['dt', 'dd'], 'tr' => ['tr', 'td', 'th'], 'td' => ['td', 'th'], 'th' => ['td', 'th']];
-    /** Übliche Endungen deutscher Wörter (Plural, Genitiv, Dativ) */
+    /** Common endings of German words (plural, genitive, dative) */
     private const SUFFIX_WORD = '(?:e|en|n|s|es|er|ern)?';
-    /** Englisch: Plural -s/-es (Wörter auf Konsonant + y: -ies, Annotator::alternative) */
+    /** English: plural -s/-es (words ending in consonant + y: -ies, Annotator::alternative) */
     private const SUFFIX_WORD_EN = '(?:s|es)?';
 
     private array $byId = [];
     private ?string $rx = null;
     private array $seen = [];
     private int $n = 0;
-    /** Anzahl der Markierungen im letzten annotate() */
+    /** Number of markings in the last annotate() */
     public int $count = 0;
-    /** Markierte Begriffe (id => true) im letzten annotate() */
+    /** Marked terms (id => true) in the last annotate() */
     public array $marked = [];
-    /** Markierter Text je Begriff (id => Treffer wie im Text, z. B. „SPF-Einträge“) – Quick-Glossar „Auf dieser Seite“ */
+    /** Marked text per term (id => match as in the text, e.g. „SPF-Einträge“) – quick glossary „Auf dieser Seite“ */
     public array $hits = [];
 
     /**
-     * $o: mode (page|section), headings (0–6: h1…hN überspringen, Standard 3), exclude (Liste von Begriffs-IDs),
-     *     labels ([more, close, draft]), prefix (ID-Präfix, Standard „gl-“), main (null = automatisch: nur in <main>, falls vorhanden),
-     *     lang (Sprache der Seite für die Wortendungen, Standard „de“).
+     * $o: mode (page|section), headings (0–6: skip h1…hN, default 3), exclude (list of term IDs),
+     *     labels ([more, close, draft]), prefix (ID prefix, default „gl-“), main (null = automatic: only in <main> if present),
+     *     lang (page language for the word endings, default „de“).
      */
     public function __construct(
         array $terms,
@@ -91,7 +91,7 @@ final class Annotator
         $this->rx = self::pattern(array_values($this->byId), (string) $this->o['lang']);
     }
 
-    /** Regulärer Ausdruck für alle Varianten (längste zuerst, Begriffs-ID als MARK) – null ohne Begriffe. $lang: Wortendungen */
+    /** Regular expression for all variants (longest first, term ID as MARK) – null without terms. $lang: word endings */
     public static function pattern(array $terms, string $lang = 'de'): ?string
     {
         $alts = [];
@@ -109,11 +109,11 @@ final class Annotator
         }
         usort($alts, static fn ($a, $b) => $b[0] <=> $a[0]);
         $alts = array_unique(array_column($alts, 1));
-        // Linke Grenze: kein Buchstabe/Ziffer davor, auch kein Teil einer Adresse (.@/:) oder Entity (&); rechts ebenso (Satzpunkt erlaubt)
+        // Left boundary: no letter/digit before, nor part of an address (.@/:) or entity (&); same on the right (full stop allowed)
         return '~(?<![\p{L}\p{N}_@./:&=\\\\])(?:' . implode('|', $alts) . ')(?![\p{L}\p{N}_@=]|[.:/][\p{L}\p{N}])~u';
     }
 
-    /** Begriff + Varianten (ohne Leeres und Doppeltes) */
+    /** Term + variants (without empty ones and duplicates) */
     public static function variants(array $t): array
     {
         $out = [];
@@ -123,7 +123,7 @@ final class Annotator
                 $out[] = $v;
             }
         }
-        // "Wort" in Anführungszeichen ersetzt dasselbe Wort ohne (auch den Begriff selbst): nur genaue Schreibweise
+        // "Word" in quotes replaces the same word without them (also the term itself): exact spelling only
         foreach ($out as $v) {
             if (preg_match('~^["„“](.+)["“”]$~u', $v, $m)) {
                 $out = array_values(array_filter($out, static fn ($x) => $x === $v || mb_strtolower($x) !== mb_strtolower(trim($m[1]))));
@@ -133,8 +133,8 @@ final class Annotator
     }
 
     /**
-     * Abkürzung bzw. Markenschreibweise? Ein Wort mit mindestens zwei Großbuchstaben (SPF, IPv6, DNSSEC, MTA-STS) oder einem
-     * Großbuchstaben nach einem Kleinbuchstaben (eID) – dann zählt die genaue Schreibweise.
+     * Abbreviation or brand spelling? A word with at least two capitals (SPF, IPv6, DNSSEC, MTA-STS) or a
+     * capital after a lowercase letter (eID) – then the exact spelling counts.
      */
     public static function caseSensitive(string $v): bool
     {
@@ -146,13 +146,13 @@ final class Annotator
         return false;
     }
 
-    /** Sprache mit englischen statt deutschen Wortendungen? (en, en-gb …) */
+    /** Language with English instead of German word endings? (en, en-gb …) */
     public static function english(string $lang): bool
     {
         return 'en' === $lang || str_starts_with($lang, 'en-');
     }
 
-    /** Teil-Ausdruck einer Variante: [Quelle, Länge] */
+    /** Partial expression of a variant: [source, length] */
     private static function alternative(string $v, string $lang = 'de'): array
     {
         $exact = false;
@@ -164,10 +164,10 @@ final class Annotator
             return ['', 0];
         }
         $cs = $exact || self::caseSensitive($v);
-        // Im HTML stehen &, <, > als Entity; Leerraum darf auch ein geschütztes Leerzeichen sein
+        // In HTML &, <, > are entities; whitespace may also be a non-breaking space
         $src = preg_quote(htmlspecialchars($v, ENT_NOQUOTES | ENT_HTML5, 'UTF-8'), '~');
         $src = str_replace(' ', '(?:\s|&nbsp;|&#160;|\x{00A0})+', $src);
-        // Endungen nach dem letzten Wort: Abkürzung → Plural-s (CDNs), Wort ab 4 Buchstaben → übliche Endungen (DNS-Lookups)
+        // Endings after the last word: abbreviation → plural s (CDNs), word from 4 letters → common endings (DNS-Lookups)
         $suffix = '';
         $words = preg_split('~[\s\-/]+~u', $v) ?: [''];
         $last = (string) end($words);
@@ -178,7 +178,7 @@ final class Annotator
                 if (!self::english($lang)) {
                     $suffix = self::SUFFIX_WORD;
                 }
-                // Englisch: entry → entries (Konsonant + y), sonst -s/-es
+                // English: entry → entries (consonant + y), otherwise -s/-es
                 elseif (preg_match('~[^aeiouy]y$~iu', $last)) {
                     $src = substr($src, 0, -1) . '(?:y|ies)';
                 } else {
@@ -189,7 +189,7 @@ final class Annotator
         return [($cs ? '(?:' . $src . ')' : '(?i:' . $src . ')') . $suffix, mb_strlen($v)];
     }
 
-    /** Ganze Seite oder Ausschnitt markieren */
+    /** Marks a whole page or a fragment */
     public function annotate(string $html): string
     {
         $this->count = 0;
@@ -199,7 +199,7 @@ final class Annotator
         if (null === $this->rx || '' === $html) {
             return $html;
         }
-        // Nur der <body> (Kopf, JSON-LD, Meta-Angaben bleiben unberührt)
+        // Only the <body> (head, JSON-LD, meta data stay untouched)
         $start = 0;
         $end = strlen($html);
         if (($b = stripos($html, '<body')) !== false) {
@@ -208,7 +208,7 @@ final class Annotator
             $end = false !== $close && $close > $start ? $close : $end;
         }
         $body = substr($html, $start, $end - $start);
-        // Schon markierte Begriffe (zweiter Durchlauf, z. B. Erweiterung + Kern) gelten als gesehen – nie doppelt
+        // Already marked terms (second pass, e.g. extension + core) count as seen – never twice
         if (str_contains($body, 'class="gl" data-gl="') && preg_match_all('~class="gl" data-gl="([^"]+)"~', $body, $done)) {
             $keys = array_flip($done[1]);
             foreach ($this->byId as $id => $t) {
@@ -230,18 +230,18 @@ final class Annotator
         $stack = [];      // [name, skip, main, landmark]
         $skip = 0;
         $inMain = 0;
-        $inArticle = 0;   // main/article/section/aside: header/footer darin sind Inhalt
+        $inArticle = 0;   // main/article/section/aside: header/footer inside are content
         $maxH = max(0, min(6, (int) $this->o['headings']));
         $out = '';
         $parts = preg_split(self::RAW, $body, -1, PREG_SPLIT_DELIM_CAPTURE) ?: [$body];
         foreach ($parts as $i => $part) {
             if (2 === $i % 3) {
                 continue;
-            }                       // Name des Rohtext-Elements (Gruppe 2)
+            }                       // name of the raw text element (group 2)
             if (1 === $i % 3) {
                 $out .= $part;
                 continue;
-            }   // Rohtext-Bereich unverändert
+            }   // raw text area unchanged
             $tokens = preg_split('~(<[a-zA-Z/!?](?:[^>"\']|"[^"]*"|\'[^\']*\')*>)~', $part, -1, PREG_SPLIT_DELIM_CAPTURE) ?: [$part];
             foreach ($tokens as $j => $tok) {
                 if ('' === $tok) {
@@ -251,7 +251,7 @@ final class Annotator
                     $out .= $tok;
                     if (!preg_match('~^<(/?)([a-zA-Z][a-zA-Z0-9-]*)~', $tok, $m)) {
                         continue;
-                    }   // Kommentar, Doctype
+                    }   // comment, doctype
                     $name = strtolower($m[2]);
                     if ('/' === $m[1]) {
                         for ($k = count($stack) - 1; $k >= 0; --$k) {
@@ -271,7 +271,7 @@ final class Annotator
                     if (in_array($name, self::VOID, true) || str_ends_with($tok, '/>')) {
                         continue;
                     }
-                    // Optional geschlossene Elemente (<p>, <li> …) – das offene gleichartige Element endet hier
+                    // Optionally closed elements (<p>, <li> …) – the open element of the same kind ends here
                     if (isset(self::AUTO_CLOSE[$name]) && $stack && in_array($stack[count($stack) - 1][0], self::AUTO_CLOSE[$name], true)) {
                         [, $s, $mn, $ar] = array_pop($stack);
                         $skip -= $s ? 1 : 0;
@@ -296,7 +296,7 @@ final class Annotator
         return $out;
     }
 
-    /** Wird ein Element übersprungen? */
+    /** Is an element skipped? */
     private function skips(string $name, string $tag, int $maxH, bool $inContent): bool
     {
         if (in_array($name, self::SKIP_TAGS, true)) {
@@ -305,7 +305,7 @@ final class Annotator
         if ($maxH > 0 && preg_match('~^h([1-6])$~', $name, $h) && (int) $h[1] <= $maxH) {
             return true;
         }
-        // Seitenkopf/-fuß – innerhalb von main/article/section sind header/footer Teil des Inhalts (z. B. Einleitung eines Blocks)
+        // Page header/footer – inside main/article/section header/footer are part of the content (e.g. intro of a block)
         if (('header' === $name || 'footer' === $name) && !$inContent) {
             return true;
         }
@@ -335,7 +335,7 @@ final class Annotator
             if (array_intersect($classes, self::SKIP_CLASSES)) {
                 return true;
             }
-            // Etiketten statt Fließtext: Dachzeilen, Schlagwörter, Badges (auch mit Präfix, z. B. cli-eyebrow, card__tag)
+            // Labels instead of running text: eyebrows, tags, badges (also with prefix, e.g. cli-eyebrow, card__tag)
             foreach ($classes as $c) {
                 if (preg_match(self::LABEL_CLASS, $c)) {
                     return true;
@@ -345,7 +345,7 @@ final class Annotator
         return false;
     }
 
-    /** Textknoten: erstes Vorkommen noch nicht markierter Begriffe ersetzen */
+    /** Text node: replaces the first occurrence of terms not yet marked */
     private function text(string $t): string
     {
         if (!preg_match('~\p{L}{2}~u', $t)) {
@@ -367,13 +367,13 @@ final class Annotator
         }, $t);
     }
 
-    /** Markup eines Treffers (Text des Treffers bleibt wie im Original – Entities inklusive) */
+    /** Markup of a match (the matched text stays as in the original – entities included) */
     public function markup(array $t, string $match): string
     {
         $id = $this->o['prefix'] . (++$this->n);
         $l = $this->o['labels'];
         $draft = !empty($t['draft']) ? ' <span class="gl-pop__draft">' . escape($l['draft']) . '</span>' : '';
-        // „Mehr im Glossar“ nur bei ausführlicher Erklärung; sonst – falls vorhanden – direkt die Quelle (neuer Tab)
+        // „Mehr im Glossar“ only with a detailed explanation; otherwise – if present – the source directly (new tab)
         $src = (string) ($t['link'] ?? '');
         $more = !empty($t['url']) && ($t['more'] ?? true)
             ? '<a class="gl-pop__more" href="' . escape((string) $t['url']) . '">' . escape($l['more']) . ' <span aria-hidden="true">→</span></a>'
@@ -389,13 +389,13 @@ final class Annotator
             . '</span></span>';
     }
 
-    /** Quelle eines Begriffs als Link im Hinweisfenster: nur http(s) */
+    /** Source of a term as a link in the popup: http(s) only */
     public static function safeLink(string $u): bool
     {
         return (bool) preg_match('~^https?://[^\s"<>]+$~i', trim($u));
     }
 
-    /** Anzeigename einer Quelle: Host ohne „www.“ */
+    /** Display name of a source: host without „www.“ */
     public static function linkHost(string $u): string
     {
         return (string) preg_replace('~^www\.~i', '', (string) parse_url(trim($u), PHP_URL_HOST));

@@ -34,13 +34,13 @@ use const JSON_UNESCAPED_SLASHES;
 use const JSON_UNESCAPED_UNICODE;
 
 /**
- * Rechtstexte im Dialog (optional, aus KLXM Studio – Core\LegalDialog): Der Link „Datenschutzhinweise“ an Formularen
- * öffnet die Datenschutzerklärung über dem Formular statt auf einer neuen Seite – Eingaben bleiben erhalten.
+ * Legal texts in a dialog (optional, from KLXM Studio – Core\LegalDialog): the link „Datenschutzhinweise“ on forms
+ * opens the privacy policy above the form instead of on a new page – input is kept.
  *
- * Einschalten in Project::configure(): `Legal::$config = new LegalConfig(dialog: true)`. Dann liefert
- * `GET /_legal/privacy?lang=ID` Titel und bereinigtes HTML der Datenschutzseite (Überschriften, Absätze, Listen, Links –
- * ohne Knöpfe, Bilder, Formulare), und LegalDialog::attrs() markiert Links für assets/js/legal-dialog.js. Ohne
- * JavaScript, mit Strg/⌘ oder bei Fehlern bleibt es ein gewöhnlicher Link.
+ * Enable in Project::configure(): `Legal::$config = new LegalConfig(dialog: true)`. Then
+ * `GET /_legal/privacy?lang=ID` returns title and cleaned HTML of the privacy page (headings, paragraphs, lists, links –
+ * without buttons, images, forms), and LegalDialog::attrs() marks links for assets/js/legal-dialog.js. Without
+ * JavaScript, with Ctrl/⌘ or on errors it stays an ordinary link.
  *
  *     <a href="<?= escape(Legal::url('privacy')) ?>"<?= LegalDialog::attrs() ?>>Datenschutzhinweise</a>
  */
@@ -48,7 +48,7 @@ final class LegalDialog
 {
     private static bool $assets = false;
 
-    /** Attribute für einen Link zur Datenschutzseite – leer, wenn der Dialog aus ist; beim ersten Aufruf auch das Skript */
+    /** Attributes for a link to the privacy page – empty if the dialog is off; on the first call also the script */
     public static function attrs(string $type = 'privacy'): string
     {
         if (!Legal::config()->dialog || null === Legal::article($type)) {
@@ -60,7 +60,7 @@ final class LegalDialog
             . ' data-legal-css="' . escape($addon->getAssetsUrl('css/legal-dialog.css')) . '"';
     }
 
-    /** Skript des Dialogs – einmal je Seite, nur wenn der Dialog an ist */
+    /** Script of the dialog – once per page, only if the dialog is on */
     public static function script(): string
     {
         if (self::$assets || !Legal::config()->dialog) {
@@ -97,7 +97,7 @@ final class LegalDialog
         ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), 'application/json; charset=utf-8', ['Cache-Control: public, max-age=300', 'X-Robots-Tag: noindex']);
     }
 
-    /** Text der veröffentlichten Blöcke: Überschriften, Einleitung, Fließtext (bereinigt), Einträge (z. B. FAQ) */
+    /** Text of the published blocks: headings, intro, body text (cleaned), entries (e.g. FAQ) */
     public static function fragment(Article $article): string
     {
         $rows = Sql::factory()->getArray(
@@ -141,7 +141,7 @@ final class LegalDialog
         return htmlspecialchars(trim((string) preg_replace('~\*([^*]+)\*~u', '$1', $s)));
     }
 
-    /** Fließtext: HTML auf wenige Tags ohne Attribute (außer href von Links) reduziert, Klartext als Absatz */
+    /** Body text: HTML reduced to a few tags without attributes (except href of links), plain text as a paragraph */
     private static function text(string $v): string
     {
         $v = trim($v);
@@ -152,7 +152,7 @@ final class LegalDialog
             return '<p>' . nl2br(htmlspecialchars($v), false) . '</p>';
         }
         $v = strip_tags($v, '<h2><h3><h4><p><br><ul><ol><li><a><strong><b><em><i>');
-        // Attribute entfernen – nur sichere href an Links bleiben
+        // Remove attributes – only safe href on links remain
         $v = (string) preg_replace_callback('~<(\w+)(\s[^>]*)?>~', static function (array $m): string {
             if ('a' === strtolower($m[1]) && preg_match('~\shref\s*=\s*"((?:https?:|mailto:|tel:|/|#)[^"]*)"~i', $m[2] ?? '', $h)) {
                 return '<a href="' . htmlspecialchars(html_entity_decode($h[1])) . '">';

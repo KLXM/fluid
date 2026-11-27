@@ -12,11 +12,11 @@ use Klxm\Fluid\Routing\Attribute\Title;
 use Klxm\Fluid\Routing\TableSource;
 
 /**
- * News aus einer Tabelle unter der Seite „Aktuelles“ (ID 12): /aktuelles/sommerfest-im-garten.
+ * News from a table below the page „Aktuelles“ (ID 12): /aktuelles/sommerfest-im-garten.
  *
- * Die Seite bekommt die ID als ?news_id=… und gibt den Eintrag aus. Adresse, Sitemap, Canonical, hreflang, Open Graph
- * und die 301-Weiterleitung nach einer Titeländerung kommen vom Routing. Titel, Beschreibung, Bild und Adresse lassen
- * sich in fluid in den Seiteneinstellungen der Detailseite bearbeiten.
+ * The page receives the ID as ?news_id=… and renders the entry. URL, sitemap, canonical, hreflang, Open Graph and
+ * the 301 redirect after a title change come from routing. Title, description, image and URL can be edited in
+ * fluid in the detail page's page settings.
  */
 #[AsRouteSource('news', label: 'News')]
 #[FromTable('rex_news', page: 12, where: 'status = 1', param: 'news_id')]

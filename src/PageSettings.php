@@ -12,17 +12,17 @@ use Redaxo\Core\ExtensionPoint\AsExtension;
 use Redaxo\Core\MediaPool\Media;
 
 /**
- * Seiteneinstellungen auf der Website: Titel und Online-Status (Core) sowie Beschreibung, Social-Bild und „nicht indexieren“
- * (Tabelle rex_fluid_page – bewusst kein Meta-Schema, das gehört in REDAXO 6 dem Projekt).
+ * Page settings on the website: title and online status (core) plus description, social image and „nicht indexieren“
+ * (table rex_fluid_page – deliberately no meta schema, in REDAXO 6 that belongs to the project).
  */
 final class PageSettings
 {
     public const string TABLE = 'rex_fluid_page';
 
-    /** @var array<string, true>|null Seiten auf „nicht indexieren“ (Artikel|Sprache) */
+    /** @var array<string, true>|null Pages set to „nicht indexieren“ (article|language) */
     private static ?array $noindex = null;
 
-    /** Steht die Seite auf „nicht indexieren“? (Sitemap, eine Abfrage je Anfrage) */
+    /** Is the page set to „nicht indexieren“? (sitemap, one query per request) */
     public static function noindex(int $articleId, int $languageId): bool
     {
         if (null === self::$noindex) {
@@ -44,9 +44,9 @@ final class PageSettings
     }
 
     /**
-     * Angaben für den Seitenkopf aus einer Ausgabe überschreiben – z. B. ein Block, der einen Eintrag zeigt:
+     * Overrides the page head data from an output – e.g. a block showing an entry:
      * PageSettings::override(['title' => …, 'description' => …, 'image' => 'datei.jpg', 'canonical' => 'https://…']).
-     * Muss beim Rendern der Blöcke passieren (das Template rendert den Inhalt vor dem Kopf). Kurzform für Seo\Head::override().
+     * Must happen while rendering the blocks (the template renders the content before the head). Shorthand for Seo\Head::override().
      */
     public static function override(array $values): void
     {
@@ -54,8 +54,8 @@ final class PageSettings
     }
 
     /**
-     * @internal SEO-Felder der Seite (Seiteneinstellungen) und Vorgaben der Website in die Meta-Angaben des Routings:
-     * eigener SEO-Titel = Titel im Browser-Tab und og:title, Beschreibung (sonst Standard der Website), Bild, „nicht indexieren“
+     * @internal The page's SEO fields (page settings) and the website's defaults into the routing's meta data:
+     * custom SEO title = title in the browser tab and og:title, description (else the website's default), image, „nicht indexieren“
      */
     #[AsExtension]
     public static function articleMeta(Routing\ExtensionPoint\ArticleMeta $ep): Routing\Seo\PageMeta
@@ -76,13 +76,13 @@ final class PageSettings
         return $m;
     }
 
-    /** Titel im Browser-Tab und in Suchergebnissen: eigener SEO-Titel oder „Seite – Website“ (Startseite: Website) */
+    /** Title in the browser tab and in search results: custom SEO title or „Seite – Website“ (start page: website) */
     public static function title(Article $article, string $siteName = ''): string
     {
         return Routing\Seo\Head::title($article);
     }
 
-    /** Titel, Status und Angaben speichern */
+    /** Saves title, status and settings */
     public static function save(Article $article, string $name, bool $online, string $description, string $image, bool $noindex, string $title = '', ?string $slug = null, ?Routing\AddressOptions $address = null): void
     {
         $name = trim($name);
@@ -107,7 +107,7 @@ final class PageSettings
             . ' ON DUPLICATE KEY UPDATE description = VALUES(description), image = VALUES(image), noindex = VALUES(noindex), title = VALUES(title)',
             [$article->id, $article->languageId, mb_substr(trim($description), 0, 300), '' !== $image && Media::get($image) ? $image : '', $noindex ? 1 : 0, mb_substr(trim($title), 0, 191)],
         );
-        // Adresse: eigener Slug (leer = aus dem Titel); die Startseite hat immer „/“
+        // URL: custom slug (empty = from the title); the start page always has „/“
         if (null !== $slug && $article->id !== Article::getSiteStartArticleId()) {
             $before = Routing\Routes::options($article->id, $article->languageId);
             $ownPath = $address->ownPath ?? $before->ownPath;
@@ -123,15 +123,15 @@ final class PageSettings
         ArticleCache::delete($article->id, $article->languageId);
     }
 
-    /** Seitenkopf für das Template (Beschreibung, robots, Canonical, hreflang, Open Graph, JSON-LD) – Kurzform für Seo\Head::render() */
+    /** Page head for the template (description, robots, canonical, hreflang, Open Graph, JSON-LD) – shorthand for Seo\Head::render() */
     public static function head(Article $article, string $siteName = ''): string
     {
         return Routing\Seo\Head::render($article);
     }
 
     /**
-     * Bilder einer Seite für die Sitemap: Vorschaubild, dann Bilder der veröffentlichten, sichtbaren Blöcke (Verweise des
-     * Cores, rex_article_slice_reference).
+     * Images of a page for the sitemap: preview image, then images of the published, visible blocks (the core's
+     * references, rex_article_slice_reference).
      *
      * @return list<string>
      */

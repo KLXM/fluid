@@ -11,21 +11,21 @@ use function preg_match;
 use function trim;
 
 /**
- * Rechtstexte zentral (aus KLXM Studio – Core\Legal): Impressum, Datenschutzerklärung und Erklärung zur
- * Barrierefreiheit aus Website → Einstellungen → „Recht & Suchmaschinen“, in der Sprache der aufgerufenen Seite.
- * Für Kits, Blöcke und AddOns – statt eigener Helfer. Ohne Einstellung gilt für den Datenschutz eine Seite der
- * obersten Ebene, deren Name mit „Datenschutz“ bzw. „Privacy“ beginnt.
+ * Legal texts in one place (from KLXM Studio – Core\Legal): imprint, privacy policy and accessibility statement from
+ * Website → Einstellungen → „Recht & Suchmaschinen“, in the language of the requested page.
+ * For kits, blocks and addons – instead of custom helpers. Without a setting, privacy falls back to a top-level page
+ * whose name starts with „Datenschutz“ or „Privacy“.
  *
  *     Legal::url('privacy')   Legal::links()   Legal::article('imprint')
  *
- * Optional: Datenschutzhinweise an Formularen im Dialog (LegalDialog) – `Legal::$config = new LegalConfig(dialog: true)`.
+ * Optional: privacy notices on forms in a dialog (LegalDialog) – `Legal::$config = new LegalConfig(dialog: true)`.
  */
 final class Legal
 {
-    /** Art => Schlüssel der Einstellung */
+    /** Type => key of the setting */
     public const array KEYS = ['imprint' => 'imprint_page', 'privacy' => 'privacy_page', 'accessibility' => 'accessibility_page'];
 
-    /** Art => Bezeichnung (Quelle Deutsch, übersetzt mit lt() des Kits) */
+    /** Type => label (source German, translated with the kit's lt()) */
     public const array LABELS = ['imprint' => 'Impressum', 'privacy' => 'Datenschutz', 'accessibility' => 'Barrierefreiheit'];
 
     /** Einstellungen des Projekts (Project::configure()); null = Vorgaben */
@@ -36,7 +36,7 @@ final class Legal
         return self::$config ??= new LegalConfig();
     }
 
-    /** Seite einer Art in der aktuellen Sprache (nur online) – oder null */
+    /** Page of a type in the current language (online only) – or null */
     public static function article(string $type): ?Article
     {
         $value = trim((string) Settings::get(self::KEYS[$type] ?? '', ''));
@@ -53,7 +53,7 @@ final class Legal
         return null !== $article && $article->isOnline() ? $article : null;
     }
 
-    /** Adresse einer Art – eine Seite der Website oder eine eingetragene Adresse (z. B. https://…) – oder '' */
+    /** URL of a type – a page of the website or an entered URL (e.g. https://…) – or '' */
     public static function url(string $type): string
     {
         $article = self::article($type);
@@ -66,7 +66,7 @@ final class Legal
     }
 
     /**
-     * Links Impressum, Datenschutz, Barrierefreiheit (nur gesetzte).
+     * Links imprint, privacy, accessibility (only those set).
      *
      * @return list<array{type: string, label: string, href: string}>
      */

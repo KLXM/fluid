@@ -1,8 +1,8 @@
 <?php
 /**
- * Kontakt: Angaben (Adresse, Telefon/E-Mail, Öffnungszeiten) als Karten-Raster, daneben Karte und/oder Formular (aus KLXM
- * Studio). Sidebar-Muster: Formular/Karte nehmen den großen Teil ein und rutschen bei wenig Platz unter die Angaben.
- * Alles aus „Website“; Formular = #[AsForm]-Klasse aus YForm (Klxm\Fluid\Data\YFormBridge).
+ * Contact: details (address, phone/email, opening hours) as a card grid, next to it map and/or form (from KLXM
+ * Studio). Sidebar pattern: form/map take the larger part and wrap below the details when space is tight.
+ * Everything from „Website“; form = #[AsForm] class from YForm (Klxm\Fluid\Data\YFormBridge).
  * @var Block $b  @var array $d
  */
 use Klxm\Fluid\Block;

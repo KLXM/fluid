@@ -1,6 +1,6 @@
-/* Block „Interaktives Bild“ (fluid.hotspots, Klxm\Fluid\Hotspots; aus KLXM Studio, MIT) – nur über den
-   Farb-Vertrag der Kits (--kit-*); ein eigenes Kit ersetzt die Datei mit gleichnamiger css/hotspots.css. Variablen --hs-* zum Feinjustieren.
-   Lage der Knöpfe ohne style-Attribute (CSP): Klassen x0–x100 / y0–y100, genau per CSSOM in js/hotspots.js. Container-Queries. */
+/* Block „Interaktives Bild“ (fluid.hotspots, Klxm\Fluid\Hotspots; from KLXM Studio, MIT) – only via the kits'
+   colour contract (--kit-*); a custom kit replaces the file with its own css/hotspots.css. Variables --hs-* for fine-tuning.
+   Position of the buttons without style attributes (CSP): classes x0–x100 / y0–y100, exact via CSSOM in js/hotspots.js. Container queries. */
 .cms-hs{--hs-accent:var(--kit-accent,#0b6b3a);--hs-on:var(--kit-on-accent,#fff);--hs-ink:var(--kit-ink,#14201a);--hs-text:var(--kit-text,var(--hs-ink));
   --hs-muted:var(--kit-muted,#5c6b63);--hs-bg:var(--kit-bg,#fff);--hs-surface:var(--kit-surface,#f1f5f3);--hs-line:var(--kit-line,rgb(0 0 0/.12));
   --hs-r:var(--kit-radius,12px);--hs-pin:2.25rem;--hs-ring:var(--hs-bg);
@@ -10,11 +10,11 @@
 .cms-hs__stage{position:relative}
 .cms-hs__stage>picture,.cms-hs__stage>img,.cms-hs__stage>svg:not(.cms-hs__areas),.cms-hs__img{display:block;width:100%;height:auto;border-radius:var(--hs-r)}
 .cms-hs__stage>picture img{display:block;width:100%;height:auto;border-radius:var(--hs-r)}
-/* Flächen: SVG über dem Bild (viewBox = Bildgröße), Klick öffnet die Markierung (js/hotspots.js) */
+/* Areas: SVG over the image (viewBox = image size), a click opens the marker (js/hotspots.js) */
 .cms-hs__areas{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
 .cms-hs__area{fill:color-mix(in srgb,var(--hs-accent) 16%,transparent);stroke:var(--hs-accent);stroke-width:2.5;vector-effect:non-scaling-stroke;pointer-events:visiblePainted;cursor:pointer;transition:fill .2s}
 .cms-hs__area:hover,.cms-hs__area.is-active{fill:color-mix(in srgb,var(--hs-accent) 34%,transparent)}
-/* Knöpfe mit Nummer (oder Symbol) – heller Ring trennt sie von jedem Bild */
+/* Buttons with a number (or icon) – a light ring separates them from any image */
 .cms-hs__pin{position:absolute;z-index:1;translate:-50% -50%;display:grid;place-items:center;min-width:var(--hs-pin);height:var(--hs-pin);margin:0;padding:0 .5em;
   border:0;border-radius:999px;background:var(--hs-accent);color:var(--hs-on);font:700 .95rem/1 var(--kit-font,inherit);
   box-shadow:0 0 0 3px var(--hs-ring),0 6px 16px rgb(0 0 0/.35);cursor:pointer;transition:scale .15s,background-color .15s}
@@ -28,7 +28,7 @@
   @keyframes hs-pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--hs-accent) 55%,transparent)}100%{box-shadow:0 0 0 14px transparent}}
 }
 @media (prefers-reduced-motion:reduce){.cms-hs__pin,.cms-hs__area{transition:none}.cms-hs__pin:hover{scale:none}}
-/* Hinweisfenster (Popover-API): am Knopf (js/hotspots.js), ohne Skript mittig; auf schmalen Bildschirmen als Blatt unten */
+/* Popup (Popover API): at the button (js/hotspots.js), centred without script; on narrow screens as a sheet at the bottom */
 .cms-hs__pop{box-sizing:border-box;width:min(22rem,calc(100vw - 24px));max-height:min(70vh,32rem);overflow:auto;padding:.9rem 1.1rem 1.1rem;
   border:1px solid var(--hs-line);border-radius:var(--hs-r);background:var(--hs-bg);color:var(--hs-text);box-shadow:0 18px 48px -12px rgb(0 0 0/.45);
   font:400 1rem/1.5 var(--kit-font,inherit)}
@@ -48,7 +48,7 @@
 .cms-hs__dfn{font-style:normal;font-weight:700;color:var(--hs-ink)}
 .cms-hs__more{margin:.7rem 0 0;font-size:.95rem}
 .cms-hs__more a{font-weight:600;text-underline-offset:.2em}
-/* Unter dem Bild: Hinweis und Liste aller Markierungen (Telefon sichtbar, sonst für Screenreader – mit Fokus sichtbar) */
+/* Below the image: hint and list of all markers (visible on phones, otherwise for screen readers – visible on focus) */
 .cms-hs__cap{margin:.65rem 0 0;color:var(--hs-muted);font-size:.85rem;line-height:1.4}
 .cms-hs__list{display:grid;gap:.6rem;margin:1rem 0 0;padding:0;list-style:none}
 .cms-hs__li{display:flex;align-items:flex-start;gap:.75rem;padding:.8rem 1rem;border-radius:var(--hs-r);background:var(--hs-surface);color:var(--hs-text)}

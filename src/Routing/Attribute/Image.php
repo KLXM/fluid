@@ -4,7 +4,7 @@ namespace Klxm\Fluid\Routing\Attribute;
 
 use Attribute;
 
-/** Spalte: Bild für soziale Netzwerke */
+/** Column: image for social networks */
 #[Attribute(Attribute::TARGET_CLASS)]
 final readonly class Image extends MetaColumn
 {

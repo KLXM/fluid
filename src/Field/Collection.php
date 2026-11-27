@@ -7,20 +7,20 @@ use Redaxo\Core\Form\Field\Collection as CoreCollection;
 use Redaxo\Core\View\Renderable;
 
 /**
- * Feld des Cores (`Collection`) mit den Ergänzungen von fluid – alle zusätzlichen Parameter sind optional, ohne sie
- * verhält es sich genau wie das Feld des Cores (siehe docs/entwickler.md, „Felder“).
+ * Core field (`Collection`) with fluid's additions – all extra parameters are optional; without them
+ * it behaves exactly like the core field (see docs/entwickler.md, „Felder“).
  *
- * Jeder Eintrag ist ein Objekt der Klasse `item` mit eigenen Feldern (Eigenschaften mit Feld-Attributen). Gespeichert
- * wird eine Liste der Werte je Feldschlüssel – auf der Website bearbeitet fluid sie wie eine Wiederholgruppe.
+ * Each entry is an object of the class `item` with its own fields (properties with field attributes). Stored is
+ * a list of values per field key – on the website fluid edits it like a repeater group.
  */
 #[Attribute(Attribute::TARGET_PROPERTY)]
 class Collection extends CoreCollection implements FluidField
 {
     /**
-     * @param string|null $itemLabel fluid: Bezeichnung eines Eintrags („+ Karte“)
-     * @param string|null $titleField fluid: Feld (Schlüssel), das im zugeklappten Eintrag als Titel steht
-     * @param 'half'|null $width fluid: halbe Breite im Formular
-     * @param list<string>|null $variants fluid: nur in diesen Darstellungen des Blocks
+     * @param string|null $itemLabel fluid: label of an entry („+ Karte“)
+     * @param string|null $titleField fluid: field (key) shown as the title of a collapsed entry
+     * @param 'half'|null $width fluid: half width in the form
+     * @param list<string>|null $variants fluid: only in these display variants of the block
      */
     public function __construct(
         string|Renderable $label,

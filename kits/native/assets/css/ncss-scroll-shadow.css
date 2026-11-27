@@ -1,2 +1,2 @@
-/* NativeCSS helpers/scroll-shadow.css – nur auf Seiten, die es brauchen (kit.php → assets). Layer wie in ncss.css von NativeCSS. */
+/* NativeCSS helpers/scroll-shadow.css – only on pages that need it (kit.php → assets). Layers as in NativeCSS's ncss.css. */
 @import url("../ncss/helpers/scroll-shadow.css") layer(helpers);

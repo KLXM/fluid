@@ -5,7 +5,7 @@ namespace Klxm\Fluid\Kit\Fluid\Module\Item;
 use Klxm\Fluid\Field\Text;
 use Klxm\Fluid\Field\Textarea;
 
-/** Eintrag von „Vergleichszeilen (bei „Vergleichstabelle“)“ im Block Pricing */
+/** Entry of „Vergleichszeilen (bei „Vergleichstabelle“)“ in the block Pricing */
 final class PricingRow
 {
     #[Text('Merkmal', required: true, maxLength: 80)]

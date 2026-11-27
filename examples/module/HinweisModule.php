@@ -19,8 +19,8 @@ use Redaxo\Core\MediaPool\Media;
 use function Redaxo\Core\View\escape;
 
 /**
- * Beispiel: ein gewöhnliches REDAXO-6-Modul (kein fluid-Block). Felder sind Eigenschaften mit den Feld-Attributen des
- * Cores, die Ausgabe schreibt output(). fluid zeigt die Felder auf der Website in der eigenen Seitenleiste.
+ * Example: an ordinary REDAXO 6 module (no fluid block). Fields are properties with the core field
+ * attributes, output() writes the output. fluid shows the fields on the website in its own sidebar.
  */
 #[AsModule('hinweis', 'Hinweis (Beispiel)')]
 final class HinweisModule extends Module
@@ -48,7 +48,7 @@ final class HinweisModule extends Module
 
     public function output(): string
     {
-        // Keine style-Attribute (Content-Security-Policy des Backends): Klassen und einmal je Seite ein <style nonce>
+        // No style attributes (Content Security Policy of the backend): classes and a <style nonce> once per page
         $html = self::css() . '<div class="wrap"><aside class="hinweis hinweis--' . escape($this->kind) . ($this->strong ? ' is-strong' : '') . '">';
         $html .= '<h2>' . escape($this->headline) . '</h2>';
         if ('' !== $this->text) {
@@ -67,7 +67,7 @@ final class HinweisModule extends Module
         return $html . '</aside></div>';
     }
 
-    /** Stile des Moduls – einmal je Seite, mit der Nonce der Antwort (erlaubt unter der CSP) */
+    /** Styles of the module – once per page, with the response nonce (allowed under the CSP) */
     private static function css(): string
     {
         static $done = false;

@@ -1,6 +1,6 @@
-/* Design „Seitenwechsel: Morphen“ (View Transitions): wie „Überblenden“, dazu wird das angeklickte Bild zum großen Bild der
-   Zielseite („f-morph“) und ein angeklickter Text zur Überschrift („f-title“); zurück umgekehrt. Namen setzt js/vt.js.
-   Nur mit „Animationen“ und nie bei „Bewegung reduzieren“. Aus KLXM Studio (Kits foto, galerie). */
+/* Design „Seitenwechsel: Morphen“ (view transitions): like „Überblenden“, plus the clicked image becomes the large image of the
+   target page („f-morph“) and a clicked text the heading („f-title“); reversed on the way back. js/vt.js sets names.
+   Only with „Animationen“ and never with „Bewegung reduzieren“. From KLXM Studio (kits foto, galerie). */
 @media (prefers-reduced-motion:no-preference){
   @view-transition{navigation:auto}
   .has-motion .hdr{view-transition-name:f-hdr}

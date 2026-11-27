@@ -22,11 +22,11 @@ use const PREG_SPLIT_DELIM_CAPTURE;
 use const PREG_SPLIT_NO_EMPTY;
 
 /**
- * Untertitel, Kapitel und Transkripte für Videos (Barrierefreiheit, WCAG 1.2.2/1.2.3) – Modell aus KLXM Studio (MediaTracks).
+ * Subtitles, chapters and transcripts for videos (accessibility, WCAG 1.2.2/1.2.3) – model from KLXM Studio (MediaTracks).
  *
- * Die Redaktion legt .vtt- oder .srt-Dateien in den Medienpool und wählt sie im Block „Video“ (Sprache, Art). fluid liefert
- * sie geprüft und gesäubert als WebVTT unter /fluid-track/{datei} aus (SRT wird umgewandelt; nur erlaubte WebVTT-Tags,
- * keine STYLE-/REGION-Blöcke). Ergebnis im Cache des AddOns, neu bei geänderter Datei.
+ * Editors put .vtt or .srt files into the media pool and select them in the block „Video“ (language, kind). fluid delivers
+ * them validated and sanitized as WebVTT at /fluid-track/{file} (SRT is converted; only allowed WebVTT tags,
+ * no STYLE/REGION blocks). The result is cached in the AddOn's cache, renewed when the file changes.
  */
 final class Tracks
 {
@@ -36,7 +36,7 @@ final class Tracks
     private const int MAX_BYTES = 2 * 1024 * 1024;
     private const int MAX_CUES = 5000;
 
-    /** @internal Untertitel aus dem Medienpool unter /fluid-track/{datei} (geprüft als WebVTT) */
+    /** @internal Subtitles from the media pool at /fluid-track/{file} (validated as WebVTT) */
     #[AsEndpoint(self::ROUTE . '*')]
     public static function serve(string $path, string $rest): void
     {
@@ -50,7 +50,7 @@ final class Tracks
         return Core::getRequest()->getBasePath() . self::ROUTE . rawurlencode($file) . ($m ? '?v=' . $m->updateDate : '');
     }
 
-    /** Antwort für /fluid-track/{datei} (vom Router aufgerufen) */
+    /** Response for /fluid-track/{file} (called by the router) */
     public static function handle(string $file): never
     {
         $m = Media::get(rawurldecode($file));
@@ -74,7 +74,7 @@ final class Tracks
         exit;
     }
 
-    /** Cues einer Datei aus dem Medienpool (für das Transkript) */
+    /** Cues of a media pool file (for the transcript) */
     public static function cuesOf(string $file): array
     {
         $m = '' !== $file ? Media::get($file) : null;
@@ -86,7 +86,7 @@ final class Tracks
     }
 
     /**
-     * WebVTT oder SRT einlesen. Liefert [$cues, $fehler]; Cue = ['start' => ms, 'end' => ms, 'text' => '…', 'settings' => '…'].
+     * Parse WebVTT or SRT. Returns [$cues, $error]; cue = ['start' => ms, 'end' => ms, 'text' => '…', 'settings' => '…'].
      *
      * @return array{0: list<array{start: int, end: int, text: string, settings: string}>, 1: ?string}
      */
@@ -161,13 +161,13 @@ final class Tracks
         return $out;
     }
 
-    /** Cue-Text: nur erlaubte WebVTT-Tags, Entities normalisiert, höchstens 500 Zeichen und 4 Zeilen */
+    /** Cue text: only allowed WebVTT tags, entities normalized, at most 500 characters and 4 lines */
     public static function cleanText(string $t): string
     {
         $t = str_replace(["\r\n", "\r"], "\n", $t);
         $t = (string) preg_replace('~\{\\\\[^}]*\}~', '', $t);
         $t = str_replace('-->', '→', $t);
-        $t = (string) preg_replace('~<(script|style)\b[^>]*>.*?</\1\s*>~is', '', $t);   // samt Inhalt
+        $t = (string) preg_replace('~<(script|style)\b[^>]*>.*?</\1\s*>~is', '', $t);   // including content
         $out = '';
         $open = [];
         foreach (preg_split('~(<[^>\n]{0,120}>)~', $t, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY) ?: [] as $part) {
@@ -195,7 +195,7 @@ final class Tracks
                     $open[] = 'lang';
                     $out .= '<lang ' . $mm[1] . '>';
                 }
-                continue;   // alles andere (HTML, <font>, <script> …) entfällt
+                continue;   // everything else (HTML, <font>, <script> …) is dropped
             }
             $out .= str_replace(['&', '<', '>'], ['&amp;', '&lt;', '&gt;'], html_entity_decode($part, ENT_QUOTES | ENT_HTML5, 'UTF-8'));
         }
@@ -235,13 +235,13 @@ final class Tracks
         return $out;
     }
 
-    /** Sichtbarer Text eines Cues (ohne Tags, Sprecher als „Name: “) */
+    /** Visible text of a cue (without tags, speaker as „Name: “) */
     public static function plain(string $t): string
     {
         return trim(html_entity_decode(strip_tags((string) preg_replace('~<v\s+([^>]+)>~u', '$1: ', $t)), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
     }
 
-    /** Fließtext aus Cues: nach Pausen ab 2 s neuer Absatz */
+    /** Running text from cues: new paragraph after pauses of 2 s or more */
     public static function transcript(array $cues): array
     {
         $paras = [];
@@ -266,7 +266,7 @@ final class Tracks
         return $paras;
     }
 
-    /** Bezeichnung einer Sprache für die Auswahl im Player */
+    /** Label of a language for the selection in the player */
     public static function label(string $kind, string $lang, string $label = ''): string
     {
         if ('' !== trim($label)) {

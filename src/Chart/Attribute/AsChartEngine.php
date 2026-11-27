@@ -5,12 +5,12 @@ namespace Klxm\Fluid\Chart\Attribute;
 use Attribute;
 
 /**
- * Engine für Diagramme – an einer Klasse, die ChartEngine implementiert:
+ * Chart engine – on a class implementing ChartEngine:
  *
  *     #[AsChartEngine('apex')]
  *     final class ApexEngine implements ChartEngine { public function url(): string { … } }
  *
- * Gewählt wird sie mit Chart::$config = new ChartConfig(engine: 'apex').
+ * Selected with Chart::$config = new ChartConfig(engine: 'apex').
  */
 #[Attribute(Attribute::TARGET_CLASS)]
 final readonly class AsChartEngine

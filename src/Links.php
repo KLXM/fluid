@@ -16,13 +16,13 @@ use const JSON_UNESCAPED_SLASHES;
 use const JSON_UNESCAPED_UNICODE;
 
 /**
- * Artikel der Struktur für die Linkauswahl der Formatierungsleiste (`<script type="application/json" id="blocks-links">`).
- * Gespeichert wird `href` (aktuelle Adresse) + `data-link="redaxo://ID"`; die Ausgabe aktualisiert die Adresse.
+ * Structure articles for the link picker of the formatting toolbar (`<script type="application/json" id="blocks-links">`).
+ * Stored is `href` (current URL) + `data-link="redaxo://ID"`; the output updates the URL.
  */
 final class Links
 {
     /**
-     * Artikel in der Reihenfolge des Strukturbaums: depth = Einrückung, category = Startartikel einer Kategorie.
+     * Articles in the order of the structure tree: depth = indentation, category = start article of a category.
      *
      * @return list<array{id: int, name: string, path: string, url: string, online: bool, depth: int, category: bool}>
      */
@@ -55,7 +55,7 @@ final class Links
     public static function json(?int $languageId = null): string
     {
         $languageId ??= Language::getCurrentId();
-        // aktuelle Seite (Website: angezeigter Artikel, Backend: bearbeiteter Artikel) – für die Sprungmarken
+        // current page (website: displayed article, backend: edited article) – for the anchors
         $article = Core::isBackend() ? Request::get('article_id', 'int', 0) : Article::getCurrentId();
         $api = Core::isBackend()
             ? Url::backendController(LinkApi::getUrlParams())

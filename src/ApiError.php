@@ -4,5 +4,5 @@ namespace Klxm\Fluid;
 
 use RuntimeException;
 
-/** Fehler eines Editor-Endpunkts: Meldung für die Redaktion, Code = HTTP-Status */
+/** Error of an editor endpoint: message for the editors, code = HTTP status */
 final class ApiError extends RuntimeException {}

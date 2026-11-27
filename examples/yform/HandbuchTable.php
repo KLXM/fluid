@@ -6,9 +6,9 @@ use Klxm\Fluid\Data\KnowledgeTable;
 use Yakamara\YForm\Attribute\AsTable;
 
 /**
- * Wissensbereich „Handbuch“ (Beispiel): Tabellenart „Wissen“ aus fluid – Kapitelbaum, Nummern, Bereiche, Schlagworte,
- * verwandte Kapitel, Glossar-Bezug, „Zuletzt geprüft“ und Inhalt aus Blöcken. Ausgabe über den Block „Datenliste“
- * (Darstellung „Inhaltsverzeichnis“ oder „Karten“, Detailansicht mit Kapitelnavigation).
+ * Knowledge base „Handbuch“ (example): table kind „Wissen“ from fluid – chapter tree, numbers, areas, tags,
+ * related chapters, glossary reference, „Zuletzt geprüft“ and content from blocks. Output via the block „Datenliste“
+ * (display „Inhaltsverzeichnis“ or „Karten“, detail view with chapter navigation).
  */
 #[AsTable('rex_yf_handbuch', label: 'Handbuch (Beispiel)', icon: 'fa-book-open')]
 final class HandbuchTable extends KnowledgeTable

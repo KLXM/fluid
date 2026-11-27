@@ -27,45 +27,45 @@ use const GLOB_ONLYDIR;
 use const PREG_SET_ORDER;
 
 /**
- * Aktualisiert NativeCSS im Kit „NativeCSS“ (`assets/ncss/`) aus einer Arbeitskopie oder einem Release von
- * https://github.com/skerbis/nativecss – ohne REDAXO lauffähig (Konsole `fluid:kit:ncss-update`, `tools/ncss-update.php`).
+ * Updates NativeCSS in the kit „NativeCSS“ (`assets/ncss/`) from a working copy or a release of
+ * https://github.com/skerbis/nativecss – runs without REDAXO (console `fluid:kit:ncss-update`, `tools/ncss-update.php`).
  *
- * - kopiert `dist/` unverändert (CSS im Wurzelordner, `components/`, `helpers/`, `js/`, `fonts/` mit OFL-Lizenzen; nicht `integrations/` – Web Awesome
- *   nutzt fluid nicht) und die LICENSE; Dateien, die es upstream nicht mehr gibt, werden entfernt
- * - schreibt `assets/ncss/VERSION.txt` (Stand, Commit, Datum, Quelle)
- * - erzeugt `assets/css/ncss-base.css`: das Manifest `ncss.css` von NativeCSS ohne die Komponenten, die fluid nur auf
- *   Seiten lädt, die sie brauchen (ON_DEMAND, Wrapper `css/ncss-*.css` in kit.php), und ohne die, die fluid nicht nutzt
- *   (UNUSED) – Cherry-Picking im Sinne von NativeCSS
+ * - copies `dist/` unchanged (CSS in the root folder, `components/`, `helpers/`, `js/`, `fonts/` with OFL licenses; not `integrations/` – fluid
+ *   doesn't use Web Awesome) and the LICENSE; files no longer present upstream are removed
+ * - writes `assets/ncss/VERSION.txt` (state, commit, date, source)
+ * - generates `assets/css/ncss-base.css`: NativeCSS's manifest `ncss.css` without the components fluid loads only on
+ *   pages that need them (ON_DEMAND, wrappers `css/ncss-*.css` in kit.php), and without those fluid doesn't use
+ *   (UNUSED) – cherry-picking as NativeCSS intends
  *
- * Eigenes von fluid (`assets/css/`, `views/`, `template.view.php`) bleibt unberührt.
+ * fluid's own files (`assets/css/`, `views/`, `template.view.php`) stay untouched.
  */
 final class NcssUpdate
 {
     public const string REPO = 'skerbis/nativecss';
 
-    /** Lädt fluid nur bei Bedarf (Wrapper mit layer(…) in assets/css/, Abbildung in kit.php → assets) */
+    /** Loaded by fluid only when needed (wrappers with layer(…) in assets/css/, mapping in kit.php → assets) */
     public const array ON_DEMAND = [
-        'helpers/reveal.css',            // Abschnitt → Einblend-Effekt (@reveal)
-        'components/count-up.css',       // Kennzahlen
+        'helpers/reveal.css',            // Section → reveal effect (@reveal)
+        'components/count-up.css',       // Key figures
         'components/marquee.css',        // Logos „Laufband“
         'components/scrolly.css',        // Scrollytelling
-        'components/compare.css',        // Vorher/Nachher
+        'components/compare.css',        // Before/after
         'components/video-player.css',   // Video & Audio (Video)
         'components/audio-player.css',   // Video & Audio (Audio)
-        'components/video-bg.css',       // Einstieg „Vollflächig“ mit Hintergrundvideo (Schalter Pausieren/Abspielen)
+        'components/video-bg.css',       // Intro „Vollflächig“ with background video (pause/play toggle)
         'components/preferences.css',    // Website → „Darstellungs-Knopf für Besucher anzeigen“ (<ncss-preferences>)
-        'components/morph.css',          // Text + Bild, Darstellung „Morphing beim Scrollen“ (nur Kit NativeCSS)
-        'helpers/scroll-shadow.css',     // Tabellen in Fließtext, Datenliste, Pakete (@table)
+        'components/morph.css',          // Text + image, display „Morphing beim Scrollen“ (kit NativeCSS only)
+        'helpers/scroll-shadow.css',     // Tables in body text, data list, packages (@table)
         'components/table-sort.css',     // „Spalten sortierbar“ (@tablesort)
-        'components/filter.css',         // Karten/Datenliste „Filter nach Kategorie“ (@filter)
-        'components/timeline.css',       // Ablauf „Zeitleiste“
-        'components/testimonial.css',    // Zitat „Groß“ und „Raster“
-        'components/pricing.css',        // Pakete „Karten“
-        'components/leaders.css',        // Pakete „Preisliste (Speisekarte)“
-        'components/dropdown.css',       // Sprachwahl im Kopf ab drei Sprachen (@dropdown)
+        'components/filter.css',         // Cards/data list „Filter nach Kategorie“ (@filter)
+        'components/timeline.css',       // Process „Zeitleiste“
+        'components/testimonial.css',    // Quote „Groß“ and „Raster“
+        'components/pricing.css',        // Packages „Karten“
+        'components/leaders.css',        // Packages „Preisliste (Speisekarte)“
+        'components/dropdown.css',       // Language switch in the header from three languages on (@dropdown)
     ];
 
-    /** Komponenten von NativeCSS, die fluid (noch) nicht verwendet – nicht im Manifest, die Dateien liegen trotzdem bereit */
+    /** NativeCSS components fluid doesn't use (yet) – not in the manifest, the files are still available */
     public const array UNUSED = [
         'components/livesearch.css', 'components/scroll-video.css', 'components/scroll-frames.css',
         'components/video-text.css', 'components/video-float.css', 'components/video-card.css', 'components/theme-toggle.css',
@@ -73,21 +73,21 @@ final class NcssUpdate
         'components/command-palette.css', 'components/hovercard.css', 'components/notification.css', 'components/aurora.css',
         'components/backdrop.css', 'components/curtain.css', 'components/scroll-horizontal.css', 'components/text-reveal.css',
         'components/reveal-pin.css',
-        // seit 1.1.0 im Manifest, in fluid (noch) ohne Block
+        // in the manifest since 1.1.0, no block in fluid (yet)
         'components/tabs.css', 'components/tooltip.css', 'components/pagination.css', 'components/alert.css', 'components/avatar.css',
         'components/tag.css', 'components/stat.css', 'components/empty-state.css', 'components/spinner.css', 'components/kbd.css',
         'components/floating-label.css', 'components/segmented.css', 'components/rating.css', 'components/dropzone.css',
         'components/countdown.css', 'components/back-to-top.css', 'components/app-shell.css',
-        // <ncss-map>: fluid hat einen eigenen Karten-Block (MapLibre, Proxy, ohne Einwilligung) – vendor/maplibre wird nicht kopiert
+        // <ncss-map>: fluid has its own map block (MapLibre, proxy, no consent) – vendor/maplibre is not copied
         'components/map.css',
-        // 1.1.0 (Runde 2): ohne Gegenstück in fluid
+        // 1.1.0 (round 2): no counterpart in fluid
         'components/pill-group.css', 'components/toolbar.css', 'components/stepper.css', 'components/comments.css', 'components/sortable.css',
     ];
 
-    /** Dateien aus dist/: CSS im Wurzelordner, components/, helpers/, js/ und fonts/ (Schriften der Darstellungs-Einstellungen mit Lizenz) */
+    /** Files from dist/: CSS in the root folder, components/, helpers/, js/ and fonts/ (fonts of the display settings with license) */
     private const string DIRS = '~^(components|helpers|js)/[a-z0-9-]+\.(css|js)$|^[a-z0-9-]+\.css$|^fonts/([a-z0-9-]+/)?[A-Za-z0-9._-]+\.(woff2|txt|md)$~';
 
-    /** @var array<string, string> Pfad relativ zu dist → absolute Quelle */
+    /** @var array<string, string> path relative to dist → absolute source */
     private array $files = [];
 
     private string $dist = '';
@@ -100,7 +100,7 @@ final class NcssUpdate
     /** @var list<string> */
     private array $cleanup = [];
 
-    /** @param string $assets Ordner `assets` des Kits (enthält `ncss/` und `css/`) */
+    /** @param string $assets the kit's `assets` folder (contains `ncss/` and `css/`) */
     public function __construct(
         private readonly string $assets,
     ) {}
@@ -113,8 +113,8 @@ final class NcssUpdate
     }
 
     /**
-     * Arbeitskopie von NativeCSS (Ordner mit `dist/` oder der `dist`-Ordner selbst). Mit $ref (z. B. `HEAD`, `v1.2.0`)
-     * und einer Git-Arbeitskopie: genau dieser Stand per `git archive` – nicht committete Änderungen bleiben draußen.
+     * Working copy of NativeCSS (folder with `dist/` or the `dist` folder itself). With $ref (e.g. `HEAD`, `v1.2.0`)
+     * and a Git working copy: exactly this state via `git archive` – uncommitted changes stay out.
      */
     public function fromDirectory(string $dir, string $ref = ''): self
     {
@@ -145,7 +145,7 @@ final class NcssUpdate
         return $this->scan($root . '/dist', $root . '/LICENSE');
     }
 
-    /** Release, Tag oder Branch von GitHub (Zip von codeload.github.com), z. B. `v1.2.0` oder `main` */
+    /** Release, tag or branch from GitHub (zip from codeload.github.com), e.g. `v1.2.0` or `main` */
     public function fromGithub(string $ref, string $repo = self::REPO): self
     {
         if (!preg_match('~^[\w.\-/]+$~', $ref) || !preg_match('~^[\w.-]+/[\w.-]+$~', $repo)) {
@@ -185,7 +185,7 @@ final class NcssUpdate
     }
 
     /**
-     * Was sich ändern würde – Pfade relativ zu `assets/ncss/`, dazu das erzeugte Manifest.
+     * What would change – paths relative to `assets/ncss/`, plus the generated manifest.
      *
      * @return array{added: list<string>, changed: list<string>, removed: list<string>, unchanged: int, manifest: list<string>}
      */
@@ -212,7 +212,7 @@ final class NcssUpdate
         return ['added' => $added, 'changed' => $changed, 'removed' => $removed, 'unchanged' => $unchanged, 'manifest' => $this->manifestImports()];
     }
 
-    /** Dateien schreiben, entfernte löschen, VERSION.txt und css/ncss-base.css erzeugen */
+    /** Write files, delete removed ones, generate VERSION.txt and css/ncss-base.css */
     public function apply(): void
     {
         $plan = $this->plan();
@@ -237,8 +237,8 @@ final class NcssUpdate
     }
 
     /**
-     * @return list<string> @import-Zeilen des erzeugten Manifests. Seit NativeCSS 1.3 legen Dateien unter components/ und
-     * helpers/ ihren Layer selbst fest und ncss.css importiert sie ohne layer() – dann ohne layer() übernehmen.
+     * @return list<string> @import lines of the generated manifest. Since NativeCSS 1.3, files in components/ and
+     * helpers/ set their layer themselves and ncss.css imports them without layer() – then take them over without layer().
      */
     private function manifestImports(): array
     {
@@ -259,13 +259,13 @@ final class NcssUpdate
     {
         preg_match('~@layer\s[^;{]+;~', $this->upstreamManifest(), $layers);
 
-        return "/*\n * NativeCSS für das Kit „NativeCSS“ – ERZEUGT von `fluid:kit:ncss-update`, nicht von Hand ändern.\n"
-            . " * Das Manifest ncss.css von NativeCSS ohne die Komponenten, die fluid nur bei Bedarf lädt (css/ncss-*.css, kit.php →\n"
-            . " * assets) oder nicht verwendet (Kit\\Native\\NcssUpdate::ON_DEMAND / ::UNUSED).\n */\n"
+        return "/*\n * NativeCSS for the kit „NativeCSS“ – GENERATED by `fluid:kit:ncss-update`, do not edit by hand.\n"
+            . " * The NativeCSS manifest ncss.css without the components fluid loads only when needed (css/ncss-*.css, kit.php →\n"
+            . " * assets) or doesn't use (Kit\\Native\\NcssUpdate::ON_DEMAND / ::UNUSED).\n */\n"
             . ($layers[0] ?? '') . "\n\n" . implode("\n", $this->manifestImports()) . "\n";
     }
 
-    /** ncss.css von NativeCSS ohne Kommentare */
+    /** NativeCSS's ncss.css without comments */
     private function upstreamManifest(): string
     {
         return (string) preg_replace('~/\*.*?\*/~s', '', (string) file_get_contents($this->dist . '/ncss.css'));
@@ -312,7 +312,7 @@ final class NcssUpdate
         return $dir;
     }
 
-    /** Version aus package.json von NativeCSS („1.1.0“), sonst null */
+    /** Version from NativeCSS's package.json („1.1.0“), otherwise null */
     private static function packageVersion(string $root): ?string
     {
         $json = is_file($root . '/package.json') ? json_decode((string) file_get_contents($root . '/package.json'), true) : null;

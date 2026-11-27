@@ -9,8 +9,8 @@ use Redaxo\Core\Database\Sql;
 use Redaxo\Core\Security\User;
 
 /**
- * Entwürfe-Übersicht (Modell aus KLXM Studio – Core\Review\Drafts): Seiten, deren Arbeitsversion vom Live-Stand abweicht
- * (Blöcke, Reihenfolge, Inhalte oder Status). Vergleich per Prüfsumme je Fassung – eine Abfrage für alle Seiten.
+ * Drafts overview (model from KLXM Studio – Core\Review\Drafts): pages whose working version differs from the live state
+ * (blocks, order, content or status). Compared by checksum per version – one query for all pages.
  */
 final class Drafts
 {
@@ -21,7 +21,7 @@ final class Drafts
             return [];
         }
         $sql = Sql::factory();
-        $sql->setQuery('SET SESSION group_concat_max_len = 16777216');   // Prüfsumme über den ganzen Inhalt
+        $sql->setQuery('SET SESSION group_concat_max_len = 16777216');   // checksum over the whole content
         $rows = $sql->getArray(
             'SELECT article_id, revision, MD5(GROUP_CONCAT(CONCAT_WS("|", module, priority, status, data, content_section_id) ORDER BY priority SEPARATOR "#")) AS sig,
                 MAX(updatedate) AS changed, SUBSTRING_INDEX(GROUP_CONCAT(updateuser ORDER BY updatedate DESC), ",", 1) AS user
@@ -40,7 +40,7 @@ final class Drafts
                 continue;
             }
             $a = Article::get($id, $languageId);
-            // nur Seiten, auf die der Benutzer Strukturrechte hat
+            // only pages the user has structure permissions for
             $perm = $user?->getComplexPerm('structure');
             if ($a && $user && !$user->admin && !($perm instanceof StructurePermission && $perm->hasCategoryPerm($a->categoryId))) {
                 continue;

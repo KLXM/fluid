@@ -14,8 +14,8 @@ use Redaxo\Core\Form\Field\Textarea;
 use function Redaxo\Core\View\escape;
 
 /**
- * Eigener Block im Projekt – mit den Feldern des Cores (ohne Ergänzungen von fluid) und Link, einem Feld nur von fluid.
- * Die Ausgabe nutzt die Hilfen des Kits (Klassen wrap, card, btn) – das Kit selbst bleibt unverändert.
+ * Own block in the project – with the core fields (without the additions of fluid) and Link, a field only fluid has.
+ * The output uses the helpers of the kit (classes wrap, card, btn) – the kit itself stays unchanged.
  */
 #[AsModule('fluid.teaser', 'Teaser (Projekt)')]
 #[AsBlock(icon: 'star', group: 'Inhalt', nestable: true, help: 'Beispiel für einen eigenen Block im Projekt.')]
@@ -33,7 +33,7 @@ final class Teaser extends FluidBlock
     #[Override]
     public function output(): string
     {
-        // keine style-Attribute (CSP): InlineStyle vergibt eine Klasse, die Regel steht im <style nonce> der Seite
+        // no style attributes (CSP): InlineStyle assigns a class, the rule is in the <style nonce> of the page
         return '<div class="wrap"><div class="card ' . InlineStyle::class('padding:var(--f-s-l)') . '">'
             . '<h2 class="h3"' . $this->edit('title') . '>' . escape($this->title) . '</h2>'
             . '<p' . $this->edit('text', 'lines') . '>' . nl2br(escape($this->text), false) . '</p>'

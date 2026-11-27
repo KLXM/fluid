@@ -8,12 +8,12 @@ use Redaxo\Core\MediaManager\MediaManager;
 use Redaxo\Core\MediaPool\Media;
 
 /**
- * Video & Audio im Kit „NativeCSS“:
- *   wide/text/cinema  eigene Videodatei im <ncss-video-player> (Zeitleiste mit Kapiteln, Untertitel-Menü, Tasten, Vollbild);
- *                     YouTube/Vimeo bleiben bei der Zwei-Klick-Lösung von fluid. Markup und Spuren: fluid_video_embed().
- *   audio             <ncss-audio-player layout="card"> mit Cover, Kapiteln und Playlist (ab zwei Dateien).
- * Beide Player erweitern nur ein natives <video controls>/<audio controls>: ohne JavaScript (und beim Bearbeiten) bleibt
- * der Player des Browsers. CSS/JS: css/ncss-video-player.css, css/ncss-audio-player.css (kit.php → assets).
+ * Video & audio in the kit „NativeCSS“:
+ *   wide/text/cinema  own video file in <ncss-video-player> (timeline with chapters, subtitle menu, keys, fullscreen);
+ *                     YouTube/Vimeo stay with fluid's two-click solution. Markup and tracks: fluid_video_embed().
+ *   audio             <ncss-audio-player layout="card"> with cover, chapters and playlist (from two files).
+ * Both players only enhance a native <video controls>/<audio controls>: without JavaScript (and while editing) the
+ * browser's player remains. CSS/JS: css/ncss-video-player.css, css/ncss-audio-player.css (kit.php → assets).
  * @var Block $b  @var array $d
  */
 if ('audio' === $b->variant()):
@@ -49,10 +49,10 @@ if ('audio' === $b->variant()):
 </div>
 <?php return; endif;
 
-// „Video mit Morphing beim Scrollen“ (nur dieses Kit): eigene Datei stumm in Schleife in .ncss-morph, Play/Pause-Schalter und
-// Laden/Pausieren wie beim Hintergrundvideo (fluid_video_toggle(), js/hero-video.js: nie bei „Bewegung reduzieren“/„Daten sparen“).
-// Die Klasse ncss-video-bg-toggle lässt morph.css von NativeCSS den Schalter mit der Ecke des Mediums mitführen.
-// Beim Bearbeiten und ohne eigene Datei: wie „Video mit Text daneben“.
+// „Video mit Morphing beim Scrollen“ (this kit only): own file muted in a loop in .ncss-morph, play/pause toggle and
+// loading/pausing as with the background video (fluid_video_toggle(), js/hero-video.js: never with reduced motion/data saver).
+// The class ncss-video-bg-toggle makes NativeCSS's morph.css carry the toggle along with the media's corner.
+// While editing and without own file: like „Video mit Text daneben“.
 if ('morph' === $b->variant()) {
     $mv = !empty($d['video_file']) ? media((string) $d['video_file']) : null;
     $mv = $mv && str_starts_with((string) $mv['mime'], 'video/') ? $mv : null;
@@ -73,10 +73,10 @@ if ('morph' === $b->variant()) {
     }
 }
 
-// Video: Ausgabe von fluid, eine eigene Videodatei bekommt den Player von NativeCSS
+// Video: fluid's output, an own video file gets NativeCSS's player
 $embed = fluid_video_embed((string) $d['video_url'], (string) $d['video_file'], (string) $d['poster'], (string) ($d['ratio'] ?: '16-9'), strip_emphasis(trim((string) $d['title'])),
     (array) ($d['tracks'] ?? []), !empty($d['cc_on']), !empty($d['transcript']));
-// (ohne die Klasse .vembed: deren CSS von fluid legt das Video absolut in einen Rahmen – der Player bringt sein eigenes)
+// (without the class .vembed: fluid's CSS for it positions the video absolutely in a frame – the player brings its own)
 $embed = (string) preg_replace('~<div class="vembed[^"]*">(<video\b.*?</video>)</div>~s', '<div class="nv-vplayer"><ncss-video-player>$1</ncss-video-player></div>', $embed, 1);
 if (str_contains($embed, '<ncss-video-player>')) {
     Kit::active()->markUsed('video', '@player');

@@ -3,15 +3,15 @@
 namespace Klxm\Fluid\Chart;
 
 /**
- * Einstellungen der Diagramme, gesetzt vom Projekt (wie die Policies des Cores) – in Project::configure():
+ * Chart settings, set by the project (like the core policies) – in Project::configure():
  *
  *     Chart::$config = new ChartConfig(engine: 'apex');
  *
- * Ohne Angabe zeichnet ECharts.
+ * Without a setting ECharts draws.
  */
 final readonly class ChartConfig
 {
-    /** @param string $engine Name einer per #[AsChartEngine] angemeldeten Engine (Standard: echarts) */
+    /** @param string $engine name of an engine registered via #[AsChartEngine] (default: echarts) */
     public function __construct(
         public string $engine = 'echarts',
     ) {}

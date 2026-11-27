@@ -45,17 +45,17 @@ use const JSON_UNESCAPED_SLASHES;
 use const JSON_UNESCAPED_UNICODE;
 
 /**
- * Endpunkte des Editors auf der Website: `{Seitenadresse}?fluid_api={aktion}` (POST, CSRF-Token `_csrf_token`).
+ * Endpoints of the editor on the website: `{page address}?fluid_api={action}` (POST, CSRF token `_csrf_token`).
  *
- * Gearbeitet wird immer in der Revision des Editors (Arbeitsversion, sofern eingeschaltet) des aufgerufenen Artikels.
- * Rechte: Kategorie-Recht auf den Artikel (Editing::user()) und Modul-Recht für Hinzufügen/Speichern.
+ * Always works on the editor's revision (working version, if enabled) of the requested article.
+ * Permissions: category permission on the article (Editing::user()) and module permission for adding/saving.
  */
 final class Api
 {
     public const string PARAM = 'fluid_api';
     public const string CSRF = 'fluid_editor';
 
-    /** Aktionen, die die Seite ändern – gesperrt, solange jemand anderes sie bearbeitet (EditLock) */
+    /** Actions that change the page – locked while someone else is editing it (EditLock) */
     private const array LOCKED = ['save', 'module_save', 'module_add', 'add', 'move', 'reorder', 'col_move', 'paste', 'duplicate', 'status', 'delete',
         'publish', 'discard', 'page_save', 'lang_copy', 'version_restore'];
 
@@ -73,11 +73,11 @@ final class Api
                 self::logout();
             }
             $article = Article::getCurrent() ?? self::fail('Artikel nicht gefunden.', 404);
-            // Aktionsrechte des Cores (wie im Backend)
+            // Action permissions of the core (as in the backend)
             $action = Request::get(self::PARAM, 'string');
-            // FLUID_API_ACTION: AddOns können eine Aktion übernehmen – Rückgabe ['result' => array, 'state' => array].
-            // Parameter: action, article, user, guest, run (führt die Aktion aus) und state (Stand des Artikels).
-            // Gäste (Editing::isGuest(), z. B. AddOn fluid_demo) bedient fluid nie selbst: ohne AddOn → 403.
+            // FLUID_API_ACTION: addons can take over an action – return ['result' => array, 'state' => array].
+            // Parameters: action, article, user, guest, run (executes the action) and state (state of the article).
+            // fluid never serves guests (Editing::isGuest(), e.g. addon fluid_demo) itself: without an addon → 403.
             $taken = Extension::dispatch(new ExtensionPoint('FLUID_API_ACTION', null, [
                 'action' => $action, 'article' => $article, 'user' => $user, 'guest' => Editing::isGuest(),
                 'run' => static fn () => self::dispatch($action, $article, $user), 'state' => static fn () => self::state($article),
@@ -88,7 +88,7 @@ final class Api
             if (Editing::isGuest()) {
                 self::fail('Für Gäste nicht verfügbar.', 403);
             }
-            // Bearbeitungssperre: Änderungen an der Seite nur für die Person, die sie gerade hält (HTTP 423)
+            // Edit lock: changes to the page only for the person currently holding it (HTTP 423)
             if (in_array($action, self::LOCKED, true)) {
                 EditLock::assert($article);
             }
@@ -97,7 +97,7 @@ final class Api
         } catch (ApiError $e) {
             self::send(['ok' => false, 'error' => $e->getMessage()], $e->getCode() ?: 400);
         } catch (UserMessageException $e) {
-            // Fehler der Handler des Cores (Seite nicht gefunden, Regel verletzt …) mit übersetzter Meldung
+            // Errors of the core handlers (page not found, rule violated …) with translated message
             self::send(['ok' => false, 'error' => $e->getMessage()], 400);
         } catch (Throwable $e) {
             self::send(['ok' => false, 'error' => 'Fehler: ' . $e->getMessage()], 500);
@@ -105,13 +105,13 @@ final class Api
     }
 
     /**
-     * Eine Aktion des Editors ausführen (Rechte prüfen, Ergebnis liefern) – auch für AddOns (FLUID_API_ACTION, z. B. fluid_demo).
+     * Executes an editor action (checks permissions, returns the result) – also for addons (FLUID_API_ACTION, e.g. fluid_demo).
      *
      * @internal
      */
     public static function dispatch(string $action, Article $article, User $user): array
     {
-        // Blöcke eines YForm-Datensatzes (Feld „Fluid-Blöcke“): eigener Handler, Rechte von YForm
+        // Blocks of a YForm record (field „Fluid-Blöcke“): own handler, YForm permissions
         $ref = Request::post('slice', 'string', '') ?: Request::post('after', 'string', '');
         if (Data\RecordBlocks::is($ref) && in_array($action, Data\RecordBlocks::ACTIONS, true)) {
             return Editing::render(static fn () => Data\RecordBlocks::handle($action, $user, $article->id));
@@ -130,7 +130,7 @@ final class Api
         if (null !== $need && !Perm::can($user, $need)) {
             Perm::require($user, $need);
         }
-        // Detailansicht eines Datensatzes (Data\Detail): Blöcke wie die Datenliste beim neuen Ausgeben mit dem Eintrag
+        // Detail view of a record (Data\Detail): blocks like the data list are re-rendered with the entry
         if (($entry = Request::post(Data\Detail::PARAM, 'int', 0)) > 0) {
             Core::getRequest()->query->set(Data\Detail::PARAM, (string) $entry);
             $_GET[Data\Detail::PARAM] = (string) $entry;
@@ -154,7 +154,7 @@ final class Api
                 $clip = 'duplicate' === Request::get(self::PARAM, 'string')
                     ? BlockOps::payload($article, Request::post('slice', 'int', 0))['clip']
                     : (json_decode(Request::post('clip', 'string', ''), true) ?: self::fail('Die Zwischenablage ist leer.'));
-                // Ausschneiden: Original erst nach dem Einfügen entfernen – nicht hinter sich selbst
+                // Cut: remove the original only after pasting – not behind itself
                 $cut = 'paste' === Request::get(self::PARAM, 'string') ? json_decode(Request::post('cut', 'string', ''), true) : null;
                 if (is_array($cut) && (int) ($cut['slice'] ?? 0) === Request::post('after', 'int', 0)) {
                     self::fail('Ein Block lässt sich nicht hinter sich selbst verschieben.');
@@ -176,7 +176,7 @@ final class Api
             'versions' => ['versions' => Versions::list($article->id, $article->languageId), 'work' => Versions::isWorkVersion()],
             'version_view' => Versions::view($article),
             'version_restore' => (static function () use ($article) {
-                // aus der Versionen-Ansicht kommt der Schlüssel des Stands (<revision>-<YmdHis>)
+                // the versions view sends the key of the state (<revision>-<YmdHis>)
                 $state = Versions::parseKey(Request::post('key', 'string', ''));
                 Versions::restore($article->id, $article->languageId, $state['date'] ?? Request::post('date', 'string', ''), $state['revision'] ?? Request::post('revision', 'int', 0));
                 Activity::log('restore', $article->id, Request::post('date', 'string', ''));
@@ -196,13 +196,13 @@ final class Api
                 return ['items' => Data\Inbox::list($user, Request::post('filter', 'string', 'new')), 'new' => Data\Inbox::countNew($user), 'message' => 'Anfrage gelöscht.'];
             })(),
             'activity' => ['activity' => Activity::recent(150)],
-            // Inhalt einer Seite aus einer anderen Sprache übernehmen (in den Entwurf bzw. live ohne Arbeitsversion)
+            // Copy the content of a page from another language (into the draft, or live without working version)
             'lang_copy' => (static function () use ($article) {
                 $from = Request::post('from', 'int', Language::getStartId());
                 if ($from === $article->languageId || !Language::exists($from)) {
                     self::fail('Bitte eine andere Sprache wählen.');
                 }
-                // in den Entwurf bzw. live ohne Arbeitsversion – live bleibt unverändert bis „Veröffentlichen“
+                // into the draft, or live without working version – live stays unchanged until „Veröffentlichen“
                 ContentHandler::copyContent($article->id, $article->id, $from, $article->languageId, FluidAddon::revision(), true);
                 ArticleCache::delete($article->id, $article->languageId);
                 Activity::log('save', $article->id, 'Inhalt aus ' . (Language::get($from)->name ?? $from) . ' übernommen');
@@ -237,10 +237,10 @@ final class Api
             })(),
             'design' => self::design($article, $user, false),
             'design_save' => self::design($article, $user, true),
-            'record_field' => Data\RecordInline::save($user, $article),   // Textfeld eines Datensatzes in der Detailansicht
+            'record_field' => Data\RecordInline::save($user, $article),   // Text field of a record in the detail view
             'list_template' => Data\ListTemplates::api($user),
-            'glossary' => Glossary\Glossary::api($user, $article),   // Quick-Glossar: suchen, anlegen, Schreibweise hinzufügen   // Listen-Vorlagen verwalten (Seitenleiste, Perm::DESIGN_FULL)
-            // gewöhnliche REDAXO-Module (keine fluid-Blöcke) in der Seitenleiste; html null = Formular des Cores im Rahmen
+            'glossary' => Glossary\Glossary::api($user, $article),   // Quick glossary: search, create, add spelling   // Manage list templates (sidebar, Perm::DESIGN_FULL)
+            // ordinary REDAXO modules (no fluid blocks) in the sidebar; html null = core form in a frame
             'module_form' => ['html' => ModuleForm::form(self::plainSlice($article, $user))],
             'module_new' => self::moduleAdd($article, $user, false),
             'module_add' => self::moduleAdd($article, $user, true),
@@ -250,7 +250,7 @@ final class Api
             })(),
             default => self::fail('Unbekannte Aktion.', 400),
         });
-        // Aktivitätsprotokoll (Speichern, Veröffentlichen, Verwerfen und Wiederherstellen protokollieren die Aktionen selbst)
+        // Activity log (save, publish, discard and restore log their actions themselves)
         $log = ['add' => 'block_add', 'module_add' => 'block_add', 'delete' => 'block_delete', 'paste' => 'block_add', 'duplicate' => 'block_add', 'page_add' => 'page_add', 'page_save' => 'page_settings',
             'design_save' => 'design', 'site_save' => 'site', 'domain_save' => 'site', 'redirect_save' => 'site', 'tree_move' => 'tree', 'tree_status' => 'tree',
             'tree_menu' => 'tree', 'tree_delete' => 'tree', 'template_save' => 'page_add', 'template_rename' => 'tree', 'template_delete' => 'tree'][Request::get(self::PARAM, 'string')] ?? null;
@@ -261,7 +261,7 @@ final class Api
         return $result;
     }
 
-    /** Stand des Artikels: Unterscheidet sich die Arbeitsversion von der veröffentlichten Fassung? */
+    /** State of the article: does the working version differ from the published one? */
     public static function state(Article $article): array
     {
         if (ArticleRevision::LIVE === FluidAddon::revision()) {
@@ -306,11 +306,11 @@ final class Api
         return ['html' => $module->renderBlock($data, $tunes), 'target' => $slice->id];
     }
 
-    /** Speichern: ganzes Formular (`f[1]`, `f[2]`) oder einzelne Felder direkt auf der Seite (`patch[pfad] = wert`) */
+    /** Save: whole form (`f[1]`, `f[2]`) or single fields directly on the page (`patch[path] = value`) */
     private static function save(Article $article, User $user): array
     {
         [$slice, $module] = self::slice($article);
-        // Modulrecht und Sperre (Lock); Abschnitts-Optionen nur mit dem Recht der Gestaltung (Perm::DESIGN …)
+        // Module permission and lock; section options only with the design permission (Perm::DESIGN …)
         Lock::assert($user, $slice);
         [$data, $tunes] = self::input($module);
         $tunes = Lock::tunes($user, $module->tunes, $tunes);
@@ -338,7 +338,7 @@ final class Api
             self::fail('Dieser Block kann nicht in einer Spalte stehen.');
         }
         $priority = self::position($article, $col);
-        // Standardwerte der Felder (Variante, Auswahlfelder …) gleich mit speichern
+        // Save the fields' default values (variant, select fields …) as well
         $data = Form\FieldForm::withDefaults($module::fields(), [], $module::variants());
         $tunes = isset($module::definition()['background']) && 0 === $col ? ['background' => $module::definition()['background']] : [];
         if ($col > 0) {
@@ -352,8 +352,8 @@ final class Api
     }
 
     /**
-     * Verschieben: Blöcke auf oberster Ebene samt Spalten-Blöcken (Layout = Gruppe), Spalten-Blöcke innerhalb ihrer Spalte.
-     * Danach Prioritäten neu durchnummeriert.
+     * Move: top-level blocks together with their column blocks (layout = group), column blocks within their column.
+     * Priorities are renumbered afterwards.
      */
     private static function move(Article $article): array
     {
@@ -367,9 +367,9 @@ final class Api
         $cols = array_map(static fn (array $r) => max(0, (int) (BlockModule::stored($r['data'])['tunes']['col'] ?? 0)), $rows);
         $layouts = array_map(static fn (int $id) => Layout::isLayout(ArticleSlice::getArticleSliceById($id, $article->languageId, FluidAddon::revision())), $ids);
 
-        // Einheiten: Slice auf oberster Ebene + folgende Spalten-Blöcke, wenn er ein Layout ist
+        // Units: top-level slice + following column blocks if it is a layout
         $units = [];
-        $owner = [];   // Index → [Einheit, Spalte] für Spalten-Blöcke
+        $owner = [];   // index → [unit, column] for column blocks
         for ($i = 0, $n = count($ids); $i < $n; ++$i) {
             $unit = [$ids[$i]];
             if ($layouts[$i]) {
@@ -390,7 +390,7 @@ final class Api
             }
             [$units[$u], $units[$v]] = [$units[$v], $units[$u]];
         } else {
-            // Nachbar in derselben Spalte derselben Gruppe tauschen
+            // Swap neighbor in the same column of the same group
             $u = array_find_key($units, static fn (array $unit) => in_array($slice->id, $unit, true));
             $unit = $units[$u];
             $col = Layout::col($slice);
@@ -429,24 +429,24 @@ final class Api
     private static function delete(Article $article, User $user): array
     {
         [$slice] = self::slice($article);
-        Lock::assert($user, $slice);   // Modulrecht und Sperre
+        Lock::assert($user, $slice);   // module permission and lock
         $layout = Layout::isLayout($slice);
-        ContentHandler::deleteSlice($slice->id);   // Spalten-Blöcke eines Layouts: FluidAddon (SliceDeleting)
+        ContentHandler::deleteSlice($slice->id);   // column blocks of a layout: FluidAddon (SliceDeleting)
 
         return $layout ? ['reload' => true] : [];
     }
 
-    /** @internal auch für den MCP-Server */
+    /** @internal also for the MCP server */
     public static function publish(Article $article): array
     {
         if (ArticleRevision::LIVE === FluidAddon::revision()) {
             return [];
         }
-        // Live-Schaltung = Stand im Archiv; Zwischenstände der Arbeitsversion werden geleert (Versions::publish)
+        // Going live = state in the archive; intermediate states of the working version are cleared (Versions::publish)
         Versions::publish($article->id, $article->languageId,
             static fn () => ArticleRevision::copyContent($article->id, $article->languageId, ArticleRevision::WORK, ArticleRevision::LIVE));
         ArticleCache::delete($article->id, $article->languageId);
-        Live::touch('page:' . $article->id);   // Live-Kanal der Seite (z. B. eigenes JavaScript von Kits)
+        Live::touch('page:' . $article->id);   // live channel of the page (e.g. custom JavaScript of kits)
         Activity::log('publish', $article->id);
         Search\Search::markDirty();
 
@@ -465,7 +465,7 @@ final class Api
         return ['reload' => true];
     }
 
-    /** Seiteneinstellungen: Formular (HTML, Felder wie FieldForm – Bildfeld mit Medienpool/Bildeditor) */
+    /** Page settings: form (HTML, fields like FieldForm – image field with media pool/image editor) */
     private static function page(Article $article): array
     {
         $s = PageSettings::get($article->id, $article->languageId);
@@ -490,7 +490,7 @@ final class Api
         return ['html' => $html, 'label' => 'Seiteneinstellungen'];
     }
 
-    /** Seiteneinstellungen: Menüseite → „Blog / News“, Beitrag → Datum, Autor, Schlagworte */
+    /** Page settings: menu page → „Blog / News“, post → date, author, tags */
     private static function blogFields(Article $article, callable $f): string
     {
         $isCat = $article->isStartArticle() && null !== Category::get($article->id);
@@ -511,8 +511,8 @@ final class Api
     }
 
     /**
-     * Eintrag einer Quelle des Routings, den die Seite gerade zeigt (aus dem Editor: cfg.route = „quelle:id“) –
-     * [Quelle, Eintrag] oder null.
+     * Entry of a routing source the page currently shows (from the editor: cfg.route = „source:id“) –
+     * [source, entry] or null.
      *
      * @return array{0: Routing\RouteSource, 1: Routing\RouteEntry}|null
      */
@@ -533,7 +533,7 @@ final class Api
         return null !== $entry ? [$source, $entry] : null;
     }
 
-    /** Seiteneinstellungen auf der Adresse eines Eintrags: dessen editierbare Felder (Titel, Beschreibung, Bild, Adresse) zuerst */
+    /** Page settings on the address of an entry: its editable fields (title, description, image, address) first */
     private static function routeFields(Article $article, callable $f): string
     {
         [$source, $entry] = self::routeEntry($article) ?? [null, null];
@@ -554,7 +554,7 @@ final class Api
         return $html . '<h3 class="blocks-form__h">Seite</h3>';
     }
 
-    /** Felder eines Eintrags speichern: YForm-Tabellen über die Record-API (Prüfungen, Zeitstempel), sonst die Quelle */
+    /** Saves the fields of an entry: YForm tables via the record API (validation, timestamps), otherwise the source */
     private static function routeSave(Article $article, User $user): ?string
     {
         $re = self::routeEntry($article);
@@ -606,7 +606,7 @@ final class Api
             new Routing\AddressOptions(ownPath: Request::post('own_path', 'bool', false), hidden: Request::post('hide_in_children', 'bool', false)));
         Routing\Routes::rebuild();
 
-        // Neue Adresse: dorthin wechseln (offline gibt es für die alte keine Weiterleitung)
+        // New address: switch to it (offline there is no redirect for the old one)
         return ['message' => 'Seiteneinstellungen gespeichert.', 'reload' => true, 'url' => $entryUrl ?? Url::article($article->id, $article->languageId)];
     }
 
@@ -697,7 +697,7 @@ final class Api
         return 'redaxo://' . $article->id . '@' . $article->languageId;
     }
 
-    /** Adresse der Elternseiten (für die Anzeige vor dem Slug), z. B. „/leistungen/“ */
+    /** Address of the parent pages (shown before the slug), e.g. „/leistungen/“ */
     private static function parentPath(Article $article): string
     {
         $path = (string) Routing\Routes::path($article->id, $article->languageId);
@@ -706,14 +706,14 @@ final class Api
         return Routing\Routes::prefix($article->languageId) . '/' . (false === $pos ? '' : substr($path, 0, $pos + 1));
     }
 
-    /** Neue Seite: Menüpunkt (Kategorie) oder Seite ohne Menü (Artikel) – hier oder auf oberster Ebene, zunächst offline */
+    /** New page: menu item (category) or page without menu (article) – here or on the top level, offline at first */
     private static function pageAdd(Article $article, User $user): array
     {
         $name = trim(Request::post('name', 'string', ''));
         if ('' === $name) {
             self::fail('Bitte einen Titel angeben.');
         }
-        // Stelle: aus dem Seitenbaum (parent = ID eines Menüpunkts, 0 = oberste Ebene) oder „hier“ / „oberste Ebene“
+        // Position: from the page tree (parent = ID of a menu item, 0 = top level) or „hier“ / „oberste Ebene“
         $parent = '' !== Request::post('parent', 'string', '')
             ? (Request::post('parent', 'int', 0) ?: null)
             : ('root' === Request::post('where', 'string', 'here') ? null : $article->categoryId);
@@ -727,13 +727,13 @@ final class Api
         } else {
             $id = ArticleHandler::add(['category_id' => $parent, 'priority' => 999, 'name' => $name, 'template' => $template])->id;
         }
-        // Template des Kits übernehmen (neue Kategorien auf oberster Ebene erben keines)
+        // Adopt the kit's template (new top-level categories inherit none)
         ArticleHandler::edit($id, $article->languageId, ['name' => $name, 'template' => $template]);
-        // Beitrag in einem Blog: Datum heute, Autor = Name der Redakteurin
+        // Post in a blog: date today, author = name of the editor
         if (null !== $parent && 'menu' !== Request::post('kind', 'string', 'menu') && Blog\Blog::isBlog($parent) && ($new = Article::get($id, $article->languageId))) {
             Blog\Blog::saveMeta($new, date('Y-m-d'), $user->name ?: $user->login, '');
         }
-        // Inhalt: Vorlage (ID), Kopie dieser Seite („copy“) oder leer
+        // Content: template (ID), copy of this page („copy“) or empty
         $from = Request::post('from', 'string', '');
         $source = 'copy' === $from ? $article->id : (int) $from;
         if ($source > 0 && ('copy' === $from || PageTemplates::isTemplate($source))) {
@@ -743,7 +743,7 @@ final class Api
         return ['url' => Url::article($id, $article->languageId, [Editing::PARAM => 1]), 'message' => 'Seite angelegt (offline).'];
     }
 
-    /** Vorlagen speichern und verwalten: Admins oder Recht auf die Kategorie „Seitenvorlagen“ */
+    /** Saving and managing templates: admins or permission on the category „Seitenvorlagen“ */
     private static function mayTemplates(User $user): bool
     {
         $perm = $user->getComplexPerm('structure');
@@ -751,7 +751,7 @@ final class Api
         return $user->admin || ($perm instanceof StructurePermission && $perm->hasCategoryPerm(PageTemplates::categoryId()));
     }
 
-    /** Aktuelle Seite als Vorlage speichern (Seitenvorlagen) */
+    /** Saves the current page as a template (Seitenvorlagen) */
     private static function templateSave(Article $article): array
     {
         $id = PageTemplates::saveFrom($article, Request::post('name', 'string', ''));
@@ -760,12 +760,12 @@ final class Api
     }
 
     /**
-     * Style-Editor: Vorschau (CSS, Klassen, Schriften, Options-Stylesheets für die übergebenen Werte) bzw. Speichern.
-     * Nur Administration – das Design gilt für die ganze Website.
+     * Style editor: preview (CSS, classes, fonts, option stylesheets for the given values) or save.
+     * Administration only – the design applies to the whole website.
      */
     private static function design(Article $article, User $user, bool $save): array
     {
-        // Vorschau (ohne Speichern) auch für Gäste (Gastzugang, z. B. Demo) – gespeichert wird nur von Admins
+        // Preview (without saving) also for guests (guest access, e.g. demo) – only admins save
         if (!$user->admin && ($save || !Editing::isGuest())) {
             self::fail('Das Design dürfen nur Admins ändern.', 403);
         }
@@ -797,11 +797,11 @@ final class Api
         ];
     }
 
-    // ------------------------------------------------------------------ Hilfen
+    // ------------------------------------------------------------------ Helpers
 
     /**
-     * HTML eines Blocks nach einer Änderung: Abschnitt bzw. Spalten-Block. Mit $wholeLayout das ganze Layout
-     * (z. B. wenn ein Block die Spalte gewechselt hat). `target` = data-block, das ersetzt wird.
+     * HTML of a block after a change: section or column block. With $wholeLayout the whole layout
+     * (e.g. when a block changed its column). `target` = data-block that gets replaced.
      *
      * @return array{html: string, target: int}
      */
@@ -813,7 +813,7 @@ final class Api
             return 1;
         }
         $prev = ArticleSlice::getArticleSliceById($after, $article->languageId, FluidAddon::revision());
-        // Hinter einem Layout auf oberster Ebene bzw. „in diese Spalte“ des Layouts: ans Ende seiner Gruppe
+        // After a top-level layout or „in diese Spalte“ of the layout: at the end of its group
         if ($prev && ((0 === $col && (Layout::isLayout($prev) || null !== Layout::parentOf($prev))) || ($col > 0 && Layout::isLayout($prev)))) {
             $group = Layout::isLayout($prev) ? $prev : Layout::parentOf($prev);
             $kids = Layout::children($group);
@@ -863,13 +863,13 @@ final class Api
         return ['html' => $module->renderBlock(), 'target' => $id];
     }
 
-    /** Hintergrund des Layouts über einem Spalten-Block */
+    /** Background of the layout above a column block */
     private static function parentBackground(ArticleSlice $parent): string
     {
         return null !== BlockModule::classFor($parent->moduleKey) ? (string) BlockModule::of($parent)->block()->tunes['background'] : '';
     }
 
-    /** Slice eines gewöhnlichen Moduls (kein fluid-Block) – mit Modulrecht, nicht für Gäste */
+    /** Slice of an ordinary module (no fluid block) – with module permission, not for guests */
     private static function plainSlice(Article $article, User $user): ArticleSlice
     {
         $slice = self::reload($article, Request::post('slice', 'int', 0));
@@ -906,7 +906,7 @@ final class Api
     }
 
     /**
-     * Eingaben: komplettes Formular (`f[1]`/`f[2]`) oder Teiländerungen (`patch`) auf Basis der gespeicherten Daten.
+     * Input: complete form (`f[1]`/`f[2]`) or partial changes (`patch`) based on the saved data.
      *
      * @return array{array<string, mixed>, array<string, mixed>}
      */
@@ -918,8 +918,8 @@ final class Api
     }
 
     /**
-     * Eingaben der Anfrage auf Blockdaten anwenden: Formular der Seitenleiste (`f[1]`, `f[2]`) und Felder direkt auf der
-     * Seite (`patch[pfad] = wert`). Für Seiten-Blöcke (Slices) und Datensatz-Blöcke (Data\RecordBlocks).
+     * Applies the request input to block data: sidebar form (`f[1]`, `f[2]`) and fields directly on the
+     * page (`patch[path] = value`). For page blocks (slices) and record blocks (Data\RecordBlocks).
      *
      * @internal
      * @return array{0: array<string, mixed>, 1: array<string, mixed>}
@@ -928,8 +928,8 @@ final class Api
     {
         $f = Request::post('f', 'array', []);
         if (isset($f[1]) && is_array($f[1])) {
-            // gezogene Spaltenbreiten stehen nicht im Formular: behalten (ein anderes Raster verwirft sie beim Ausgeben)
-            // Einstellungen der Bilder an ihrer Stelle (_img) bleiben, solange das Bild an seinem Pfad steht
+            // dragged column widths are not in the form: keep them (a different grid discards them on rendering)
+            // Settings of the images in place (_img) stay as long as the image is at its path
             $data = ImagePlaces::keep(Form\Stored::clean($f[1]) + (isset($data['widths']) ? ['widths' => $data['widths']] : []), $data);
         }
         if (isset($f[2]) && is_array($f[2])) {
@@ -938,14 +938,14 @@ final class Api
         foreach (Request::post('patch', 'array', []) as $path => $value) {
             $path = (string) $path;
             $value = (string) $value;
-            // Greifer auf der Website: Abstand oben/unten (Abschnitts-Optionen) und Spaltenbreiten des Layouts
+            // Handles on the website: spacing top/bottom (section options) and column widths of the layout
             if (in_array($path, ['@spaceTop', '@spaceBottom'], true)) {
                 if (in_array($value, ['none', 'small', 'normal', 'large'], true)) {
                     $tunes[substr($path, 1)] = $value;
                 }
                 continue;
             }
-            // Bild an dieser Stelle: Effekt, Darstellung, Ausschnitt (JSON, leer = zurücksetzen)
+            // Image in this place: effect, display, crop (JSON, empty = reset)
             if (str_starts_with($path, '@img:')) {
                 $data = ImagePlaces::apply($data, substr($path, 5), '' !== $value ? json_decode($value, true) : null);
                 continue;
@@ -999,11 +999,11 @@ final class Api
     }
 
     /**
-     * Backend-Anmeldung beenden, die Seite bleibt offen (danach als Besucher).
+     * Ends the backend login, the page stays open (as a visitor afterwards).
      *
-     * Der Link rex_logout des Backends geht hier nicht: Der Core trennt CSRF-Token nach Umgebung, ein im Frontend
-     * erzeugtes Token gilt im Backend nicht. Abgemeldet wird wie dort über BackendLogin (Sitzung, Cookie
-     * „angemeldet bleiben“, Sitzungsliste).
+     * The backend link rex_logout doesn't work here: the core separates CSRF tokens by environment, a token created in
+     * the frontend is not valid in the backend. Logout works like there via BackendLogin (session, cookie
+     * „angemeldet bleiben“, session list).
      */
     private static function logout(): never
     {
@@ -1020,7 +1020,7 @@ final class Api
         while (ob_get_level()) {
             ob_end_clean();
         }
-        // Klassen aus InlineStyle (Fokuspunkt, Bild an dieser Stelle …) neu ausgegebener Blöcke: ihre Regeln mitliefern
+        // Classes from InlineStyle (focus point, image in this place …) of re-rendered blocks: include their rules
         $css = InlineStyle::css();
         if ('' !== $css) {
             $data['css'] = $css;

@@ -3,14 +3,14 @@
 namespace Klxm\Fluid\Field;
 
 /**
- * Feld mit Ergänzungen von fluid (Breite, Darstellungen, Platzhalter … bzw. eigener Feldtyp). Die Felder des Cores
- * funktionieren in Blöcken genauso – nur ohne diese Ergänzungen.
+ * Field with fluid's additions (width, displays, placeholder … or its own field type). The core's fields work the same
+ * in blocks – only without these additions.
  */
 interface FluidField
 {
     /**
-     * Ergänzungen für das Formular von fluid (Format von Form\FieldForm), z. B. ['width' => 'half', 'variants' => [...]];
-     * 'type' nur bei Feldtypen, die es nur in fluid gibt.
+     * Additions for fluid's form (format of Form\FieldForm), e.g. ['width' => 'half', 'variants' => [...]];
+     * 'type' only for field types that exist only in fluid.
      *
      * @return array<string, mixed>
      */

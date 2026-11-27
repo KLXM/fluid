@@ -31,9 +31,9 @@ use const JSON_UNESCAPED_SLASHES;
 use const JSON_UNESCAPED_UNICODE;
 
 /**
- * Leiste und Editor für die angemeldete Redaktion – wird per OUTPUT_FILTER eingefügt, nur wenn ein Backend-Benutzer
- * mit Recht auf den Artikel angemeldet ist. Besucher bekommen kein zusätzliches Markup.
- * Oberfläche: assets/editor/editor.js (Shadow DOM, keine Kollision mit dem CSS der Website).
+ * Bar and editor for logged-in editors – inserted via OUTPUT_FILTER, only when a backend user
+ * with permission on the article is logged in. Visitors get no additional markup.
+ * UI: assets/editor/editor.js (Shadow DOM, no collision with the website's CSS).
  */
 final class Toolbar
 {
@@ -46,10 +46,10 @@ final class Toolbar
         }
 
         $editing = Editing::requested();
-        $guest = Editing::isGuest();   // Gastzugang (FLUID_GUEST_USER, z. B. AddOn fluid_demo): nur Blöcke dieser Seite
+        $guest = Editing::isGuest();   // guest access (FLUID_GUEST_USER, e.g. addon fluid_demo): only blocks of this page
         $addon = FluidAddon::instance();
         $perm = $user->getComplexPerm('modules');
-        // Detailansicht eines Datensatzes (/seite/titel-ID): Bearbeiten, Ansehen, Arbeitsversion bleiben auf dem Eintrag
+        // Detail view of a record (/page/title-ID): edit, view, working version stay on the entry
         $entry = Request::get(Data\Detail::PARAM, 'int', 0);
         $entryTitle = $entry > 0 && ($cfg = Data\Detail::config($article->id, $article->languageId)) ? Data\Detail::title($cfg, $entry) : null;
         $here = static fn (array $params = []): string => null !== $entryTitle
@@ -84,50 +84,50 @@ final class Toolbar
 
         $config = [
             'editing' => $editing,
-            // Blockauswahl „Häufig verwendet“: Vorkommen je Blocktyp auf der Website (veröffentlichte Fassung)
+            // Block picker „Häufig verwendet“: occurrences per block type on the website (published version)
             'usage' => self::usage(),
             'article' => ['id' => $article->id, 'name' => $article->name, 'language' => $article->languageId, 'online' => $article->isOnline(), 'category' => $article->getCategory()->name ?? '', 'menu' => $article->isStartArticle() && null !== Category::get($article->id)],
             'api' => Url::article($article->id, $article->languageId, [Api::PARAM => '__action__']),
             'csrf' => CsrfToken::factory(Api::CSRF)->getValue(),
-            'entry' => null !== $entryTitle ? $entry : 0,   // Detailansicht: an die API, damit Blöcke mit dem Eintrag neu ausgegeben werden
-            // Eintrag einer Quelle (Routing\RouteSource) auf dieser Adresse: seine Felder in den Seiteneinstellungen
+            'entry' => null !== $entryTitle ? $entry : 0,   // detail view: to the API so blocks are re-rendered with the entry
+            // Entry of a source (Routing\RouteSource) at this address: its fields in the page settings
             'route' => Routing\Router::current()?->entry?->key() ?? '',
             'editUrl' => $here([Editing::PARAM => 1]),
             'viewUrl' => $here(),
-            // Ansicht der Arbeitsversion (REDAXO-Core: rex_version=1, nur mit Backend-Anmeldung)
+            // View of the working version (REDAXO core: rex_version=1, only with backend login)
             'draftUrl' => $here(['rex_version' => ArticleRevision::WORK]),
             'viewingDraft' => !$editing && ArticleRevision::WORK === Request::get('rex_version', 'int', ArticleRevision::LIVE),
             'backendUrl' => Url::backendPage('content/edit', ['article_id' => $article->id, 'language' => $article->languageId, 'mode' => 'edit']),
-            // Menü ⋯ → Abmelden (Api::logout), die Seite bleibt danach als Besucher offen
+            // Menu ⋯ → log out (Api::logout), the page stays open afterwards as a visitor
             'logout' => !$guest,
             'user' => $user->name ?: $user->login,
             'modules' => $modules,
             'state' => Api::state($article),
-            // Design: Admins speichern; Gäste (z. B. Demo) nur Vorschau im eigenen Browser – Speichern lehnt die API ab
+            // Design: admins save; guests (e.g. demo) only preview in their own browser – the API rejects saving
             'design' => $user->admin || $guest ? self::designSchema($article) : null,
             'designSave' => $user->admin && !$guest,
-            // Website-Einstellungen (Seitenleiste „Website“): nur Admins
+            // Website settings (sidebar „Website“): admins only
             'site' => $user->admin && !$guest ? ['tabs' => SiteAdmin::tabs()] : null,
-            // Aktionsrechte des Cores (Rollen → Optionen) – die Leiste zeigt nur, was erlaubt ist
-            // Gäste: nur Blöcke bearbeiten – Seiten anlegen, Seiteneinstellungen usw. sind aus
+            // Action permissions of the core (roles → options) – the bar only shows what is allowed
+            // Guests: only edit blocks – creating pages, page settings etc. are off
             'can' => $guest ? ['editArticle' => false, 'editCategory' => false, 'addArticle' => false, 'addCategory' => false] + Perm::flags($user) : Perm::flags($user),
-            // Gastzugang: Leiste ohne Seitenbaum, Verlauf, Backend-Links; Hinweis und Knöpfe in der Leiste über 'notice' (FLUID_EDITOR_CONFIG)
+            // Guest access: bar without page tree, history, backend links; notice and buttons in the bar via 'notice' (FLUID_EDITOR_CONFIG)
             'guest' => $guest,
             'notice' => null,
-            // weitere Skripte von AddOns (FLUID_EDITOR_CONFIG), laufen vor dem Editor; window.fluidEditorWait: Promises, auf die der Editor wartet
+            // further scripts of addons (FLUID_EDITOR_CONFIG), run before the editor; window.fluidEditorWait: promises the editor waits for
             'scripts' => [],
-            // Sprachwahl (ab zwei Sprachen): Seite in anderer Sprache im selben Modus öffnen; „leer“ = noch keine Blöcke
+            // Language switch (2+ languages): open the page in another language in the same mode; „leer“ = no blocks yet
             'languages' => count(Language::getAll()) > 1 ? array_map(static fn (array $l) => $l + [
                 'href' => Url::article($article->id, $l['id'], $editing ? [Editing::PARAM => 1] : []),
                 'empty' => !Sql::factory()->getArray('SELECT id FROM rex_article_slice WHERE article_id = ? AND language_id = ? LIMIT 1', [$article->id, $l['id']]),
-            ], Routing\Router::alternates($article, !$guest)) : null,   // Gäste: nur Sprachen, in denen die Seite online ist
-            // Anfragen-Postfach: nur, wenn es Formulare mit YForm-Tabellen gibt
+            ], Routing\Router::alternates($article, !$guest)) : null,   // guests: only languages in which the page is online
+            // Inquiry inbox: only if there are forms with YForm tables
             'inbox' => !$guest && [] !== Data\Inbox::tables($user) ? ['new' => Data\Inbox::countNew($user)] : null,
-            // Quick-Glossar (Menü ⋯ → Glossar, Alt+G): nur mit Recht auf die Datenquelle des Glossars
+            // Quick glossary (menu ⋯ → Glossar, Alt+G): only with permission on the glossary's data source
             'glossary' => $guest ? null : Glossary\Glossary::toolbar($user),
-            // Addon image_editor (optional): Bilder auf der Website bearbeiten
+            // Addon image_editor (optional): edit images on the website
             'imageEditor' => !$guest && class_exists(ImageEditorAddon::class) ? ImageEditorAddon::config() : null,
-            // Bild an dieser Stelle (Effekt, Darstellung, Ausschnitt): Auswahl mit Beschriftungen aus lang/
+            // Image in this place (effect, display, crop): select with labels from lang/
             'imagePlace' => [
                 'effects' => array_map(static fn (ImageEffect $e) => [$e->value, $e->label()], ImageEffect::cases()),
                 'fits' => array_map(static fn (ImageFit $f) => [$f->value, $f->label()], ImageFit::cases()),
@@ -135,19 +135,19 @@ final class Toolbar
             'css' => $addon->getAssetsUrl('editor/editor.shadow.css') . '?v=' . self::version('editor/editor.shadow.css'),
             // text editor TipTap (klxm/tiptap): styles for the shadow root of the interface
             'tiptapCss' => TiptapAddon::instance()->assetUrl('tiptap.css'),
-            // Versionen-Ansicht (Zeitleiste, Vorschau, Vergleich) – lädt erst beim Öffnen
-            // Präsenz der Redaktion: wer arbeitet gerade wo (PresenceApi, assets/editor/presence.js)
+            // Versions view (timeline, preview, comparison) – loads only when opened
+            // Presence of the editors: who is working where right now (PresenceApi, assets/editor/presence.js)
             'presence' => $guest ? null : PresenceApi::toolbar($article, $editing),
             'versions' => ['js' => $addon->getAssetsUrl('editor/versions.js') . '?v=' . self::version('editor/versions.js'), 'css' => $addon->getAssetsUrl('editor/versions.css') . '?v=' . self::version('editor/versions.css')],
         ];
 
         $head = '<link rel="stylesheet" href="' . escape($addon->getAssetsUrl('editor/editor.css') . '?v=' . self::version('editor/editor.css')) . '" data-blocks-editor>';
-        // FLUID_EDITOR_CONFIG: Einstellungen des Editors ändern (z. B. Blöcke ausblenden, Menüpunkte abschalten)
+        // FLUID_EDITOR_CONFIG: change the editor settings (e.g. hide blocks, disable menu items)
         $config = (array) Extension::dispatch(new ExtensionPoint('FLUID_EDITOR_CONFIG', $config, ['article' => $article, 'user' => $user]));
         $body = '<script type="application/json" id="blocks-editor-config">' . json_encode($config, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) . '</script>'
             . ($editing ? Links::json($article->languageId) : '')
             . implode('', array_map(static fn ($src) => '<script src="' . escape((string) $src) . '" defer></script>', (array) ($config['scripts'] ?? [])))
-            // Medien- und Seitenauswahl (Picker\FrontendPicker, auch für andere AddOns); Gäste haben keine Backend-Sitzung
+            // Media and page picker (Picker\FrontendPicker, also for other addons); guests have no backend session
             . ($guest ? '' : Picker\FrontendPicker::head($article->languageId))
             . '<script src="' . escape($addon->getAssetsUrl('form.js') . '?v=' . self::version('form.js')) . '" defer></script>'
             // TipTap: loader, plugins (fluid: tiptap-fluid.js) and profiles – before editor.js, which uses RexTiptap
@@ -161,7 +161,7 @@ final class Toolbar
         return false === $pos ? $html : substr($html, 0, $pos) . $body . substr($html, $pos);
     }
 
-    /** @return array<string, int> Modulschlüssel → Anzahl der Blöcke, absteigend */
+    /** @return array<string, int> module key → number of blocks, descending */
     private static function usage(): array
     {
         $out = [];
@@ -172,7 +172,7 @@ final class Toolbar
         return $out;
     }
 
-    /** Style-Editor: Schema des Kits der Seite (nur Administration) */
+    /** Style editor: schema of the page's kit (administration only) */
     private static function designSchema(Article $article): ?array
     {
         foreach (BlockModule::all() as $key => $m) {
@@ -192,8 +192,8 @@ final class Toolbar
     }
 
     /**
-     * Greifer auf der Seite (Kit-Angabe 'drags', wie in KLXM Studio): Feld, Ziel-Element, Klasse je Wert, Optionen/Standard
-     * aus dem Feldschema – z. B. Textbreite (Fließtext) oder Aufteilung Bild/Text.
+     * Handles on the page (kit setting 'drags', as in KLXM Studio): field, target element, class per value, options/default
+     * from the field schema – e.g. text width (body text) or image/text split.
      *
      * @return list<array<string, mixed>>
      */

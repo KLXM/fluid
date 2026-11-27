@@ -4,12 +4,12 @@ use Klxm\Fluid\Block;
 use Klxm\Fluid\Kit;
 
 /**
- * Pakete / Vergleich im Kit „NativeCSS“:
- *   cards  Preistabelle von NativeCSS (.ncss-pricing): gleich hohe Karten, Zeilen per Subgrid bündig, „Hervorheben“ mit
- *          Etikett als echtem Text; Leistungen mit Haken – eine Zeile mit „–“ am Anfang gilt als nicht enthalten (Kreuz + Text
- *          für Screenreader). Kein Monatlich/Jährlich-Umschalter: der Block kennt nur einen Preis je Paket.
- *   list   Preisliste mit Führungspunkten (.ncss-leaders)
- *   table  Vergleichstabelle von fluid (mit Scroll-Schatten)
+ * Packages / comparison in the kit „NativeCSS“:
+ *   cards  NativeCSS pricing table (.ncss-pricing): cards of equal height, rows aligned via subgrid, „Hervorheben“ with
+ *          the badge as real text; features with check marks – a line starting with „–“ counts as not included (cross +
+ *          text for screen readers). No monthly/yearly toggle: the block only knows one price per package.
+ *   list   price list with leader dots (.ncss-leaders)
+ *   table  fluid's comparison table (with scroll shadow)
  * @var Block $b  @var array $d
  */
 $v = $b->variant() ?: 'cards';

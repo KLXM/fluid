@@ -5,36 +5,36 @@ namespace Klxm\Fluid\Glossary;
 use Redaxo\Core\Security\User;
 
 /**
- * Datenquelle des Glossars – eine kleine Schnittstelle, damit neben YForm (YFormGlossaryStore, Standard) später ein anderes
- * Backend möglich ist (z. B. Doctrine). Setzen in Project::configure(): `Glossary::$store = new MeinStore();`.
+ * Data source of the glossary – a small interface so that besides YForm (YFormGlossaryStore, default) another
+ * backend is possible later (e.g. Doctrine). Set in Project::configure(): `Glossary::$store = new MeinStore();`.
  *
- * Ein Begriff ist ein Array: id (int), key (Slug), term, short (Klartext, höchstens 240 Zeichen), variants (list<string>),
- * long (bool: es gibt eine ausführliche Erklärung), online (bool), language (Code oder '' = alle Sprachen).
+ * A term is an array: id (int), key (slug), term, short (plain text, at most 240 characters), variants (list<string>),
+ * long (bool: there is a detailed explanation), online (bool), language (code or '' = all languages).
  */
 interface GlossaryStore
 {
-    /** Gibt es das Glossar (Tabelle eingerichtet)? */
+    /** Does the glossary exist (table set up)? */
     public function available(): bool;
 
     /**
-     * Begriffe der Sprache (Code); $all: auch offline.
+     * Terms of the language (code); $all: offline ones too.
      *
      * @return list<array{id: int, key: string, term: string, short: string, variants: list<string>, long: bool, online: bool, language: string}>
      */
     public function terms(string $language, bool $all = false): array;
 
-    /** Ausführliche Erklärung eines Begriffs als HTML für die Detailseite (im Bearbeiten-Modus gern bearbeitbar) */
+    /** Detailed explanation of a term as HTML for the detail page (editable in edit mode if possible) */
     public function longHtml(int $id, int $articleId): string;
 
-    /** Neuen Begriff anlegen (Prüfung der Datenquelle) – liefert die ID, wirft bei Fehlern \Klxm\Fluid\ApiError @param list<string> $variants */
+    /** Create a new term (validated by the data source) – returns the ID, throws \Klxm\Fluid\ApiError on errors @param list<string> $variants */
     public function create(string $term, string $short, array $variants, bool $online, string $language): int;
 
-    /** Schreibweise zu einem Begriff hinzufügen */
+    /** Add a spelling to a term */
     public function addVariant(int $id, string $variant): void;
 
-    /** Darf der Benutzer Begriffe anlegen und ändern? */
+    /** May the user create and change terms? */
     public function canEdit(?User $user): bool;
 
-    /** Bearbeiten in der Verwaltung der Datenquelle (null = keine) */
+    /** Editing in the management of the data source (null = none) */
     public function editUrl(?int $id = null): ?string;
 }

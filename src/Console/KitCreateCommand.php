@@ -18,10 +18,10 @@ use function is_dir;
 use function is_file;
 
 /**
- * Legt ein eigenes Kit im Projekt an (`src/Kit/{Name}/`), das von einem vorhandenen Kit erbt.
+ * Creates a custom kit in the project (`src/Kit/{Name}/`) that inherits from an existing kit.
  *
- * Das neue Kit bringt zunächst nur ein eigenes Stylesheet mit; alles andere kommt vom Eltern-Kit. Mit --view=hero,cards
- * und --template werden einzelne Dateien des Eltern-Kits zum Anpassen kopiert.
+ * The new kit initially brings only its own stylesheet; everything else comes from the parent kit. With
+ * --view=hero,cards and --template single files of the parent kit are copied for customising.
  */
 #[AsCommand(name: 'fluid:kit:create', description: 'Legt ein eigenes Kit im Projekt an, das von einem Kit erbt (Standard: fluid)')]
 final class KitCreateCommand extends AbstractCommand
@@ -131,7 +131,7 @@ final class KitCreateCommand extends AbstractCommand
             }
         }
 
-        // Klassen neu einlesen (ClassDiscovery), damit das Kit sofort in der Auswahl steht
+        // Re-read classes (ClassDiscovery) so the kit appears in the selection right away
         Cache::delete();
 
         $io->success('Kit „' . $label . '“ angelegt: ' . Path::relative($dir));
@@ -151,7 +151,7 @@ final class KitCreateCommand extends AbstractCommand
     }
 
     /**
-     * Namespace und Ordner für `src/` des Projekts (aus dessen composer.json, PSR-4).
+     * Namespace and folder for the project's `src/` (from its composer.json, PSR-4).
      *
      * @return array{string, string}
      */

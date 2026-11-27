@@ -3,9 +3,9 @@
 use Klxm\Fluid\Block;
 
 /**
- * Zitat / Stimmen: single (Pull-Quote, große Schrift in Container-Einheiten) · grid (Mauerwerk mit CSS-Spalten,
- * column-width – keine Spaltenzahl) · reel (wischbares Band, scroll-snap; js/reel.js ergänzt Pfeile) ·
- * marquee (Laufband wie bei Logos: Liste doppelt, zweite Hälfte aria-hidden; hält bei Maus/Fokus; ohne Bewegung umbrechend).
+ * Quote / testimonials: single (pull quote, large type in container units) · grid (masonry with CSS columns,
+ * column-width – no column count) · reel (swipeable strip, scroll-snap; js/reel.js adds arrows) ·
+ * marquee (ticker like for logos: list doubled, second half aria-hidden; stops on hover/focus; wraps without motion).
  * @var Block $b  @var array $d
  */
 $v = $b->variant() ?: 'single';

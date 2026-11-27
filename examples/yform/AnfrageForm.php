@@ -19,7 +19,7 @@ use Yakamara\YForm\Validation\Errors;
 
 use const FILTER_VALIDATE_EMAIL;
 
-/** Demo-Formular „Anfrage“: speichert in AnfrageTable, Benachrichtigung an die E-Mail aus „Website“ */
+/** Demo form „Anfrage“: stores in AnfrageTable, notification to the e-mail from „Website“ */
 #[AsForm('anfrage', label: 'Anfrage (Beispiel)', module: true)]
 final class AnfrageForm extends FormDefinition
 {
@@ -39,7 +39,7 @@ final class AnfrageForm extends FormDefinition
         }
     }
 
-    /** Name und E-Mail nebeneinander, der Rest in voller Breite (alternativ im Designer, YForm → Formulare) */
+    /** Name and e-mail side by side, the rest full width (alternatively in the designer, YForm → Formulare) */
     public function layout(Layout $layout): Layout
     {
         return $layout->row(Cell::field('name', 6), Cell::field('email', 6))->row('topic')->row('message')->row('privacy');

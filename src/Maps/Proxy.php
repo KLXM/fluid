@@ -28,26 +28,26 @@ use const PHP_URL_HOST;
 use const PHP_URL_PATH;
 
 /**
- * Eigener Proxy für Dienste Dritter (aus KLXM Studio – Core\Proxy): Besucher laden Karten-Kacheln, Stile und Schriften
- * über /proxy/{quelle}/… vom eigenen Server – ihr Browser verbindet sich nie mit Dritten (keine Einwilligung, keine Cookies).
+ * Own proxy for third-party services (from KLXM Studio – Core\Proxy): visitors load map tiles, styles and fonts
+ * via /proxy/{source}/… from the own server – their browser never connects to third parties (no consent, no cookies).
  *
- * Quelle: upstream (https), allow (Regex der Pfade), types, ttl, rewrite (Upstream-Adressen in JSON/CSS umschreiben),
- * guard (z. B. Kartengebiet), public (false = nur serverseitig über http()), max (Bytes).
- * Cache: Cache-Ordner des AddOns (gzip für Text/Protobuf), Nachladen je Besucher begrenzt (Hash der IP, nicht gespeichert).
+ * Source: upstream (https), allow (regex of the paths), types, ttl, rewrite (rewrite upstream addresses in JSON/CSS),
+ * guard (e.g. map area), public (false = server-side only via http()), max (bytes).
+ * Cache: cache folder of the AddOn (gzip for text/protobuf), fetching limited per visitor (hash of the IP, not stored).
  */
 final class Proxy
 {
     private const array DEFAULT_TYPES = ['image/', 'application/json', 'application/x-protobuf', 'application/vnd.mapbox-vector-tile',
         'application/octet-stream', 'font/', 'application/font', 'text/css', 'application/geo+json'];
     private const array COMPRESS = ['application/json', 'application/x-protobuf', 'application/vnd.mapbox-vector-tile', 'application/octet-stream', 'text/', 'application/geo+json'];
-    /** Nachladen beim Anbieter: höchstens so viele Abrufe je Besucher in 10 Minuten (Schutz als freier Kachelserver) */
+    /** Fetching from the provider: at most this many requests per visitor in 10 minutes (protection as a free tile server) */
     private const int RATE = 2000;
 
     /** @var array<string, array<string, mixed>> */
     private static array $sources = [];
     private static bool $booted = false;
 
-    /** @internal Eigener Proxy für Karten (Kacheln, Stile, Schriften) unter /proxy/{dienst}/… – Besucher verbinden sich nie mit Dritten */
+    /** @internal Own proxy for maps (tiles, styles, fonts) at /proxy/{service}/… – visitors never connect to third parties */
     #[AsEndpoint('/proxy/*')]
     public static function serve(string $path, string $rest): void
     {
@@ -76,7 +76,7 @@ final class Proxy
         return self::$sources;
     }
 
-    /** Öffentliche, absolute Adresse (MapLibre-Stile brauchen absolute URLs) */
+    /** Public, absolute address (MapLibre styles need absolute URLs) */
     public static function url(string $key, string $path = ''): string
     {
         $r = Core::getRequest();
@@ -84,7 +84,7 @@ final class Proxy
         return $r->getSchemeAndHttpHost() . Router::base() . '/proxy/' . $key . ('' !== $path ? '/' . ltrim($path, '/') : '');
     }
 
-    /** /proxy/{key}/{pfad} beantworten (Router, vor dem Rendern) */
+    /** Answer /proxy/{key}/{path} (router, before rendering) */
     public static function handle(string $key, string $path): never
     {
         $src = self::sources()[$key] ?? null;
@@ -93,7 +93,7 @@ final class Proxy
             || (!empty($src['allow']) && !preg_match('~' . str_replace('~', '\~', $src['allow']) . '~', $path))) {
             self::out('', 'text/plain', 404, 3600);
         }
-        // Angemeldete Redaktion darf überall hin (z. B. neuen Ort wählen)
+        // logged-in editors may go anywhere (e.g. choose a new location)
         if (isset($src['guard']) && is_callable($src['guard']) && !BackendLogin::hasSession() && !($src['guard'])($path)) {
             self::out('', 'text/plain', 204, 3600);
         }
@@ -177,7 +177,7 @@ final class Proxy
         return str_starts_with($type, 'application/json') || str_starts_with($type, 'text/') || str_contains($type, '+json');
     }
 
-    // ------------------------------------------------------------------ Cache und Begrenzung
+    // ------------------------------------------------------------------ cache and rate limit
 
     private static function dir(?string $key = null): string
     {
@@ -191,7 +191,7 @@ final class Proxy
         return self::dir($key) . '/' . substr($h, 0, 2) . '/' . $h;
     }
 
-    /** Abrufe je Besucher (Hash der IP, nur im Cache-Ordner, 10-Minuten-Fenster) */
+    /** Requests per visitor (hash of the IP, only in the cache folder, 10-minute window) */
     private static function tooMany(): bool
     {
         $id = substr(hash('sha256', ($_SERVER['REMOTE_ADDR'] ?? '') . __FILE__), 0, 24);
@@ -235,7 +235,7 @@ final class Proxy
         return $meta;
     }
 
-    /** Cache auf höchstens 500 MB begrenzen (älteste Einträge zuerst) */
+    /** Limit the cache to at most 500 MB (oldest entries first) */
     public static function prune(int $limitMb = 500): void
     {
         $files = [];
@@ -272,11 +272,11 @@ final class Proxy
         }
     }
 
-    // ------------------------------------------------------------------ ausgehende Anfragen
+    // ------------------------------------------------------------------ outgoing requests
 
     /**
-     * HTTP-GET an eine registrierte Quelle (serverseitig, z. B. Geokodierung). Nur Hosts registrierter Quellen,
-     * https, keine Weiterleitungen, kurze Timeouts.
+     * HTTP GET to a registered source (server-side, e.g. geocoding). Only hosts of registered sources,
+     * https, no redirects, short timeouts.
      *
      * @return array{status: int, body: string, type: string}|null
      */

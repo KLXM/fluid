@@ -8,7 +8,7 @@ use Redaxo\Core\Content\Article;
 use Redaxo\Core\Database\Sql;
 
 /**
- * Ein Beitrag (Artikel in einem Blog) mit seinen Angaben – für Übersichten, Feed und Beitragskopf.
+ * A post (article in a blog) with its data – for overviews, feed and post header.
  */
 final readonly class Post
 {

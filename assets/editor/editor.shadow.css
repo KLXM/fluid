@@ -1,4 +1,4 @@
-/* klxm/fluid – Oberfläche des Editors im Shadow DOM (#blocks-ui) */
+/* klxm/fluid – editor UI in the Shadow DOM (#blocks-ui) */
 :host {
   all: initial;
   --accent: #4b5bd6;
@@ -12,7 +12,7 @@
   --danger-ink: #c0392b;
   --ok: #1e8e5a;
   --warn: #b26a00;
-  /* Text in Statusfarbe (Chip, Hinweise) – ≥ 4,5:1 auf --bg und der 14–16-%-Tönung */
+  /* Text in status color (chip, notices) – ≥ 4.5:1 on --bg and the 14–16 % tint */
   --ok-ink: #146c43;
   --warn-ink: #8a5200;
   --radius: 8px;
@@ -42,7 +42,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .btn--icon { width: 34px; justify-content: center; padding: 0; }
 .btn[aria-disabled="true"], .btn:disabled { opacity: .45; cursor: default; }
 
-/* ------------------------------------------------------------ Leiste */
+/* ------------------------------------------------------------ Bar */
 .bar {
   position: fixed; inset: 0 0 auto 0; z-index: 2147483000; height: var(--bar-h);
   display: flex; align-items: center; gap: 12px; padding: 0 12px;
@@ -87,14 +87,14 @@ button, input, select, textarea { font: inherit; color: inherit; }
   .kind, .chip { display: none; }
   .modes a { padding: 6px 8px; }
 }
-/* Handy quer (bis 700 px): „Design“ ins Menü ⋯, „Veröffentlichen“ kurz – sonst passt ⋯ nicht mehr in die Leiste */
+/* Phone landscape (up to 700 px): „Design“ into menu ⋯, „Veröffentlichen“ short – otherwise ⋯ no longer fits in the bar */
 @media (max-width: 700px) {
   [data-design-open] { display: none; }
   [data-publish] .lg { display: none; }
   [data-publish] .sm { display: inline !important; }
   .menu-sm { display: block !important; }
 }
-/* Handy: nur das Nötigste in der Leiste, „Design“ im Menü ⋯ */
+/* Phone: only the essentials in the bar, „Design“ in menu ⋯ */
 @media (max-width: 560px) {
   .bar { gap: 6px; padding: 0 8px; }
   .brand, .title { display: none; }
@@ -109,7 +109,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   .panel { width: 100vw !important; }
 }
 
-/* ------------------------------------------------------------ Blockleiste und „+“ */
+/* ------------------------------------------------------------ Block bar and „+“ */
 .bb {
   position: fixed; z-index: 2147482900; display: flex; align-items: center; gap: 2px; padding: 3px;
   background: var(--ink); color: var(--bg); border-radius: 9px; box-shadow: 0 6px 20px rgb(0 0 0 / .2);
@@ -131,7 +131,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   box-shadow: 0 4px 14px rgb(0 0 0 / .25);
 }
 
-/* ------------------------------------------------------------ Seitenleiste */
+/* ------------------------------------------------------------ Sidebar */
 .panel {
   position: fixed; z-index: 2147482950; top: var(--bar-h); right: 0; bottom: 0; width: var(--panel-w);
   display: flex; flex-direction: column; background: var(--bg); border-left: 1px solid var(--line); box-shadow: -8px 0 24px rgb(0 0 0 / .08);
@@ -152,7 +152,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .vis-switch input:checked + .vis-switch__track::after { transform: translateX(16px); }
 .vis-switch input:focus-visible + .vis-switch__track { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-/* Formular (FieldForm) */
+/* Form (FieldForm) */
 .blocks-form__intro { margin: 0 0 12px; color: var(--muted); }
 .blocks-form__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .blocks-form__field { grid-column: 1 / -1; display: grid; gap: 4px; min-width: 0; align-content: start; }
@@ -181,7 +181,7 @@ textarea.form-control, textarea.rex-input { resize: vertical; }
 .blocks-btn--add { font-weight: 600; }
 .blocks-media { display: flex; gap: 6px; }
 
-/* ------------------------------------------------------------ Blockauswahl, Dialog, Meldung */
+/* ------------------------------------------------------------ Block picker, dialog, message */
 .picker, .dlg {
   position: fixed; inset: 0; z-index: 2147483100; display: grid; place-items: center; padding: 16px; background: rgb(10 12 20 / .45);
 }
@@ -206,14 +206,14 @@ textarea.form-control, textarea.rex-input { resize: vertical; }
 .dlg__actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin-top: 12px; }
 .dlg__alt { margin-right: auto; color: var(--danger); border-color: color-mix(in srgb, var(--danger) 45%, var(--line)); }
 .toast {
-  /* oben unter der Leiste: unten liegen „+ Block einfügen“ und die Aktionen auf Telefonen; Klicks gehen hindurch */
+  /* at the top below the bar: on phones „+ Block einfügen“ and the actions sit at the bottom; clicks pass through */
   position: fixed; z-index: 2147483200; left: 50%; top: calc(var(--bar-h) + 12px); transform: translateX(-50%); pointer-events: none;
   max-width: min(560px, calc(100vw - 32px)); padding: 10px 16px; border-radius: 10px;
   background: var(--ink); color: var(--bg); font-weight: 600; box-shadow: 0 8px 24px rgb(0 0 0 / .25);
 }
 .toast.is-error { background: var(--danger); color: #fff; }
 
-/* ------------------------------------------------------------ Medienpool und Linkmap (Picker) */
+/* ------------------------------------------------------------ Media pool and linkmap (picker) */
 .blocks-pick__row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 .blocks-pick__row .form-control, .blocks-pick__row .rex-input { flex: 1 1 180px; min-width: 0; }
 .blocks-pick__btns { display: flex; flex-wrap: wrap; gap: 4px; }
@@ -221,7 +221,7 @@ textarea.form-control, textarea.rex-input { resize: vertical; }
 .blocks-pick__name { display: block; margin-top: 4px; color: var(--muted); font-size: 12px; }
 .blocks-pick__name:empty { display: none; }
 
-/* ------------------------------------------------------------ Style-Editor */
+/* ------------------------------------------------------------ Style editor */
 .dpanel .panel__body { padding-top: 6px; }
 .dpanel__space { flex: 1; }
 .dgroup { border-bottom: 1px solid var(--line); padding: 10px 0; }
@@ -243,7 +243,7 @@ textarea.form-control, textarea.rex-input { resize: vertical; }
 .dchecks { margin-top: 12px; color: #b26a00; font-size: 13px; }
 .dchecks ul { margin: 4px 0 0; padding-left: 18px; }
 
-/* Bild bearbeiten (Addon image_editor) */
+/* Edit image (addon image_editor) */
 .iebtn {
   position: fixed; z-index: 2147482950; display: flex; gap: 2px; padding: 3px; border-radius: 999px;
   background: rgb(30 40 64 / .9); box-shadow: 0 6px 18px rgb(0 0 0 / .25);
@@ -256,16 +256,16 @@ textarea.form-control, textarea.rex-input { resize: vertical; }
 .iebtn button { min-height: 30px; padding: 0 12px; border: 0; border-radius: 999px; background: none; color: #fff; font-weight: 600; cursor: pointer; }
 .iebtn button:hover { background: var(--accent); }
 
-/* Bildfelder (Medienpool, Bearbeiten) immer volle Breite */
+/* Image fields (media pool, edit) always full width */
 .blocks-form__field.is-half:has(.blocks-pick--media) { grid-column: 1 / -1; }
 
-/* Umschalter Live/Entwurf in der Ansicht */
+/* Live/draft switch in the view */
 .modes--version a[aria-current] { color: var(--accent); }
 .modes--lang a { font-variant-numeric: tabular-nums; letter-spacing: .04em; }
 .modes--lang a.is-off { opacity: .55; }
 .modes--lang a.is-empty { text-decoration: underline dotted; text-underline-offset: 3px; }
 
-/* Seiteneinstellungen, neue Seite */
+/* Page settings, new page */
 .ppanel .count { display: block; margin-top: .25rem; font-size: .75rem; color: var(--muted, #667085); text-align: right; }
 .ppanel .count.is-over { color: #b42318; font-weight: 600; }
 .newpage { display: grid; gap: .9rem; max-width: 30rem; text-align: left; }
@@ -285,14 +285,14 @@ textarea.form-control, textarea.rex-input { resize: vertical; }
 .tpls__actions { display: flex; gap: 6px; }
 .tpls__del { color: var(--danger-ink); }
 
-/* Wiederholgruppen in schmalen Leisten: fieldset nicht breiter als die Leiste (Standard min-width: min-content),
-   lange Titel kürzen, Werkzeuge bleiben sichtbar */
+/* Repeaters in narrow bars: fieldset no wider than the bar (default min-width: min-content),
+   long titles truncated, tools stay visible */
 .blocks-form__repeater, .blocks-rep, .blocks-rep__list, .blocks-rep__item, .blocks-form__grid, .blocks-form__field { min-width: 0; max-width: 100%; }
 .blocks-rep__item > summary { min-width: 0; }
 .blocks-rep__title { min-width: 0; }
 .blocks-rep__tools { flex: none; }
 
-/* Seiteneinstellungen: Adresse */
+/* Page settings: address */
 .blocks-slug { display: flex; align-items: stretch; min-width: 0; }
 .shortlinks__list { list-style: none; margin: 4px 0 8px; padding: 0; display: grid; gap: 6px; }
 .shortlinks__item { display: flex; align-items: center; gap: 6px; padding: 6px 6px 6px 10px; border: 1px solid var(--line); border-radius: 8px; }
@@ -308,7 +308,7 @@ textarea.form-control, textarea.rex-input { resize: vertical; }
 .blocks-slug .form-control { border-radius: 0 8px 8px 0; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; min-width: 0; }
 .blocks-form__static { margin: 0; color: var(--muted); }
 
-/* Seitenleiste „Website“ */
+/* Sidebar „Website“ */
 .spanel { width: min(560px, 100vw); }
 .spanel__tabs { display: flex; flex-wrap: wrap; gap: 4px; padding: 8px 12px; border-bottom: 1px solid var(--line); background: var(--surface); }
 .spanel__tabs button { all: unset; cursor: pointer; padding: 6px 10px; border-radius: 999px; font-size: 13px; font-weight: 600; color: var(--muted); }
@@ -330,7 +330,7 @@ fieldset.blocks-form__field { border: 0; padding: 0; margin: 0; min-width: 0; }
 .blocks-geo { display: flex; flex-wrap: wrap; gap: 6px; }
 .blocks-geo .form-control, .blocks-geo .rex-input { flex: 1 1 160px; min-width: 0; }
 
-/* Seitenbaum */
+/* Page tree */
 .tree__intro { margin: 0 0 10px; color: var(--muted); font-size: 13px; line-height: 1.5; }
 .tree, .tree ul { list-style: none; margin: 0; padding: 0; }
 .tree__row { display: flex; align-items: center; gap: 6px; padding: 5px 6px 5px calc(6px + var(--d, 0) * 18px); border-radius: 8px; border: 1px solid transparent; }
@@ -341,17 +341,17 @@ fieldset.blocks-form__field { border: 0; padding: 0; margin: 0; min-width: 0; }
 .tree__name:hover { text-decoration: underline; }
 .is-offline > .tree__row .tree__name { color: var(--muted); font-weight: 500; }
 .tree__badge { flex: none; font-size: 11px; color: var(--muted); }
-/* Menüpunkt „nicht im Menü“: ☰ schräg durchgestrichen in Warnfarbe, Etikett ebenso */
+/* Menu item „nicht im Menü“: ☰ struck through diagonally in warning color, label likewise */
 .tree__btn.is-off { position: relative; color: var(--warn); }
 .tree__btn.is-off::after { content: ""; position: absolute; left: 22%; right: 22%; top: 50%; height: 2px; margin-top: -1px; border-radius: 1px; background: currentColor; transform: rotate(-45deg); box-shadow: 0 0 0 1.5px var(--bg); }
 .tree__badge.is-hidden { color: var(--warn-ink); font-weight: 600; }
-/* Status im Seitenbaum: online grün, offline grau, gesperrt (weiterer Status eines AddOns) rot */
+/* Status in the page tree: online green, offline grey, locked (further status of an addon) red */
 .tree__st { font-size: 15px; }
 .tree__st.st-on { color: var(--ok); }
 .tree__st.st-off { color: var(--muted); }
 .tree__st.st-locked, .tree__badge .st-locked { color: var(--danger); }
 .tree__tools { flex: none; display: flex; gap: 2px; }
-/* Werkzeuge gedämpft bis zum Zeigen – Status und „nicht im Menü“ bleiben immer kräftig */
+/* Tools muted until hover – status and „nicht im Menü“ always stay strong */
 .tree__tools > .tree__btn:not(.tree__st, .is-off) { opacity: .55; }
 .tree__row:hover .tree__tools > .tree__btn, .tree__row:focus-within .tree__tools > .tree__btn { opacity: 1; }
 .tree__btn { all: unset; cursor: pointer; width: 24px; height: 24px; display: grid; place-items: center; border-radius: 6px; font-size: 13px; }
@@ -359,21 +359,21 @@ fieldset.blocks-form__field { border: 0; padding: 0; margin: 0; min-width: 0; }
 .tree__btn:focus-visible { outline: 2px solid var(--accent, #4f46e5); }
 .tree__btn--danger:hover { background: #fee2e2; color: #b42318; }
 .is-dragging > .tree__row { opacity: .4; }
-/* Einfügelinie ab der Zieltiefe (--dl) */
+/* Insertion line from the target depth (--dl) */
 .tree__row[data-drop="before"], .tree__row[data-drop="after"] {
   background: linear-gradient(var(--accent, #4f46e5), var(--accent, #4f46e5)) no-repeat calc(6px + var(--dl, 0) * 18px) 0 / calc(100% - 6px - var(--dl, 0) * 18px) 2px;
 }
 .tree__row[data-drop="after"] { background-position-y: 100%; }
 .tree__row[data-drop="inside"] { background: color-mix(in srgb, var(--accent, #4f46e5) 12%, transparent); border-color: var(--accent, #4f46e5); }
 
-/* Blockleiste: Menü ⋯ */
+/* Block bar: menu ⋯ */
 .bb__label[draggable="true"] { cursor: grab; }
 .bb__menu { position: absolute; top: calc(100% + 6px); right: 0; display: grid; min-width: 220px; padding: 6px; border-radius: 10px; background: var(--bg); color: var(--ink); border: 1px solid var(--line); box-shadow: 0 12px 32px rgb(0 0 0 / .18); z-index: 5; }
 .bb__menu button { all: unset; cursor: pointer; padding: 8px 10px; border-radius: 6px; font-size: 13px; }
 .bb__menu button:hover:not(:disabled), .bb__menu button:focus-visible { background: var(--surface); }
 .bb__menu button:disabled { opacity: .45; cursor: default; }
 
-/* Anfragen */
+/* Inquiries */
 .badge { display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: #dc2626; color: #fff; font-size: 11px; font-weight: 700; }
 [data-more].has-badge { position: relative; }
 [data-more].has-badge::after { content: ""; position: absolute; top: 4px; right: 4px; width: 8px; height: 8px; border-radius: 50%; background: #dc2626; box-shadow: 0 0 0 2px var(--bg); }
@@ -386,25 +386,25 @@ fieldset.blocks-form__field { border: 0; padding: 0; margin: 0; min-width: 0; }
 .inbox__dl dt { color: var(--muted); font-size: 12px; }
 .inbox__dl dd { margin: 0; overflow-wrap: anywhere; }
 
-/* Schmale Seitenleiste: Felder untereinander */
+/* Narrow sidebar: fields stacked */
 @container (max-width: 420px) { .blocks-form__field.is-half { grid-column: 1 / -1; } }
 
-/* fehlendes Recht (Rollen → Optionen) */
+/* missing permission (roles → options) */
 [data-noperm] { display: none !important; }
 
-/* Website: Sprache der Texte */
+/* Website: language of the texts */
 .site-lang { display: flex; flex-wrap: wrap; gap: 4px; padding: 3px; margin: 0 0 12px; background: var(--surface); border-radius: 9px; width: fit-content; }
 .site-lang button { border: 0; background: none; padding: 6px 12px; border-radius: 7px; font: inherit; font-weight: 600; color: var(--muted); cursor: pointer; }
 .site-lang button[aria-current] { background: var(--bg); color: var(--ink); box-shadow: 0 1px 3px rgb(0 0 0 / .12); }
 
-/* Seitenbaum: Beiträge eines Blogs ein-/ausklappen */
+/* Page tree: expand/collapse posts of a blog */
 .tree__more { display: block; margin: 0 0 2px; padding: 3px 6px 3px calc(30px + var(--d, 0) * 18px); border: 0; background: none; color: var(--muted); font: inherit; font-size: 12px; cursor: pointer; }
 .tree__more:hover { color: var(--ink); }
 
-/* Präsenz (presence.js): wer bearbeitet gerade – Initialen, „zuletzt gespeichert“, Konflikt; Kürzel im Seitenbaum, „Gerade aktiv“ */
+/* Presence (presence.js): who is editing – initials, „zuletzt gespeichert“, conflict; initials in the page tree, „Gerade aktiv“ */
 .cms-presence { display: inline-flex; align-items: center; gap: 6px; flex: 0 1 auto; min-width: 0; max-width: 260px; overflow: hidden; font-size: 12px; color: var(--muted); }
 .cms-presence[hidden] { display: none; }
-/* Bearbeitungssperre (presence.js): Hinweiszeile fest unter der Leiste – gesperrt (gelb) bzw. wieder frei (grün) */
+/* Edit lock (presence.js): notice line fixed below the bar – locked (yellow) or free again (green) */
 .cms-presence__lock { flex: none; font-size: 13px; }
 .cms-lock-note { position: fixed; inset: var(--bar-h) 0 auto 0; z-index: 2147482990; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px;
   padding: 8px 16px; background: #FFF4E5; color: #5C3A00; border-bottom: 1px solid #F2D3A6; font: 500 14px/1.4 system-ui, sans-serif; }
@@ -427,19 +427,19 @@ fieldset.blocks-form__field { border: 0; padding: 0; margin: 0; min-width: 0; }
 .cms-presence-board__i small { color: var(--muted); }
 @media (max-width: 900px) { .cms-presence__t { display: none; } }
 
-/* ------------------------------------------------------------ Hinweis-Leiste von AddOns (cfg.notice, z. B. fluid_demo) */
+/* ------------------------------------------------------------ Notice bar of addons (cfg.notice, e.g. fluid_demo) */
 .gnote { display: inline-flex; align-items: center; gap: 8px; min-width: 0; font-size: 12px; color: var(--muted); }
 .gnote__tag { flex: none; padding: 3px 8px; border-radius: 99px; background: #8a5200; color: #fff; font-weight: 700; letter-spacing: .02em; }
 .gnote__text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .gnote__btn { flex: none; border: 1px solid var(--line); border-radius: 99px; padding: 3px 10px; background: var(--bg); color: inherit; font: inherit; cursor: pointer; }
 .gnote__btn[hidden] { display: none; }
 @media (max-width: 900px) { .gnote__text { display: none; } }
-/* Knöpfe der Hinweis-Leiste stehen auch im Menü ⋯ – in schmalen Leisten (Tablet, Handy quer) nur dort */
+/* Buttons of the notice bar are also in menu ⋯ – in narrow bars (tablet, phone landscape) only there */
 @media (max-width: 1100px) { .gnote__btn { display: none; } }
 @media (max-width: 760px) { .title { display: none; } }
 
-/* Seitenleiste auf Touch-Geräten und schmalen Bildschirmen: 16 px Schrift (sonst zoomt iOS beim Antippen), 44 px Ziele,
-   mehr Luft zwischen den Feldern */
+/* Sidebar on touch devices and narrow screens: 16 px font (otherwise iOS zooms on tap), 44 px targets,
+   more room between the fields */
 .blocks-form > .blocks-form__field { margin-bottom: 14px; }
 @media (max-width: 760px), (pointer: coarse) {
   .panel__body { padding: 16px 16px 28px; }
@@ -456,10 +456,10 @@ fieldset.blocks-form__field { border: 0; padding: 0; margin: 0; min-width: 0; }
   .blocks-rep__item > summary { min-height: 44px; }
 }
 
-/* Dialogtext: Absätze aus \n (z. B. Redaktionsnotiz) */
+/* Dialog text: paragraphs from \n (e.g. editorial note) */
 .dlg__box [data-dlg-body] { white-space: pre-line; }
 
-/* YForm-Maske im Overlay (Datenliste: „Bearbeiten“, „Neuer Eintrag“) */
+/* YForm form in the overlay (data list: „Bearbeiten“, „Neuer Eintrag“) */
 .yfo { width: min(1100px, calc(100vw - 32px)); height: min(860px, calc(100dvh - 32px)); max-width: none; max-height: none; padding: 0; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg); color: var(--ink); box-shadow: 0 24px 64px rgb(0 0 0 / .35); overflow: hidden; }
 .yfo[open] { display: flex; flex-direction: column; }
 .yfo::backdrop { background: rgb(15 18 26 / .55); }
@@ -473,7 +473,7 @@ fieldset.blocks-form__field { border: 0; padding: 0; margin: 0; min-width: 0; }
 .yfo__f { flex: 1; width: 100%; border: 0; background: var(--bg); }
 @media (max-width: 640px) { .yfo { width: 100vw; height: 100dvh; border-radius: 0; border: 0; } }
 
-/* Feld eines Datensatzes ändern (Detailansicht: Datum, Adresse, Auswahl …) */
+/* Changing a field of a record (detail view: date, address, select …) */
 .recpop { position: fixed; z-index: 30; display: grid; gap: 10px; width: min(320px, calc(100vw - 16px)); padding: 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg); color: var(--ink); box-shadow: 0 12px 32px rgb(0 0 0 / .22); }
 .recpop[hidden] { display: none; }
 .recpop__l { font-weight: 650; }
@@ -483,7 +483,7 @@ fieldset.blocks-form__field { border: 0; padding: 0; margin: 0; min-width: 0; }
 .recpop__opts label { display: flex; gap: 8px; align-items: center; }
 .recpop__a { display: flex; justify-content: flex-end; gap: 8px; }
 
-/* Bild an dieser Stelle (Effekt, Darstellung, Ausschnitt) – baut auf .recpop auf */
+/* Image in this place (effect, display, crop) – builds on .recpop */
 .imgpop { z-index: 2147483000; box-sizing: border-box; width: min(340px, calc(100vw - 16px)); max-height: calc(100vh - var(--bar-h) - 16px); overflow: auto; }
 .imgpop input[type="radio"], .imgpop input[type="range"], .imgpop input[type="color"] { width: auto; min-height: 0; padding: 0; margin: 0; border: 0; }
 .imgpop input[type="radio"] { accent-color: var(--accent); }
@@ -509,16 +509,16 @@ fieldset.blocks-form__field { border: 0; padding: 0; margin: 0; min-width: 0; }
 .imgpop .recpop__a { flex-wrap: wrap; }
 .imgpop__reset { margin-right: auto; }
 
-/* Seitenleiste: Formular eines gewöhnlichen REDAXO-Moduls (Backend im Rahmen) statt der Block-Felder */
+/* Sidebar: form of an ordinary REDAXO module (backend in a frame) instead of the block fields */
 .panel__frame { flex: 1 1 auto; width: 100%; border: 0; background: var(--bg); }
 
-/* Verschachtelte Blöcke: Sprung zum Layout, in dessen Spalte der Block steht */
+/* Nested blocks: jump to the layout whose column contains the block */
 .bb__parent { padding: 0 6px 0 10px !important; font-size: 12px; opacity: .85; background: transparent !important; }
 .bb__parent:hover { opacity: 1; text-decoration: underline; }
 .tpls .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .tpls__actions a.btn { color: inherit; text-decoration: none; display: inline-flex; align-items: center; }
 
-/* ------------------------------------------------------------ Listen-Vorlagen (Feld „Vorlage“, Data\ListTemplates) */
+/* ------------------------------------------------------------ List templates (field „Vorlage“, Data\ListTemplates) */
 .ltpl { display: grid; gap: 8px; min-width: 0; margin: 0; padding: 0; border: 0; }
 .ltpl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr)); gap: 6px; }
 .ltpl-tile { position: relative; display: grid; gap: 4px; align-content: start; padding: 6px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); cursor: pointer; font-size: 12px; line-height: 1.3; }
@@ -546,7 +546,7 @@ fieldset.blocks-form__field { border: 0; padding: 0; margin: 0; min-width: 0; }
 .ltpl-warn { color: var(--danger-ink, var(--danger)); }
 [data-ltpl-off] { display: none !important; }
 
-/* ------------------------------------------------------------ Quick-Glossar (Glossary\Glossary) */
+/* ------------------------------------------------------------ Quick glossary (Glossary\Glossary) */
 .gpanel [data-gloss-pane] { display: grid; gap: 12px; align-content: start; }
 .gpanel [data-gloss-pane][hidden] { display: none; }
 .gpanel .newpage__field textarea, .gpanel .newpage__field input[type="search"] { font: inherit; padding: .55rem .7rem; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); }

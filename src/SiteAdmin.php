@@ -25,13 +25,13 @@ use function in_array;
 use function Redaxo\Core\View\escape;
 
 /**
- * Seitenleiste „Website“ auf der Website (nur Admins): Reiter der Website-Einstellungen (Settings::schema),
- * Domains (Hauptadresse, weitere Domains, Landing-Domains) und Weiterleitungen mit 404-Protokoll.
- * Jede Aktion antwortet mit dem HTML des Reiters – der Editor ersetzt nur den Inhalt der Seitenleiste.
+ * Sidebar „Website“ on the website (admins only): tabs of the website settings (Settings::schema),
+ * domains (main address, further domains, landing domains) and redirects with 404 log.
+ * Each action responds with the tab's HTML – the editor only replaces the content of the sidebar.
  */
 final class SiteAdmin
 {
-    /** @return array<string, string> Reiter: Schlüssel => Beschriftung */
+    /** @return array<string, string> tabs: key => label */
     public static function tabs(): array
     {
         $tabs = [];
@@ -100,7 +100,7 @@ final class SiteAdmin
         };
     }
 
-    /** Reiter der Website-Einstellungen; ab zwei Sprachen mit Sprachwahl für die übersetzbaren Felder */
+    /** Tab of the website settings; from two languages with a language switch for the translatable fields */
     private static function settingsForm(string $tab, int $lang): string
     {
         $fields = Settings::schema()[$tab]['fields'];
@@ -111,7 +111,7 @@ final class SiteAdmin
             $switch = '<nav class="site-lang" aria-label="Sprache der Texte">' . implode('', array_map(static fn (Language $l) => '<button type="button" data-site-lang="' . $l->id . '"'
                 . ($l->id === $lang ? ' aria-current="true"' : '') . '>' . escape($l->name) . '</button>', Language::getAll())) . '</nav>';
             if ($lang !== Language::getStartId()) {
-                // nur übersetzbare Felder; Text der Startsprache als Platzhalter
+                // translatable fields only; text of the start language as placeholder
                 $fields = array_map(static fn (array $f) => ['placeholder' => (string) ($values[$f['name']] ?? ''), 'help' => 'Leer = Text der Startsprache.'] + $f, $translatable);
                 $values = Settings::translations($lang);
                 $switch .= '<p class="site-intro">Texte für <b>' . escape(Language::get($lang)->name ?? '') . '</b>. Übrige Angaben (Adresse, Logo, Links …) gelten für alle Sprachen.</p>';
@@ -123,7 +123,7 @@ final class SiteAdmin
             . '<div class="site-actions"><button type="submit" class="btn btn--primary">Speichern</button></div></form>';
     }
 
-    // ------------------------------------------------------------------ Sprachen (LanguageHandler des Cores)
+    // ------------------------------------------------------------------ Languages (core LanguageHandler)
 
     private static function languages(): string
     {
@@ -228,7 +228,7 @@ final class SiteAdmin
         $id = Request::post('id', 'int', 0);
         $sql = Sql::factory();
         if (DomainRole::Primary === $role) {
-            $sql->setQuery('UPDATE ' . Domains::TABLE . ' SET role = "alias" WHERE role = "primary" AND id <> ?', [$id]);   // nur eine Hauptadresse
+            $sql->setQuery('UPDATE ' . Domains::TABLE . ' SET role = "alias" WHERE role = "primary" AND id <> ?', [$id]);   // only one main address
         }
         $dup = $sql->getArray('SELECT id FROM ' . Domains::TABLE . ' WHERE host = ? AND id <> ?', [$host, $id]);
         if ($dup) {
@@ -245,7 +245,7 @@ final class SiteAdmin
         return 'Domain gespeichert.';
     }
 
-    // ------------------------------------------------------------------ Weiterleitungen
+    // ------------------------------------------------------------------ Redirects
 
     private static function redirects(): string
     {

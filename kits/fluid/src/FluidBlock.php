@@ -7,15 +7,15 @@ use Klxm\Fluid\Kit;
 use Override;
 
 /**
- * Basis der Block-Module von fluid – Felder als Attribute an der Klasse, Ausgabe aus dem gewählten Kit (views/{typ}.php).
- * Die Module gehören zu keinem bestimmten Kit: Beim Wechsel des Kits bleiben die Inhalte, nur die Gestaltung ändert sich.
+ * Base of fluid's block modules – fields as attributes on the class, output from the selected kit (views/{type}.php).
+ * The modules don't belong to any particular kit: when switching kits the content stays, only the styling changes.
  */
 abstract class FluidBlock extends BlockModule
 {
-    /** Bildformate (#[Choice(…, choices: self::RATIOS)]) */
+    /** Image formats (#[Choice(…, choices: self::RATIOS)]) */
     public const array RATIOS = ['16:9' => 'Breitbild 16:9', '3:2' => 'Querformat 3:2', '4:3' => 'Querformat 4:3', '1:1' => 'Quadrat 1:1', '4:5' => 'Hochformat 4:5', '3:4' => 'Hochformat 3:4'];
 
-    /** Mindestbreite je Eintrag (breakpointlos: das Raster füllt die Zeile selbst) */
+    /** Minimum width per entry (breakpoint-free: the grid fills the row itself) */
     public const array SIZES = ['s' => 'Schmal (viele nebeneinander)', 'm' => 'Mittel', 'l' => 'Breit (wenige nebeneinander)'];
 
     #[Override]

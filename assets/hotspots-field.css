@@ -1,6 +1,6 @@
-/* Marker-Editor „Interaktives Bild“ (Feld „Markierungen“, FieldForm::hotspots, Editor in assets/form.js) – im Backend und in der
-   Seitenleiste auf der Website (Shadow DOM; form.js hängt diese Datei an die jeweilige Ebene). Markierungen über dem Bild,
-   darunter die Zeilen der Wiederholgruppe. Aus KLXM Studio (resources/css/_hotspots.css, MIT). */
+/* Marker editor „Interaktives Bild“ (field „Markierungen“, FieldForm::hotspots, editor in assets/form.js) – in the backend and in
+   the sidebar on the website (shadow DOM; form.js attaches this file to the respective root). Markers over the image,
+   below it the rows of the repeater group. From KLXM Studio (resources/css/_hotspots.css, MIT). */
 .hs-field{--hs-ed-a:#1f5fbf;display:grid;gap:8px;min-width:0}
 .hs-ed{display:grid;gap:8px}
 .hs-ed__hint{margin:0;font-size:12px;line-height:1.45;opacity:.85}

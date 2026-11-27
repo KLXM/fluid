@@ -23,13 +23,13 @@ use function is_object;
 use function is_string;
 
 /**
- * Blöcke ziehen, verdoppeln, kopieren und einfügen (wie in KLXM Studio). Ein Layout zählt mit seinen Spalten-Blöcken
- * als eine Einheit; Kopien eines Layouts nehmen die Spalten mit. Die Zwischenablage liegt im Browser (localStorage) –
- * so lässt sich ein Block auch auf einer anderen Seite einfügen. Eingefügt wird nur, was Template und Rechte erlauben.
+ * Dragging, duplicating, copying and pasting blocks (as in KLXM Studio). A layout counts as one unit with its column
+ * blocks; copies of a layout take the columns along. The clipboard lives in the browser (localStorage) – so a block
+ * can also be pasted on another page. Only what the template and permissions allow is pasted.
  */
 final class BlockOps
 {
-    /** @return list<list<int>> Einheiten in Reihenfolge: [Slice, …Spalten-Blöcke bei Layout] */
+    /** @return list<list<int>> Units in order: [slice, …column blocks for a layout] */
     private static function units(Article $article): array
     {
         $rows = Sql::factory()->getArray(
@@ -62,9 +62,9 @@ final class BlockOps
     }
 
     /**
-     * Neuen Slice an genau diese Position setzen (die folgenden rücken nach). ContentHandler::addSlice() sortiert gleiche
-     * Prioritäten nach dem Änderungsdatum – entstehen Blöcke in derselben Sekunde, wäre die Reihenfolge sonst zufällig
-     * (z. B. ein Spalten-Block hinter einem fremden Block statt unter seinem Layout).
+     * Puts a new slice at exactly this position (the following ones move down). ContentHandler::addSlice() sorts equal
+     * priorities by modification date – if blocks are created in the same second, the order would otherwise be random
+     * (e.g. a column block behind an unrelated block instead of below its layout).
      */
     public static function place(ArticleSlice $slice, int $priority): void
     {
@@ -78,7 +78,7 @@ final class BlockOps
         }
     }
 
-    /** Block (oberste Ebene) vor einen anderen ziehen; $before = 0 → ans Ende */
+    /** Drags a block (top level) before another; $before = 0 → to the end */
     public static function reorder(Article $article, int $sliceId, int $before): void
     {
         $units = self::units($article);
@@ -103,7 +103,7 @@ final class BlockOps
         self::renumber($article, $units);
     }
 
-    /** Block in die Nachbarspalte seines Layouts (← →), ans Ende dieser Spalte */
+    /** Moves a block into the neighbouring column of its layout (← →), to the end of that column */
     public static function column(Article $article, int $sliceId, int $dir): void
     {
         $slice = ArticleSlice::getArticleSliceById($sliceId, $article->languageId, FluidAddon::revision()) ?? throw new ApiError('Block nicht gefunden.');
@@ -116,7 +116,7 @@ final class BlockOps
         $tunes = BlockModule::tunesOf($slice);
         $tunes['col'] = $col;
         Sql::factory()->setQuery('UPDATE rex_article_slice SET data = ? WHERE id = ?', [BlockModule::encodeStore(BlockModule::valuesOf($slice), $tunes), $slice->id]);
-        // ans Ende der neuen Spalte: in der Gruppe hinter den letzten Block dieser Spalte
+        // to the end of the new column: in the group behind the last block of that column
         $units = self::units($article);
         foreach ($units as $k => $u) {
             if ($u[0] === $parent->id) {
@@ -134,7 +134,7 @@ final class BlockOps
         self::renumber($article, $units);
     }
 
-    /** Inhalt eines Blocks für die Zwischenablage (mit Spalten-Blöcken bei Layout): module, values, tunes, children */
+    /** Content of a block for the clipboard (with column blocks for a layout): module, values, tunes, children */
     public static function payload(Article $article, int $sliceId): array
     {
         $slice = ArticleSlice::getArticleSliceById($sliceId, $article->languageId, FluidAddon::revision()) ?? throw new ApiError('Block nicht gefunden.');
@@ -148,7 +148,7 @@ final class BlockOps
         return ['clip' => $out, 'label' => $label];
     }
 
-    /** Darf der Block hier eingefügt werden? fluid-Blöcke und gewöhnliche Module des Cores – Rechte und Template */
+    /** May the block be pasted here? fluid blocks and ordinary core modules – permissions and template */
     private static function check(User $user, string $template, string $key): void
     {
         if (!Module::exists($key)) {
@@ -176,7 +176,7 @@ final class BlockOps
         return null !== $class ? $class::name() : $key;
     }
 
-    /** Einfügen hinter einem Block (oberste Ebene; 0 = ganz oben); gibt die ID des neuen Abschnitts zurück */
+    /** Pastes after a block (top level; 0 = at the very top); returns the ID of the new section */
     public static function insert(Article $article, User $user, int $after, array $clip): int
     {
         $template = (string) $article->templateKey;
@@ -190,7 +190,7 @@ final class BlockOps
         foreach ($items as $it) {
             $check((string) ($it['module'] ?? ''));
         }
-        // Position: hinter der Einheit von $after
+        // Position: after the unit of $after
         $units = self::units($article);
         $prio = 1;
         foreach ($units as $u) {
@@ -201,12 +201,12 @@ final class BlockOps
         $first = 0;
         foreach ($items as $i => $it) {
             [$values, $tunes] = self::clipValues($it);
-            $tunes = Lock::forCopy($user, $tunes);   // Kopie gesperrter Blöcke: nur mit Recht wieder gesperrt
+            $tunes = Lock::forCopy($user, $tunes);   // Copy of locked blocks: locked again only with permission
             if (0 === $i) {
-                unset($tunes['col']);   // eingefügter Abschnitt steht auf oberster Ebene
+                unset($tunes['col']);   // the pasted section is on the top level
             }
             $key = (string) $it['module'];
-            // gewöhnliche Module: Werte wie gespeichert (ohne Abschnitt von fluid)
+            // ordinary modules: values as stored (without fluid's section)
             $data = null !== BlockModule::classFor($key) ? BlockModule::store($values, $tunes) : $values;
             $new = ContentHandler::addSlice($article->id, $article->languageId, 1, $key, $data, $prio + $i, FluidAddon::revision());
             self::place($new, $prio + $i);
@@ -221,8 +221,8 @@ final class BlockOps
     }
 
     /**
-     * Einfügen hinter einem Block – auch in einer Layout-Spalte: Steht $after in einer Spalte, kommt der Block direkt
-     * dahinter in dieselbe Spalte (nur Blöcke, die in Spalten stehen dürfen, kein Layout). Sonst wie insert().
+     * Pastes after a block – also in a layout column: if $after is in a column, the block goes right after it in the
+     * same column (only blocks allowed in columns, no layout). Otherwise like insert().
      */
     public static function insertAfter(Article $article, User $user, int $after, array $clip): int
     {
@@ -254,8 +254,8 @@ final class BlockOps
     }
 
     /**
-     * Ausschneiden abschließen: den Quell-Block (bei Layout samt Spalten) löschen, nachdem die Kopie eingefügt ist.
-     * Nur mit Recht auf seine Seite; fehlt er schon, passiert nichts.
+     * Completes cutting: deletes the source block (for a layout including columns) after the copy has been pasted.
+     * Only with permission for its page; if it is already gone, nothing happens.
      *
      * @param array{article?: int, language?: int, slice?: int} $cut
      */
@@ -274,19 +274,19 @@ final class BlockOps
         if (null !== BlockModule::classFor($source->moduleKey) && '' !== Lock::reason($user, $source)) {
             throw new ApiError('Eingefügt – das Original ist gesperrt bzw. ohne Modulrecht und bleibt stehen.');
         }
-        ContentHandler::deleteSlice($source->id);   // Spalten-Blöcke eines Layouts: FluidAddon (SliceDeleting)
+        ContentHandler::deleteSlice($source->id);   // Column blocks of a layout: FluidAddon (SliceDeleting)
         ArticleCache::delete($article->id, $article->languageId);
     }
 
     /**
-     * Werte eines Eintrags der Zwischenablage; ältere Einträge (vor REDAXO-Core 9132fc1) tragen value1/value2 als JSON.
+     * Values of a clipboard entry; older entries (before REDAXO core 9132fc1) carry value1/value2 as JSON.
      *
      * @param array<array-key, mixed> $it
      * @return array{array<string, mixed>, array<string, mixed>}
      */
     public static function clipValues(array $it): array
     {
-        // aus payload() direkt (Verdoppeln) stehen Objekte darin, aus dem Browser (JSON) Arrays
+        // directly from payload() (duplicating) they contain objects, from the browser (JSON) arrays
         $array = static fn (mixed $v): array => is_object($v) ? (array) json_decode((string) json_encode($v), true) : (is_array($v) ? $v : []);
         $values = $it['values'] ?? BlockModule::decode(is_string($it['value1'] ?? null) ? $it['value1'] : null);
         $tunes = $it['tunes'] ?? BlockModule::decode(is_string($it['value2'] ?? null) ? $it['value2'] : null);

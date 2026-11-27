@@ -48,13 +48,13 @@ use function sprintf;
 use const PATHINFO_FILENAME;
 
 /**
- * Legt die Demo-Seiten eines Kits an (Startartikel + Kategorien fürs Menü + Blöcke).
- * Blocktypen, die das Kit (noch) nicht anbietet, werden übersprungen.
+ * Creates the demo pages of a kit (start article + categories for the menu + blocks).
+ * Block types the kit does not offer (yet) are skipped.
  */
 #[AsCommand(name: 'fluid:demo', description: 'Legt Demo-Seiten des Kits „fluid“ an (--set=fluid|redaxo6, --replace ersetzt alle Inhalte – nur Testinstallationen)')]
 final class DemoCommand extends AbstractCommand
 {
-    /** Titel und Alt-Text der Demo-Bilder (Screenshots aus docs/bilder) */
+    /** Title and alt text of the demo images (screenshots from docs/bilder) */
     private const array MEDIA_TEXTS = [
         'fluid-website.jpg' => ['Startseite der Demo', 'Startseite der fluid-Demo mit blauem Kopf und großer Überschrift „REDAXO im Frontend, einfach.“'],
         'fluid-bearbeiten-datensatz.jpg' => ['Blöcke in einem Datensatz', 'Projekt-Detailseite im Bearbeiten-Modus: Block „Kennzahlen“ gewählt, rechts die Seitenleiste mit seinen Feldern'],
@@ -86,7 +86,7 @@ final class DemoCommand extends AbstractCommand
         'redaxo6-backend-linkmap.jpg' => ['Backend: Linkmap', 'Linkmap als Overlay mit Kategorien links und Artikeln rechts'],
         'redaxo6-backend-mobil.jpg' => ['Backend auf dem Telefon', 'Strukturverwaltung von REDAXO 6 auf einem schmalen Bildschirm mit eingeklapptem Menü'],
         'redaxo6-kit-nature.jpg' => ['Kit „Nature“: Handlungsaufruf', 'Handlungsaufruf im Beispiel-Kit „Nature“ mit sandfarbenem Hintergrund und Blatt über der Dachzeile'],
-        // Aus der Demo von NativeCSS (MIT, Thomas Skerbis / KLXM) – Video, Untertitel, Kapitel, Audio
+        // From the demo of NativeCSS (MIT, Thomas Skerbis / KLXM) – video, subtitles, chapters, audio
         'ncss-film.mp4' => ['Kurzfilm: Vier Stimmungen', ''],
         'ncss-film-poster.jpg' => ['Kurzfilm: Vorschaubild', 'Gezeichnete Hügellandschaft im Morgenlicht mit Wolken und Nadelbäumen'],
         'ncss-film.de.vtt' => ['Kurzfilm: deutsche Untertitel', ''],
@@ -97,7 +97,7 @@ final class DemoCommand extends AbstractCommand
         'ncss-morgenrot.m4a' => ['Morgenrot', ''],
         'ncss-gezeiten-kapitel.de.vtt' => ['Gezeiten: Kapitel', ''],
         'ncss-gezeiten-cover.svg' => ['Gezeiten: Cover', 'Stilisierte Wellen in Blau und Türkis'],
-        // Pexels-Lizenz: Curtis Adams, https://www.pexels.com/photo/empty-living-room-6835103/ (Vorher = dasselbe Foto, flau bearbeitet)
+        // Pexels licence: Curtis Adams, https://www.pexels.com/photo/empty-living-room-6835103/ (before = the same photo, edited dull)
         'pexels-wohnzimmer-vorher.jpg' => ['Wohnzimmer vorher (Foto: Curtis Adams, Pexels)', 'Leeres Wohnzimmer mit Deckenventilator und Holzboden, flau und gelbstichig'],
         'pexels-wohnzimmer-nachher.jpg' => ['Wohnzimmer nachher (Foto: Curtis Adams, Pexels)', 'Dasselbe Wohnzimmer mit klaren, hellen Farben: weiße Wände, warmer Holzboden, Licht durch das Fenster'],
     ];
@@ -149,7 +149,7 @@ final class DemoCommand extends AbstractCommand
             $replace = false;
         }
         if ($replace) {
-            // Struktur hat Fremdschlüssel (article ↔ category): zum Leeren der Testinstallation kurz aussetzen
+            // Structure has foreign keys (article ↔ category): briefly disable them to empty the test installation
             $sql->setQuery('SET FOREIGN_KEY_CHECKS = 0');
             foreach (['rex_article_slice_history', 'rex_article_slice', 'rex_article_translation', 'rex_category_translation', 'rex_article', 'rex_category'] as $table) {
                 $sql->setQuery('DELETE FROM ' . $table);
@@ -158,13 +158,13 @@ final class DemoCommand extends AbstractCommand
             Cache::delete();
             $io->note('Alle Inhalte gelöscht.');
         } elseif (!$force && $sql->getArray('SELECT id FROM rex_article LIMIT 1')) {
-            // Website mit Seiten: nur die Design-Vorlage setzen
+            // Website with pages: only set the design preset
             if ('' !== $design) {
                 $io->note(self::design($design, $designKit));
 
                 return Command::SUCCESS;
             }
-            // nur Medien übernommen (--media, --media-dir): fertig, die Seiten bleiben
+            // only media imported (--media, --media-dir): done, the pages stay
             if ($media || '' !== $mediaDir) {
                 return Command::SUCCESS;
             }
@@ -173,7 +173,7 @@ final class DemoCommand extends AbstractCommand
             return Command::FAILURE;
         }
 
-        // Bearbeiten auf der Website arbeitet in der Arbeitsversion (Entwurf → Veröffentlichen)
+        // Editing on the website works in the working version (draft → publish)
         Core::setConfig('article_work_version', true);
 
         $kit = Kit::active();
@@ -182,10 +182,10 @@ final class DemoCommand extends AbstractCommand
         $demo = require self::demoFile($set);
         $lang = Language::getStartId();
         $ids = [];
-        $kept = [];   // vorhandene Seiten (nur verschoben): keine Blöcke anlegen
-        // Seiten, die ein AddOn brauchen (z. B. YForm), nur anlegen, wenn es da ist
+        $kept = [];   // existing pages (only moved): do not create blocks
+        // Create pages that need an AddOn (e.g. YForm) only if it is available
         $demo['pages'] = array_values(array_filter($demo['pages'], static fn (array $p) => 'yform' !== ($p['requires'] ?? null) || YFormBridge::available()));
-        // Alle Seiten der Demo (für Seiten und Links, die schon existieren: über den Titel gefunden)
+        // All pages of the demo (for pages and links that already exist: found by title)
         $all = $demo['pages'];
         if ('' !== $page) {
             $slugs = array_map('trim', explode(',', $page));
@@ -200,7 +200,7 @@ final class DemoCommand extends AbstractCommand
             $io->note(self::yform($demo['yform']));
         }
 
-        // Seite einer früheren Ausführung (z. B. Elternseite beim Anhängen mit --page): über ihren Titel
+        // Page of an earlier run (e.g. parent page when appending with --page): by its title
         // 'renamed_from' => ['Alter Titel']: a renamed page is found by its previous titles (start language) and renamed below
         $existing = static function (string $slug) use ($all): ?int {
             $def = array_find($all, static fn (array $p) => $p['slug'] === $slug);
@@ -238,14 +238,14 @@ final class DemoCommand extends AbstractCommand
             return self::translate($io, $set, $translate, $demo['pages'], $all, $existing, $kit, (array) ($demo['yform'] ?? []));
         }
 
-        // 1. Seiten: Menüpunkte als Kategorien, alle übrigen als Artikel auf oberster Ebene
+        // 1. Pages: menu items as categories, all others as articles on the top level
         $prio = 1 + (int) ($sql->getArray('SELECT MAX(priority) AS p FROM rex_category')[0]['p'] ?? 0);
         foreach ($demo['pages'] as $def) {
             $slug = (string) $def['slug'];
-            // Startseite und Seiten außerhalb des Menüs (Impressum, Datenschutz): Artikel auf oberster Ebene;
-            // 'parent' => 'slug': Seite in einer Menüseite (z. B. Beiträge eines Blogs, Angaben unter 'post')
+            // Start page and pages outside the menu (imprint, privacy): articles on the top level;
+            // 'parent' => 'slug': page inside a menu page (e.g. posts of a blog, details under 'post')
             if (!empty($def['is_home']) || empty($def['menu'])) {
-                // mit --page: vorhandene Seite weiterverwenden (Startseite = Startartikel der Website) statt eine zweite anzulegen
+                // with --page: reuse an existing page (start page = start article of the website) instead of creating a second one
                 $old = '' !== $page ? (!empty($def['is_home']) ? (int) Core::getConfig('start_article_id', 0) : (int) $existing($slug)) : 0;
                 if ($old > 0 && null !== Article::get($old, $lang)) {
                     $rename($old, $def);
@@ -259,7 +259,7 @@ final class DemoCommand extends AbstractCommand
                     continue;
                 }
                 $parent = isset($def['parent']) ? ($ids[(string) $def['parent']] ?? $existing((string) $def['parent'])) : null;
-                // Template „fluid“ (FluidTemplate) – gestaltet vom gewählten Kit
+                // Template „fluid“ (FluidTemplate) – styled by the chosen kit
                 $ids[$slug] = ArticleHandler::add(['category_id' => $parent, 'priority' => !empty($def['is_home']) ? 1 : 99, 'name' => (string) $def['title'], 'template' => 'fluid'])->id;
                 ArticleHandler::changeStatus($ids[$slug], $lang, 1);
                 if (isset($def['post']) && ($art = Article::get($ids[$slug], $lang))) {
@@ -273,10 +273,10 @@ final class DemoCommand extends AbstractCommand
                 }
                 continue;
             }
-            // 'parent' => 'slug' bei einer Menüseite: Unterseite im Menü (Kategorie in der Kategorie)
+            // 'parent' => 'slug' on a menu page: subpage in the menu (category in the category)
             $parentCat = isset($def['parent']) ? ($ids[(string) $def['parent']] ?? $existing((string) $def['parent'])) : null;
-            // Menüseite gibt es nur noch als Seite ohne Menüeintrag (früher „aus dem Menü genommen“): wieder zum Menüpunkt
-            // machen, statt eine zweite anzulegen – Inhalte und Adresse bleiben
+            // Menu page only exists as a page without menu entry (formerly „aus dem Menü genommen“): turn it back into a menu item
+            // instead of creating a second one – content and address stay
             if ('' !== $page && null !== ($old = $existing($slug)) && null === Category::get($old)) {
                 ArticleHandler::convertToCategory($old);
                 Category::clearInstancePool();
@@ -285,8 +285,8 @@ final class DemoCommand extends AbstractCommand
                 Article::clearInstanceListPool();
                 $io->note('„' . $def['title'] . '“ steht wieder im Menü.');
             }
-            // Seite gibt es schon (z. B. aus einem früheren Lauf auf oberster Ebene): mit --page an die neue Stelle verschieben,
-            // Inhalte bleiben – mit --update werden die Blöcke ersetzt
+            // Page already exists (e.g. from an earlier run on the top level): move it to the new place with --page,
+            // content stays – with --update the blocks are replaced
             if ('' !== $page && null !== ($old = $existing($slug)) && null !== ($oldCat = Category::get($old))) {
                 if (null !== $parentCat && $oldCat->parentId !== $parentCat) {
                     CategoryHandler::move($old, $parentCat);
@@ -310,7 +310,7 @@ final class DemoCommand extends AbstractCommand
             }
         }
 
-        // Unterseiten im Menü in der Reihenfolge der Demo (mit --page verschobene oder neue Seiten landen sonst am Ende)
+        // Subpages in the menu in the order of the demo (pages moved with --page or new ones would otherwise end up last)
         if ('' !== $page) {
             $parents = array_unique(array_filter(array_map(static fn (array $p): ?string => !empty($p['menu']) ? ($p['parent'] ?? null) : null, $demo['pages'])));
             foreach ($parents as $parentSlug) {
@@ -327,7 +327,7 @@ final class DemoCommand extends AbstractCommand
             }
         }
 
-        // 2. Blöcke – Links auf Demo-Seiten (/kontakt) werden zu redaxo://ID
+        // 2. Blocks – links to demo pages (/kontakt) become redaxo://ID
         $mapLinks = static function (mixed $v) use (&$mapLinks, $ids, $existing): mixed {
             if (is_array($v)) {
                 return array_map($mapLinks, $v);
@@ -338,7 +338,7 @@ final class DemoCommand extends AbstractCommand
 
             return $v;
         };
-        // Modul zum Blocktyp: eigenes Modul des Kits ({kit}.{typ}), sonst das von fluid (die Module gehören zu keinem Kit)
+        // Module for the block type: the kit's own module ({kit}.{typ}), else fluid's (the modules belong to no kit)
         $moduleKey = static fn (string $type): ?string => array_find([$kit->key() . '.' . $type, 'fluid.' . $type], static fn (string $k) => null !== BlockModule::classFor($k));
         $count = 0;
         $skipped = [];
@@ -348,7 +348,7 @@ final class DemoCommand extends AbstractCommand
             }
             $articleId = $ids[(string) $def['slug']];
             foreach ($def['blocks'] ?? [] as $block) {
-                // gewöhnliches REDAXO-Modul ('native' => Modulschlüssel, 'values' => Felder) – nur, wenn es im Projekt liegt
+                // ordinary REDAXO module ('native' => module key, 'values' => fields) – only if it exists in the project
                 if (isset($block['native'])) {
                     if (!Module::exists((string) $block['native'])) {
                         $skipped[$block['native']] = true;
@@ -365,7 +365,7 @@ final class DemoCommand extends AbstractCommand
                     $skipped[$block['type']] = true;
                     continue;
                 }
-                // Layout: danach seine Spalten-Blöcke ('children' => [[Spalte, Block], …]) als eigene Slices mit tunes.col
+                // Layout: followed by its column blocks ('children' => [[column, block], …]) as separate slices with tunes.col
                 $slices = [[$key, $block['data'] ?? [], $block['tunes'] ?? []]];
                 foreach ($block['children'] ?? [] as [$col, $child]) {
                     $slices[] = [$moduleKey((string) $child['type']) ?? 'fluid.' . $child['type'], $child['data'] ?? [], ['col' => $col] + ($child['tunes'] ?? [])];
@@ -380,8 +380,8 @@ final class DemoCommand extends AbstractCommand
             ArticleCache::delete($articleId);
         }
 
-        // Website-Einstellungen der Demo (nur leere Felder) – Links auf Demo-Seiten werden zu redaxo://ID.
-        // Als leer gilt auch ein Link auf eine gelöschte Seite: ein neuer Import legt die Seiten mit neuen IDs an.
+        // Website settings of the demo (only empty fields) – links to demo pages become redaxo://ID.
+        // A link to a deleted page also counts as empty: a new import creates the pages with new IDs.
         if (isset($demo['settings']) && '' === $page) {
             $site = Settings::all();
             $gone = static fn (mixed $v): bool => is_string($v) && 1 === preg_match('~^redaxo://(\d+)~', $v, $m) && null === Article::get((int) $m[1]);
@@ -401,17 +401,17 @@ final class DemoCommand extends AbstractCommand
         return Command::SUCCESS;
     }
 
-    /** Demo-Inhalte des gewählten Kits (oder seines Eltern-Kits): demo.php bzw. demo-redaxo6.php */
+    /** Demo content of the chosen kit (or its parent kit): demo.php or demo-redaxo6.php */
     /**
-     * Übersetzung der vorhandenen Demo-Seiten (--lang=en): Sprache anlegen, falls nötig, je Seite Titel setzen und online
-     * schalten (über den Core, damit Adressen entstehen), Blöcke dieser Sprache neu anlegen – Texte aus
-     * demo-{set}.{code}.php (deutsch → Übersetzung). Technische Werte (Varianten, Links, Code, Feldnamen …) bleiben.
+     * Translation of the existing demo pages (--lang=en): create the language if needed, set the title per page and put
+     * it online (via the core, so that addresses are created), recreate the blocks of this language – texts from
+     * demo-{set}.{code}.php (German → translation). Technical values (variants, links, code, field names …) stay.
      *
      * @param list<array<string, mixed>> $pages
      * @param list<array<string, mixed>> $all
      * @param callable(string): ?int $existing
-     * @param array<string, array{rows?: list<array<string, mixed>>}> $yform Beispiel-Datensätze: Tabellen mit Feld „Sprache“ (FluidLanguage) bekommen
-     *                                                                    übersetzte Einträge; vorhandene ohne Sprache die Startsprache
+     * @param array<string, array{rows?: list<array<string, mixed>>}> $yform Sample records: tables with a field „Sprache“ (FluidLanguage) get
+     *                                                                    translated entries; existing ones without language the start language
      */
     private static function translate(SymfonyStyle $io, string $set, string $code, array $pages, array $all, callable $existing, Kit $kit, array $yform = []): int
     {
@@ -443,7 +443,7 @@ final class DemoCommand extends AbstractCommand
         };
         $ids = [];
         foreach ($all as $p) {
-            // Startseite: der Startartikel der Website (nicht über den Titel – der kann schon übersetzt sein)
+            // Start page: the start article of the website (not by title – it may already be translated)
             $id = !empty($p['is_home']) && ($start = (int) Core::getConfig('start_article_id', 0)) > 0 ? $start : $existing((string) $p['slug']);
             if (null !== $id) {
                 $ids[(string) $p['slug']] = $id;
@@ -475,11 +475,11 @@ final class DemoCommand extends AbstractCommand
             } else {
                 ArticleHandler::changeStatus($id, $lang, 1);
             }
-            // Adresse aus dem übersetzten Titel (sonst bliebe der deutsche Teil, den die Sprache beim Anlegen übernommen hat)
+            // Address from the translated title (otherwise the German part the language took over on creation would remain)
             if (empty($def['is_home'])) {
                 Routes::setSlug($id, $lang, $title);
             }
-            // vorhandene Blöcke dieser Sprache ersetzen (beide Fassungen)
+            // replace existing blocks of this language (both versions)
             Sql::factory()->setQuery('DELETE FROM rex_article_slice WHERE article_id = ? AND language_id = ?', [$id, $lang]);
             foreach ($def['blocks'] ?? [] as $block) {
                 if (isset($block['native'])) {
@@ -514,7 +514,7 @@ final class DemoCommand extends AbstractCommand
             ArticleCache::delete($id);
             ++$pagesDone;
         }
-        // Beispiel-Datensätze (YForm): Einträge in der Sprache anlegen
+        // Sample records (YForm): create entries in the language
         $notes = [];
         if ([] !== $yform && YFormBridge::available()) {
             $startCode = Language::get(Language::getStartId())?->code ?? '';
@@ -525,7 +525,7 @@ final class DemoCommand extends AbstractCommand
                     continue;
                 }
                 $col = $langField->name;
-                // vorhandene Einträge ohne Sprache gehören zur Startsprache (sonst stünden sie in jeder Sprache)
+                // existing entries without language belong to the start language (otherwise they would appear in every language)
                 Sql::factory()->setQuery('UPDATE `' . $table->name . '` SET `' . $col . '` = ? WHERE `' . $col . '` = \'\' OR `' . $col . '` IS NULL', [$startCode]);
                 if ($table::query()->where($col, $code)->exists()) {
                     continue;
@@ -556,7 +556,7 @@ final class DemoCommand extends AbstractCommand
         return Kit::active()->file($name) ?? Kit::get(Kit::DEFAULT)?->path($name) ?? $name;
     }
 
-    /** Ordner mit Demo-Bildern: demo/media des gewählten Kits oder seines Eltern-Kits */
+    /** Folder with demo images: demo/media of the chosen kit or its parent kit */
     private static function demoMediaDir(): string
     {
         foreach (Kit::active()->lineage() as $kit) {
@@ -568,7 +568,7 @@ final class DemoCommand extends AbstractCommand
         return '';
     }
 
-    /** Demo-Bilder (demo/media des Kits oder ein anderer Ordner) in den Medienpool – nur fehlende */
+    /** Demo images (demo/media of the kit or another folder) into the media pool – only missing ones */
     private static function media(?string $dir = null): string
     {
         $dir ??= self::demoMediaDir();
@@ -576,7 +576,7 @@ final class DemoCommand extends AbstractCommand
         foreach (glob($dir . '/*') ?: [] as $file) {
             $name = basename($file);
             if ($existing = Media::get($name)) {
-                // vorhandene Demo-Bilder: fehlenden Alternativtext nachtragen (klxm_meta)
+                // existing demo images: add missing alt text (klxm_meta)
                 $alt = self::MEDIA_TEXTS[$name][1] ?? '';
                 if ('' !== $alt) {
                     foreach (Language::getAllIds() as $languageId) {
@@ -590,17 +590,17 @@ final class DemoCommand extends AbstractCommand
             $tmp = self::tmpFile($name);
             copy($file, $tmp);
             [$title, $alt] = self::MEDIA_TEXTS[$name] ?? [pathinfo($name, PATHINFO_FILENAME), ''];
-            // Alternativtext (klxm_meta, je Sprache – alle Sprachen bekommen den Text) für Screenreader und img()/picture()
+            // Alt text (klxm_meta, per language – all languages get the text) for screen readers and img()/picture()
             $res = MediaHandler::add(['category_id' => null, 'title' => $title, 'file' => new File($tmp)], '' !== $alt ? ['alt' => $alt] : [], subindexing: false);
             @unlink($tmp);
-            Media::clearInstances($name);   // „nicht vorhanden“ aus der Prüfung oben vergessen
+            Media::clearInstances($name);   // forget „not present“ from the check above
             $added[] = $name;
         }
 
         return $added ? 'Medienpool: ' . implode(', ', $added) : 'Medienpool: Demo-Bilder schon vorhanden.';
     }
 
-    /** Design-Vorlage setzen; „redaxo“ zusätzlich mit dem REDAXO-Logo aus dem Core (grau und weiß), wenn noch kein Logo gesetzt ist */
+    /** Set the design preset; „redaxo“ additionally with the REDAXO logo from the core (grey and white) if no logo is set yet */
     private static function design(string $preset, string $kitKey = ''): string
     {
         $kit = '' !== $kitKey ? Kit::get($kitKey) : Kit::active();
@@ -613,7 +613,7 @@ final class DemoCommand extends AbstractCommand
         }
         $kit->design()->save((array) $presets[$preset]['values']);
         $msg = 'Design-Vorlage „' . $presets[$preset]['label'] . '“ gesetzt.';
-        // direkt aus der Konfiguration (Settings::all() puffert den Stand vor den Einstellungen der Demo)
+        // directly from the configuration (Settings::all() buffers the state before the demo's settings)
         $site = (array) FluidAddon::instance()->getConfig(Settings::CONFIG, []);
         $logo = Path::core('assets/redaxo-logo.svg');
         if ('redaxo' === $preset && '' === (string) ($site['logo'] ?? '') && is_file($logo)) {
@@ -637,8 +637,8 @@ final class DemoCommand extends AbstractCommand
     }
 
     /**
-     * Beispielzeilen in die YForm-Tabellen der Demo (nur leere Tabellen). Die Tabellen selbst sind Klassen im Projekt
-     * (#[AsTable], Vorlage: vendor/klxm/fluid/examples/yform) – YForm legt sie bei `console migrate` an.
+     * Sample rows into the demo's YForm tables (only empty tables). The tables themselves are classes in the project
+     * (#[AsTable], template: vendor/klxm/fluid/examples/yform) – YForm creates them on `console migrate`.
      *
      * @param array<string, array{rows: list<array<string, mixed>>}> $tables
      */
@@ -667,7 +667,7 @@ final class DemoCommand extends AbstractCommand
         return $out ? 'YForm: ' . implode(', ', $out) : 'YForm: Beispieldaten schon vorhanden.';
     }
 
-    /** Zwischendatei mit dem Namen der Datei im Medienpool (der Medienpool übernimmt den Dateinamen) */
+    /** Temporary file with the name of the file in the media pool (the media pool takes over the file name) */
     private static function tmpFile(string $name): string
     {
         $dir = Path::cache('fluid-demo');

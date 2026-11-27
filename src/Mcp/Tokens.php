@@ -9,14 +9,14 @@ use function is_string;
 use function strlen;
 
 /**
- * Zugangsschlüssel für den MCP-Server (wie KLXM Studio: Core\Api\Tokens).
+ * Access keys for the MCP server (like KLXM Studio: Core\Api\Tokens).
  *
- * Format `fluid_<48 Hex>`. Gespeichert wird nur der SHA-256-Hash – den Klartext zeigt die Verwaltung genau einmal.
- * Jeder Schlüssel handelt im Namen eines REDAXO-Benutzers: dessen Rechte (Struktur, Module, Veröffentlichen) gelten.
+ * Format `fluid_<48 hex>`. Only the SHA-256 hash is stored – the management page shows the plain text exactly once.
+ * Each key acts on behalf of a REDAXO user: their permissions (structure, modules, publishing) apply.
  *
- * - scope `read`: nur lesen (auch Entwürfe)
- * - scope `write`: lesen und ändern (Änderungen landen im Entwurf)
- * - publish: darf zusätzlich veröffentlichen (nur mit Recht „Veröffentlichen“ des Benutzers)
+ * - scope `read`: read only (including drafts)
+ * - scope `write`: read and change (changes go into the draft)
+ * - publish: may also publish (only with the user's permission „Veröffentlichen“)
  */
 final class Tokens
 {
@@ -54,7 +54,7 @@ final class Tokens
     }
 
     /**
-     * Schlüssel prüfen (Ablauf, Benutzer aktiv) und Nutzung vermerken.
+     * Check the key (expiry, user active) and record its use.
      *
      * @return array{id: int, name: string, scope: string, publish: bool, user: User}|null
      */

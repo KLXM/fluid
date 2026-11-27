@@ -1,8 +1,8 @@
 /*
- * Design „Seitenwechsel: Morphen“ (css/opt-transition-morph.css; aus KLXM Studio, Kits foto/galerie). Im <head> geladen (nicht defer):
- * pagereveal kommt vor dem ersten Bild der neuen Seite. Alte Seite: angeklicktes Bild → „f-morph“, angeklickter kurzer Text →
- * „f-title“; ohne Klick (Zurück, Vor) großes Bild und Überschrift. Neue Seite: Bild, das zur vorigen Seite führt, bzw. großes Bild
- * und erste sichtbare Überschrift. Ohne „Animationen“ (html.has-motion) oder mit „Bewegung reduzieren“: kein Übergang.
+ * Design „Seitenwechsel: Morphen“ (css/opt-transition-morph.css; from KLXM Studio, kits foto/galerie). Loaded in <head> (not defer):
+ * pagereveal comes before the new page's first image. Old page: clicked image → „f-morph“, clicked short text →
+ * „f-title“; without click (back, forward) large image and headline. New page: image leading to the previous page, or large image
+ * and first visible headline. Without „Animationen“ (html.has-motion) or with reduced motion: no transition.
  */
 (() => {
   if (!('onpagereveal' in window)) return;
@@ -29,7 +29,7 @@
   });
   addEventListener('pageswap', (e) => {
     const t = e.viewTransition;
-    // Ziel ohne Opt-in (z. B. Bearbeiten-Modus) oder abgebrochener Übergang: Versprechen abfangen, kein Konsolenfehler
+    // Target without opt-in (e.g. edit mode) or aborted transition: catch the promise, no console error
     if (t) [t.ready, t.finished, t.updateCallbackDone].forEach((p) => p?.catch(() => {}));
     if (!t || !on()) return;
     if (!clicked) { clear(); set(bigImg(), 'f-morph'); set(title(), 'f-title'); }
@@ -42,7 +42,7 @@
   addEventListener('pagereveal', (e) => {
     const t = e.viewTransition;
     if (!t) return;
-    [t.ready, t.finished, t.updateCallbackDone].forEach((p) => p?.catch(() => {}));   // abgebrochener Übergang (schneller Klick) ist kein Fehler
+    [t.ready, t.finished, t.updateCallbackDone].forEach((p) => p?.catch(() => {}));   // an aborted transition (quick click) is not an error
     if (!on()) { t.skipTransition(); return; }
     let from = window.navigation?.activation?.from?.url;
     try { from ||= sessionStorage.getItem(key); } catch { /* privat */ }

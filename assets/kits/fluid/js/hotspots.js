@@ -1,9 +1,9 @@
 /**
- * Interaktives Bild (Klxm\Fluid\Hotspots, aus KLXM Studio, MIT) auf der Website – nur auf Seiten mit dem Block.
- *  - Lage der Knöpfe genau (data-x/data-y in %, per CSSOM – die Klassen x0–x100/y0–y100 runden auf ganze Prozent).
- *  - Hinweisfenster: <button popovertarget> öffnet <div popover> (Esc, Klick daneben, Fokus zurück übernimmt der Browser);
- *    hier aria-expanded, Lage am Knopf (schmale Bildschirme: Blatt unten, nur CSS), Fläche hervorheben, Klick auf eine Fläche
- *    öffnet ihre Markierung. Rückfall ohne Popover-API: Klasse is-open, Esc, Klick daneben, Fokus zurück.
+ * Interactive image (Klxm\Fluid\Hotspots, from KLXM Studio, MIT) on the website – only on pages with the block.
+ *  - Exact position of the buttons (data-x/data-y in %, via CSSOM – the classes x0–x100/y0–y100 round to whole percent).
+ *  - Popup: <button popovertarget> opens <div popover> (the browser handles Esc, click outside, returning focus);
+ *    here aria-expanded, position at the button (narrow screens: bottom sheet, CSS only), highlight the area, a click on an
+ *    area opens its marker. Fallback without Popover API: class is-open, Esc, click outside, return focus.
  */
 (() => {
   const d = document;
@@ -59,7 +59,7 @@
     });
     d.addEventListener('keydown', (e) => { if (e.key === 'Escape' && open) close(open, true); });
   }
-  // Klick auf eine Fläche = Klick auf ihren Knopf (der Knopf bleibt der Weg für Tastatur und Screenreader)
+  // click on an area = click on its button (the button remains the way for keyboard and screen readers)
   d.addEventListener('click', (e) => {
     const a = e.target.closest?.('.cms-hs__area');
     if (!a) return;

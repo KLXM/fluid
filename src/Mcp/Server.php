@@ -26,11 +26,11 @@ use const LOCK_EX;
 use const PHP_URL_HOST;
 
 /**
- * MCP-Server (Model Context Protocol) über „Streamable HTTP“ – zustandslos, JSON-Antworten (wie KLXM Studio).
+ * MCP server (Model Context Protocol) via "Streamable HTTP" – stateless, JSON responses (like KLXM Studio).
  *
- * Endpunkt: POST {website}/fluid-mcp (ohne schöne Adressen: /index.php?fluid_mcp=1)
- * Anmeldung: `Authorization: Bearer fluid_…` (Backend → AddOns → fluid → MCP). Ohne Schlüssel nur, wenn der Admin den
- * öffentlichen Zugang eingeschaltet hat – dann ausschließlich veröffentlichte, freigegebene Inhalte und nur lesen.
+ * Endpoint: POST {website}/fluid-mcp (without pretty URLs: /index.php?fluid_mcp=1)
+ * Authentication: `Authorization: Bearer fluid_…` (Backend → AddOns → fluid → MCP). Without a key only if the admin has
+ * enabled public access – then exclusively published, released content and read-only.
  */
 final class Server
 {
@@ -39,7 +39,7 @@ final class Server
 
     private const array VERSIONS = ['2025-11-25', '2025-06-18', '2025-03-26', '2024-11-05'];
 
-    /** Anfragen je 5 Minuten: Schlüssel bzw. öffentlich je IP */
+    /** Requests per 5 minutes: per key, or per IP when public */
     private const int LIMIT_TOKEN = 300;
     private const int LIMIT_PUBLIC = 60;
     private const int WINDOW = 300;
@@ -74,11 +74,11 @@ final class Server
         }
         $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
         if ('OPTIONS' === $method || 'GET' === $method || 'DELETE' === $method) {
-            // kein SSE-Stream, keine Sitzungen: zustandsloser Server
+            // no SSE stream, no sessions: stateless server
             header('Allow: POST');
             self::send(['error' => 'Nur POST (MCP Streamable HTTP, JSON-Antworten).'], 405);
         }
-        // Schutz vor DNS-Rebinding: fremde Browser-Origins ablehnen
+        // Protection against DNS rebinding: reject foreign browser origins
         $origin = (string) ($_SERVER['HTTP_ORIGIN'] ?? '');
         if ('' !== $origin && parse_url($origin, PHP_URL_HOST) !== parse_url('//' . ($_SERVER['HTTP_HOST'] ?? ''), PHP_URL_HOST)) {
             self::rpcError(403, -32000, 'Origin nicht erlaubt.');
@@ -93,7 +93,7 @@ final class Server
             }
             $this->access = Access::forToken($token);
             self::limit('t' . $token['id'], self::LIMIT_TOKEN);
-            // Protokoll, Versionen und Rechte laufen im Namen des Benutzers
+            // log, versions and permissions run on behalf of the user
             Core::setUser($token['user']);
             Editing::actAs($token['user']);
         } elseif ($cfg['public']) {
@@ -227,7 +227,7 @@ final class Server
         return '' !== $key ? $key : null;
     }
 
-    /** Einfache Begrenzung je Schlüssel bzw. IP (Datei im Cache des AddOns) */
+    /** Simple rate limit per key or IP (file in the addon cache) */
     private static function limit(string $key, int $max): void
     {
         $dir = FluidAddon::instance()->getCachePath('mcp');

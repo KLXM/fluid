@@ -14,8 +14,8 @@ use Yakamara\YForm\Table\ListConfig;
 use Yakamara\YForm\Table\Table;
 
 /**
- * Projekte / Referenzen: feste Angaben (Kunde, Jahr, Bild, Kurztext) für Übersicht und Suche – und eine Fallstudie aus
- * Blöcken (Feld „Fluid-Blöcke“), die die Redaktion direkt auf der Website gestaltet (Detailansicht der Datenliste).
+ * Projects / references: fixed data (client, year, image, short text) for overview and search – and a case study made of
+ * blocks (field „Fluid-Blöcke“) that editors design directly on the website (detail view of the data list).
  */
 #[AsTable('rex_yf_project', label: 'Projekte (Beispiel)', icon: 'fa-briefcase')]
 final class ProjectTable extends Table
@@ -30,7 +30,7 @@ final class ProjectTable extends Table
         yield FluidBlocks::new('story')->label('Fallstudie (Blöcke)')
             ->blocks('richtext', 'media_text', 'stats', 'quote', 'features', 'faq', 'video', 'cta');
         yield Checkbox::new('online')->label('Online')->default(true)->filterable();
-        // Sprache: die Datenliste zeigt nur Einträge der aktuellen Sprache (leer = alle Sprachen)
+        // language: the data list shows only entries of the current language (empty = all languages)
         yield FluidLanguage::new('lang');
     }
 

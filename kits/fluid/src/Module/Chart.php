@@ -70,9 +70,9 @@ final class Chart extends FluidBlock
     public string $description = '';
 
     /**
-     * Beschreibung des Diagramms aus den Feldern (von Hand oder aus der gewählten Quelle).
+     * Chart description from the fields (by hand or from the selected source).
      *
-     * @param array<string, mixed> $d Werte des Blocks (Schlüssel wie gespeichert)
+     * @param array<string, mixed> $d values of the block (keys as stored)
      * @return array<string, mixed>
      */
     public static function spec(array $d): array
@@ -90,7 +90,7 @@ final class Chart extends FluidBlock
         ] + $spec;
     }
 
-    /** Feld „Tabelle unter dem Diagramm“ → Option table von Chart::render() */
+    /** Field „Tabelle unter dem Diagramm“ → option table of Chart::render() */
     public static function tableOption(array $d): bool|string
     {
         return match ((string) ($d['table_view'] ?? '')) {

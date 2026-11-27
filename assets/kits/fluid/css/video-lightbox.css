@@ -1,5 +1,5 @@
-/* Video-Links in der Lightbox (Klxm\Fluid\VideoLinks, js/video-lightbox.js lädt diese Datei; aus KLXM Studio, MIT) – unabhängig
-   von b-media.css, damit sie auch ohne Bildergalerie gilt. Ein Kit ersetzt sie mit eigener css/video-lightbox.css oder setzt
+/* Video links in the lightbox (Klxm\Fluid\VideoLinks, js/video-lightbox.js loads this file; from KLXM Studio, MIT) – independent
+   of b-media.css, so that it also applies without an image gallery. A kit replaces it with its own css/video-lightbox.css or sets
    --cms-lb-bg. Klassen: .cms-lb--video · .cms-lb__close · .cms-lb__stage · .cms-lb__player (16:9, iframe) */
 .cms-lb--video{position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:0;border:0;background:var(--cms-lb-bg,rgba(10,11,13,.96));color:#fff;overflow:auto;overscroll-behavior:contain}
 .cms-lb--video[open]{display:grid;place-items:center}

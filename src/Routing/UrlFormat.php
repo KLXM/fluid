@@ -13,25 +13,25 @@ use function strtolower;
 use function substr;
 
 /**
- * Endung der Adressen. Gespeichert werden Pfade immer ohne Endung – das Format kommt erst beim Erzeugen dazu und fällt
- * beim Auflösen wieder weg. Ein Wechsel braucht deshalb keinen Neuaufbau: alte Schreibweisen leiten per 301 um.
+ * URL suffix. Paths are always stored without a suffix – the format is added only when generating and removed again
+ * when resolving. Switching therefore needs no rebuild: old spellings redirect with 301.
  *
- *     UrlFormat::none()            /leistungen/beratung          (Vorgabe)
+ *     UrlFormat::none()            /leistungen/beratung          (default)
  *     UrlFormat::slash()           /leistungen/beratung/
  *     UrlFormat::html()            /leistungen/beratung.html
- *     UrlFormat::mixed()           /leistungen/  ·  /leistungen/beratung.html   (Menüpunkte mit „/“, Seiten mit „.html“)
- *     UrlFormat::suffix('.htm')    eigene Endung
+ *     UrlFormat::mixed()           /leistungen/  ·  /leistungen/beratung.html   (menu items with „/“, pages with „.html“)
+ *     UrlFormat::suffix('.htm')    custom suffix
  *
- * Startseiten (/ und /en/) haben nie eine Endung. Für ganz eigene Regeln lässt sich die Klasse ableiten (append/strip).
+ * Start pages (/ and /en/) never have a suffix. For entirely custom rules, extend the class (append/strip).
  */
 readonly class UrlFormat
 {
-    /** Endungen, die beim Auflösen immer erkannt werden (für den Wechsel von bzw. zu .html) */
+    /** Suffixes that are always recognized when resolving (for switching from or to .html) */
     public const array KNOWN = ['.html', '.htm'];
 
     /**
-     * @param string $page Endung von Seiten: '' (keine), '/' oder '.' + Buchstaben/Ziffern
-     * @param string|null $category Endung von Menüpunkten (Startartikel einer Kategorie); null = wie Seiten
+     * @param string $page suffix of pages: '' (none), '/' or '.' + letters/digits
+     * @param string|null $category suffix of menu items (start article of a category); null = like pages
      */
     public function __construct(
         public string $page = '',
@@ -69,13 +69,13 @@ readonly class UrlFormat
         return new self($suffix);
     }
 
-    /** Pfad (ohne Schrägstrich außen, nicht leer) mit Endung */
+    /** Path (without outer slashes, not empty) with suffix */
     public function append(string $path, bool $category = false): string
     {
         return '' === $path ? '' : $path . ($category ? $this->category ?? $this->page : $this->page);
     }
 
-    /** Pfad ohne Schrägstrich am Ende und ohne bekannte Endung – Schlüssel für die Suche */
+    /** Path without trailing slash and without a known suffix – key for the lookup */
     public function strip(string $path): string
     {
         $path = rtrim($path, '/');

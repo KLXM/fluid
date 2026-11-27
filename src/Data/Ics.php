@@ -30,24 +30,24 @@ use const ENT_QUOTES;
 use const PHP_URL_HOST;
 
 /**
- * Termine: „In den Kalender“ als .ics je Eintrag einer Datenliste mit Detailansicht (Vorbild KLXM Studio, Termin-Aktionen).
+ * Events: „In den Kalender“ as .ics per entry of a data list with detail view (modeled on KLXM Studio, event actions).
  *
- * Gilt für YForm-Tabellen mit einem Datumsfeld (Date bzw. DateTime von YForm). Die Datenliste schaltet es ein (Feld
- * „In den Kalender anbieten“); dann zeigt die Detailansicht den Link /fluid-ics/{seite}-{eintrag}.ics (?lang=… bei mehreren
- * Sprachen). Der Endpunkt prüft dieselben Bedingungen wie die Detailansicht (Filter der Datenliste, Sprache) und liefert
- * genau einen VEVENT:
- *  - Beginn: erstes Datumsfeld (DateTime → mit Uhrzeit in UTC, Date → ganztägig), Ende: Datumsfeld mit end/bis/until im Namen,
- *    sonst ganztägig ein Tag bzw. eine Stunde.
- *  - Titel: Titelfeld der Datenliste, Beschreibung: Textfeld (ohne HTML) und Adresse der Detailseite, Ort: Textfeld mit
- *    place/ort/location/venue im Namen.
+ * Applies to YForm tables with a date field (YForm's Date or DateTime). The data list enables it (field
+ * „In den Kalender anbieten“); then the detail view shows the link /fluid-ics/{page}-{entry}.ics (?lang=… with several
+ * languages). The endpoint checks the same conditions as the detail view (data list filter, language) and returns
+ * exactly one VEVENT:
+ *  - Start: first date field (DateTime → with time in UTC, Date → all-day), end: date field with end/bis/until in its name,
+ *    otherwise one all-day day or one hour.
+ *  - Title: title field of the data list, description: text field (without HTML) and URL of the detail page, location:
+ *    text field with place/ort/location/venue in its name.
  *
- * Serien (wiederkehrende Termine mit einzelnen Vorkommen) kennt fluid nicht – jeder Eintrag ist ein Termin.
+ * fluid doesn't support series (recurring events with individual occurrences) – each entry is one event.
  */
 final class Ics
 {
     public const string PATH = 'fluid-ics';
 
-    /** Adresse der .ics-Datei eines Eintrags */
+    /** URL of an entry's .ics file */
     public static function url(int $articleId, int $entryId, ?int $languageId = null): string
     {
         $languageId ??= Language::getCurrentId();
@@ -55,7 +55,7 @@ final class Ics
         return '/' . self::PATH . '/' . $articleId . '-' . $entryId . '.ics' . (count(Language::getAll()) > 1 ? '?lang=' . $languageId : '');
     }
 
-    /** Erstes Datumsfeld einer Tabelle (Date oder DateTime) – null, wenn es keins gibt */
+    /** First date field of a table (Date or DateTime) – null if there is none */
     public static function dateField(object $table): ?object
     {
         foreach (YFormBridge::detailFields($table) as $f) {
@@ -77,12 +77,12 @@ final class Ics
         $lang = Request::get('lang', 'int', 0) ?: Language::getCurrentId();
         $ics = self::build((int) $m[1], (int) $m[2], $lang);
         if (null === $ics) {
-            return;   // weiter wie eine unbekannte Adresse (404)
+            return;   // continue like an unknown URL (404)
         }
         Router::respond($ics, 'text/calendar; charset=utf-8', ['Content-Disposition: attachment; filename="termin-' . (int) $m[2] . '.ics"', 'Cache-Control: no-cache', 'X-Content-Type-Options: nosniff']);
     }
 
-    /** Kalenderdatei eines Eintrags oder null (keine Datenliste mit Kalender, Eintrag nicht sichtbar, kein Datum) */
+    /** Calendar file of an entry or null (no data list with calendar, entry not visible, no date) */
     public static function build(int $articleId, int $entryId, int $languageId): ?string
     {
         $cfg = Detail::config($articleId, $languageId);
@@ -130,7 +130,7 @@ final class Ics
     }
 
     /**
-     * Ein VEVENT als Kalenderdatei. $e: uid, start/end (Y-m-d ganztägig oder ISO 8601 mit Uhrzeit), title, text, place, url.
+     * One VEVENT as a calendar file. $e: uid, start/end (Y-m-d all-day or ISO 8601 with time), title, text, place, url.
      *
      * @param array{uid: string, start: string, end?: string, title: string, text?: string, place?: string, url?: string} $e
      */
@@ -147,7 +147,7 @@ final class Ics
             return '';
         }
         if ($allDay) {
-            // ganztägig: Ende ist exklusiv (Tag danach)
+            // all-day: the end is exclusive (the day after)
             $endDay = null !== $end && $end >= $start ? $end->modify('+1 day') : $start->modify('+1 day');
             $lines[] = 'DTSTART;VALUE=DATE:' . $start->format('Ymd');
             $lines[] = 'DTEND;VALUE=DATE:' . $endDay->format('Ymd');
@@ -173,13 +173,13 @@ final class Ics
         return implode("\r\n", array_map(self::fold(...), $lines)) . "\r\n";
     }
 
-    /** Text nach RFC 5545 maskieren (Backslash, Semikolon, Komma, Zeilenumbruch) */
+    /** Escape text per RFC 5545 (backslash, semicolon, comma, line break) */
     private static function text(string $s): string
     {
         return str_replace(['\\', ';', ',', "\r\n", "\n", "\r"], ['\\\\', '\;', '\,', '\n', '\n', '\n'], $s);
     }
 
-    /** Zeilen nach 75 Bytes falten (Folgezeilen: Leerzeichen + 74 Bytes), ohne UTF-8-Zeichen zu teilen */
+    /** Fold lines after 75 bytes (continuation lines: space + 74 bytes) without splitting UTF-8 characters */
     private static function fold(string $line): string
     {
         $out = [];

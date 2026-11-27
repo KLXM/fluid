@@ -14,19 +14,19 @@ use const JSON_HEX_TAG;
 use const JSON_UNESCAPED_SLASHES;
 
 /**
- * Medien- und Seitenauswahl für die Website – das Gegenstück zu `rex.pick()` im Backend, für jedes AddOn nutzbar.
+ * Media and page picker for the website – the counterpart of `rex.pick()` in the backend, usable by any AddOn.
  *
- * Einbinden (nur für angemeldete Backend-Benutzer): `echo FrontendPicker::head();` im `<head>` bzw. vor `</body>`.
- * Aufruf im Browser, mit derselben Antwort wie `rex.pick()`:
+ * Include (only for logged-in backend users): `echo FrontendPicker::head();` in the `<head>` or before `</body>`.
+ * Call in the browser, with the same answer as `rex.pick()`:
  *
  *     const [media] = await FrontendPicker.pick('media', { types: ['jpg', 'png'] });
- *     const [page] = await FrontendPicker.pick('article', { category: 5 });   // page.value = Artikel-ID
+ *     const [page] = await FrontendPicker.pick('article', { category: 5 });   // page.value = article ID
  *
- * Eigenständig angelegt (Picker\*, assets/picker), damit es später ein eigenes AddOn werden kann.
+ * Kept self-contained (Picker\*, assets/picker), so that it can become its own AddOn later.
  */
 final class FrontendPicker
 {
-    /** Skript und Konfiguration; leer ohne Backend-Sitzung */
+    /** Script and configuration; empty without a backend session */
     public static function head(?int $languageId = null): string
     {
         if (!BackendLogin::createUser()) {

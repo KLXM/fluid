@@ -3,8 +3,8 @@
 namespace Klxm\Fluid\Routing;
 
 /**
- * Feld eines Eintrags, das ein Editor anbieten darf (fluid zeigt sie in den Seiteneinstellungen der Detailseite).
- * Gespeichert wird über die Quelle ({@see RouteSource::save()}).
+ * Field of an entry that an editor may offer (fluid shows them in the page settings of the detail page).
+ * Saved via the source ({@see RouteSource::save()}).
  */
 final readonly class EditableField
 {

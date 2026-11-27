@@ -1,2 +1,2 @@
-/* NativeCSS components/morph.css – nur auf Seiten, die es brauchen (kit.php → assets). Layer wie in ncss.css von NativeCSS. */
+/* NativeCSS components/morph.css – only on pages that need it (kit.php → assets). Layers as in ncss.css of NativeCSS. */
 @import url("../ncss/components/morph.css") layer(components);

@@ -3,19 +3,19 @@
 namespace Klxm\Fluid\Routing;
 
 /**
- * Einstellungen des Routings, gesetzt vom Projekt (wie die Policies des Cores) – in Project::configure():
+ * Routing settings, set by the project (like the core's policies) – in Project::configure():
  *
  *     Router::$config = new RoutingConfig(format: UrlFormat::html());
  *
- * Ohne Angabe gelten die Vorgaben (Adressen ohne Endung, Cache an).
+ * Without them the defaults apply (URLs without suffix, cache on).
  */
 final readonly class RoutingConfig
 {
     /**
-     * @param UrlFormat $format Endung der Adressen (ohne, „/“, „.html“, gemischt, eigene); jede andere Schreibweise leitet per 301 um
-     * @param bool $cache Adressen der Seiten und Quellen als PHP-Datei im Cache halten (sonst je Anfrage aus der Datenbank)
-     * @param string $redirectBy Kopfzeile X-Redirect-By bei Weiterleitungen ('' = keine)
-     * @param bool $enabled false = das Routing bleibt ganz außen vor (z. B. wenn yrewrite die Adressen übernimmt)
+     * @param UrlFormat $format Suffix of the URLs (none, „/“, „.html“, mixed, custom); any other spelling redirects with 301
+     * @param bool $cache Keep the URLs of pages and sources cached as a PHP file (otherwise from the database per request)
+     * @param string $redirectBy Header X-Redirect-By on redirects ('' = none)
+     * @param bool $enabled false = routing stays out entirely (e.g. when yrewrite handles the URLs)
      */
     public function __construct(
         public UrlFormat $format = new UrlFormat(),

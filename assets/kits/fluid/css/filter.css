@@ -1,7 +1,7 @@
 /*
- * Kit fluid: Filter nach Kategorie (Karten, Datenliste – fluid_filter()). Markup der Komponente filter von NativeCSS:
- * Optionsfelder als Pillen, gefiltert per :has() (Kategorien 1–12); js/filter.js (NativeCSS) sagt die Trefferzahl an.
- * Ohne :has() bleibt alles sichtbar. Im Kit NativeCSS übernimmt components/filter.css.
+ * Kit fluid: filter by category (cards, data list – fluid_filter()). Markup of NativeCSS's filter component:
+ * radio buttons as pills, filtered via :has() (categories 1–12); js/filter.js (NativeCSS) announces the number of hits.
+ * Without :has() everything stays visible. In the kit NativeCSS components/filter.css takes over.
  */
 ncss-filter { display: block; }
 .ncss-filter-bar { display: flex; flex-wrap: wrap; gap: .5rem; margin: 0 0 var(--f-s-m); padding: 0; min-inline-size: 0; border: 0; }

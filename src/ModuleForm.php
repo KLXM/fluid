@@ -23,30 +23,30 @@ use function preg_replace;
 use function trim;
 
 /**
- * Gewöhnliche REDAXO-Module (keine fluid-Blöcke) in der Seitenleiste der Website – im Formular von fluid.
+ * Ordinary REDAXO modules (not fluid blocks) in the website sidebar – in fluid's form.
  *
- * Dieselbe Abbildung der Felder wie bei den Blöcken (Field\BlockSchema): alle Felder des Cores samt Collection und die
- * Felder von fluid. Werte: `Field::toRaw()` des Cores; Speichern über das Formular des Cores (`Form::submit()` wandelt um
- * und prüft wie im Backend), `Module::validate()` und `ContentHandler::editSlice()`. Module mit eigenem `input()` und
- * Mehrfachauswahl von Medien bzw. Seiten öffnen weiter das Formular des Cores im Rahmen (null von {@see self::fields()}).
- * Module, deren Felder das Formular vollständig zeigt, lassen sich auf der Website auch hinzufügen (Blockauswahl, Gruppe
- * „REDAXO-Module“): erst das Formular, dann der Slice ({@see self::create()}).
+ * Same field mapping as for blocks (Field\BlockSchema): all core fields including Collection and the
+ * fluid fields. Values: the core's `Field::toRaw()`; saving via the core form (`Form::submit()` converts
+ * and validates as in the backend), `Module::validate()` and `ContentHandler::editSlice()`. Modules with their own
+ * `input()` and multiple selection of media or pages still open the core form in a frame (null from {@see self::fields()}).
+ * Modules whose fields the form shows completely can also be added on the website (block selection, group
+ * „REDAXO-Module“): first the form, then the slice ({@see self::create()}).
  */
 final class ModuleForm
 {
-    /** Feldtypen, die das Formular von fluid für gewöhnliche Module zeigt */
+    /** Field types fluid's form shows for ordinary modules */
     private const array TYPES = ['text', 'email', 'url', 'textarea', 'richtext', 'number', 'bool', 'select', 'date', 'time', 'datetime',
         'media', 'file', 'article', 'link', 'icon', 'geo', 'repeater', 'blog', 'mediacategory', 'yform_table', 'yform_form', 'yform_field'];
 
     /**
-     * Felder der Modulklasse im Schema von fluid – null, wenn das Modul nicht vollständig abgebildet werden kann.
+     * Fields of the module class in fluid's schema – null if the module cannot be mapped completely.
      *
      * @param class-string<Module> $class
      * @return list<array<string, mixed>>|null
      */
     public static function fields(string $class): ?array
     {
-        // eigenes input(): Aufbau des Formulars steht im Code des Moduls – nur der Core kann es zeigen
+        // own input(): the form's structure is in the module's code – only the core can show it
         if (Module::class !== new ReflectionMethod($class, 'input')->getDeclaringClass()->getName()) {
             return null;
         }
@@ -69,7 +69,7 @@ final class ModuleForm
         return true;
     }
 
-    /** API „module_form“: Formular in der Seitenleiste oder null (dann Formular des Cores im Rahmen) */
+    /** API "module_form": form in the sidebar or null (then the core form in a frame) */
     public static function form(ArticleSlice $slice): ?string
     {
         $class = Module::getClass($slice->moduleKey);
@@ -87,7 +87,7 @@ final class ModuleForm
     }
 
     /**
-     * API „module_save“: Eingaben prüfen, umwandeln und speichern.
+     * API "module_save": validate, convert and save the input.
      *
      * @param array<string, mixed> $input
      */
@@ -97,7 +97,7 @@ final class ModuleForm
         $module = Module::of($slice);
         self::submit($module, $fields, $input);
         $module->beforeSave();
-        // afterSave() auf einer frischen Instanz des gespeicherten Slices (wie im Backend)
+        // afterSave() on a fresh instance of the saved slice (as in the backend)
         Module::of(ContentHandler::editSlice($slice->id, FormSchema::of($class)->encode($module)))->afterSave();
     }
 
@@ -188,7 +188,7 @@ final class ModuleForm
     }
 
     /**
-     * Rohwerte des Cores (nach Eigenschaft) → Werte des Formulars von fluid (nach Schlüssel).
+     * Core raw values (by property) → values of fluid's form (by key).
      *
      * @param list<array<string, mixed>> $fields
      * @param array<array-key, mixed> $raw
@@ -211,7 +211,7 @@ final class ModuleForm
     }
 
     /**
-     * Eingaben des Formulars von fluid (nach Schlüssel) → Rohwerte für das Formular des Cores (nach Eigenschaft).
+     * Input of fluid's form (by key) → raw values for the core form (by property).
      *
      * @param list<array<string, mixed>> $fields
      * @param array<array-key, mixed> $input

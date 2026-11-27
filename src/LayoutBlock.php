@@ -11,12 +11,12 @@ use function count;
 use function Redaxo\Core\View\escape;
 
 /**
- * Modul „Layout (Spalten)“ – je Kit eine kleine Klasse, z. B.:
+ * Module „Layout (Spalten)“ – one small class per kit, e.g.:
  *
  *     #[AsModule('fluid.layout', 'Layout (Spalten)')]
  *     final class Layout extends LayoutBlock { public static function kit(): Kit { return Kit::active(); } }
  *
- * Felder: hier. Ausgabe: Layout::render(). CSS: css/layout.css des Kits (Abbildung 'layout' in kit.php → assets).
+ * Fields: here. Output: Layout::render(). CSS: css/layout.css of the kit (mapping 'layout' in kit.php → assets).
  */
 abstract class LayoutBlock extends BlockModule
 {
@@ -36,7 +36,7 @@ abstract class LayoutBlock extends BlockModule
     #[Checkbox('Reihenfolge mobil umkehren (letzte Spalte zuerst)')]
     public bool $reverse = false;
 
-    /** @var array{preset?: string, w?: list<int>} gezogene Spaltenbreiten (Griff auf der Website) */
+    /** @var array{preset?: string, w?: list<int>} dragged column widths (handle on the website) */
     #[Stored]
     public array $widths = [];
 
@@ -66,7 +66,7 @@ abstract class LayoutBlock extends BlockModule
     public function output(): string
     {
         $b = $this->context();
-        // Backend: Kurzinfo statt Raster – die Spalten-Blöcke folgen als eigene Slices
+        // backend: short info instead of grid – the column blocks follow as their own slices
         if (self::backendPreview() && null !== $b->slice && Backend\SliceGrid::showsGrid($b->slice)) {
             $count = count(Layout::children($b->slice));
 
@@ -77,7 +77,7 @@ abstract class LayoutBlock extends BlockModule
                 . ' · ' . $count . ' ' . (1 === $count ? 'Block' : 'Blöcke') . '</p>' . Backend\SliceGrid::switcher($b->slice) . '</div>' . $offline . Backend\SliceGrid::grid($b->slice, $b->data);
         }
         if (self::backendPreview()) {
-            // Rasterskizze: Spalten in ihrer Breite (Zwölftel), darin die Blöcke als Sprungmarken zu ihren Slices darunter
+            // grid sketch: columns in their width (twelfths), containing the blocks as anchors to their slices below
             $n = Layout::count($b->data);
             $cols = array_fill(1, $n, '');
             $children = Layout::children($b->slice);

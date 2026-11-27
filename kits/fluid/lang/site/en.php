@@ -1,6 +1,6 @@
 <?php
 
-/** Englische Texte der Website (Kit fluid) – Quelle Deutsch. Aus KLXM Studio (lang/site/en.php des Cores und des Kits, MIT) plus Texte von fluid. */
+/** English texts of the website (kit fluid) – source German. From KLXM Studio (lang/site/en.php of the core and the kit, MIT) plus texts of fluid. */
 return [
     '(außer {dates})' => '(except {dates})',
     '(optional)' => '(optional)',
@@ -418,13 +418,13 @@ return [
     'Alle Beiträge' => 'All posts',
     'Blättern' => 'Pagination',
     'Diesen Eintrag gibt es nicht mehr.' => 'This entry no longer exists.',
-    // Diagramme
+    // Charts
     'Keine Daten für dieses Diagramm.' => 'No data for this chart.',
     'Reihe {n}' => 'Series {n}',
     'Blöcke' => 'Blocks',
     'Die häufigsten Blöcke auf dieser Website, gezählt aus der Datenbank' => 'The most frequent blocks on this website, counted from the database',
-    // Bildergalerie, Slider
-    // Vorher/Nachher, Logos (Laufband)
+    // Image gallery, slider
+    // Before/after, logos (marquee)
     'Vorher' => 'Before',
     'Nachher' => 'After',
     'Trennlinie verschieben: links {a}, rechts {b}' => 'Move the divider: {a} on the left, {b} on the right',
@@ -436,7 +436,7 @@ return [
     'Tabelle' => 'Table',
     'Enthalten:' => 'Included:',
     'Nicht enthalten:' => 'Not included:',
-    // Interaktives Bild, Termine (1.0.0-beta.9)
+    // Interactive image, events (1.0.0-beta.9)
     'In den Kalender' => 'Add to calendar',
     'Interaktives Bild' => 'Interactive image',
     'Interaktives Bild: {name}' => 'Interactive image: {name}',

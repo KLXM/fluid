@@ -18,8 +18,8 @@ use Throwable;
 use function is_array;
 
 /**
- * YForm-Feld „Fluid-Blöcke“ in der Maske: Formular eines Blocks laden (action=form) und die Eingaben in Blockdaten
- * umwandeln (action=parse) – dieselben Felder wie auf der Website (FieldForm). Nur mit Backend-Sitzung und Modulrecht.
+ * YForm field „Fluid-Blöcke“ in the form: load a block's form (action=form) and convert the input into block data
+ * (action=parse) – the same fields as on the website (FieldForm). Only with a backend session and module permission.
  */
 #[AsApiFunction('fluid_blocks')]
 final class BlocksApi extends ApiFunction
@@ -52,7 +52,7 @@ final class BlocksApi extends ApiFunction
         }
     }
 
-    /** Listen aus Formularen (0,1,2 …) wieder zu Listen machen */
+    /** Turn lists from forms (0,1,2 …) back into lists */
     private static function clean(array $a): array
     {
         foreach ($a as $k => $v) {

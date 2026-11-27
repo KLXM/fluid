@@ -10,10 +10,10 @@ use function sprintf;
 use const PATH_SEPARATOR;
 
 /**
- * ffmpeg/ffprobe aufrufen (Vorschaubilder von Videos). Ohne ffmpeg bleibt alles wirkungslos – Videos zeigen dann das
- * gewählte Vorschaubild oder keines.
+ * Call ffmpeg/ffprobe (video thumbnails). Without ffmpeg everything is a no-op – videos then show the
+ * chosen poster image or none.
  *
- * Pfad: Umgebungsvariable FFMPEG_BIN bzw. FFPROBE_BIN (z. B. in .env), sonst Suche in PATH und üblichen Ordnern.
+ * Path: environment variable FFMPEG_BIN or FFPROBE_BIN (e.g. in .env), otherwise search in PATH and common folders.
  */
 final class Ffmpeg
 {
@@ -50,7 +50,7 @@ final class Ffmpeg
     }
 
     /**
-     * Befehl ohne Shell ausführen (Argumente als Liste), mit Zeitlimit.
+     * Run a command without a shell (arguments as a list), with a time limit.
      *
      * @param list<string> $argv
      * @return array{code: int, out: string}
@@ -99,8 +99,8 @@ final class Ffmpeg
     }
 
     /**
-     * Typisches Standbild als JPEG: bei ~10 % der Laufzeit (mindestens 1 s, höchstens 10 s); der Filter „thumbnail“ wählt
-     * unter den folgenden Bildern das typischste (überspringt Schwarzblenden). Gibt den Pfad der Datei zurück oder null.
+     * Typical still frame as JPEG: at ~10 % of the duration (at least 1 s, at most 10 s); the filter "thumbnail" picks
+     * the most typical of the following frames (skips fades to black). Returns the file path or null.
      */
     public static function frame(string $video, string $target, int $maxWidth = 1600): ?string
     {

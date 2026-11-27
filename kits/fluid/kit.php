@@ -1,26 +1,26 @@
 <?php
 
 /*
- * Kit „fluid“ für klxm/fluid – übernommen aus KLXM Studio (MIT): breakpointlos, Container-Queries,
- * fließende Schrift- und Abstandsstufen. Die Blöcke stehen als Klassen mit Feld-Attributen in src/Module/,
- * ihre Ausgaben in views/{typ}.php.
+ * Kit „fluid“ for klxm/fluid – taken from KLXM Studio (MIT): no breakpoints, container queries,
+ * fluid type and spacing steps. The blocks are classes with field attributes in src/Module/,
+ * their output in views/{type}.php.
  */
 
 return [
     'label' => 'Fluid (breakpointlos)',
-    // Style-Editor: Farben, Schriften, Form, Kopf & Fuß, Vorlagen (Klxm\Fluid\Design)
+    // Style editor: colors, fonts, shape, header & footer, presets (Klxm\Fluid\Design)
     'design' => require __DIR__ . '/design.php',
-    // Design-Optionen mit eigenem Stylesheet (nur das Gewählte wird geladen): css/opt-{option}-{wert}.css
+    // Design options with their own stylesheet (only the selected one is loaded): css/opt-{option}-{value}.css
     'design_css' => ['header', 'footer', 'footer_density', 'pagebg', 'buttons', 'eyebrow', 'cards', 'dividers', 'palette', 'sections', 'transition'],
     'backgrounds' => ['white' => 'Standard', 'muted' => 'Getönt', 'tint' => 'Akzent hell', 'accent' => 'Akzentfarbe', 'secondary' => 'Zweite Markenfarbe', 'dark' => 'Dunkel'],
     'dark_backgrounds' => ['accent', 'secondary', 'dark'],
 
-    // Stylesheets und Skripte je Blocktyp (bzw. Typ:Variante) – nur auf Seiten, die sie brauchen
+    // Stylesheets and scripts per block type (or type:variant) – only on pages that need them
     'assets' => [
         'css/hero-x.css' => ['hero:fullbleed', 'hero:cards', 'hero:type'],
-        'css/hx-scale.css' => ['hero:scale'], 'css/hx-collage.css' => ['hero:collage'], 'css/hx-compare.css' => ['hero:compare', 'compare'],   // neue Einstiege
+        'css/hx-scale.css' => ['hero:scale'], 'css/hx-collage.css' => ['hero:collage'], 'css/hx-compare.css' => ['hero:compare', 'compare'],   // new heroes
         'css/prose.css' => ['richtext', 'tabs', 'faq', 'media_text', '@rich'],
-        'css/rich-extra.css' => ['richtext', 'faq', 'media_text'],   // Absatz-Stile der Formatierungsleiste (Tipp, Achtung, Dachzeile, Zentriert)   // @rich: Rich-Text-Stile in anderen Blöcken (Core\Sanitizer::styled)
+        'css/rich-extra.css' => ['richtext', 'faq', 'media_text'],   // paragraph styles of the formatting bar (tip, warning, eyebrow, centered)   // @rich: rich text styles in other blocks (Core\Sanitizer::styled)
         'css/layout.css' => ['layout'],
         'css/b-article.css' => ['richtext:article', 'richtext:columns'],
         'css/b-features.css' => ['features'],
@@ -54,19 +54,19 @@ return [
         'css/b-posts.css' => ['posts', '@post', 'datalist'],
         'js/tabs.js' => ['tabs'],
         'css/b-code.css' => ['code'],
-        // Tabellen (Scroll-Schatten, „Spalten sortierbar“) und „Filter nach Kategorie“ – Skripte dazu von NativeCSS
+        // Tables (scroll shadows, „Spalten sortierbar“) and „Filter nach Kategorie“ – their scripts from NativeCSS
         // (FluidTemplate.view.php, Kit::used('@tablesort' | '@filter'))
         'css/tables.css' => ['@table', '@tablesort'],
         'css/filter.css' => ['@filter'],
-        'css/glossary.css' => ['@glossary', 'glossary'], 'js/glossary.js' => ['@glossary', 'glossary'],   // Glossar (Block und Begriffe im Text)
-        'css/knowledge.css' => ['@knowledge', 'datalist:toc'], 'js/knowledge.js' => ['@knowledge'],        // Wissensbereich
+        'css/glossary.css' => ['@glossary', 'glossary'], 'js/glossary.js' => ['@glossary', 'glossary'],   // glossary (block and terms in the text)
+        'css/knowledge.css' => ['@knowledge', 'datalist:toc'], 'js/knowledge.js' => ['@knowledge'],        // knowledge base
         'js/code.js' => ['code'],
         'js/reel.js' => ['quote', 'cards'],
         'js/scrolly.js' => ['scrolly'],
-        // Interaktives Bild (Klxm\Fluid\Hotspots): Knöpfe, Hinweisfenster, Liste
+        // Interactive image (Klxm\Fluid\Hotspots): buttons, popup, list
         'css/hotspots.css' => ['hotspots'],
         'js/hotspots.js' => ['hotspots'],
-        // Play/Pause-Schalter der Hintergrundvideos (fluid_video_toggle(), auch im Kit NativeCSS)
+        // Play/pause toggle of background videos (fluid_video_toggle(), also in kit NativeCSS)
         'css/video-toggle.css' => ['@videotoggle'],
         'js/hero-video.js' => ['@videotoggle'],
     ],

@@ -6,20 +6,20 @@ use Attribute;
 use Klxm\Fluid\Routing\TableSource;
 
 /**
- * Datensätze einer Tabelle als Adressen unter einer Seite ({@see TableSource}).
+ * Records of a table as addresses below a page ({@see TableSource}).
  *
- * @see Slug, Title, Description, Image, Modified für die Spalten
+ * @see Slug, Title, Description, Image, Modified for the columns
  */
 #[Attribute(Attribute::TARGET_CLASS)]
 final readonly class FromTable
 {
     /**
-     * @param non-empty-string $table Tabelle, z. B. 'rex_news' (auch YForm-Tabellen)
-     * @param int $page Seite (Artikel-ID), unter der die Einträge liegen und die sie anzeigt
-     * @param string $where Bedingung für sichtbare Einträge (SQL, ohne Werte von Besuchern), z. B. 'status = 1'
-     * @param string|null $language Spalte mit der Sprach-ID; null = jeder Eintrag in allen Sprachen
-     * @param string $param Parameter, unter dem die Seite die ID des Eintrags bekommt (Request und $_GET)
-     * @param string $id Spalte mit der ID
+     * @param non-empty-string $table table, e.g. 'rex_news' (YForm tables too)
+     * @param int $page page (article ID) below which the entries live and which displays them
+     * @param string $where condition for visible entries (SQL, without visitor values), e.g. 'status = 1'
+     * @param string|null $language column with the language ID; null = every entry in all languages
+     * @param string $param parameter under which the page gets the ID of the entry (request and $_GET)
+     * @param string $id column with the ID
      */
     public function __construct(
         public string $table,

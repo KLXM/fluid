@@ -19,15 +19,15 @@ use Throwable;
 use function Redaxo\Core\View\escape;
 
 /**
- * Erste Schritte: Solange es keine Startseite gibt, zeigt die Website statt eines Fehlers diese Seite.
- * Admins (mit Backend-Anmeldung) legen hier eine leere Startseite oder die Beispielseiten an, Besucher sehen
+ * First steps: as long as there is no start page, the website shows this page instead of an error.
+ * Admins (with backend login) create an empty start page or the example pages here, visitors see
  * „Diese Website wird gerade eingerichtet“ (503).
  */
 final class Welcome
 {
     private const string CSRF = 'fluid_welcome';
 
-    /** Noch keine Startseite (frische Installation): „Erste Schritte“ statt Fehler – Endpunkte (Sitemap, Proxy …) bleiben erreichbar */
+    /** No start page yet (fresh installation): „Erste Schritte“ instead of an error – endpoints (sitemap, proxy …) stay reachable */
     public static function boot(): void
     {
         Router::gate(static function (string $path): void {
@@ -95,11 +95,11 @@ final class Welcome
         exit;
     }
 
-    /** Leere Startseite mit dem Kit fluid: online, Startseite und Fehlerseite, Arbeitsversion an */
+    /** Empty start page with the kit fluid: online, start page and error page, working version on */
     private static function blank(): void
     {
         Core::setConfig('article_work_version', true);
-        // Template „fluid“ (FluidTemplate) – gestaltet vom gewählten Kit
+        // Template „fluid“ (FluidTemplate) – styled by the selected kit
         $id = ArticleHandler::add(['category_id' => null, 'priority' => 1, 'name' => 'Startseite', 'template' => 'fluid'])->id;
         foreach (Language::getAll() as $l) {
             ArticleHandler::changeStatus($id, $l->id, 1);

@@ -14,17 +14,17 @@ use function array_slice;
 use function in_array;
 
 /**
- * Einträge im Menü (nach KLXM Studio, Core\Data\MenuEntries, MIT): Einträge einer YForm-Tabelle mit Detailseite erscheinen als
- * virtuelle Unterpunkte ihrer Übersichtsseite – in Kopf- und Mobilmenü (FluidTemplate::menu(), beide Kits), in den Brotkrumen
- * (schema.org) und – wie alle Detailseiten – in der Sitemap.
+ * Entries in the menu (after KLXM Studio, Core\Data\MenuEntries, MIT): entries of a YForm table with detail page appear as
+ * virtual sub-items of their overview page – in header and mobile menu (FluidTemplate::menu(), both kits), in the breadcrumbs
+ * (schema.org) and – like all detail pages – in the sitemap.
  *
- * Eingestellt am Block „Datenliste“ mit Detailansicht (die Seite mit dem Block ist die Übersicht):
- *  - „Einträge im Menü zeigen“: '' keine (Standard, das Menü bleibt unverändert) | 'top' oberste Ebene | 'two' zwei Ebenen.
- *    Zwei Ebenen gibt es bei Tabellen mit Kapitelbaum (Wissensbereich, Data\Knowledge): Kapitel und Unterkapitel; sonst eine Ebene
- *    in der Sortierung des Blocks.
- *  - „Höchstens im Menü“: Punkte je Ebene (1–50, Standard 12).
- * Auf der Detailseite eines Eintrags ist der Eintrag „aktuell“, die Übersicht (und Oberkapitel) „aktiv“.
- * Extension Point FLUID_MENU_ENTRIES: Punkte ändern (Params article, language, config).
+ * Set on the block „Datenliste“ with detail view (the page with the block is the overview):
+ *  - „Einträge im Menü zeigen“: '' none (default, the menu stays unchanged) | 'top' top level | 'two' two levels.
+ *    Two levels exist for tables with a chapter tree (knowledge base, Data\Knowledge): chapters and subchapters; otherwise one
+ *    level in the block's sort order.
+ *  - „Höchstens im Menü“: items per level (1–50, default 12).
+ * On the detail page of an entry the entry is „current“, the overview (and parent chapters) „active“.
+ * Extension point FLUID_MENU_ENTRIES: change items (params article, language, config).
  */
 final class MenuEntries
 {
@@ -40,7 +40,7 @@ final class MenuEntries
     }
 
     /**
-     * Menüpunkte unter einer Seite (leer ohne Einstellung) im Format von FluidTemplate::menu().
+     * Menu items below a page (empty without setting) in the format of FluidTemplate::menu().
      *
      * @return list<array{label: string, href: string, current: bool, active: bool, children: list<array<string, mixed>>, entry: int}>
      */
@@ -95,10 +95,10 @@ final class MenuEntries
     }
 
     /**
-     * Menü (FluidTemplate::menu) um die Einträge ergänzen: an jede Seite mit eingeschalteter Datenliste ihre Einträge als Kinder.
-     * Auf der Detailseite: Übersicht nicht mehr „aktuell“ (der Eintrag ist es), aber „aktiv“.
+     * Adds the entries to the menu (FluidTemplate::menu): to every page with an enabled data list its entries as children.
+     * On the detail page: the overview is no longer „current“ (the entry is), but „active“.
      *
-     * @param list<array<string, mixed>> $menu Punkte mit `id` (Artikel)
+     * @param list<array<string, mixed>> $menu items with `id` (article)
      * @return list<array<string, mixed>>
      */
     public static function extend(array $menu, int $languageId, int $depth = 0): array
@@ -113,7 +113,7 @@ final class MenuEntries
                 }
             } elseif ($depth < 1 && !empty($m['children'])) {
                 $menu[$i]['children'] = self::extend((array) $m['children'], $languageId, $depth + 1);
-                // Eintrag unter einer Unterseite aktiv: auch der Menüpunkt darüber ist aktiv
+                // Entry below a subpage active: the menu item above is active too
                 if (array_filter($menu[$i]['children'], static fn (array $c) => !empty($c['active']))) {
                     $menu[$i]['active'] = true;
                 }
@@ -123,7 +123,7 @@ final class MenuEntries
         return $menu;
     }
 
-    /** Brotkrumen eines Eintrags mit Kapitelbaum: Oberkapitel [[titel, adresse], …] (ohne den Eintrag selbst) */
+    /** Breadcrumbs of an entry with chapter tree: parent chapters [[title, address], …] (without the entry itself) */
     public static function crumbs(int $articleId, int $languageId, int $entry): array
     {
         $cfg = Detail::config($articleId, $languageId);

@@ -1,15 +1,15 @@
 <?php
 
 /*
- * Kit „NativeCSS“ – erbt vom Kit fluid ($parent). Eigener Seitenrahmen (template.view.php) und eigene Views für
- * Einstieg, Karten, Text + Bild, Handlungsaufruf und FAQ mit den Komponenten von NativeCSS; alle übrigen Blöcke kommen
- * von fluid und übernehmen über die Token-Brücke (assets/css/native.css) Farben, Schrift, Radien und Schatten.
+ * Kit „NativeCSS“ – inherits from kit fluid ($parent). Own page frame (template.view.php) and own views for
+ * hero, cards, text + image, call to action and FAQ with the NativeCSS components; all other blocks come
+ * from fluid and adopt colors, font, radii and shadows via the token bridge (assets/css/native.css).
  *
- * NativeCSS: https://github.com/skerbis/nativecss (MIT) – unverändert unter assets/ncss/ (Stand: assets/ncss/VERSION.txt).
+ * NativeCSS: https://github.com/skerbis/nativecss (MIT) – unchanged in assets/ncss/ (version: assets/ncss/VERSION.txt).
  */
 
-// Standardwerte im Stil von NativeCSS: tiefes Blau, Navy, blaugetönte Flächen, Systemschrift (kein Download).
-// Hell und dunkel nach WCAG 2.2 AA geprüft (Akzent/Grund 8,9:1, Schrift/Grund 15:1, Nebentext/Fläche 6:1).
+// Defaults in NativeCSS style: deep blue, navy, blue-tinted surfaces, system font (no download).
+// Light and dark checked against WCAG 2.2 AA (accent/background 8.9:1, text/background 15:1, secondary text/surface 6:1).
 $colorKeys = ['accent', 'accent_strong', 'on_accent', 'highlight', 'ink', 'text', 'muted', 'background', 'surface', 'line', 'dark_section'];
 $light = ['#154A86', '#0F3766', '#FFFFFF', '#DCEBFF', '#0D1726', '#1F2633', '#535B68', '#FFFFFF', '#EAF3FF', '#D7E3F3', '#0B1C33'];
 $dark = ['#8DB6EE', '#B5D0F6', '#0A1628', '#1E3A5F', '#EEF2F8', '#D3DAE5', '#A3AFC0', '#0B1626', '#13233A', '#2A3B57', '#132B4A'];
@@ -21,8 +21,8 @@ $defaults = array_combine($colorKeys, $light) + [
 $darkDefaults = array_combine($colorKeys, $dark) + ['secondary' => '#9DB0D8', 'on_secondary' => '#0A1628'];
 
 $design = $parent['design'];
-// „Kopf & Fuß“ gehört zum Seitenrahmen von fluid – der Rahmen dieses Kits kommt aus NativeCSS
-// „Dichte des Fußbereichs“ bleibt (Gruppe „Form & Raum“; CSS in native.css)
+// „Kopf & Fuß“ belongs to the page frame of fluid – this kit's frame comes from NativeCSS
+// „Dichte des Fußbereichs“ stays (group „Form & Raum“; CSS in native.css)
 $footerDensity = array_values(array_filter(array_merge(...array_map(static fn (array $g) => (array) ($g['tokens'] ?? []), $design['groups'])), static fn (array $t) => 'footer_density' === ($t['name'] ?? '')));
 $design['groups'] = array_values(array_filter($design['groups'], static fn (array $g) => 'navigation' !== ($g['id'] ?? '')));
 foreach ($design['groups'] as &$g) {
@@ -67,24 +67,24 @@ $design['presets'] = [
 
 return [
     'label' => 'NativeCSS',
-    // Brücke Design-Leiste → NativeCSS und Gestaltung von Rahmen und Blöcken (Layer „native“)
+    // Bridge design bar → NativeCSS and styling of frame and blocks (layer „native“)
     'css' => ['css/native.css'],
     'design' => $design,
-    // Optionen mit eigenem Stylesheet von fluid, die auch hier wirken (Kopf/Fuß nicht – eigener Rahmen)
+    // Options with their own stylesheet from fluid that also apply here (not header/footer – own frame)
     'design_css' => array_values(array_diff((array) $parent['design_css'], ['header', 'footer', 'footer_density'])),
-    // Einstieg, Karten, Text + Bild, Handlungsaufruf, FAQ, Kennzahlen, Logos (Laufband), Scrollytelling, Video & Audio,
-    // Vorher/Nachher: eigene Views mit NativeCSS – deren CSS steht in native.css.
-    // Varianten ohne eigene View (Einstieg „Karten“, „Skala“, „Collage“, „Vergleich“, Karten „Band“) nutzen die von fluid.
-    // Einblend-Effekte für Abschnitte (Abschnitt → „Einblend-Effekt“, Standard „Keiner“) – .ncss-reveal von NativeCSS, einmal
-    // beim Hereinscrollen; „Bewegung reduzieren“ zeigt den Abschnitt sofort (CSS von NativeCSS), „Dezente Animationen“ aus im
-    // Design schaltet alle ab (Block::revealOption()). Auf Seiten mit Effekt: css/ncss-reveal.css und ncss/js/reveal.js (@reveal).
+    // Hero, cards, text + image, call to action, FAQ, key figures, logos (marquee), scrollytelling, video & audio,
+    // before/after: own views with NativeCSS – their CSS is in native.css.
+    // Variants without own view (hero „Karten“, „Skala“, „Collage“, „Vergleich“, cards „Band“) use those of fluid.
+    // Reveal effects for sections (section → „Einblend-Effekt“, default „Keiner“) – .ncss-reveal of NativeCSS, once
+    // on scrolling into view; „Bewegung reduzieren“ shows the section at once (NativeCSS CSS), „Dezente Animationen“ off in
+    // the design turns all off (Block::revealOption()). On pages with effect: css/ncss-reveal.css and ncss/js/reveal.js (@reveal).
     'reveal' => [
         'fade' => ['label' => 'Sanft einblenden', 'class' => 'ncss-reveal ncss-reveal--fade ncss-reveal--once', 'attr' => 'data-ncss-reveal'],
         'rise' => ['label' => 'Von unten', 'class' => 'ncss-reveal ncss-reveal--slide-up ncss-reveal--once', 'attr' => 'data-ncss-reveal'],
         'circle' => ['label' => 'Kreis', 'class' => 'ncss-reveal ncss-reveal--circle ncss-reveal--once', 'attr' => 'data-ncss-reveal'],
         'curtain' => ['label' => 'Vorhang', 'class' => 'ncss-reveal ncss-reveal--split ncss-reveal--once', 'attr' => 'data-ncss-reveal'],
     ],
-    // Zusätzliche Darstellung nur in diesem Kit (im Kit fluid fehlt sie in der Auswahl; gespeicherte Blöcke zeigen dort „Abwechselnd“)
+    // Additional display only in this kit (missing from the select in kit fluid; saved blocks show „Abwechselnd“ there)
     'blocks' => [
         'media_text' => [
             'variants' => ['morph' => 'Morphing beim Scrollen'],
@@ -96,13 +96,13 @@ return [
         ],
     ],
     'assets' => [
-        // NativeCSS nur auf Seiten, die es brauchen (nicht in css/ncss-base.css, siehe Kit\Native\NcssUpdate::ON_DEMAND)
-        // Vorher/Nachher und Scrollytelling kommen hier von NativeCSS – Skript und CSS von fluid nur für dessen Ausgaben
+        // NativeCSS only on pages that need it (not in css/ncss-base.css, see Kit\Native\NcssUpdate::ON_DEMAND)
+        // Before/after and scrollytelling come from NativeCSS here – script and CSS of fluid only for its own output
         'css/hx-compare.css' => ['hero:compare'], 'js/compare.js' => ['hero:compare'], 'js/scrolly.js' => [],
         'css/ncss-reveal.css' => ['@reveal'], 'ncss/js/reveal.js' => ['@reveal'],
         'css/ncss-morph.css' => ['media_text:@morph', 'video:@morph'],
-        // Runde 2: Tabellen, Filter, Zeitleiste, Kundenstimmen, Preistabelle, Preisliste, Sprachwahl ab drei Sprachen –
-        // die eigenen Dateien des Kits fluid dafür (css/tables.css, css/filter.css) hier nicht
+        // Round 2: tables, filter, timeline, testimonials, pricing table, price list, language switch from 3 languages –
+        // not the kit fluid's own files for this (css/tables.css, css/filter.css)
         'css/tables.css' => [], 'css/filter.css' => [],
         'css/ncss-scroll-shadow.css' => ['@table'],
         'css/ncss-table-sort.css' => ['@tablesort'], 'ncss/js/table-sort.js' => ['@tablesort'],
@@ -116,12 +116,12 @@ return [
         'css/ncss-marquee.css' => ['logos:@marquee'], 'ncss/js/marquee.js' => ['logos:@marquee'],
         'css/ncss-scrolly.css' => ['scrolly'], 'ncss/js/scrolly.js' => ['scrolly'],
         'css/ncss-compare.css' => ['compare'], 'ncss/js/compare.js' => ['compare'],
-        // Gemeinsamer Kern beider Player (ab NativeCSS 1.4) – vor den Playern, damit er nur einmal geladen wird
+        // Shared core of both players (from NativeCSS 1.4) – before the players so it is loaded only once
         'ncss/js/media-core.js' => ['video:@player', 'video:audio'],
         'css/ncss-video-player.css' => ['video:@player'], 'ncss/js/video-player.js' => ['video:@player'],
         'css/ncss-audio-player.css' => ['video:audio'], 'ncss/js/audio-player.js' => ['video:audio'],
-        // Hintergrundvideo: Schalter und Skript von fluid (css/video-toggle.css, js/hero-video.js über @videotoggle) statt
-        // js/video-bg.js von NativeCSS (dessen Schalter ist ein Textknopf ohne Symbol)
+        // Background video: toggle and script of fluid (css/video-toggle.css, js/hero-video.js via @videotoggle) instead of
+        // js/video-bg.js of NativeCSS (its toggle is a text button without icon)
         'css/ncss-video-bg.css' => [], 'ncss/js/video-bg.js' => [],
         'css/hero-x.css' => ['hero:cards'],
         'css/b-cards.css' => ['cards:reel'],

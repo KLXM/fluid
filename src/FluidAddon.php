@@ -37,7 +37,7 @@ final class FluidAddon extends Addon
     #[Override]
     public function install(): void
     {
-        // Seiteneinstellungen auf der Website (PageSettings)
+        // Page settings on the website (PageSettings)
         Table::get(PageSettings::TABLE)
             ->ensureColumn(new Column('article_id', 'int(10) unsigned'))
             ->ensureColumn(new Column('language_id', 'int(10) unsigned'))
@@ -45,7 +45,7 @@ final class FluidAddon extends Addon
             ->ensureColumn(new Column('image', 'varchar(255)', true))
             ->ensureColumn(new Column('noindex', 'tinyint(1)', false, '0'))
             ->ensureColumn(new Column('title', 'varchar(191)', true))
-            // Blog: Kategorie ist ein Blog (blog) bzw. Angaben eines Beitrags
+            // Blog: category is a blog (blog) or settings of a post
             ->ensureColumn(new Column('blog', 'tinyint(1)', false, '0'))
             ->ensureColumn(new Column('post_date', 'date', true))
             ->ensureColumn(new Column('author', 'varchar(120)', true))
@@ -53,7 +53,7 @@ final class FluidAddon extends Addon
             ->setPrimaryKey(['article_id', 'language_id'])
             ->ensure();
 
-        // MCP-Server: Zugangsschlüssel (nur Hash), Rechte des Benutzers gelten
+        // MCP server: access keys (hash only), the user's permissions apply
         Table::get(Mcp\Tokens::TABLE)
             ->ensurePrimaryIdColumn()
             ->ensureColumn(new Column('name', 'varchar(120)'))
@@ -69,7 +69,7 @@ final class FluidAddon extends Addon
             ->ensureIndex(new Index('token_hash', ['token_hash'], Index::UNIQUE))
             ->ensure();
 
-        // Schöne Adressen, Einträge der Quellen, Domains, Weiterleitungen (Routing\*)
+        // Pretty URLs, entries of the sources, domains, redirects (Routing\*)
         Routing\Schema::install();
         Table::get(Activity::TABLE)
             ->ensurePrimaryIdColumn()
@@ -87,21 +87,21 @@ final class FluidAddon extends Addon
             ->ensureColumn(new Column('user', 'varchar(191)', true))
             ->setPrimaryKey(['table_name', 'dataset_id'])
             ->ensure();
-        // Listen-Vorlagen der Datenliste (Data\ListTemplates)
+        // List templates of the data list (Data\ListTemplates)
         Data\ListTemplates::install();
         ArticleSliceHistory::checkTables();
-        // Assets der Kits aus Projekt und Composer-Paketen nach assets/fluid-kits/ (das Kit fluid bringt der Core mit)
+        // Kit assets from the project and Composer packages to assets/fluid-kits/ (the core ships the kit fluid)
         Kit::publishAll();
-        // Geänderte Standardwerte von Blockfeldern: bestehende Blöcke behalten ihr Aussehen (einmal je Änderung)
+        // Changed defaults of block fields: existing blocks keep their look (once per change)
         DefaultChanges::run();
-        // Rechte der Gestaltung (1.0.0-beta.10): bestehende Rollen behalten alles (einmal)
+        // Design permissions (1.0.0-beta.10): existing roles keep everything (once)
         Perm::migrateRoles();
     }
 
     /**
-     * Tabellen von fluid: Der Core entfernt sie mit `console migrate:cleanup`, sobald fluid per Composer entfernt ist –
-     * samt Einstellungen, Daten und Cache. Inhalte (Slices der Blöcke) und Artikel bleiben, sie gehören dem Core; ohne
-     * fluid fehlen nur die Module, die sie ausgeben.
+     * fluid's tables: the core removes them with `console migrate:cleanup` once fluid is removed via Composer –
+     * including settings, data and cache. Content (the blocks' slices) and articles remain, they belong to the core;
+     * without fluid only the modules rendering them are missing.
      */
     #[Override]
     public function getOwnedSchema(): OwnedSchema
@@ -109,7 +109,7 @@ final class FluidAddon extends Addon
         return new OwnedSchema(tables: [PageSettings::TABLE, ...Routing\Schema::TABLES, Activity::TABLE, Data\Inbox::TABLE, Mcp\Tokens::TABLE, Data\ListTemplates::TABLE]);
     }
 
-    /** Backend: AddOns → fluid (Status, Hilfe) – nur Admins */
+    /** Backend: AddOns → fluid (status, help) – admins only */
     #[Override]
     public function getPages(): iterable
     {
@@ -129,12 +129,12 @@ final class FluidAddon extends Addon
     #[Override]
     public function boot(): void
     {
-        // Kategorie „Seitenvorlagen“: nicht löschbar, solange fluid installiert ist
+        // Category „Seitenvorlagen“: cannot be deleted while fluid is installed
         PageTemplatesGuard::boot();
-        // Rechte der Gestaltung (Rolle → Optionen) und gesperrte Blöcke im Backend
+        // Design permissions (role → options) and locked blocks in the backend
         Perm::register();
         Lock::boot();
-        // navigation_array: Start der Website (Navigation ohne start) = Unterseiten einer Landing-Domain mit eigenem Seitenbaum
+        // navigation_array: start of the website (navigation without start) = subpages of a landing domain with its own page tree
         Extension::register(NavigationStart::class, static function (NavigationStart $ep): mixed {
             $landing = Routing\Router::landing();
 
@@ -144,10 +144,10 @@ final class FluidAddon extends Addon
         if (Core::isBackend() && str_starts_with(Request::get('page', 'string'), 'fluid')) {
             Asset::addCssFile($this->getAssetsUrl('backend.css'));
         }
-        // YForm-Maske: Feld „Fluid-Blöcke“ (Data\FluidBlocks) braucht dieselben Formular-Skripte wie die Slices
-        // Im Rahmen der Website (editor.js, iframe mit fluid_frame=1): Seite ohne Navigation wie ein Popup des Cores –
-        // YForm-Maske im Overlay und Formular eines gewöhnlichen Moduls in der Seitenleiste. Nach dem Speichern leiten YForm
-        // und Core ohne den Parameter weiter – der Browser meldet den Rahmen aber weiter (Sec-Fetch-Dest).
+        // YForm form: field „Fluid-Blöcke“ (Data\FluidBlocks) needs the same form scripts as the slices
+        // Inside the website frame (editor.js, iframe with fluid_frame=1): page without navigation like a core popup –
+        // YForm form in the overlay and form of an ordinary module in the sidebar. After saving, YForm and the core
+        // redirect without the parameter – but the browser still reports the frame (Sec-Fetch-Dest).
         $page = Request::get('page', 'string');
         if (Core::isBackend() && (str_starts_with($page, 'yform') || 'content/edit' === $page)
             && (Request::get('fluid_frame', 'bool') || 'iframe' === Core::getRequest()->headers->get('Sec-Fetch-Dest'))) {
@@ -163,10 +163,10 @@ final class FluidAddon extends Addon
             Asset::addJsFile($this->getAssetsUrl('blocks-field.js'));
         }
         if (Core::isBackend() && str_starts_with(Request::get('page', 'string'), 'content')) {
-            Backend\SliceGrid::boot();   // Blöcke eines Layouts nebeneinander in ihren Spalten
+            Backend\SliceGrid::boot();   // Blocks of a layout side by side in their columns
             Asset::addCssFile($this->getAssetsUrl('form.css'));
             Asset::addJsFile($this->getAssetsUrl('form.js'));
-            // Absprung „Auf der Website bearbeiten“ über den Slices – nur bei Artikeln mit Block-Template
+            // Link „Auf der Website bearbeiten“ above the slices – only for articles with block template
             Extension::register(ContentPageBeforeSlices::class, static function (ContentPageBeforeSlices $ep): string {
                 $article = $ep->article;
                 $template = $article->templateKey ? Template::get($article->templateKey) : null;
@@ -181,8 +181,8 @@ final class FluidAddon extends Addon
             });
         }
 
-        // Schöne Adressen (ArticleUrl, Strukturänderungen; im Frontend: Adresse → Seite)
-        // Untertitel: PHP erkennt .srt als application/x-subrip, die Liste des Cores erwartet nur text/plain
+        // Pretty URLs (ArticleUrl, structure changes; in the frontend: URL → page)
+        // Subtitles: PHP detects .srt as application/x-subrip, the core's list only expects text/plain
         $mime = &MediaPool::$allowedMimeTypes;
         if ($mime) {
             $mime['srt'] = array_values(array_unique([...($mime['srt'] ?? []), 'text/plain', 'application/x-subrip', 'application/x-srt']));
@@ -190,9 +190,9 @@ final class FluidAddon extends Addon
         }
         unset($mime);
 
-        // Bausteine melden sich beim Routing (Endpunkte, Adressen, Sitemap) und bei SEO an – das Routing kennt sie nicht.
-        // So lassen sie sich später einzeln als eigene AddOns herauslösen (siehe docs/entwickler.md → Bausteine).
-        // Endpunkte (Live, Präsenz, MCP, Karten-Proxy, Untertitel) melden sich per #[AsEndpoint] selbst an.
+        // Components register with routing (endpoints, URLs, sitemap) and with SEO – routing doesn't know them.
+        // This way they can later be split off as separate addons (see docs/entwickler.md → Bausteine).
+        // Endpoints (live, presence, MCP, map proxy, subtitles) register themselves via #[AsEndpoint].
         Maps\Maps::boot();
         Data\Detail::boot();
         Glossary\Glossary::boot();   // Glossar: Detailseiten, Sitemap, Einstellungen, schema.org
@@ -200,7 +200,7 @@ final class FluidAddon extends Addon
         Blog\Blog::boot();
         Search\Search::boot();
         Welcome::boot();
-        // Kern von fluid: Editor-Parameter, „nicht indexieren“, eigener robots.txt-Text
+        // fluid core: editor parameters, „nicht indexieren“, custom robots.txt text
         Routing\Router::keep(Api::PARAM, Editing::PARAM);
         Routing\Sitemap::exclude(static fn (int $id, int $lang): bool => PageSettings::noindex($id, $lang));
         Routing\Sitemap::images(PageSettings::sitemapImages(...));
@@ -213,17 +213,17 @@ final class FluidAddon extends Addon
 
             return '' !== $own ? $own : (string) $ep->subject . "\nDisallow: /*?" . Editing::PARAM . '=';
         });
-        // Schöne Adressen: Asset-Adressen ab dem Basis-Pfad. Adresse → Seite, ArticleUrl und Neuaufbau nach
-        // Strukturänderungen hängen per #[AsExtension] am Router (Routing\Router::handleRequest …).
+        // Pretty URLs: asset URLs from the base path. URL → page, ArticleUrl and rebuild after
+        // structure changes hook into the router via #[AsExtension] (Routing\Router::handleRequest …).
         Tiptap\FluidTiptap::boot();   // text editor: plugin of fluid for klxm/tiptap (profile as class: Tiptap\FluidProfile)
         Seo\Addresses::boot();   // ending chosen on the website, unless the project sets Router::$config
         Routing\Router::boot();
 
-        // Suchindex: jede Inhaltsänderung des Cores (Blöcke hinzufügen, löschen, verschieben, online/offline, Inhalte kopieren –
-        // Backend und Website) markiert ihn; die nächste Suche baut ihn neu
-        Extension::register(ArticleContentUpdated::NAME, static fn () => Editing::isGuest() ? null : Search\Search::markDirty());   // Gäste ändern nie dauerhaft
+        // Search index: every content change in the core (adding, deleting, moving blocks, online/offline, copying content –
+        // backend and website) marks it; the next search rebuilds it
+        Extension::register(ArticleContentUpdated::NAME, static fn () => Editing::isGuest() ? null : Search\Search::markDirty());   // Guests never change anything permanently
 
-        // Layout gelöscht (Backend oder Website): seine Spalten-Blöcke werden wieder normale Abschnitte
+        // Layout deleted (backend or website): its column blocks become normal sections again
         Extension::register(SliceDeleting::class, static function (SliceDeleting $ep): void {
             $slice = $ep->slice;
             if (!Layout::isLayout($slice)) {
@@ -241,8 +241,8 @@ final class FluidAddon extends Addon
             return;
         }
 
-        // Video-Links in der Lightbox: Zusatzfeld „Video ohne Lightbox öffnen“ hinter jedem Link-Feld (nur Editor auf der Website –
-        // gespeichert wird es mit dem Formular der Seitenleiste; das Formular des Cores im Backend kennt nur die Eigenschaften)
+        // Video links in the lightbox: extra field „Video ohne Lightbox öffnen“ after each link field (website editor only –
+        // it is saved with the sidebar's form; the core's form in the backend only knows the properties)
         if (VideoLinks::on()) {
             Extension::register('FLUID_BLOCK_DEFINITION', static function (ExtensionPoint $ep): array {
                 $def = (array) $ep->subject;
@@ -252,17 +252,17 @@ final class FluidAddon extends Addon
             });
         }
 
-        // Endpunkte des Editors (?fluid_api=…): vor der Ausgabe der Seite beantworten
+        // Editor endpoints (?fluid_api=…): answer before the page is rendered
         if ('' !== Request::get(Api::PARAM, 'string')) {
             Extension::register('FE_OUTPUT', static fn () => Api::handle());
         }
 
-        // Neu laden auf Aktion (?fluid_block=…): nur den Block der veröffentlichten Seite ausgeben (Live::block)
+        // Reload on action (?fluid_block=…): render only the block of the published page (Live::block)
         if (Request::get(Live::BLOCK, 'int', 0) > 0 && '' === Request::get(Api::PARAM, 'string') && 1 !== Request::get(Editing::PARAM, 'int', 0)) {
             Extension::register('FE_OUTPUT', static fn () => Live::block());
         }
 
-        // Bearbeiten-Modus: Artikel live aus der Datenbank (Arbeitsversion, sofern eingeschaltet) statt aus dem Cache
+        // Edit mode: articles live from the database (working version, if enabled) instead of from the cache
         Extension::register(ArticleContentRendering::class, static function (ArticleContentRendering $ep): void {
             if (!Editing::requested()) {
                 return;
@@ -273,7 +273,7 @@ final class FluidAddon extends Addon
             $article->sliceRevision = self::revision();
         });
 
-        // Versionen: Vorschau eines Stands (?fluid_version=…) – nur mit Recht auf die Seite, ohne Leiste, nie aus dem Cache
+        // Versions: preview of a revision (?fluid_version=…) – only with permission for the page, without toolbar, never cached
         Extension::register(ArticleContentRendering::class, static function (ArticleContentRendering $ep): void {
             $key = Request::get(Versions::PARAM, 'string', '');
             if ('' === $key || null === Editing::user() || Editing::isGuest() || null === $state = Versions::parseKey($key)) {
@@ -290,8 +290,8 @@ final class FluidAddon extends Addon
         });
         Extension::register(ArticleSlicesQuery::class, static fn (ArticleSlicesQuery $ep): string => Versions::sliceQuery((string) $ep->subject));
         Extension::register(SliceOutput::class, static fn (SliceOutput $ep): string => Versions::markSlice((string) $ep->subject, $ep->slice->id));
-        // Gewöhnliche REDAXO-Module (keine fluid-Blöcke) im Bearbeiten-Modus kennzeichnen: editor.js bietet „Modul bearbeiten“
-        // an und öffnet das Formular des Cores in der Seitenleiste
+        // Mark ordinary REDAXO modules (not fluid blocks) in edit mode: editor.js offers „Modul bearbeiten“
+        // and opens the core's form in the sidebar
         Extension::register(SliceOutput::class, static function (SliceOutput $ep): string {
             $html = (string) $ep->subject;
             if (!Editing::active() || Editing::isGuest() || null !== BlockModule::classFor($ep->slice->moduleKey)) {
@@ -303,7 +303,7 @@ final class FluidAddon extends Addon
             return '<div class="fluid-mod" data-fluid-slice="' . $ep->slice->id . '" data-section="' . $ep->slice->contentSectionId . '" data-label="' . \Redaxo\Core\View\escape($label) . '">' . $html . '</div>';
         });
 
-        // Im Bearbeiten-Modus auch Offline-Blöcke zeigen (gekennzeichnet), damit sie sich wieder einschalten lassen
+        // In edit mode also show offline blocks (marked) so they can be switched on again
         Extension::register(ArticleSlicesQuery::class, static function (ArticleSlicesQuery $ep): ?string {
             if (!Editing::active()) {
                 return null;
@@ -315,14 +315,14 @@ final class FluidAddon extends Addon
         // KitHead::render() in a template: write the head once the page is rendered (elements and SEO values are known)
         Extension::register('OUTPUT_FILTER', static fn (ExtensionPoint $ep): string => KitHead::replace((string) $ep->subject), ExtensionLevel::Early);
 
-        // Leiste und Editor nur für angemeldete Redaktion – Besucher bekommen kein zusätzliches Markup
+        // Toolbar and editor only for logged-in editors – visitors get no extra markup
         Extension::register('OUTPUT_FILTER', static function (ExtensionPoint $ep): string {
             $html = (string) $ep->subject;
-            // Redaktionskommentare [# … #] (wie KLXM Studio): für Besucher und in der Ansicht unsichtbar, im Bearbeiten-Modus markiert (editor.js)
+            // Editorial comments [# … #] (like KLXM Studio): invisible to visitors and in view mode, marked in edit mode (editor.js)
             if (!Editing::active() && str_contains($html, '[#')) {
                 $html = (string) preg_replace_callback('~<main\b.*?</main>~s', static fn (array $m) => (string) preg_replace('~\s?\[#.*?#\]~s', '', $m[0]), $html);
             }
-            // Glossar: Begriffe markieren (Website → Glossar, Standard aus; nie beim Bearbeiten)
+            // Glossary: mark terms (Website → Glossar, off by default; never while editing)
             $html = Glossary\Glossary::annotate($html);
             if (null === Editing::user() || null !== Versions::$preview) {
                 return $html;
@@ -332,7 +332,7 @@ final class FluidAddon extends Addon
         }, ExtensionLevel::Late);
     }
 
-    /** Revision, in der auf der Website bearbeitet wird: Arbeitsversion, wenn eingeschaltet – sonst live */
+    /** Revision edited on the website: working version if enabled – otherwise live */
     public static function revision(): int
     {
         if (null !== ($guest = Editing::revisionForGuest())) {

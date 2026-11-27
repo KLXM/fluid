@@ -7,11 +7,11 @@ use Redaxo\Core\Database\Index;
 use Redaxo\Core\Database\Table;
 
 /**
- * Tabellen des Routings – vom AddOn in install() angelegt (idempotent, läuft bei jedem `console migrate`).
+ * Tables of the routing – created by the AddOn in install() (idempotent, runs on every `console migrate`).
  */
 final class Schema
 {
-    /** Tabellen des Routings (für OwnedSchema des AddOns) */
+    /** Tables of the routing (for the OwnedSchema of the AddOn) */
     public const array TABLES = [Routes::TABLE, Routes::ENTRY_TABLE, Domains::TABLE, Redirects::TABLE, Redirects::TABLE_404];
 
     public static function install(): void

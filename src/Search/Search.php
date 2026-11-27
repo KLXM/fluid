@@ -31,31 +31,31 @@ use const ENT_HTML5;
 use const ENT_QUOTES;
 
 /**
- * Website-Suche (Modell aus KLXM Studio – Core\Search mit Loupe): Stichwortsuche mit Tippfehler-Toleranz und Wortstämmen,
- * Index je Sprache als SQLite im Datenordner des AddOns (data/addons/fluid/search/{sprache}).
+ * Website search (modeled on KLXM Studio – Core\Search with Loupe): keyword search with typo tolerance and stemming,
+ * index per language as SQLite in the addon's data folder (data/addons/fluid/search/{sprache}).
  *
- * Nur Öffentliches: veröffentlichte Fassung (live) der Seiten, die online sind (samt Eltern, Sprache online), nicht auf
- * „nicht indexieren“ stehen und keine Seitenvorlage sind. Gelesen werden die Blockdaten selbst (Felder Text, Textarea,
- * Rich-Text; Überschriften gewichtet) – ohne die Seiten zu rendern. Dabei fehlen:
- *   - Offline-Blöcke und Blöcke in den Spalten eines Offline-Layouts (Besucher sehen sie nicht),
- *   - Blöcke mit 'search' => false im Kit,
- *   - Felder mit 'search' => false und Einstellungen, die so nicht auf der Seite stehen (NO_FIELDS: Empfänger und
- *     Bestätigungstexte von Formularen, Platzhalter, Filterwerte, Hinweise für leere Listen …),
- *   - Redaktionskommentare [# … #].
- * Aktualisierung: Veröffentlichen, Struktur- und Inhaltsänderungen (auch im Backend) markieren den Index; die nächste
- * Suche baut ihn neu (Websites dieser Größe in Sekundenbruchteilen), zusätzlich `php bin/console fluid:search-index`.
- * Jeder Treffer wird vor der Ausgabe noch einmal geprüft (visible()) – ein veralteter Index zeigt nie Nicht-Öffentliches.
+ * Public content only: the published version (live) of pages that are online (including parents, language online), not
+ * set to „nicht indexieren“ and not page templates. The block data itself is read (fields text, textarea,
+ * rich text; headings weighted) – without rendering the pages. Left out are:
+ *   - offline blocks and blocks in the columns of an offline layout (visitors don't see them),
+ *   - blocks with 'search' => false in the kit,
+ *   - fields with 'search' => false and settings that don't appear on the page as such (NO_FIELDS: recipients and
+ *     confirmation texts of forms, placeholders, filter values, hints for empty lists …),
+ *   - editorial comments [# … #].
+ * Updating: publishing, structure and content changes (also in the backend) mark the index; the next
+ * search rebuilds it (fractions of a second for websites of this size), additionally `php bin/console fluid:search-index`.
+ * Every hit is checked again before output (visible()) – an outdated index never shows non-public content.
  */
 final class Search
 {
-    /** Einstellungen von Blöcken, die nicht (oder nur in Sonderfällen) sichtbar auf der Seite stehen – auch für Gäste ausgeblendet (fluid_demo) */
+    /** Block settings that are not visible on the page (or only in special cases) – also hidden for guests (fluid_demo) */
     public const array NO_FIELDS = ['placeholder', 'empty_text', 'filter_value', 'mail_to', 'mail_subject', 'confirm_subject', 'confirm_text',
         'form_name', 'success', 'lang', 'redirect'];
 
     private const string DIRTY = 'search_dirty';
     private const array HL = ["\u{E000}", "\u{E001}"];
 
-    /** Adressen neu berechnet (Struktur geändert) → Suchindex beim nächsten Suchen neu aufbauen */
+    /** Addresses recalculated (structure changed) → rebuild the search index on the next search */
     public static function boot(): void
     {
         Extension::register(RoutesRebuilt::class, static fn () => self::markDirty());
@@ -83,7 +83,7 @@ final class Search
         FluidAddon::instance()->setConfig(self::DIRTY, true);
     }
 
-    /** Index aller Sprachen neu aufbauen; gibt die Anzahl der Dokumente zurück */
+    /** Rebuild the index of all languages; returns the number of documents */
     public static function rebuild(): int
     {
         $n = 0;
@@ -119,14 +119,14 @@ final class Search
             }
             $headings = [];
             $text = [];
-            // alle Blöcke der Live-Fassung (auch offline), um Spalten eines Offline-Layouts zu erkennen
+            // all blocks of the live version (offline ones too), to detect columns of an offline layout
             $slices = Sql::factory()->getArray('SELECT module, data, status, content_section_id FROM rex_article_slice WHERE article_id = ? AND language_id = ? AND revision = ? ORDER BY content_section_id, priority',
                 [$id, $languageId, ArticleRevision::LIVE]);
-            $layoutOn = false;   // letzter Abschnitt ist ein Layout, das Besucher sehen
+            $layoutOn = false;   // last section is a layout that visitors see
             $section = null;
             foreach ($slices as $s) {
                 if ($section !== $s['content_section_id']) {
-                    [$section, $layoutOn] = [$s['content_section_id'], false];   // Layouts reichen nicht über ihren Inhaltsbereich hinaus
+                    [$section, $layoutOn] = [$s['content_section_id'], false];   // layouts don't reach beyond their content area
                 }
                 $m = BlockModule::classFor((string) $s['module']);
                 $on = 1 === (int) $s['status'];
@@ -134,7 +134,7 @@ final class Search
                 if (0 === (int) ($stored['tunes']['col'] ?? 0)) {
                     $layoutOn = $on && null !== $m && is_a($m, LayoutBlock::class, true);
                 } elseif (!$layoutOn) {
-                    continue;   // Spalten-Block eines Offline-Layouts (oder ohne Layout): nicht sichtbar
+                    continue;   // column block of an offline layout (or without layout): not visible
                 }
                 if (!$on || null === $m || false === ($m::definition()['search'] ?? true)) {
                     continue;
@@ -142,7 +142,7 @@ final class Search
                 self::collect($m::fields(), $stored['values'], $headings, $text);
             }
             $s = PageSettings::get($id, $languageId);
-            // FLUID_SEARCH_DOCUMENT: Dokument ergänzen (z. B. Texte eigener Daten) oder mit null überspringen
+            // FLUID_SEARCH_DOCUMENT: extend the document (e.g. texts of own data) or skip it with null
             $doc = Extension::dispatch(new ExtensionPoint('FLUID_SEARCH_DOCUMENT',
                 ['id' => $id, 'title' => $s['title'] ?: $a->name, 'headings' => implode(' · ', array_unique($headings)), 'text' => trim($s['description'] . ' ' . implode(' ', $text))],
                 ['article' => $a]));
@@ -155,9 +155,9 @@ final class Search
     }
 
     /**
-     * Öffentlich sichtbar? Online samt Eltern, nicht „nicht indexieren“, keine Seitenvorlage, nicht die Fehlerseite.
+     * Publicly visible? Online including parents, not „nicht indexieren“, no page template, not the error page.
      *
-     * @param array<int, true>|null $noindex vorab gelesene Seiten mit „nicht indexieren“ (sonst je Seite gelesen)
+     * @param array<int, true>|null $noindex pre-read pages with „nicht indexieren“ (otherwise read per page)
      */
     private static function visible(Article $a, ?array $noindex = null): bool
     {
@@ -172,7 +172,7 @@ final class Search
         return !Sql::factory()->getArray('SELECT 1 FROM ' . PageSettings::TABLE . ' WHERE noindex = 1 AND article_id = ? AND language_id = ? LIMIT 1', [$a->id, $a->languageId]);
     }
 
-    /** Texte der Felder (rekursiv in Wiederholgruppen); Felder „title“/„eyebrow“/„q“ zählen als Überschrift */
+    /** Texts of the fields (recursively in repeater groups); fields "title"/"eyebrow"/"q" count as headings */
     public static function collect(array $fields, array $data, array &$headings, array &$text): void
     {
         foreach ($fields as $f) {
@@ -217,7 +217,7 @@ final class Search
             ->withAttributesToHighlight(['title', 'text'], self::HL[0], self::HL[1])
             ->withAttributesToCrop(['text'], 160, '…', 1);
         for ($try = 0;; ++$try) {
-            // erst alle Wörter verlangen, ohne Treffer genügt eines
+            // require all words first; without hits one is enough
             $res = $loupe->search($params->withMatchingStrategy('all'));
             if (0 === $res->getTotalHits() && str_contains($q, ' ')) {
                 $res = $loupe->search($params->withMatchingStrategy('any'));
@@ -226,7 +226,7 @@ final class Search
             $stale = false;
             foreach ($res->getHits() as $h) {
                 $a = Article::get((int) $h['id'], $languageId);
-                // Index veraltet (Seite inzwischen offline, gelöscht, „nicht indexieren“ …): Treffer nie ausgeben
+                // index outdated (page now offline, deleted, „nicht indexieren“ …): never output the hit
                 if (!$a || !self::visible($a)) {
                     $stale = true;
                     continue;

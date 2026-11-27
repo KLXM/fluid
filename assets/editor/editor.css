@@ -1,6 +1,6 @@
 /*
- * klxm/fluid – Markierungen auf der Website (Light DOM). Leiste, Seitenleiste und Dialoge liegen im
- * Shadow DOM (editor.shadow.css). Nur für angemeldete Redaktion geladen.
+ * klxm/fluid – markers on the website (light DOM). Bar, sidebar and dialogs live in the
+ * shadow DOM (editor.shadow.css). Loaded only for signed-in editors.
  */
 :root {
   --blocks-bar-h: 52px;
@@ -9,11 +9,11 @@
 }
 
 html.blocks-has-bar body { padding-top: var(--blocks-bar-h); }
-/* Klebende Köpfe der Kits rücken unter die Leiste */
+/* Sticky headers of the kits move below the bar */
 html.blocks-has-bar [data-header],
 html.blocks-has-bar .hdr { top: var(--blocks-bar-h); }
 
-/* Seitenleiste offen: Website wird schmaler statt verdeckt */
+/* Sidebar open: the website gets narrower instead of covered */
 html.blocks-panel-open body { margin-right: var(--blocks-panel-w); }
 @media (max-width: 760px) {
   html.blocks-panel-open body { margin-right: 0; }
@@ -30,14 +30,14 @@ html.blocks-editing section[data-block][data-offline]::after {
   background: #222; color: #fff;
 }
 
-/* Texte direkt bearbeiten */
+/* Edit texts directly */
 html.blocks-editing [data-blocks-editable] { cursor: text; border-radius: 3px; transition: box-shadow .12s; }
 html.blocks-editing [data-blocks-editable]:hover { box-shadow: 0 0 0 1px color-mix(in srgb, var(--blocks-accent) 50%, transparent); }
 html.blocks-editing [data-blocks-editable]:focus { outline: none; box-shadow: 0 0 0 2px var(--blocks-accent); }
 html.blocks-editing [data-blocks-editable]:empty { min-width: 4ch; min-height: 1em; display: inline-block; }
 html.blocks-editing [data-blocks-editable]:empty::before { content: "…"; opacity: .4; }
 
-/* Leere Seite */
+/* Empty page */
 [data-blocks-empty] {
   margin: 48px auto; max-width: 560px; padding: 32px; text-align: center;
   border: 2px dashed color-mix(in srgb, var(--blocks-accent) 50%, transparent); border-radius: 12px;
@@ -48,9 +48,9 @@ html.blocks-editing [data-blocks-editable]:empty::before { content: "…"; opaci
   background: var(--blocks-accent); color: #fff; cursor: pointer;
 }
 
-/* Layout (Spalten) im Bearbeiten-Modus */
+/* Layout (columns) in edit mode */
 html.blocks-editing [data-lay-col] { min-height: 80px; outline: 1px dashed color-mix(in srgb, var(--blocks-accent) 35%, transparent); outline-offset: 6px; border-radius: 4px; }
-/* Spaltenmarke oben links an jeder Layout-Spalte (Übersicht: welcher Block steht in welcher Spalte) */
+/* Column badge top left on each layout column (overview: which block is in which column) */
 html.blocks-editing :where([data-lay-col]) { position: relative; }
 html.blocks-editing [data-lay-col]::before { content: "Spalte " attr(data-lay-col); position: absolute; top: -17px; left: -2px; z-index: 2; padding: 1px 6px; border-radius: 4px; background: color-mix(in srgb, var(--blocks-accent) 14%, #fff); color: var(--blocks-accent); font: 600 10px/1.4 system-ui, sans-serif; letter-spacing: .02em; pointer-events: none; }
 html.blocks-editing .lay-item[data-block] { position: relative; outline-offset: 4px; }
@@ -59,17 +59,17 @@ html.blocks-editing .lay-item[data-blocks-selected], html.blocks-editing .lay-it
 html.blocks-editing .lay-item[data-offline] { opacity: .45; }
 [data-blocks-coladd] {
   align-self: flex-start; margin-top: 4px; padding: 8px 12px; border: 1px dashed var(--blocks-accent); border-radius: 8px;
-  /* deckender Grund: Kontrast ≥ 4,5:1 auch auf dunklen Websites */
+  /* opaque background: contrast ≥ 4.5:1 even on dark websites */
   background: color-mix(in srgb, var(--blocks-accent) 6%, #fff); color: var(--blocks-accent);
   font: 600 13px/1.2 system-ui, sans-serif; cursor: pointer;
 }
 [data-blocks-coladd]:hover { background: color-mix(in srgb, var(--blocks-accent) 14%, #fff); }
 .blocks-invalid { font: 600 13px/1.4 system-ui, sans-serif; color: #b42318; }
 
-/* Hervorhebung *Wort* in Überschriften: Sternchen beim Bearbeiten nur angedeutet */
+/* Emphasis *word* in headings: asterisks only hinted while editing */
 html.blocks-editing .hl-mark { font-size: .35em; vertical-align: super; opacity: .35; }
 
-/* Blöcke: eingeklappt (Kompaktansicht), Ziehen */
+/* Blocks: collapsed (compact view), dragging */
 html.blocks-editing section[data-block].fluid-collapsed { position: relative; min-height: 0 !important; height: 52px !important; padding: 0 !important; overflow: hidden !important; cursor: pointer; }
 html.blocks-editing section[data-block].fluid-collapsed > :not(.fluid-handle) { visibility: hidden; }
 html.blocks-editing section[data-block].fluid-collapsed::after { content: "▸ " attr(data-label); position: absolute; inset: 0; display: flex; align-items: center; padding: 0 20px; font: 600 14px/1.2 system-ui, sans-serif; color: #344054; background: repeating-linear-gradient(-45deg, #f8f9fb 0 10px, #f2f4f7 10px 20px); border-bottom: 1px solid #e4e7ec; }
@@ -77,33 +77,33 @@ html.blocks-editing section[data-block].fluid-collapsed .fluid-handle { display:
 html.blocks-editing section[data-block].fluid-dragging { opacity: .45; }
 .fluid-dropline { position: fixed; left: 0; right: 0; height: 4px; background: #4f46e5; box-shadow: 0 0 0 2px #fff; z-index: 2147482900; pointer-events: none; }
 
-/* Redaktionskommentare [# … #] – nur im Bearbeiten-Modus sichtbar */
+/* Editorial comments [# … #] – visible only in edit mode */
 ::highlight(fluid-note) { background-color: #fef3c7; color: #92400e; text-decoration: underline dotted #d97706; }
-/* Blöcke eines YForm-Eintrags (Feld „Fluid-Blöcke“) im Bearbeiten-Modus */
+/* Blocks of a YForm entry (field „Fluid-Blöcke“) in edit mode */
 .df-blocks--edit { position: relative; outline: 2px dashed color-mix(in srgb, #4f46e5 45%, transparent); outline-offset: -2px; }
 .fbr-note { margin: 0; padding: 6px 12px; font: 600 12px/1.4 system-ui, sans-serif; color: #3730a3; background: #eef2ff; }
 .fbr-empty { padding: 32px 16px; text-align: center; font: 14px/1.5 system-ui, sans-serif; color: #4b5563; }
 .fbr-empty p { margin: 0 0 12px; }
 
-/* Bearbeiten: Greifer, Hilfslinien und Hinweise dürfen die Seite nie breiter als den Bildschirm machen (sonst verkleinert
-   iOS die ganze Seite) */
+/* Editing: handles, guides and hints must never make the page wider than the screen (otherwise iOS
+   shrinks the whole page) */
 html.blocks-editing, html.blocks-editing body { overflow-x: clip; }
 @supports not (overflow: clip) { html.blocks-editing body { overflow-x: hidden; } }
-/* Datensatz in der Detailansicht: Felder, die per Klick geändert werden (Data\RecordInline) */
+/* Record in the detail view: fields changed by click (Data\RecordInline) */
 html.blocks-editing [data-rec-field][data-rec-kind]:not([contenteditable]) { cursor: pointer; }
 html.blocks-editing [data-rec-field][aria-busy="true"] { opacity: .5; }
 html.blocks-editing .df-img { position: relative; }
 html.blocks-editing .fdl-recimg { position: absolute; left: .6rem; bottom: .6rem; z-index: 2; padding: .3em .8em; border: 0; border-radius: 999px; background: var(--f-ink, #111); color: var(--f-bg, #fff); font: 600 .75rem/1.4 system-ui, sans-serif; cursor: pointer; }
 html.blocks-editing .df-img-empty .fdl-recimg { position: static; }
 
-/* Gewöhnliche REDAXO-Module (keine fluid-Blöcke) im Bearbeiten-Modus: Rahmen beim Zeigen, Knopf „… bearbeiten“ */
+/* Ordinary REDAXO modules (not fluid blocks) in edit mode: frame on hover, button „… bearbeiten“ */
 html.blocks-editing .fluid-mod { position: relative; outline: 1px dashed transparent; outline-offset: 2px; transition: outline-color .15s; }
 html.blocks-editing .fluid-mod:hover, html.blocks-editing .fluid-mod.is-editing { outline-color: color-mix(in srgb, var(--blocks-accent) 70%, transparent); }
 html.blocks-editing .fluid-mod__btn { position: absolute; z-index: 5; top: 3rem; right: .5rem; padding: .3em .8em; border: 0; border-radius: 999px; background: var(--blocks-accent); color: #fff; font: 600 13px/1.4 system-ui, sans-serif; cursor: pointer; opacity: 0; transition: opacity .15s; }
 html.blocks-editing .fluid-mod:hover > .fluid-mod__btn, html.blocks-editing .fluid-mod.is-editing > .fluid-mod__btn, html.blocks-editing .fluid-mod__btn:focus-visible { opacity: 1; }
 html:not(.blocks-editing) .fluid-mod__btn { display: none; }
 
-/* „Ziel bearbeiten“ an Karten und Kacheln (TargetEdit, $b->targetEdit(); aus KLXM Studio): oben rechts in der Karte, sichtbar bei Zeiger/Fokus, auf Touch-Geräten immer. Reset + doppelte Klasse gegen Link-Regeln der Kits. */
+/* „Ziel bearbeiten“ on cards and tiles (TargetEdit, $b->targetEdit(); from KLXM Studio): top right in the card, visible on pointer/focus, always on touch devices. Reset + doubled class against the kits' link rules. */
 :where(:has(>.cms-target-edit)){position:relative}
 .cms-target-edit.cms-target-edit{all:unset;box-sizing:border-box;position:absolute;top:10px;right:10px;z-index:2147482990;display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:0 12px 0 10px;border-radius:999px;background:#1E2840;color:#fff;box-shadow:0 0 0 2px #fff,0 4px 14px rgba(0,0,0,.25);font:700 13px/1 Lato,"Segoe UI",Tahoma,Geneva,Verdana,system-ui,sans-serif;letter-spacing:0;text-transform:none;text-decoration:none;white-space:nowrap;cursor:pointer;opacity:0;transition:opacity .15s,background-color .15s;-webkit-user-modify:read-only;user-select:none}
 .cms-target-edit.cms-target-edit::before,.cms-target-edit.cms-target-edit::after{content:none}
@@ -112,12 +112,12 @@ html:not(.blocks-editing) .fluid-mod__btn { display: none; }
 :has(>.cms-target-edit):is(:hover,:focus-within)>.cms-target-edit.cms-target-edit,.cms-target-edit.cms-target-edit:focus-visible{opacity:1}
 .cms-target-edit.cms-target-edit:hover{background:#314164}
 .cms-target-edit.cms-target-edit:focus-visible{outline:3px solid #EDE9E3;outline-offset:2px;box-shadow:0 0 0 2px #1E2840,0 4px 14px rgba(0,0,0,.25)}
-/* Touch: immer sichtbar; auf schmalen Bildschirmen nur das Symbol (die Bezeichnung trägt aria-label) – kleine Kacheln bleiben lesbar */
+/* Touch: always visible; on narrow screens only the icon (aria-label carries the label) – small tiles stay readable */
 @media (hover:none){.cms-target-edit.cms-target-edit{opacity:1}}
 @media (hover:none) and (max-width:767px){.cms-target-edit.cms-target-edit{width:36px;min-height:36px;padding:0;justify-content:center}.cms-target-edit.cms-target-edit span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}}
 @media (forced-colors:active){.cms-target-edit.cms-target-edit{border:1px solid ButtonText;background:ButtonFace;color:ButtonText;opacity:1}}
 
-/* Abstand ziehen: der Abstand (padding oben/unten) ist schraffiert, der Abschnitt leuchtet auf – editor.js spaceHandles */
+/* Drag spacing: the spacing (padding top/bottom) is hatched, the section lights up – editor.js spaceHandles */
 html.blocks-editing .fluid-band { position: absolute; left: 0; right: 0; z-index: 7; height: 0; pointer-events: none; opacity: 0; transition: opacity .15s, height .15s; background: repeating-linear-gradient(-45deg, rgb(124 58 237 / .28) 0 5px, rgb(255 255 255 / .55) 5px 6.5px, rgb(124 58 237 / .08) 6.5px 11px, rgb(255 255 255 / .55) 11px 12.5px); }
 html.blocks-editing .fluid-band--top { top: 0; border-bottom: 1px dashed rgb(124 58 237 / .8); box-shadow: 0 1px 0 rgb(255 255 255 / .7); }
 html.blocks-editing .fluid-band--bottom { bottom: 0; border-top: 1px dashed rgb(124 58 237 / .8); box-shadow: 0 -1px 0 rgb(255 255 255 / .7); }

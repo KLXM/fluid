@@ -1,12 +1,12 @@
 /*
- * Rechtstexte im Dialog (Klxm\Fluid\Legal\LegalDialog, aus KLXM Studio): Links mit data-legal-src öffnen den
- * Text über der Seite statt auf einer neuen Seite – Eingaben im Formular bleiben erhalten. Ohne <dialog>, mit Strg/⌘-Klick
- * oder bei Fehlern: gewöhnlicher Link.
+ * Legal texts in a dialog (Klxm\Fluid\Legal\LegalDialog, from KLXM Studio): links with data-legal-src open the
+ * text above the page instead of on a new page – form inputs are kept. Without <dialog>, with Ctrl/⌘ click
+ * or on errors: ordinary link.
  */
 function legalDialogs() {
   if (window.__fluidLegal) return;
   window.__fluidLegal = true;
-  // Mit Skript öffnet der Link einen Dialog statt eines neuen Tabs – Hinweis für Screenreader anpassen
+  // With script the link opens a dialog instead of a new tab – adjust the hint for screen readers
   document.querySelectorAll('a[data-legal-src]').forEach(a => {
     a.setAttribute('aria-haspopup', 'dialog');
     a.querySelector('.sr-only, .sf-sr')?.remove();

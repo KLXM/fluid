@@ -9,14 +9,14 @@ use Yakamara\YForm\Field\Textarea;
 use Yakamara\YForm\Table\ListConfig;
 use Yakamara\YForm\Table\Table;
 
-// Nur mit YForm (fluid läuft auch ohne)
+// Only with YForm (fluid also runs without it)
 if (!class_exists(Table::class)) {
     return;
 }
 
 /**
- * Eingänge der Formulare, die die Redaktion im Block „Formular“ selbst zusammenstellt (BuiltForm) – eine YForm-Tabelle
- * wie jede andere: im Backend unter YForm, auf der Website im Postfach „Anfragen“. `console migrate` legt sie an.
+ * Submissions of the forms editors assemble themselves in the block „Formular“ (BuiltForm) – a YForm table
+ * like any other: in the backend under YForm, on the website in the inbox „Anfragen“. `console migrate` creates it.
  */
 #[AsTable('rex_fluid_form_entry', label: 'Formular-Eingänge', icon: 'fa-inbox')]
 final class FormEntryTable extends Table

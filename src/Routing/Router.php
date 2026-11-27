@@ -43,28 +43,28 @@ use const PHP_URL_PATH;
 use const PHP_URL_QUERY;
 
 /**
- * Schöne Adressen für REDAXO 6: /technik statt index.php?article_id=40 (gespeicherte Pfade, Routes), Einträge eigener
- * Quellen (/news/sommerfest-12, RouteSource), Hauptadresse, Alias- und Landing-Domains (Domains), Weiterleitungen und
- * 404-Protokoll (Redirects), sitemap.xml (Sitemap), robots.txt (Robots) und Seitenkopf (Seo\Head).
+ * Clean URLs for REDAXO 6: /technik instead of index.php?article_id=40 (stored paths, Routes), entries of custom
+ * sources (/news/sommerfest-12, RouteSource), main address, alias and landing domains (Domains), redirects and
+ * 404 log (Redirects), sitemap.xml (Sitemap), robots.txt (Robots) and page head (Seo\Head).
  *
- * Eigenständiger Baustein: kennt keine anderen Teile von fluid und lässt sich als eigenes AddOn herauslösen bzw. durch
- * yrewrite + ein URL-AddOn ersetzen (siehe README.md in diesem Ordner). Konfiguration im Projekt:
+ * Self-contained component: knows no other parts of fluid and can be split off as its own addon or replaced by
+ * yrewrite + a URL addon (see README.md in this folder). Configuration in the project:
  *
  *     Router::$config = new RoutingConfig(format: UrlFormat::html());
  *
- * Erweitern (alles ohne Wissen des Routings):
- *   #[AsRouteSource] + RouteSource/TableSource         Einträge mit eigener Adresse (gespeichert, Sitemap, Meta)
- *   #[AsEndpoint('/pfad')] an einer statischen Methode  eigene Adressen vor den Seiten (bzw. Router::endpoint())
- *   Router::resolver(fn (string $path, int $lang, array $query): ?RouteMatch)   dynamische Adressen ohne Speicherung
- *   Router::gate(fn (string $path))                    vor der Seitensuche (z. B. „Erste Schritte“ ohne Startseite)
- *   Router::onPage(fn (int $id, int $lang, array $query))   Seite gefunden (z. B. alte Parameter umleiten)
- *   Router::keep('param', …)                           Parameter, bei denen ?article_id=… nicht umgeleitet wird
+ * Extending (none of it requires knowledge of the routing):
+ *   #[AsRouteSource] + RouteSource/TableSource         entries with their own address (stored, sitemap, meta)
+ *   #[AsEndpoint('/pfad')] on a static method           own addresses before the pages (or Router::endpoint())
+ *   Router::resolver(fn (string $path, int $lang, array $query): ?RouteMatch)   dynamic addresses without storage
+ *   Router::gate(fn (string $path))                    before the page lookup (e.g. „Erste Schritte“ without start page)
+ *   Router::onPage(fn (int $id, int $lang, array $query))   page found (e.g. redirect old parameters)
+ *   Router::keep('param', …)                           parameters for which ?article_id=… is not redirected
  *   Extension Points: RoutesRebuilt, SitemapEntries, RobotsTxt, ArticleMeta, PageMetaResolved
  *
- * Ablauf einer Anfrage (PACKAGES_INCLUDED, früh – alle AddOns sind geladen): frühe Endpunkte · Alias-Host → 301
- * Hauptadresse · Endpunkte (sitemap.xml, robots.txt …) · Gates · alte ?article_id=… → 301 · Sprachpräfix · Endung weg ·
- * Pfad → Seite bzw. Eintrag bzw. Resolver · andere Schreibweise als die kanonische Adresse → 301 · Weiterleitung · sonst
- * Seite „nicht gefunden“ mit 404. Offline-Seiten nur mit Backend-Anmeldung.
+ * Request flow (PACKAGES_INCLUDED, early – all addons are loaded): early endpoints · alias host → 301
+ * main address · endpoints (sitemap.xml, robots.txt …) · gates · old ?article_id=… → 301 · language prefix · strip
+ * suffix · path → page, entry or resolver · spelling other than the canonical address → 301 · redirect · otherwise
+ * "not found" page with 404. Offline pages only with backend login.
  */
 final class Router
 {
@@ -73,7 +73,7 @@ final class Router
 
     private static ?RoutingConfig $defaults = null;
 
-    /** Parameter, bei denen ein ?article_id-Aufruf bleibt, wie er ist (API, Arbeitsversion, Media Manager; weitere per keep()) */
+    /** Parameters for which an ?article_id request stays as it is (API, working version, Media Manager; more via keep()) */
     private static array $keep = ['rex-api-call', 'rex_version', 'rex_history_date', 'rex_media_type', 'rex_media_file'];
 
     /** @var list<array{match: string|callable, handler: callable, early: bool}> */
@@ -94,7 +94,7 @@ final class Router
     private static ?Domain $landing = null;
     private static ?RouteMatch $current = null;
     private static bool $handled = false;
-    /** Nur GET/HEAD werden umgeleitet – POST des Editors an schöne Adressen nie */
+    /** Only GET/HEAD are redirected – never the editor's POST to clean URLs */
     private static bool $canRedirect = true;
 
     public static function config(): RoutingConfig
@@ -117,12 +117,12 @@ final class Router
         return null !== self::$config;
     }
 
-    // ------------------------------------------------------------------ Anmeldung der Bausteine
+    // ------------------------------------------------------------------ Registering components
 
     /**
-     * Eigene Adresse, die vor den Seiten beantwortet wird (wie #[AsEndpoint]). $match: exakter Pfad („/fluid-live“),
-     * Präfix mit „*“ („/proxy/*“, der Rest geht an den Handler) oder fn (string $path): bool. $handler(string $path,
-     * string $rest) beendet die Anfrage selbst. early: noch vor der Umleitung von Alias-Domains (Dienste wie SSE, MCP).
+     * Own address answered before the pages (like #[AsEndpoint]). $match: exact path ("/fluid-live"),
+     * prefix with "*" ("/proxy/*", the rest goes to the handler) or fn (string $path): bool. $handler(string $path,
+     * string $rest) ends the request itself. early: even before redirecting alias domains (services like SSE, MCP).
      */
     public static function endpoint(string|callable $match, callable $handler, bool $early = false): void
     {
@@ -166,14 +166,14 @@ final class Router
                     self::$discovered[] = ['match' => $match, 'handler' => [$e['class'], $e['method']], 'early' => $a->early];
                 }
             } catch (Throwable) {
-                // Klassenerkennung nicht verfügbar (Setup)
+                // Class discovery not available (setup)
             }
         }
 
         return [...self::$discovered, ...self::$endpoints];
     }
 
-    /** Pfad eines Endpunkts, falls er passt: Rest nach dem Präfix (bzw. '') – sonst null */
+    /** Path of an endpoint if it matches: rest after the prefix (or '') – otherwise null */
     private static function matches(string|callable $match, string $path): ?string
     {
         if (is_callable($match) && !is_string($match)) {
@@ -199,7 +199,7 @@ final class Router
         return false;
     }
 
-    /** Ist der Pfad ein angemeldeter Endpunkt? (z. B. damit ein Gate ihn durchlässt) */
+    /** Is the path a registered endpoint? (e.g. so that a gate lets it pass) */
     public static function isEndpoint(string $path): bool
     {
         foreach (self::allEndpoints() as $e) {
@@ -213,7 +213,7 @@ final class Router
 
     // ------------------------------------------------------------------ Start
 
-    /** Im Frontend: Asset-, Medien- und Controller-Adressen ab dem Basis-Pfad (sonst brechen sie auf /seite/unterseite) */
+    /** In the frontend: asset, media and controller URLs from the base path (otherwise they break on /page/subpage) */
     public static function boot(): void
     {
         if (self::config()->enabled && Core::isFrontend() && Core::hasRequest()) {
@@ -221,7 +221,7 @@ final class Router
         }
     }
 
-    /** @internal Adresse → Seite, sobald alle AddOns geladen sind (ihre Quellen und Endpunkte sind dann bekannt) */
+    /** @internal Address → page, once all addons are loaded (their sources and endpoints are known then) */
     #[AsExtension('PACKAGES_INCLUDED', ExtensionLevel::Early)]
     public static function handleRequest(): void
     {
@@ -232,7 +232,7 @@ final class Router
         self::resolve();
     }
 
-    /** @internal Adresse einer Seite; ohne Pfad (null) bleibt die Adresse des Cores */
+    /** @internal Address of a page; without a path (null) the core address remains */
     #[AsExtension]
     public static function articleUrl(ContentEp\ArticleUrl $ep): ?string
     {
@@ -244,7 +244,7 @@ final class Router
         return '' !== $url ? $url : null;
     }
 
-    /** @internal Struktur bzw. Sprachen geändert → Pfade neu (automatische Weiterleitungen inklusive) */
+    /** @internal Structure or languages changed → rebuild paths (including automatic redirects) */
     #[AsExtension(ContentEp\ArticleAdded::class)]
     #[AsExtension(ContentEp\ArticleUpdated::class)]
     #[AsExtension(ContentEp\ArticleDeleted::class)]
@@ -269,7 +269,7 @@ final class Router
         }
     }
 
-    // ------------------------------------------------------------------ Auflösen
+    // ------------------------------------------------------------------ Resolving
 
     private static function resolve(): void
     {
@@ -280,7 +280,7 @@ final class Router
         if ('/index.php' === $path) {
             $path = $raw = '/';
         }
-        // frühe Endpunkte (Dienste wie SSE, MCP)
+        // early endpoints (services like SSE, MCP)
         self::runEndpoints($path, true);
         $query = $r->query->all();
         self::$canRedirect = in_array($r->getMethod(), ['GET', 'HEAD'], true);
@@ -292,13 +292,13 @@ final class Router
         }
         self::$landing = DomainRole::Landing === $domain?->role ? $domain : null;
 
-        // Endpunkte (sitemap.xml, robots.txt, Bausteine) und Gates (z. B. „Erste Schritte“ ohne Startseite)
+        // endpoints (sitemap.xml, robots.txt, components) and gates (e.g. „Erste Schritte“ without start page)
         self::runEndpoints($path, false);
         foreach (self::$gates as $gate) {
             $gate($path);
         }
 
-        // ?article_id=…: Editor, API, Medien bleiben; einfache Aufrufe → schöne Adresse (301)
+        // ?article_id=…: editor, API, media stay; plain requests → clean URL (301)
         if (isset($query['article_id']) || isset($query['rex_media_type']) || isset($query['rex-api-call'])) {
             if ('/' === $path && isset($query['article_id']) && 'GET' === $r->getMethod() && !array_intersect(self::$keep, array_keys($query))) {
                 $id = (int) $query['article_id'];
@@ -313,7 +313,7 @@ final class Router
             }
         }
 
-        // Sprache aus dem Präfix, Endung weg
+        // language from the prefix, strip suffix
         [$lang, $rest] = Routes::splitLanguage($path);
         $key = self::config()->format->strip($rest);
 
@@ -327,16 +327,16 @@ final class Router
 
         $match = self::match($full, $lang, $query);
         if (null === $match && null !== $landingId && !self::$landing->subtree && '' !== $key) {
-            // Einträge der Einstiegsseite einer Landing-Domain ohne Unterseiten
+            // entries of a landing domain's entry page without subpages
             $e = Routes::findEntry(ltrim(Routes::path((int) $landingId, $lang) . '/' . $key, '/'), $lang);
             $match = null !== $e && $e->articleId === $landingId ? self::entryMatch($e) : null;
         }
         if (null !== $match) {
             if (self::$landing && !self::inLanding($match->articleId)) {
-                // Seite außerhalb der Landingpage → Hauptadresse
+                // page outside the landing page → main address
                 self::redirect(self::absolute(self::url($match->articleId, $lang, $query)), 302);
             } else {
-                // eine Adresse je Seite: andere Schreibweise, Endung, Schrägstrich, Sprachpräfix → kanonische Adresse
+                // one address per page: other spelling, suffix, slash, language prefix → canonical address
                 $want = self::wanted($match, array_diff_key($query, $match->params));
                 if ('' !== $want && self::pathOf($want) !== $raw) {
                     self::redirect(self::absolute($want), 301, $match->cacheRedirect);
@@ -351,12 +351,12 @@ final class Router
                 return;
             }
         }
-        // Natürliche Adresse der Startseite (/start) → „/“
+        // natural address of the start page (/start) → "/"
         $home = Article::getSiteStartArticleId();
         if (!self::$landing && '' !== $key && strtolower($full) === Routes::slug($home, $lang)) {
             self::redirect(self::absolute(self::url($home, $lang, $query)), 301);
         }
-        // Weiterleitungen (auch für die Schreibweise ohne Endung)
+        // redirects (also for the spelling without suffix)
         $qs = (string) parse_url($r->getRequestUri(), PHP_URL_QUERY);
         $plain = '/' . ltrim(Routes::prefix($lang) . '/' . $key, '/');
         $hit = Redirects::match($path, $qs) ?? ($plain !== $path ? Redirects::match($plain, $qs) : null);
@@ -373,7 +373,7 @@ final class Router
         self::notFound($lang, Response::HTTP_NOT_FOUND);
     }
 
-    /** Seite, Eintrag einer Quelle oder Ergebnis eines Resolvers zu einem Pfad (ohne Präfix und Endung) */
+    /** Page, source entry or resolver result for a path (without prefix and suffix) */
     private static function match(string $full, int $lang, array $query): ?RouteMatch
     {
         if ('' === $full) {
@@ -406,7 +406,7 @@ final class Router
         return new RouteMatch($e->articleId, $e->languageId, $e->params, self::urlFor($e->source, $e->id, $e->languageId), true, null, $alternates, $e);
     }
 
-    /** Kanonische Adresse eines Treffers mit den Parametern der Anfrage */
+    /** Canonical address of a match with the request's parameters */
     private static function wanted(RouteMatch $m, array $query): string
     {
         if (null === $m->url) {
@@ -421,7 +421,7 @@ final class Router
         return $u . '?' . http_build_query($query + $own);
     }
 
-    /** Pfad einer Adresse ab dem Basis-Pfad, wie ihn die Anfrage hat (andere Domain: null-sicher anders) */
+    /** Path of an address from the base path, as the request has it (other domain: null-safe different) */
     private static function pathOf(string $url): string
     {
         if (preg_match('~^https?://~i', $url) && strtolower((string) parse_url($url, PHP_URL_HOST)) !== strtolower(Domains::host(Core::getRequest()->getHost()))) {
@@ -436,7 +436,7 @@ final class Router
     private static function select(RouteMatch $m): void
     {
         $article = Article::get($m->articleId, $m->languageId);
-        // Offline: nur mit Backend-Anmeldung (Vorschau für die Redaktion); Einträge, die es nicht mehr gibt: 404
+        // offline: only with backend login (preview for editors); entries that no longer exist: 404
         if (!$article || (!$article->isOnline() && !BackendLogin::hasSession())
             || (null !== $m->entry && !(Sources::get($m->entry->source)?->exists($m->entry) ?? false))) {
             self::notFound($m->languageId, Response::HTTP_NOT_FOUND);
@@ -463,7 +463,7 @@ final class Router
         Response::setStatus($status);
     }
 
-    /** Treffer der aktuellen Anfrage (Seite, Eintrag einer Quelle, Resolver) – null bei 404 bzw. außerhalb des Frontends */
+    /** Match of the current request (page, source entry, resolver) – null on 404 or outside the frontend */
     public static function current(): ?RouteMatch
     {
         return self::$current;
@@ -472,8 +472,8 @@ final class Router
     // ------------------------------------------------------------------ Adressen
 
     /**
-     * Adresse einer Seite: relativ auf derselben Domain, absolut auf eine andere (Landing ↔ Hauptadresse) und im Backend.
-     * '' = keine gespeicherte Adresse (Core-Standard index.php?article_id=…).
+     * Address of a page: relative on the same domain, absolute to another one (landing ↔ main address) and in the backend.
+     * '' = no stored address (core default index.php?article_id=…).
      */
     public static function url(int $id, int $languageId, array $params = []): string
     {
@@ -483,7 +483,7 @@ final class Router
         return null === $path ? '' : self::build($id, $path, Routes::isCategory($id, $languageId), $languageId, $params);
     }
 
-    /** Adresse eines Eintrags einer Quelle ('' = keine) */
+    /** Address of a source entry ('' = none) */
     public static function urlFor(string $source, string|int $id, ?int $languageId = null, array $params = []): string
     {
         $languageId = $languageId ?: Language::getCurrentId();
@@ -493,7 +493,7 @@ final class Router
         return null === $article ? '' : self::build($article, $path, false, $languageId, $params);
     }
 
-    /** Adresse aus Pfad (ohne Präfix und Endung) und der Seite, zu der er gehört */
+    /** Address from a path (without prefix and suffix) and the page it belongs to */
     private static function build(int $articleId, string $path, bool $category, int $languageId, array $params): string
     {
         $fmt = self::config()->format;
@@ -522,8 +522,8 @@ final class Router
     }
 
     /**
-     * Sprachfassungen einer Seite: alle Sprachen, die online sind und in denen die Seite online ist (für die Sprachwahl).
-     * Mit $all auch offline (für die Redaktion). Auf der Adresse eines Eintrags: dessen Sprachfassungen.
+     * Language versions of a page: all online languages in which the page is online (for the language switch).
+     * With $all also offline ones (for editors). On an entry's address: the entry's language versions.
      *
      * @return list<array{id: int, code: string, name: string, url: string, current: bool, online: bool}>
      */
@@ -540,7 +540,7 @@ final class Router
             }
             $url = null !== $entry ? self::urlFor($entry->source, $entry->id, $l->id) : self::url($article->id, $l->id);
             if ('' === $url && null !== $entry) {
-                $url = self::url($article->id, $l->id);   // Eintrag gibt es in der Sprache nicht: Seite
+                $url = self::url($article->id, $l->id);   // entry does not exist in this language: page
             }
             $out[] = ['id' => $l->id, 'code' => $l->code, 'name' => $l->name, 'url' => $url, 'current' => $l->id === $article->languageId, 'online' => $online];
         }
@@ -556,7 +556,7 @@ final class Router
         return null === $path ? '' : self::canonicalPath($id, $path, Routes::isCategory($id, $languageId), $languageId);
     }
 
-    /** Kanonische, absolute Adresse eines Eintrags ('' = keine) */
+    /** Canonical absolute address of an entry ('' = none) */
     public static function canonicalFor(string $source, string|int $id, int $languageId): string
     {
         $path = Routes::entryPath($source, (string) $id, $languageId);
@@ -595,13 +595,13 @@ final class Router
         return $l->subtree && in_array($l->articleId, Article::get($id)->path ?? [], true);
     }
 
-    /** Aktuelle Landing-Domain (oder null) – z. B. für ein auf die Landingpage begrenztes Menü */
+    /** Current landing domain (or null) – e.g. for a menu limited to the landing page */
     public static function landing(): ?Domain
     {
         return self::$landing;
     }
 
-    /** Basis-Pfad der Website (Unterordner), ohne Schrägstrich am Ende */
+    /** Base path of the website (subfolder), without trailing slash */
     public static function base(): string
     {
         if (!Core::hasRequest()) {
@@ -639,9 +639,9 @@ final class Router
     }
 
     /**
-     * Weiterleitung (nur bei GET/HEAD) – für Bausteine; relative Adressen werden absolut.
+     * Redirect (only for GET/HEAD) – for components; relative addresses become absolute.
      *
-     * @param bool $cache 301 eine Stunde zwischenspeichern – nicht bei Adressen, die sich ändern können (Titel eines Datensatzes)
+     * @param bool $cache cache the 301 for an hour – not for addresses that may change (title of a record)
      */
     public static function redirectTo(string $url, int $code = 301, bool $cache = true): void
     {
@@ -662,9 +662,9 @@ final class Router
     }
 
     /**
-     * Antwort senden und beenden (für Endpunkte und Resolver der Bausteine).
+     * Send the response and exit (for endpoints and resolvers of components).
      *
-     * @param list<string> $headers weitere Kopfzeilen
+     * @param list<string> $headers additional headers
      */
     public static function respond(string $body, string $type, array $headers = []): never
     {
@@ -678,7 +678,7 @@ final class Router
 
     // ------------------------------------------------------------------ eigene Endpunkte
 
-    /** @internal Sitemap und robots.txt nicht in Proxy-Caches festhalten (sonst gilt nach einer Änderung noch lange die alte) */
+    /** @internal Keep sitemap and robots.txt out of proxy caches (otherwise the old one stays valid long after a change) */
     #[AsEndpoint('/sitemap.xml')]
     public static function sitemap(): void
     {

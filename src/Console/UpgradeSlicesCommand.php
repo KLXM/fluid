@@ -26,15 +26,15 @@ use function preg_match;
 use function str_starts_with;
 
 /**
- * Übernimmt Blöcke einer älteren REDAXO-6-Datenbank in das Slice-Format des Cores ab 9132fc1/fa458f9.
+ * Converts blocks of an older REDAXO 6 database to the core slice format from 9132fc1/fa458f9 on.
  *
- * Der Core migriert Entwicklungs-Datenbanken nicht selbst: Die festen Spalten value1–20, media1–10 … gibt es nicht mehr,
- * die Werte der Module stehen als JSON in `data`, und `ctype_id` heißt `content_section_id`. `migrate` legt die neuen
- * Spalten leer an. Dieser Befehl benennt um (oder überträgt, wenn `migrate` schon lief), legt `data` an und füllt sie
- * aus den alten Spalten. Mehrfach ausführbar; die alten Spalten bleiben, bis --drop-old sie entfernt.
+ * The core doesn't migrate development databases itself: the fixed columns value1–20, media1–10 … no longer exist,
+ * the module values are stored as JSON in `data`, and `ctype_id` is now `content_section_id`. `migrate` creates the new
+ * columns empty. This command renames (or copies, if `migrate` already ran), creates `data` and fills it
+ * from the old columns. Can be run repeatedly; the old columns stay until --drop-old removes them.
  *
- * Außerdem: Blöcke im früheren Format von fluid `{values: {…}, tunes: {…}}` → Speicherung des Cores (je Feld unter seinem
- * Schlüssel, dazu `tunes`) – damit der Core die Eigenschaften der Blöcke selbst befüllt.
+ * Also: blocks in the former fluid format `{values: {…}, tunes: {…}}` → core storage (each field under its
+ * key, plus `tunes`) – so the core fills the block properties itself.
  */
 #[AsCommand(name: 'fluid:upgrade:slices', description: 'Übernimmt Blöcke älterer REDAXO-6-Datenbanken in die Spalte data (vor oder nach migrate)')]
 final class UpgradeSlicesCommand extends AbstractCommand
@@ -52,11 +52,11 @@ final class UpgradeSlicesCommand extends AbstractCommand
             }
             $io->section($name);
 
-            // ctype_id → content_section_id (lief migrate schon, gibt es beide: Werte übertragen)
+            // ctype_id → content_section_id (if migrate already ran, both exist: copy the values)
             if ($table->hasColumn('ctype_id')) {
                 if ($table->hasColumn('content_section_id')) {
                     Sql::factory()->setQuery('UPDATE ' . $name . ' SET content_section_id = ctype_id WHERE content_section_id = 0');
-                    // der Core befüllt ctype_id nicht mehr: als Pflichtfeld ohne Standardwert scheitert sonst jedes neue Slice
+                    // the core no longer fills ctype_id: as a required field without default every new slice would fail
                     $table->ensureColumn(Column::smallint('ctype_id', unsigned: true, nullable: true))->alter();
                     $io->text('content_section_id aus ctype_id übernommen, ctype_id optional');
                 } else {
@@ -85,7 +85,7 @@ final class UpgradeSlicesCommand extends AbstractCommand
                 }
             }
         }
-        Cache::delete();   // Inhalte und Klassen neu aufbauen
+        Cache::delete();   // rebuild content and classes
         if (Table::get('rex_article_slice_reference')->exists()) {
             $io->text(ArticleSliceReference::rebuild() . ' Verweise (Medien, Seiten) neu aufgebaut');
         }
@@ -94,7 +94,7 @@ final class UpgradeSlicesCommand extends AbstractCommand
         return Command::SUCCESS;
     }
 
-    /** Slices ohne data aus value1/value2 füllen */
+    /** Fills slices without data from value1/value2 */
     private static function fill(string $table): int
     {
         $blocks = array_keys(BlockModule::all());
@@ -117,7 +117,7 @@ final class UpgradeSlicesCommand extends AbstractCommand
         return $count;
     }
 
-    /** Blöcke im Format {values, tunes} → je Feld unter seinem Schlüssel (BlockModule::store) */
+    /** Blocks in the format {values, tunes} → each field under its key (BlockModule::store) */
     private static function flatten(string $table): int
     {
         $count = 0;

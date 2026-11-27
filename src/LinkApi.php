@@ -29,10 +29,10 @@ use function mb_substr;
 use function trim;
 
 /**
- * Ziele für den Link-Dialog der Formatierungsleiste (nur lesend, angemeldete Redakteure; Backend und Website):
- *  - `?rex-api-call=fluid_links&kind=records&q=…`  Datensätze mit eigener Adresse: Datenlisten mit Detailansicht
- *    (ref detail://seite/id) und Route-Quellen (ref route://quelle/id)
- *  - `?rex-api-call=fluid_links&kind=anchors&article=ID`  Sprungmarken der Blöcke einer Seite → #anker
+ * Targets for the link dialog of the formatting bar (read-only, logged-in editors; backend and website):
+ *  - `?rex-api-call=fluid_links&kind=records&q=…`  records with their own address: data lists with detail view
+ *    (ref detail://page/id) and route sources (ref route://source/id)
+ *  - `?rex-api-call=fluid_links&kind=anchors&article=ID`  anchors of the blocks of a page → #anchor
  */
 #[AsApiFunction('fluid_links')]
 final class LinkApi extends ApiFunction
@@ -61,7 +61,7 @@ final class LinkApi extends ApiFunction
     }
 
     /**
-     * Datensätze aller Route-Quellen (News, Termine, Projekte …) in der Sprache; Suche in Titel und Adresse.
+     * Records of all route sources (news, events, projects …) in the language; searches title and address.
      *
      * @return list<array{ref: string, label: string, meta: string, url: string}>
      */
@@ -69,7 +69,7 @@ final class LinkApi extends ApiFunction
     {
         $out = [];
         $match = static fn (string ...$texts): bool => '' === $q || array_any($texts, static fn (string $t) => false !== mb_stripos($t, $q));
-        // Datenlisten mit Detailansicht: Einträge unter der Adresse ihrer Seite (/seite/titel-ID)
+        // Data lists with detail view: entries below the address of their page (/page/title-ID)
         $pages = Sql::factory()->getArray("SELECT DISTINCT article_id FROM rex_article_slice WHERE language_id = ? AND revision = ? AND status = 1 AND module LIKE '%.datalist'",
             [$language, ArticleRevision::LIVE]);
         foreach ($pages as $row) {
@@ -90,7 +90,7 @@ final class LinkApi extends ApiFunction
                 }
             }
         }
-        // Route-Quellen (eigene Adressen, z. B. News, Termine)
+        // Route sources (own addresses, e.g. news, events)
         foreach (Sources::all() as $source) {
             foreach (Routes::entries($source->key()) as $entry) {
                 if ($entry->languageId !== $language) {
@@ -121,7 +121,7 @@ final class LinkApi extends ApiFunction
     }
 
     /**
-     * Sprungmarken der Blöcke einer Seite (Feld „Sprungmarke“ unter „Abschnitt“).
+     * Anchors of the blocks of a page (field „Sprungmarke“ under „Abschnitt“).
      *
      * @return list<array{anchor: string, label: string}>
      */

@@ -38,25 +38,26 @@ use const JSON_UNESCAPED_SLASHES;
 use const JSON_UNESCAPED_UNICODE;
 
 /**
- * Diagramme mit austauschbarer Engine (aus KLXM Studio – Core\Charts).
+ * Charts with an exchangeable engine (from KLXM Studio – Core\Charts).
  *
- * Aufrufer beschreiben ein Diagramm in einem eigenen, schlichten Format – nie im Format einer Bibliothek:
+ * Callers describe a chart in a simple format of their own – never in a library's format:
  *
  *     echo Chart::render([
  *         'type' => 'bar',                                   // line | area | bar | hbar | pie | donut
  *         'labels' => ['Jan', 'Feb', 'Mär'],
  *         'series' => [['name' => 'Anfragen', 'data' => [12, 19, 15]]],
- *         'description' => 'Anfragen je Monat',              // Screenreader (role="img")
+ *         'description' => 'Anfragen je Monat',              // screen reader (role="img")
  *         'format' => 'number', 'unit' => '', 'stacked' => false, 'height' => 320,
  *     ]);
  *
- * Ausgabe: <figure data-chart> mit den Daten als JSON (<script type="application/json"> – nicht ausführbar), einer Tabelle
- * („Als Tabelle anzeigen“, auch ohne JavaScript) und dem Lader assets/js/charts.mjs (einmal je Seite). Der Lader holt die
- * Engine erst in Sichtweite und übergibt Daten und Farben (CSS-Variablen --chart-1 … --chart-8 usw., assets/css/charts.css).
+ * Output: <figure data-chart> with the data as JSON (<script type="application/json"> – not executable), a table
+ * („Als Tabelle anzeigen“, also without JavaScript) and the loader assets/js/charts.mjs (once per page). The loader
+ * fetches the engine only when in view and passes data and colours (CSS variables --chart-1 … --chart-8 etc.,
+ * assets/css/charts.css).
  *
- * Engine tauschen: Klasse mit #[AsChartEngine('name')], die ChartEngine implementiert, und in Project::configure()
- * `Chart::$config = new ChartConfig(engine: 'name')`. Aufrufer und Blöcke ändern sich dabei nicht.
- * Datenquellen für den Block „Diagramm“: #[AsChartSource('key', 'Bezeichnung')] an einer statischen Methode.
+ * Swapping the engine: a class with #[AsChartEngine('name')] implementing ChartEngine, and in Project::configure()
+ * `Chart::$config = new ChartConfig(engine: 'name')`. Callers and blocks do not change.
+ * Data sources for the block „Diagramm“: #[AsChartSource('key', 'Bezeichnung')] on a static method.
  */
 final class Chart
 {
@@ -69,7 +70,7 @@ final class Chart
     private const int MAX_LABELS = 1000;
     private const int MAX_SERIES = 12;
 
-    /** Einstellungen des Projekts (Project::configure()); null = Vorgaben */
+    /** Project settings (Project::configure()); null = defaults */
     public static ?ChartConfig $config = null;
 
     /** @var array<string, ChartEngine>|null */
@@ -96,14 +97,14 @@ final class Chart
                     self::$engines[$attribute->name] = new $class();
                 }
             } catch (Throwable) {
-                // Klassenerkennung nicht verfügbar (Setup)
+                // Class discovery not available (setup)
             }
         }
 
         return self::$engines;
     }
 
-    /** Gewählte Engine (Konfiguration, sonst echarts) */
+    /** Chosen engine (configuration, else echarts) */
     public static function engine(): ChartEngine
     {
         $all = self::engines();
@@ -126,21 +127,21 @@ final class Chart
                     self::$sources[$a->key] = ['label' => $a->label, 'handler' => [$e['class'], $e['method']]];
                 }
             } catch (Throwable) {
-                // Klassenerkennung nicht verfügbar (Setup)
+                // Class discovery not available (setup)
             }
         }
 
         return self::$sources;
     }
 
-    /** @return array<string, string> Auswahl „Daten“ im Block: von Hand + angemeldete Quellen */
+    /** @return array<string, string> choice „Daten“ in the block: manual + registered sources */
     public static function sourceChoices(): array
     {
         return ['' => 'Werte von Hand eingeben'] + array_map(static fn (array $s): string => $s['label'], self::allSources());
     }
 
     /**
-     * Beschreibung aus einer angemeldeten Quelle (leer, wenn es sie nicht gibt oder sie scheitert).
+     * Description from a registered source (empty if it does not exist or fails).
      *
      * @return array<string, mixed>
      */
@@ -160,7 +161,7 @@ final class Chart
     }
 
     /**
-     * Beschriftungen (eine je Zeile) und Werte (getrennt mit ; oder Zeilenumbruch) aus Eingaben.
+     * Labels (one per line) and values (separated by ; or line break) from input.
      *
      * @param list<array{name?: string, values?: string}> $series
      * @return array{labels: list<string>, series: list<array{name: string, data: list<float|null>}>}
@@ -182,7 +183,7 @@ final class Chart
         return array_values(array_filter(array_map('trim', preg_split('~\R~', $s) ?: []), static fn (string $l): bool => '' !== $l));
     }
 
-    /** Zahl aus einer Eingabe: „1.250“, „12,5“, „1 250“, „3.5“ → float; leer/ungültig → null */
+    /** Number from an input: „1.250“, „12,5“, „1 250“, „3.5“ → float; empty/invalid → null */
     public static function number(string $v): ?float
     {
         $v = str_replace(["\u{00A0}", ' ', '%', '€'], '', trim($v));
@@ -201,7 +202,7 @@ final class Chart
     }
 
     /**
-     * Beschreibung prüfen und vereinheitlichen (Typ, Zahlen, Grenzen).
+     * Validate and normalise the description (type, numbers, limits).
      *
      * @param array<string, mixed> $spec
      * @return array{type: string, labels: list<string>, series: list<array{name: string, data: list<int|float|null>}>, title: string, description: string, format: string, unit: string, stacked: bool, height: int, locale: string}
@@ -219,7 +220,7 @@ final class Chart
             $series[] = ['name' => mb_substr(trim((string) ($s['name'] ?? '')), 0, 80) ?: self::t('Reihe {n}', ['n' => $i + 1]), 'data' => $data];
         }
         if (in_array($type, ['pie', 'donut'], true)) {
-            $series = array_slice($series, 0, 1);   // Torte und Ring: eine Reihe
+            $series = array_slice($series, 0, 1);   // Pie and donut: one series
         }
 
         return [
@@ -235,10 +236,10 @@ final class Chart
     }
 
     /**
-     * Diagramm ausgeben.
+     * Render the chart.
      *
      * @param array<string, mixed> $spec
-     * @param array{class?: string, table?: bool|'none', caption?: bool} $opt table: true = Tabelle aufgeklappt, 'none' = ohne (die Seite zeigt die Werte schon als Tabelle)
+     * @param array{class?: string, table?: bool|'none', caption?: bool} $opt table: true = table expanded, 'none' = without (the page already shows the values as a table)
      */
     public static function render(array $spec, array $opt = []): string
     {
@@ -266,7 +267,7 @@ final class Chart
     }
 
     /**
-     * Werte als Tabelle (ohne JavaScript, Screenreader, Ausdruck).
+     * Values as a table (without JavaScript, screen readers, print).
      *
      * @param array{title: string, labels: list<string>, series: list<array{name: string, data: list<int|float|null>}>, format: string, unit: string} $s
      */
@@ -288,7 +289,7 @@ final class Chart
         return $h . '</tbody></table></div>';
     }
 
-    /** Ein Wert lesbar (gleiche Regeln wie die Engine) */
+    /** A value in readable form (same rules as the engine) */
     public static function format(int|float|null $v, string $format = 'number', string $unit = ''): string
     {
         if (null === $v) {
@@ -321,7 +322,7 @@ final class Chart
         return self::num($v, $i > 0 ? 1 : 0) . ' ' . $units[$i];
     }
 
-    /** Sprache der Seite (Code der Sprache, z. B. de, en) */
+    /** Language of the page (language code, e.g. de, en) */
     private static function locale(): string
     {
         try {
@@ -344,7 +345,7 @@ final class Chart
         return $text;
     }
 
-    /** Engine-Adressen absolut: der Lader holt sie per import() – relative Adressen gälten vom Modul aus */
+    /** Engine addresses absolute: the loader fetches them via import() – relative addresses would resolve from the module */
     private static function absolute(string $url): string
     {
         if (preg_match('~^((https?:)?//|/)~', $url)) {

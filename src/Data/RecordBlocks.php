@@ -24,12 +24,12 @@ use function is_array;
 use function Redaxo\Core\View\escape;
 
 /**
- * Blöcke eines YForm-Datensatzes (Feld „Fluid-Blöcke“) direkt auf der Website bearbeiten – mit demselben Editor wie die
- * Seiten: Texte auf der Seite, Seitenleiste, hinzufügen, verschieben, verdoppeln, kopieren/einfügen, löschen.
+ * Edit the blocks of a YForm record (field „Fluid-Blöcke“) directly on the website – with the same editor as
+ * pages: texts on the page, sidebar, add, move, duplicate, copy/paste, delete.
  *
- * Block-ID im Editor: `r~{tabelle}~{eintrag}~{feld}~{uid}` (uid = feste Kennung des Blocks, leer = Anfang der Liste).
- * Gespeichert wird über die Record-API von YForm (Prüfung, Hooks); Recht: YForm „Tabelle bearbeiten“ + Modulrecht.
- * Datensätze kennen keinen Entwurf – Änderungen sind sofort gespeichert.
+ * Block ID in the editor: `r~{table}~{entry}~{field}~{uid}` (uid = fixed identifier of the block, empty = start of the list).
+ * Saved via YForm's record API (validation, hooks); permission: YForm „Tabelle bearbeiten“ + module permission.
+ * Records have no draft – changes are saved immediately.
  */
 final class RecordBlocks
 {
@@ -45,21 +45,21 @@ final class RecordBlocks
         return 'r~' . $table . '~' . $record . '~' . $field . '~' . $uid;
     }
 
-    /** @return array{0: string, 1: int, 2: string, 3: string}|null Tabelle, Eintrag, Feld, uid */
+    /** @return array{0: string, 1: int, 2: string, 3: string}|null table, entry, field, uid */
     public static function parse(string $id): ?array
     {
         return preg_match('~^r\~([a-z0-9_]+)\~(\d+)\~([a-z0-9_]+)\~([a-z0-9]*)$~', $id, $m) ? [$m[1], (int) $m[2], $m[3], $m[4]] : null;
     }
 
-    /** Darf der Benutzer die Blöcke dieses Feldes bearbeiten? */
+    /** May the user edit the blocks of this field? */
     public static function canEdit(?User $user, Table $table): bool
     {
         return null !== $user && ($user->admin || Access::canEdit($table, $user));
     }
 
-    // ------------------------------------------------------------------ Ausgabe
+    // ------------------------------------------------------------------ Output
 
-    /** Blöcke eines Datensatzes für die Website – im Bearbeiten-Modus (mit Recht) bearbeitbar, sonst wie BlockData::render. */
+    /** Blocks of a record for the website – editable in edit mode (with permission), otherwise like BlockData::render. */
     public static function render(Table $table, Record $record, FluidBlocks $field, int $articleId): string
     {
         $user = Editing::user();
@@ -70,7 +70,7 @@ final class RecordBlocks
         $blocks = BlockData::decode($record->get($field->name));
         $withUids = BlockData::withUids($blocks);
         if ($withUids !== $blocks) {
-            // ältere Daten: Kennungen einmalig speichern, damit die IDs im Editor stabil sind
+            // older data: store identifiers once so the IDs in the editor are stable
             $record->set($field->name, $withUids);
             $record->save();
         }
@@ -101,7 +101,7 @@ final class RecordBlocks
         return [$b, $m::renderData($b, self::id($table, $rid, $field, $uid))];
     }
 
-    // ------------------------------------------------------------------ API (vom Editor über Api::handle)
+    // ------------------------------------------------------------------ API (from the editor via Api::handle)
 
     /** @return array<string, mixed> */
     public static function handle(string $action, User $user, int $articleId): array
@@ -166,7 +166,7 @@ final class RecordBlocks
                 $m = $module($blocks[$i]['module']);
                 [$data, $tunes] = Api::applyInput($blocks[$i]['data'], $blocks[$i]['tunes']);
                 $blocks[$i]['data'] = FieldForm::withDefaults($m::fields(), FieldForm::normalize($m::fields(), $data), $m::variants());
-                $blocks[$i]['tunes'] = Lock::tunes($user, $blocks[$i]['tunes'], $tunes);   // Gestaltung nur mit Recht
+                $blocks[$i]['tunes'] = Lock::tunes($user, $blocks[$i]['tunes'], $tunes);   // Styling only with permission
                 $store();
 
                 return $one($i);
@@ -195,7 +195,7 @@ final class RecordBlocks
                 array_splice($blocks, $at, 0, [$new]);
                 $store();
 
-                // erster Block: Seite neu laden (der Platzhalter „Noch keine Blöcke“ verschwindet)
+                // first block: reload the page (the placeholder „Noch keine Blöcke“ disappears)
                 return ['slice' => self::id($tname, $rid, $fname, $new['uid'])] + ($wasEmpty ? ['refresh' => true] : $one($at));
             case 'delete':
                 array_splice($blocks, $index($uid), 1);

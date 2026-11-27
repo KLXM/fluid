@@ -1,21 +1,21 @@
 <?php
 
 /*
- * Design-Tokens des Kits „fluid“ für den Style-Editor (aus KLXM Studio, MIT) – siehe Klxm\Fluid\Design.
- * Im REDAXO-Kit noch nicht umgesetzt (ausgeblendet, Ende der Datei): Kopf „Seitenleiste“.
+ * Design tokens of the kit „fluid“ for the style editor (from KLXM Studio, MIT) – see Klxm\Fluid\Design.
+ * Not implemented in the REDAXO kit yet (hidden, end of file): header „Seitenleiste“.
  *
- * Jeder Token wird eine CSS-Variable (--f-…) oder eine Klasse am <html> (hdr-inline, btn-pill, cards-glass, has-dark …).
- * Typografie und Abstände sind fließend: Schriftgrößen entstehen aus Grundgröße (min/max), Verhältnis der Stufen und
- * Bereich der Bildschirmbreite per clamp() (Utopia-Prinzip) – keine Breakpoints, keine Media-Queries.
- * Voreinstellungen sind mit tools/contrast.php auf WCAG 2.2 AA geprüft (hell und dunkel):
+ * Each token becomes a CSS variable (--f-…) or a class on <html> (hdr-inline, btn-pill, cards-glass, has-dark …).
+ * Typography and spacing are fluid: font sizes result from base size (min/max), ratio of the steps and
+ * range of the viewport width via clamp() (Utopia principle) – no breakpoints, no media queries.
+ * Presets are checked against WCAG 2.2 AA with tools/contrast.php (light and dark):
  *   php kits/fluid/tools/contrast.php
- * Standardwerte müssen mit :root in assets/css/_tokens.css übereinstimmen (Voreinstellung „Fluid Standard“).
+ * Default values must match :root in assets/css/_tokens.css (preset „Fluid Standard“).
  */
 
-// Reihenfolge der Farbwerte in den Voreinstellungen
+// Order of the color values in the presets
 $colorKeys = ['accent', 'accent_strong', 'on_accent', 'highlight', 'ink', 'text', 'muted', 'background', 'surface', 'line', 'dark_section'];
 
-/** Voreinstellung: Farben hell + dunkel (je 11 Werte in obiger Reihenfolge) und übrige Werte */
+/** Preset: colors light + dark (11 values each in the order above) and remaining values */
 $preset = static function (string $label, string $desc, array $light, array $dark, array $rest) use ($colorKeys): array {
     $values = [];
     foreach ($colorKeys as $i => $k) {
@@ -30,7 +30,7 @@ $color = static fn (string $name, string $label, string $var, string $light, str
     'contrast' => $contrast, 'help' => $help,
 ], static fn ($v) => null !== $v && '' !== $v);
 
-// Gemeinsame Werte der Voreinstellungen (werden je Vorlage überschrieben)
+// Shared values of the presets (overridden per preset)
 $base = [
     'font_body' => 'inter', 'font_head' => 'inter', 'font_mono' => 'system-mono', 'label_font' => 'body',
     'fs_min' => 16, 'fs_max' => 18.5, 'ratio' => 1.25, 'vw_min' => 360, 'vw_max' => 1280,
@@ -68,8 +68,8 @@ $design = [
             $color('line', 'Linien', '--f-line', '#E2E4EB', '#272B3A', null, 'Trennlinien und Rahmen (dekorativ).'),
             $color('dark_section', 'Dunkle Abschnitte', '--f-dark', '#0E1022', '#1A1D33', ['with' => '#FFFFFF', 'min' => 7, 'dark_with' => '#FFFFFF'],
                 'Hintergrund der Abschnitte „Dunkel“ (Schrift weiß). Im dunklen Farbschema etwas heller als der Hintergrund, damit das Band sichtbar bleibt.'),
-            // Farbenfroh (palette): drei weitere Farben – mit Akzent und zweiter Markenfarbe fünf, die sich in Karten, Symbolen,
-            // Abschnitten und Listen abwechseln. Nur für Grafik (Linien, Symbole, Marker) und als zarte Tönung unter dunkler Schrift.
+            // Colorful (palette): three more colors – with accent and second brand color five that alternate in cards, icons,
+            // sections and lists. Only for graphics (lines, icons, markers) and as a subtle tint under dark text.
             ['name' => 'palette', 'label' => 'Farbwirkung', 'type' => 'choice', 'class' => 'pal-{value}', 'default' => 'brand',
                 'options' => ['brand' => 'Markenfarben (Akzent, zweite Markenfarbe)', 'colorful' => 'Farbenfroh – fünf Farben im Wechsel'],
                 'help' => '„Farbenfroh“: Karten, Symbole, Kennzahlen, Listenpunkte, getönte Abschnitte und die Seitenleiste wechseln zwischen Akzent, zweiter Markenfarbe und den drei Farben unten. Schrift bleibt in Überschriften- und Textfarbe – die Farben tönen nur Flächen, Linien und Symbole.'],
@@ -190,7 +190,7 @@ $design = [
                 'help' => 'Telefon, E-Mail und Social Media aus Website → Stammdaten, dazu ein kurzer Text (Website → „Text der Infoleiste“) – z. B. für Verbände, Praxen und Notdienste.'],
             ['name' => 'footer', 'label' => 'Fußbereich', 'type' => 'choice', 'class' => 'ft-{value}', 'default' => 'columns',
                 'options' => ['columns' => 'Spalten (Kontakt, Seiten, Social)', 'simple' => 'Schlicht in einer Zeile', 'centered' => 'Zentriert (Logo, Seiten, Social untereinander)', 'statement' => 'Großer Schriftzug mit Handlungsaufruf']],
-            // CSS css/opt-footer_density-compact.css (kit.php → design_css); „Kompakt“ gibt außerdem die Adresse einzeilig aus
+            // CSS css/opt-footer_density-compact.css (kit.php → design_css); „Kompakt“ also renders the address on one line
             ['name' => 'footer_density', 'label' => 'Dichte des Fußbereichs', 'type' => 'choice', 'class' => 'fd-{value}', 'default' => 'normal',
                 'options' => ['normal' => 'Normal', 'compact' => 'Kompakt – weniger Abstand, Links als Zeilen, Adresse in einer Zeile'],
                 'help' => '„Kompakt“ halbiert etwa die Höhe des Fußbereichs auf dem Telefon: Seiten und Social Media stehen nebeneinander statt untereinander, Copyright und Rechtliches in einer Zeile. Auf Touch-Geräten bleiben die Links groß genug zum Tippen.'],
@@ -227,7 +227,7 @@ $design = [
         ]],
     ],
 
-    // Schriften: 'fontsource' = installiert der Schriften-Manager (Core\Fonts, fonts:sync; selbst gehostet, ohne externe Anfragen) – variable Schriften: ein Download für alle Stärken
+    // Fonts: 'fontsource' = installed by the font manager (Core\Fonts, fonts:sync; self-hosted, no external requests) – variable fonts: one download for all weights
     'fonts' => [
         'inter' => ['label' => 'Inter (Grotesk, neutral · variabel)', 'stack' => 'Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif', 'fontsource' => 'inter'],
         'instrument-sans' => ['label' => 'Instrument Sans (Grotesk, freundlich · variabel)', 'stack' => '"Instrument Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif', 'fontsource' => 'instrument-sans'],
@@ -254,15 +254,15 @@ $design = [
         'system-mono' => ['label' => 'System-Monospace (ohne Download)', 'stack' => 'ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace'],
     ],
 
-    // Neun Vorlagen für unterschiedliche Projekte – alle hell und dunkel AA-geprüft (tools/contrast.php)
+    // Nine presets for different projects – all checked AA in light and dark (tools/contrast.php)
     'presets' => [
         'standard' => $preset('Fluid Standard', 'Neutral und klar: Indigo, Inter, ausgewogene Stufen – der Standard des Kits.',
             ['#4338CA', '#3730A3', '#FFFFFF', '#FDE68A', '#0B0D17', '#2B2F3A', '#565C6B', '#FFFFFF', '#F4F5F8', '#E2E4EB', '#0E1022'],
             ['#A5B4FC', '#C7D2FE', '#14123A', '#3A3470', '#F3F4F8', '#D2D5DE', '#9EA3B2', '#0B0C14', '#141621', '#272B3A', '#1A1D33'],
             $base),
-        // Angelehnt an redaxo.org und das Backend des Cores (assets/scss/_variables.scss): blauer Kopf, blaue Überschriften,
-        // Dunkelblau #343f50 für Text und Fuß, Grund #f3f6fb, Linien #dfe3e9, Source Sans. Die Blautöne sind dunklere Stufen
-        // des REDAXO-Blaus #5b98d7/#4b9ad9 (dort Weiß darauf nur 3:1) – so erfüllen Kopf, Links und Buttons WCAG AA.
+        // Based on redaxo.org and the core backend (assets/scss/_variables.scss): blue header, blue headings,
+        // dark blue #343f50 for text and footer, background #f3f6fb, lines #dfe3e9, Source Sans. The blues are darker shades
+        // of REDAXO blue #5b98d7/#4b9ad9 (white on it only 3:1 there) – so header, links and buttons meet WCAG AA.
         'redaxo' => $preset('REDAXO · Blau', 'Im Stil von redaxo.org: blauer Kopf, blaue Überschriften in Exo, Text in Source Sans, dunkler Fuß, runde Buttons – Farben aus dem REDAXO-Backend.',
             ['#2C6AA8', '#1F5A96', '#FFFFFF', '#DBEDF7', '#1D5288', '#343F50', '#596676', '#FFFFFF', '#F3F6FB', '#DFE3E9', '#343F50'],
             ['#8CBDEE', '#B3D4F4', '#0B1A2B', '#1F3A52', '#B8D6F5', '#D3DAE3', '#9AA6B4', '#10161D', '#18202A', '#2A3542', '#1D2835'],
@@ -318,7 +318,7 @@ $design = [
             ['font_body' => 'inter', 'font_head' => 'instrument-serif', 'font_mono' => 'jetbrains-mono', 'label_font' => 'mono', 'ratio' => 1.5, 'fs_max' => 18, 'heading_weight' => 400, 'heading_tracking' => -1,
                 'radius' => 0, 'buttons' => 'sharp', 'cards' => 'flat', 'shadow' => 'none', 'space' => 'airy', 'wrap' => 88, 'eyebrow' => 'plain',
                 'header' => 'rail', 'footer' => 'statement', 'pagebg' => 'plain'] + $base),
-        // Projektarten aus KLXM-Kundenprojekten (Sozialträger, Verbände, Gesundheit, Betriebe, Kommunen, Wissensportale)
+        // Project types from KLXM client projects (social services, associations, health, businesses, councils, portals)
         'sozial' => $preset('Sozialträger · Zwei Markenfarben', 'Warm und verlässlich: Orange und Grün als Markenfarben, Lato, Textmarker-Betonung, Infoleiste, dunkler Fuß.',
             ['#A93509', '#872A07', '#FFFFFF', '#FDE7C9', '#1C1917', '#3A3430', '#625A54', '#FFFFFF', '#F7F4F1', '#E7E1DB', '#1F2A1A'],
             ['#FDBA74', '#FED7AA', '#3B1406', '#5A3A12', '#F6F2EE', '#D9D2CC', '#A69D96', '#12100E', '#1C1916', '#33302C', '#1E2A1B'],
@@ -361,7 +361,7 @@ $design = [
                 'font_body' => 'source-sans', 'font_head' => 'manrope', 'ratio' => 1.333, 'heading_weight' => 800, 'heading_tracking' => -2.5,
                 'radius' => 14, 'buttons' => 'pill', 'cards' => 'glass', 'shadow' => 'layered', 'eyebrow' => 'dot', 'emphasis' => 'gradient', 'motion_style' => 'blur', 'wrap' => 80,
                 'header' => 'floating', 'footer' => 'statement', 'footer_bg' => 'page', 'pagebg' => 'glow'] + $base),
-        // Netzwerke, Bildung, Verbände mit vielen Mitgliedern: Seitenleiste mit Menübaum, großes Logo, fünf Farben im Wechsel
+        // Networks, education, associations with many members: sidebar with menu tree, large logo, five alternating colors
         'netzwerk' => $preset('Netzwerk & Bildung · Farbenfroh mit Seitenleiste', 'Lebendig und gut sortiert: Kopfbanner mit großem Logo, darunter Seitenleiste mit Menübaum, fünf Farben im Wechsel, Nunito, runde Formen – für Netzwerke, Bildungsträger und Verbände.',
             ['#B23A0B', '#8F2E09', '#FFFFFF', '#FED7AA', '#1C1917', '#3A302A', '#665950', '#FFFBF6', '#FFF1E4', '#F0DFCF', '#2A1A12'],
             ['#FDBA74', '#FED7AA', '#3B1406', '#5A3A12', '#FBF4EE', '#E2D7CE', '#AE9F94', '#14100D', '#1E1814', '#3A2F28', '#2A1D16'],
@@ -372,7 +372,7 @@ $design = [
                 'radius' => 18, 'buttons' => 'pill', 'cards' => 'elevated', 'shadow' => 'soft', 'eyebrow' => 'pill', 'emphasis' => 'marker', 'icons' => 'circle', 'wrap' => 72,
                 'header' => 'sidebar', 'header_bg' => 'gradient', 'logo_size' => 'xl', 'side_width' => 'normal', 'side_tree' => 'branch', 'side_banner' => 'band', 'side_banner_height' => 'normal', 'nav_style' => 'pill',
                 'footer' => 'columns', 'footer_bg' => 'surface', 'pagebg' => 'plain'] + $base),
-        // Farben aus „Fluid Standard“ bzw. „Agentur“ (AA-geprüft) – neu sind Formen, Hintergrund und Bewegung
+        // Colors from „Fluid Standard“ or „Agentur“ (AA-checked) – new are shapes, background and motion
         'aurora' => $preset('Software & Produkt · Aurora', 'Modern und leicht: Manrope, Farbschleier im Hintergrund, Buttons mit Verlauf, Karten mit Verlaufsrahmen, farbige Abschnitte als Flächen, Lesefortschritt.',
             ['#4338CA', '#3730A3', '#FFFFFF', '#FDE68A', '#0B0D17', '#2B2F3A', '#565C6B', '#FFFFFF', '#F4F5F8', '#E2E4EB', '#0E1022'],
             ['#A5B4FC', '#C7D2FE', '#14123A', '#3A3470', '#F3F4F8', '#D2D5DE', '#9EA3B2', '#0B0C14', '#141621', '#272B3A', '#1A1D33'],
@@ -390,15 +390,15 @@ $design = [
                 'header' => 'inline', 'footer' => 'statement', 'footer_line' => 'band', 'footer_line_width' => 'w6', 'pagebg' => 'noise'] + $base),
     ],
 
-    // Dunkle Werte bei „Dunkles Farbschema“ (Klasse has-dark) und Geräte-Einstellung; Vorschau im Editor setzt is-dark
-    // 'attr': Wahl der Besucher (<ncss-preferences>, data-theme am <html>) schlägt die Geräte-Einstellung
+    // Dark values with „Dunkles Farbschema“ (class has-dark) and device setting; the preview in the editor sets is-dark
+    // 'attr': the visitor's choice (<ncss-preferences>, data-theme on <html>) beats the device setting
     'dark' => ['media' => '(prefers-color-scheme: dark)', 'scope' => 'html.has-dark', 'force' => 'is-dark', 'attr' => 'data-theme'],
 
-    // Musterseite für die Vorschau im Editor (Showcase, siehe tools/demo.php)
+    // Sample page for the preview in the editor (showcase, see tools/demo.php)
     'sample' => 'showcase',
 ];
 
-// REDAXO-Kit: Einstellungen ohne passendes Markup ausblenden (Kopf „Seitenleiste“)
+// REDAXO kit: hide settings without matching markup (header „Seitenleiste“)
 $drop = ['side_width', 'side_banner', 'side_banner_height', 'side_banner_overlay', 'side_tree'];
 $limit = ['header' => ['inline', 'centered', 'split', 'floating', 'rail', 'minimal'], 'footer' => ['columns', 'simple', 'centered', 'statement']];
 foreach ($design['groups'] as &$g) {

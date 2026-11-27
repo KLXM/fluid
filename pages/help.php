@@ -3,7 +3,7 @@
 use Redaxo\Core\Util\Markdown\Markdown;
 use Redaxo\Core\View\Fragment;
 
-// README (Einstieg) und Entwickler-Referenz; Bilder (relative Pfade fürs Repository) im Backend weglassen
+// README (introduction) and developer reference; omit images (relative paths for the repository) in the backend
 foreach (['Hilfe' => 'README.md', 'Entwickler-Referenz' => 'docs/entwickler.md'] as $title => $file) {
     $md = (string) @file_get_contents(dirname(__DIR__) . '/' . $file);
     $md = (string) preg_replace('~^\s*!\[[^\]]*\]\([^)]*\)\s*$~m', '', $md);

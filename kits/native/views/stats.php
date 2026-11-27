@@ -5,10 +5,10 @@ use Klxm\Fluid\InlineStyle;
 use Klxm\Fluid\Kit;
 
 /**
- * Kennzahlen im Kit „NativeCSS“ – wie bei fluid (row · cards · split), dazu zählen ganze Zahlen beim Hereinscrollen hoch
- * (.ncss-count-up von NativeCSS). Ohne eigene Einstellung: Es zählt, was nach einer Zahl aussieht („25+“, „98 %“,
- * „12.500“, „€ 40“), nicht Jahreszahlen und Werte wie „24/7“ oder „3,5“. Die echte Zahl bleibt als Text stehen (Screenreader,
- * ohne JavaScript, „Bewegung reduzieren“); aus im Design („Dezente Animationen“ aus) und beim Bearbeiten.
+ * Key figures in the kit „NativeCSS“ – as in fluid (row · cards · split), plus whole numbers count up when scrolled into view
+ * (.ncss-count-up from NativeCSS). Without own setting: whatever looks like a number counts ("25+", "98 %",
+ * "12.500", "€ 40"), not years and values like "24/7" or "3,5". The real number stays as text (screen readers,
+ * without JavaScript, „Bewegung reduzieren“); off in the design („Dezente Animationen“ off) and while editing.
  * @var Block $b  @var array $d
  */
 $v = $b->variant() ?: 'row';
@@ -17,13 +17,13 @@ $count = !is_editing() && false !== (bool) (Kit::active()->design()->get('motion
 $counting = false;
 $value = static function (string $raw) use ($count, &$counting): string {
     $raw = trim($raw);
-    // Präfix (nicht Ziffer), Zahl mit Tausenderpunkt/-leerzeichen, Suffix ohne weitere Ziffern
+    // prefix (not a digit), number with thousands dot/space, suffix without further digits
     if (!$count || !preg_match('~^(\D{0,3}?)(\d{1,3}(?:[.\x{202F}\x{00A0} ]\d{3})+|\d{1,7})(\D{0,6})$~u', $raw, $m) || preg_match('~^[,./:]~', $m[3]) || preg_match('~[;"\\\\{}<>]~', $m[1] . $m[3])) {
         return e($raw);
     }
     $n = (int) preg_replace('~\D~', '', $m[2]);
     if ('' === $m[1] && '' === trim($m[3]) && $n >= 1800 && $n <= 2100 || $n < 2) {
-        return e($raw);   // Jahreszahl („seit 1998“) oder 0/1: nicht zählen
+        return e($raw);   // year ("seit 1998") or 0/1: don't count
     }
     $counting = true;
     $css = '--ncss-count-to:' . $n . ('' !== $m[1] ? ';--ncss-count-prefix:"' . addcslashes($m[1], '"\\') . '"' : '') . ('' !== $m[3] ? ';--ncss-count-suffix:"' . addcslashes($m[3], '"\\') . '"' : '');

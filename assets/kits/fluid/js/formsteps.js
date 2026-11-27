@@ -1,7 +1,7 @@
 /*
- * Mehrstufige Formulare (YForm-Reiter als Schritte, Block „Formular“): ein Schritt sichtbar, „Weiter“ prüft die Felder
- * des Schritts (Browser-Prüfung), „Zurück“ ohne Prüfung, Absenden nur im letzten Schritt. Fehler der Server-Prüfung:
- * YForm markiert den Schritt mit dem Fehler als aktiv – dort geht es weiter. Ohne JavaScript stehen alle Schritte untereinander.
+ * Multi-step forms (YForm tabs as steps, block „Formular“): one step visible, „Weiter“ validates the step's fields
+ * (browser validation), „Zurück“ without validation, submit only in the last step. Server validation errors:
+ * YForm marks the step with the error as active – it continues there. Without JavaScript all steps are stacked.
  */
 (() => {
   const t = (de, en) => (document.documentElement.lang || 'de').startsWith('de') ? de : en;
@@ -12,7 +12,7 @@
     if (panes.length < 2 || !list || form.dataset.steps) return;
     form.dataset.steps = '1';
     const labels = [...list.querySelectorAll('a')].map((a) => a.textContent.trim());
-    // Fortschritt statt Reiter: Liste der Schritte, frühere anklickbar
+    // Progress instead of tabs: list of steps, earlier ones clickable
     const progress = document.createElement('ol');
     progress.className = 'dff-progress';
     progress.setAttribute('aria-label', t('Schritte', 'Steps'));
@@ -45,7 +45,7 @@
     next.addEventListener('click', () => { if (valid(panes[cur])) show(cur + 1, true); });
     back.addEventListener('click', () => show(cur - 1, true));
     progress.addEventListener('click', (e) => { const b = e.target.closest('[data-go]'); if (b) show(+b.dataset.go, true); });
-    // Enter in einem Feld: vor dem letzten Schritt „Weiter“ statt Absenden
+    // Enter in a field: before the last step „Weiter“ instead of submitting
     form.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && cur < panes.length - 1 && e.target.matches('input:not([type=submit]):not([type=button])')) {
         e.preventDefault();

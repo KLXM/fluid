@@ -6,7 +6,7 @@ use Klxm\Fluid\Field\MediaPicker;
 use Klxm\Fluid\Field\Text;
 use Redaxo\Core\MediaPool\Media;
 
-/** Eintrag von „Dateien (bei „Einzelne Dateien“)“ im Block Downloads */
+/** Entry of „Dateien (bei „Einzelne Dateien“)“ in the block Downloads */
 final class DownloadsFile
 {
     #[Text('Bezeichnung', width: 'half', note: 'Leer = Titel der Datei')]

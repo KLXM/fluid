@@ -10,12 +10,12 @@ use ReflectionClass;
 use function sprintf;
 
 /**
- * Quelle eigener Adressen: Einträge (Datensätze, Produkte, Termine …), die unter einer Seite eine eigene Adresse
- * bekommen. Der Router speichert die Pfade (eine indizierte Abfrage je Aufruf, Cache, eindeutige Slugs, 301 bei geänderter
- * Adresse), nimmt sie in die Sitemap auf (mit hreflang) und setzt Canonical, hreflang und Meta-Angaben des Eintrags.
+ * Source of custom addresses: entries (records, products, events …) that get their own address below a
+ * page. The router stores the paths (one indexed query per request, cache, unique slugs, 301 on changed
+ * address), adds them to the sitemap (with hreflang) and sets canonical, hreflang and meta data of the entry.
  *
- * Mit #[AsRouteSource] gekennzeichnet findet der Core sie selbst (Klassenerkennung); sonst Sources::add(new …).
- * Für Tabellen genügen Attribute ({@see TableSource}); für alles andere entries() selbst schreiben:
+ * Marked with #[AsRouteSource], the core finds it by itself (class discovery); otherwise Sources::add(new …).
+ * For tables attributes suffice ({@see TableSource}); for anything else write entries() yourself:
  *
  *     #[AsRouteSource('events')]
  *     final class EventRoutes extends RouteSource
@@ -28,15 +28,15 @@ use function sprintf;
  *         }
  *     }
  *
- * Nach Änderungen: Routes::rebuildSource('events') (alle) bzw. Routes::put($entry) / Routes::remove('events', $id).
- * Adresse erzeugen: Router::urlFor('events', $id).
+ * After changes: Routes::rebuildSource('events') (all) or Routes::put($entry) / Routes::remove('events', $id).
+ * Creating an address: Router::urlFor('events', $id).
  */
 abstract class RouteSource
 {
     private ?AsRouteSource $attribute = null;
 
     /**
-     * Alle Einträge – je Sprache einer. Die Quelle von RouteEntry muss key() sein.
+     * All entries – one per language. The source of RouteEntry must be key().
      *
      * @return iterable<RouteEntry>
      */
@@ -52,20 +52,20 @@ abstract class RouteSource
         return $this->attribute()->label ?? $this->key();
     }
 
-    /** Gibt es den Eintrag noch (sichtbar)? Sonst 404 – auch wenn die gespeicherte Adresse noch nicht neu berechnet ist */
+    /** Does the entry still exist (visible)? Otherwise 404 – even if the stored address hasn't been recalculated yet */
     public function exists(RouteEntry $entry): bool
     {
         return true;
     }
 
-    /** Meta-Angaben des Eintrags (Titel, Beschreibung, Bild …); null = die der Seite */
+    /** Meta data of the entry (title, description, image …); null = those of the page */
     public function meta(RouteEntry $entry): ?PageMeta
     {
         return null;
     }
 
     /**
-     * Felder, die ein Editor anbieten darf (fluid: Seiteneinstellungen der Detailseite). Leer = nur lesen.
+     * Fields an editor may offer (fluid: page settings of the detail page). Empty = read-only.
      *
      * @return list<EditableField>
      */
@@ -75,7 +75,7 @@ abstract class RouteSource
     }
 
     /**
-     * Werte der editierbaren Felder speichern (Name => Wert); danach die Adresse neu berechnen.
+     * Saves the values of the editable fields (name => value); then recalculates the address.
      *
      * @param array<string, string> $values
      */

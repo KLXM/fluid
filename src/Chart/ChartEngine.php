@@ -3,18 +3,18 @@
 namespace Klxm\Fluid\Chart;
 
 /**
- * Engine, die Diagramme zeichnet – anmelden mit #[AsChartEngine('name')] an der Klasse.
+ * Engine that draws charts – register with #[AsChartEngine('name')] on the class.
  *
- * url() ist die Adresse eines ES-Moduls mit genau einer Funktion:
+ * url() is the address of an ES module with exactly one function:
  *
  *     export function render(el, spec, theme) → { update(theme, opts), resize(), dispose(), image() }
  *
  * spec = Chart::normalize() (type, labels, series, title, description, format, unit, stacked, height, locale),
- * theme = { colors[], ink, muted, grid, bg, font, dark } aus den CSS-Variablen an der Stelle des Diagramms.
- * Vorlage: resources/js/charts-echarts.mjs (Quelle von assets/vendor/echarts/charts-echarts.mjs).
+ * theme = { colors[], ink, muted, grid, bg, font, dark } from the CSS variables where the chart sits.
+ * Template: resources/js/charts-echarts.mjs (source of assets/vendor/echarts/charts-echarts.mjs).
  */
 interface ChartEngine
 {
-    /** Adresse des ES-Moduls – absolut oder relativ zur Website */
+    /** Address of the ES module – absolute or relative to the website */
     public function url(): string;
 }

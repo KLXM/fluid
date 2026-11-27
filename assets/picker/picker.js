@@ -1,12 +1,12 @@
 /*
- * FrontendPicker – Medien- und Seitenauswahl für die Website, das Gegenstück zu rex.pick() im Backend.
- * Für jedes AddOn nutzbar (PHP: Klxm\Fluid\Picker\FrontendPicker::head()), ohne Abhängigkeit zu fluid.
+ * FrontendPicker – media and page selection for the website, the counterpart of rex.pick() in the backend.
+ * Usable by any addon (PHP: Klxm\Fluid\Picker\FrontendPicker::head()), without depending on fluid.
  *
  *   const [media] = await FrontendPicker.pick('media', { types: ['jpg', 'png'] });   // [{ value: 'datei.jpg', label: 'Titel' }]
  *   const [page] = await FrontendPicker.pick('article', { category: 5, value: 12 });  // [{ value: '12', label: 'Name [12]' }]
  *
- * Optionen: types (Endungen), category (Startkategorie), language, value (aktuelle Auswahl), onPick(items).
- * Die Dialoge liegen in einem eigenen Shadow DOM, damit das CSS der Website sie nicht verändert.
+ * Options: types (extensions), category (start category), language, value (current selection), onPick(items).
+ * The dialogs live in their own shadow DOM so the website's CSS doesn't alter them.
  */
 (() => {
   if (window.FrontendPicker) return;
@@ -43,7 +43,7 @@
     return json;
   }
 
-  // eigene Ebene: Shadow DOM mit eigenem CSS, über allem
+  // own layer: shadow DOM with own CSS, above everything
   let layer = null;
   function root() {
     if (layer) return layer;
@@ -69,7 +69,7 @@
     return d;
   }
 
-  /** Ergebnis eines Dialogs: Auswahl als Liste wie rex.pick(), [] beim Schließen; der Dialog verschwindet danach */
+  /** Result of a dialog: selection as a list like rex.pick(), [] on close; the dialog disappears afterwards */
   function settle(d, onPick, wire) {
     return new Promise((resolve) => {
       let done = false;
@@ -91,7 +91,7 @@
     + chain.map((c) => ` <span aria-hidden="true">›</span> <button type="button" data-cat="${c.id}"${c.id === at ? ' aria-current="location"' : ''}>${esc(c.name)}</button>`).join('');
   const catButton = (c) => `<li><button type="button" class="fp__cat" data-cat="${c.id}"><span class="fp__folder" aria-hidden="true">▸</span> ${esc(c.name)}</button></li>`;
 
-  /** Medien wie der Medienpool: Pfad, links Kategorien (öffnen), rechts Medien (wählen); Suche, Hochladen */
+  /** Media like the media pool: path, categories on the left (open), media on the right (select); search, upload */
   function media({ types = [], category, onPick } = {}) {
     const d = dialog('Medien auswählen', `
       <div class="fp__bar">
@@ -162,7 +162,7 @@
         const b = e.target.closest('[data-file]');
         if (b) pick({ value: b.dataset.file, label: b.dataset.title });
       });
-      // e.target gilt im Shadow DOM nur während des Events – die Felder selbst merken
+      // e.target in the shadow DOM is only valid during the event – remember the fields themselves
       const q = $('[data-q]');
       let timer;
       q.addEventListener('input', () => {
@@ -192,7 +192,7 @@
     });
   }
 
-  /** Seiten wie die Linkmap von REDAXO: Pfad, links Kategorien (öffnen), rechts Artikel (wählen); Suche über alle */
+  /** Pages like REDAXO's linkmap: path, categories on the left (open), articles on the right (select); search across all */
   const articleCache = new Map();
   function article({ category, language, value, onPick } = {}) {
     const lang = Number(language) || cfg().language;
@@ -250,7 +250,7 @@
         return;
       }
       cats = new Map(pages.filter((p) => p.cat).map((p) => [p.id, p]));
-      // Start in der Kategorie der gewählten Seite (Startartikel: in seiner eigenen Kategorie)
+      // start in the category of the selected page (start article: in its own category)
       const cur = pages.find((p) => p.id === current);
       if (cur) at = cur.cat ? cur.id : cur.parent;
       if (at && !cats.has(at)) at = 0;
@@ -264,7 +264,7 @@
   window.FrontendPicker = {
     pickers,
     /**
-     * Auswahl öffnen; Ergebnis wie rex.pick(): Liste der gewählten Einträge ({ value, label }), leer ohne Auswahl
+     * Open the selection; result like rex.pick(): list of the selected entries ({ value, label }), empty without selection
      * @param {'media'|'article'} type
      */
     pick(type, options = {}) {

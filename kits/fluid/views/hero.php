@@ -4,13 +4,13 @@ use Klxm\Fluid\Block;
 use Klxm\VideoEditor\VideoEditor;
 
 /**
- * Einstieg (H1) – sechs Varianten, alle intrinsisch (Flex-Umbruch bzw. Container-Query statt Breakpoints):
- * split (Text + Bild), centered (Bild darunter), fullbleed (Bild/Video vollflächig), cards (Bild mit gestapelten Karten),
- * type (großer Schriftzug in Container-Einheiten), compact (Seitenkopf).
- * Dazu drei Varianten mit eigenem Stylesheet (nur wo verwendet, kit.php → 'assets'):
- *   scale    Fließende Skala: Überschrift füllt ihre Spalte (cqi), Seitenspalte + Stufenleiste ab 48 rem Platz (css/hx-scale.css)
- *   collage  Collage: 1–5 Bilder (Bild + Feld „gallery“) im Raster mit schwebender Textkarte ab 52 rem (css/hx-collage.css)
- *   compare  Vorher/Nachher mit Regler (fluid_compare() in functions.php, Tastatur: Pfeile, Pos1/Ende) (css/hx-compare.css)
+ * Intro (H1) – six variants, all intrinsic (flex wrapping or container queries instead of breakpoints):
+ * split (text + image), centered (image below), fullbleed (full-bleed image/video), cards (image with stacked cards),
+ * type (large lettering in container units), compact (page header).
+ * Plus three variants with their own stylesheet (only where used, kit.php → 'assets'):
+ *   scale    Fluid scale: heading fills its column (cqi), side column + step bar from 48 rem of space (css/hx-scale.css)
+ *   collage  Collage: 1–5 images (image + field „gallery“) in a grid with a floating text card from 52 rem (css/hx-collage.css)
+ *   compare  Before/after with slider (fluid_compare() in functions.php, keyboard: arrows, Home/End) (css/hx-compare.css)
  * @var Block $b  @var array $d
  */
 $v = $b->variant() ?: 'split';
@@ -38,7 +38,7 @@ if ('fullbleed' === $v):
     $vid = $vid && str_starts_with((string) $vid['mime'], 'video/') ? $vid : null;
     $overlay = in_array($d['overlay'] ?? '', ['strong', 'medium', 'gradient'], true) ? $d['overlay'] : 'strong';
     $poster = !empty($d['image']) ? media((string) $d['image']) : null;
-    // AddOn video_editor (optional): kleinere Web-Fassung (720p/WebM) und dort gewähltes Poster
+    // AddOn video_editor (optional): smaller web version (720p/WebM) and the poster chosen there
     $sources = $vid ? [['url' => media_url($vid), 'type' => (string) $vid['mime']]] : [];
     if ($vid && class_exists(VideoEditor::class)) {
         $sources = VideoEditor::sources((string) $d['video'], small: true) ?: $sources;
@@ -88,7 +88,7 @@ if ('fullbleed' === $v):
   </div>
 </div>
 <?php elseif ('scale' === $v):
-    // Stufenleiste: „Wert: Bezeichnung“ → Kennzahl, sonst Schlagwort; Größen fallen von Stufe zu Stufe (t4 → t1)
+    // Step bar: „value: label“ → key figure, otherwise keyword; sizes decrease from step to step (t4 → t1)
     $steps = array_slice(fluid_pairs($d['scale_items'] ?? ''), 0, 4);
 ?>
 <div class="wrap hx-scale-wrap">
@@ -115,7 +115,7 @@ if ('fullbleed' === $v):
   </div>
 </div>
 <?php elseif ('collage' === $v):
-    // Bild + bis zu 4 weitere (Feld „gallery“) – Anordnung je Anzahl (Klasse hx-collage--nN)
+    // Image + up to 4 more (field „gallery“) – arrangement per count (class hx-collage--nN)
     $tiles = [];
     if (!empty($d['image'])) {
     $tiles[] = ['id' => (string) $d['image'], 'caption' => '', 'edit' => ''];

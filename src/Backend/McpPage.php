@@ -22,8 +22,8 @@ use const JSON_PRETTY_PRINT;
 use const JSON_UNESCAPED_SLASHES;
 
 /**
- * Backend → AddOns → fluid → MCP: Server einschalten, öffentlichen Zugang festlegen, Zugangsschlüssel verwalten.
- * Alles ist standardmäßig aus; was öffentlich ist, entscheidet der Admin.
+ * Backend → AddOns → fluid → MCP: enable the server, define public access, manage access keys.
+ * Everything is off by default; the admin decides what is public.
  *
  * @internal
  */
@@ -38,7 +38,7 @@ final class McpPage
         $csrf = CsrfToken::factory(self::CSRF)->getHiddenField();
         $tables = YFormBridge::tables();
 
-        // ---------------------------------------------------------------- Einstellungen (Markup und Komponenten des Cores)
+        // ---------------------------------------------------------------- Settings (core markup and components)
         $field = static fn (string $label, string $control, string $note = '', string $for = '') => '<div class="rex-field"><' . ('' !== $for ? 'label for="' . $for . '"' : 'span') . ' class="rex-field-label">' . $label . '</' . ('' !== $for ? 'label' : 'span') . '>'
             . '<div class="rex-field-control">' . $control . ('' !== $note ? '<p class="rex-field-note">' . $note . '</p>' : '') . '</div></div>';
         $check = static fn (string $name, bool $on, string $label) => '<div class="rex-check"><label><input type="checkbox" name="mcp[' . $name . ']" value="1"' . ($on ? ' checked' : '') . '> ' . $label . '</label></div>';
@@ -69,7 +69,7 @@ final class McpPage
             . '<div class="rex-button-toolbar"><button type="submit" class="rex-button" data-variant="primary">Speichern</button></div></form>';
         $out .= new Section(title: 'MCP-Server', body: Html::raw($body))->render();
 
-        // ---------------------------------------------------------------- Schlüssel
+        // ---------------------------------------------------------------- Keys
         $rows = '';
         foreach (Tokens::all() as $t) {
             $rows .= '<tr><td><strong>' . escape((string) $t['name']) . '</strong><br><code>' . escape((string) $t['prefix']) . '…</code></td>'

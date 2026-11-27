@@ -3,15 +3,15 @@
 use Klxm\Fluid\Block;
 
 /**
- * Ablauf: numbers (Raster, auto-fit) · timeline (senkrechte Linie; ab genug Containerbreite Datum links) ·
- * process (Schritte mit Pfeilen – nebeneinander, wenn Platz ist, sonst untereinander mit Pfeil nach unten).
- * Felder marker (Kreise), colors (Farben), motion (Animation) – Klassen steps--m-*, steps--c-*, steps--a-* (assets/css/b-steps.css).
+ * Steps: numbers (grid, auto-fit) · timeline (vertical line; date on the left once the container is wide enough) ·
+ * process (steps with arrows – side by side if there is room, otherwise stacked with a downward arrow).
+ * Fields marker (circles), colors, motion (animation) – classes steps--m-*, steps--c-*, steps--a-* (assets/css/b-steps.css).
  * @var Block $b  @var array $d
  */
 $v = in_array($b->variant(), ['numbers', 'timeline', 'process'], true) ? $b->variant() : 'numbers';
 $items = array_values(array_filter((array) ($d['items'] ?? []), static fn ($i) => '' !== trim((string) ($i['title'] ?? ''))));
 $tag = fluid_htag($d);
-// Kreise, Farben, Animation (Feldwerte; „auto“ = wie Design bzw. Website). Farben ohne eigene Kreis-Wahl: zart gefüllt mit Rand
+// circles, colors, animation (field values; „auto“ = like design or website). Colors without own circle choice: light fill, border
 $pick = static fn (string $k, array $ok) => in_array($d[$k] ?? 'auto', $ok, true) ? (string) $d[$k] : 'auto';
 $colors = $pick('colors', ['alternate', 'accent', 'neutral']);
 $marker = 'numbers' === $v ? 'auto' : $pick('marker', ['filled', 'soft', 'ring', 'dot']);

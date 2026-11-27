@@ -9,10 +9,10 @@ use function in_array;
 use function Redaxo\Core\View\escape;
 
 /**
- * Wird an jede Block-Ausgabe übergeben (`$b`). `$b->data` enthält die Felder mit Standardwerten.
+ * Passed to every block output (`$b`). `$b->data` contains the fields with default values.
  *
- * Kit-Ausgaben markieren Textfelder mit `$b->edit('feld')` – im Bearbeiten-Modus werden sie dann direkt auf der Website
- * bearbeitbar (`data-edit`), sonst liefert die Methode einen leeren String.
+ * Kit outputs mark text fields with `$b->edit('feld')` – in edit mode they then become editable directly on the
+ * website (`data-edit`), otherwise the method returns an empty string.
  */
 final class Block
 {
@@ -23,17 +23,17 @@ final class Block
         get => $this->slice ? (string) $this->slice->id : $this->ownId;
     }
 
-    /** Seite, auf der der Block steht (für Adressen wie Blättern oder Detailansicht) */
+    /** Page the block is on (for addresses like pagination or detail view) */
     public int $articleId {
         get => $this->slice->articleId ?? ($this->ownArticleId ?: (int) Article::getCurrentId());
     }
 
-    /** Block, dessen View gerade ausgegeben wird (BlockModule::renderInner) */
+    /** Block whose view is currently being rendered (BlockModule::renderInner) */
     public static ?self $rendering = null;
 
     private static bool $firstImageUsed = false;
 
-    /** Blocktyp ohne Kit-Präfix (`cta`, `media_text` …) */
+    /** Block type without kit prefix (`cta`, `media_text` …) */
     public string $type {
         get => $this->module::type();
     }
@@ -41,7 +41,7 @@ final class Block
     /** @var array<int, string> */
     private static array $readonly = [];
 
-    /** @param ArticleSlice|null $slice null = Block aus Daten (z. B. YForm-Feld „Fluid-Blöcke“), dann $id und $articleId angeben */
+    /** @param ArticleSlice|null $slice null = block from data (e.g. YForm field „Fluid-Blöcke“), then pass $id and $articleId */
     public function __construct(
         public readonly ?ArticleSlice $slice,
         /** @var class-string<BlockModule> */
@@ -55,12 +55,12 @@ final class Block
         private readonly int $ownArticleId = 0,
     ) {
         if ('' === (string) ($tunes['background'] ?? '')) {
-            unset($tunes['background']);   // leer = Standard des Blocks
+            unset($tunes['background']);   // empty = the block's default
         }
         $this->tunes = $tunes + ['background' => $module::definition()['background'] ?? 'white', 'anchor' => '', 'spaceTop' => 'normal', 'spaceBottom' => 'normal'];
     }
 
-    /** Erster sichtbarer Block der Seite – oder eine Spalte des ersten Layouts? */
+    /** First visible block of the page – or a column of the first layout? */
     public function isFirst(): bool
     {
         if (null === $this->slice) {
@@ -72,8 +72,8 @@ final class Block
     }
 
     /**
-     * Soll dieses Bild ohne Angabe im Kit sofort und mit Vorrang laden? Ja für das erste Bild im ersten Block der Seite
-     * (meist der Einstieg, wichtig für LCP) – nur einmal je Seite.
+     * Should this image load immediately and with priority when the kit does not say? Yes for the first image in the
+     * first block of the page (usually the intro, important for LCP) – only once per page.
      */
     public static function firstImage(): bool
     {
@@ -84,7 +84,7 @@ final class Block
         return self::$firstImageUsed = true;
     }
 
-    /** Block aus einem Slice (Seite) oder aus Daten (YForm-Feld)? */
+    /** Block from a slice (page) or from data (YForm field)? */
     public function fromSlice(): bool
     {
         return null !== $this->slice;
@@ -111,21 +111,21 @@ final class Block
     }
 
     /**
-     * Macht ein Feld im Bearbeiten-Modus direkt auf der Website bearbeitbar.
-     * Pfad mit Punkten für Listen: `items.0.title`. Modus: `plain` (einzeilig), `lines` (mehrzeilig), `rich` (Formatierung).
+     * Makes a field editable directly on the website in edit mode.
+     * Dotted path for lists: `items.0.title`. Mode: `plain` (single line), `lines` (multi-line), `rich` (formatting).
      */
     public function edit(string $path, string $mode = 'plain'): string
     {
         if (!Editing::active() || '' !== $this->readonly()) {
-            return '';   // gesperrt bzw. ohne Modulrecht: nicht direkt auf der Seite bearbeitbar
+            return '';   // locked or without module permission: not editable directly on the page
         }
 
         return ' data-edit="' . escape($path) . '"' . ('plain' !== $mode ? ' data-edit-mode="' . escape($mode) . '"' : '');
     }
 
     /**
-     * Darf die angemeldete Person diesen Block ändern? '' = ja, 'perm' = kein Modulrecht, 'lock' = gesperrt (Lock).
-     * Blöcke aus Daten (Datensätze) prüft Data\RecordBlocks selbst.
+     * May the signed-in user change this block? '' = yes, 'perm' = no module permission, 'lock' = locked (Lock).
+     * Blocks from data (records) are checked by Data\RecordBlocks itself.
      */
     public function readonly(): string
     {
@@ -136,15 +136,15 @@ final class Block
         return self::$readonly[$this->slice->id] ??= Lock::reason(Editing::user(), $this->slice);
     }
 
-    /** Zentral gepflegte Inhalte (z. B. aus den Einstellungen) im Bearbeiten-Modus kennzeichnen */
+    /** Mark centrally maintained content (e.g. from the settings) in edit mode */
     public function central(?string $label = null): string
     {
         return Editing::active() ? ' data-central="' . escape($label ?? 'Einstellungen') . '"' : '';
     }
 
     /**
-     * „Ziel bearbeiten“ an Karten und Kacheln, die auf eine Seite oder einen Datensatz zeigen – als erstes Kind der Karte:
-     * `<?= $b->targetEdit($it['link'], $it['title']) ?>`. Für Besucher und ohne Recht leer (siehe TargetEdit).
+     * „Ziel bearbeiten“ on cards and tiles that point to a page or a record – as the card's first child:
+     * `<?= $b->targetEdit($it['link'], $it['title']) ?>`. Empty for visitors and without permission (see TargetEdit).
      */
     public function targetEdit(?string $ref, ?string $label = null): string
     {
@@ -175,7 +175,7 @@ final class Block
         return implode(' ', $c);
     }
 
-    /** Zusätzliche Attribute des Abschnitts für den Einblend-Effekt (z. B. data-ncss-reveal für das Skript des Kits) */
+    /** Additional attributes of the section for the fade-in effect (e.g. data-ncss-reveal for the kit's script) */
     public function revealAttrs(): string
     {
         $attr = (string) ($this->revealOption()['attr'] ?? '');
@@ -184,9 +184,9 @@ final class Block
     }
 
     /**
-     * Einblend-Effekt (Abschnitt → „Einblend-Effekt“, Optionen aus kit.php → 'reveal') – nur für Besucher: nicht beim
-     * Bearbeiten, nicht beim ersten Block der Seite (wichtig für den ersten Eindruck/LCP) und nicht, wenn im Design
-     * „Dezente Animationen“ aus ist. „Bewegung reduzieren“ beachtet das CSS des Kits.
+     * Fade-in effect (section → „Einblend-Effekt“, options from kit.php → 'reveal') – only for visitors: not while
+     * editing, not on the page's first block (important for the first impression/LCP) and not when „Dezente
+     * Animationen“ is off in the design. The kit's CSS respects „Bewegung reduzieren“.
      *
      * @return array{label: string, class: string, attr?: string}|null
      */

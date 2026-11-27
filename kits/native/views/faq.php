@@ -3,8 +3,8 @@
 use Klxm\Fluid\Block;
 
 /**
- * Fragen & Antworten im Kit „NativeCSS“: natives details/summary in der Optik .ncss-disclosure (ohne JavaScript;
- * name= schließt die anderen Antworten der Liste). split: Kopf neben der Liste · stacked: Kopf darüber.
+ * Questions & answers in the kit „NativeCSS“: native details/summary styled as .ncss-disclosure (without JavaScript;
+ * name= closes the list's other answers). split: header beside the list · stacked: header above.
  * @var Block $b  @var array $d
  */
 $v = 'stacked' === $b->variant() ? 'stacked' : 'split';

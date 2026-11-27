@@ -29,39 +29,39 @@ use const JSON_UNESCAPED_SLASHES;
 use const JSON_UNESCAPED_UNICODE;
 
 /**
- * Geänderte Standardwerte von Blockfeldern: Bestehende Blöcke behalten ihr Aussehen (Vorbild KLXM Studio,
+ * Changed default values of block fields: existing blocks keep their appearance (model: KLXM Studio,
  * Core\Blocks\DefaultChanges).
  *
- * Beim Ausgeben füllt fluid fehlende Feldwerte mit dem Standard der Eigenschaft (FieldForm::withDefaults). Ändert sich ein
- * Standard – oder kommt ein Feld dazu, dessen Standard anders aussieht als bisher –, sähen gespeicherte Blöcke ohne Wert nach
- * einem Update plötzlich anders aus. Darum schreibt diese Umstellung einmal je Installation in alle gespeicherten Blöcke ohne
- * Wert ausdrücklich den bisherigen Zustand; danach gilt der neue Standard nur für neue Blöcke.
+ * On output fluid fills missing field values with the property's default (FieldForm::withDefaults). If a default
+ * changes – or a field is added whose default looks different than before –, stored blocks without a value would
+ * suddenly look different after an update. So this migration writes the previous state explicitly into all stored
+ * blocks without a value, once per installation; afterwards the new default applies only to new blocks.
  *
- * Je Änderung (CHANGES, Schlüssel = Kennung) läuft die Umstellung genau einmal (Merker in der Konfiguration von fluid,
- * `block_defaults`); sie ist zudem idempotent (vorhandene Werte bleiben, auch null). Läuft bei `console migrate`
- * (FluidAddon::install) und mit `console fluid:upgrade:defaults` (auch `--dry-run`).
+ * Each change (CHANGES, key = identifier) runs exactly once (marker in fluid's configuration, `block_defaults`); it is
+ * also idempotent (existing values stay, null too). Runs on `console migrate` (FluidAddon::install) and with
+ * `console fluid:upgrade:defaults` (also `--dry-run`).
  *
- * Orte: Slices (Live- und Arbeitsversion, Spalte `data`), deren Versionen (rex_article_slice_history) und die Felder
- * „Fluid-Blöcke“ aller YForm-Tabellen. Blöcke in Layout-Spalten sind eigene Slices und damit dabei.
+ * Places: slices (live and working version, column `data`), their versions (rex_article_slice_history) and the fields
+ * „Fluid-Blöcke“ of all YForm tables. Blocks in layout columns are separate slices and thus included.
  *
- * Eigene Blöcke und Kits melden Änderungen über den Extension Point FLUID_DEFAULT_CHANGES an (Kennung => [Blocktyp =>
- * [Feld => bisheriger Zustand]]); Blocktyp wie in `BlockModule::type()` (`fluid.media_text` → `media_text`).
+ * Custom blocks and kits register changes via the extension point FLUID_DEFAULT_CHANGES (identifier => [block type =>
+ * [field => previous state]]); block type as in `BlockModule::type()` (`fluid.media_text` → `media_text`).
  */
 final class DefaultChanges
 {
     public const string CONFIG = 'block_defaults';
 
-    /** Kennung => [Blocktyp => [Feld => bisheriger Zustand]] */
+    /** identifier => [block type => [field => previous state]] */
     public const array CHANGES = [
-        // beta.9: Text + Bild „Bild ausrichten“ (Standard „Mitlaufen“) – bestehende bleiben mittig
+        // beta.9: text + image „Bild ausrichten“ (default „Mitlaufen“) – existing ones stay centred
         '2026-11-media-text-valign' => ['media_text' => ['valign' => 'center']],
-        // beta.9: Galerie „Größe bei nur einem Bild“ (Standard „Groß“) – bestehende bleiben „wie die Galerie“
+        // beta.9: gallery „Größe bei nur einem Bild“ (default „Groß“) – existing ones stay „wie die Galerie“
         '2026-11-gallery-single-size' => ['gallery' => ['single_size' => 'grid']],
-        // beta.9: Scrollytelling Bildformat „Automatisch“ (Standard für neue Blöcke) – bestehende behalten 4:5
+        // beta.9: scrollytelling image format „Automatisch“ (default for new blocks) – existing ones keep 4:5
         '2026-11-scrolly-ratio' => ['scrolly' => ['ratio' => '4:5']],
     ];
 
-    /** @return array<string, array<string, array<string, mixed>>> alle Änderungen (eigene und angemeldete) */
+    /** @return array<string, array<string, array<string, mixed>>> all changes (own and registered) */
     public static function changes(): array
     {
         /** @var array<string, array<string, array<string, mixed>>> */
@@ -69,7 +69,7 @@ final class DefaultChanges
     }
 
     /**
-     * Regeln der übergebenen (Standard: aller) Änderungen zusammengefasst: [typ => [feld => wert]].
+     * Rules of the given (default: all) changes combined: [type => [field => value]].
      *
      * @param list<string>|null $ids
      * @return array<string, array<string, mixed>>
@@ -89,7 +89,7 @@ final class DefaultChanges
         return $out;
     }
 
-    /** @return list<string> noch nicht ausgeführte Änderungen dieser Installation */
+    /** @return list<string> changes not yet run in this installation */
     public static function pending(): array
     {
         return array_values(array_diff(array_keys(self::changes()), self::done()));
@@ -102,10 +102,10 @@ final class DefaultChanges
     }
 
     /**
-     * Werte EINES Blocks (wie in der Spalte `data`, auch das frühere Format {values, tunes}): fehlende Felder ergänzen.
+     * Values of ONE block (as in the column `data`, also the former format {values, tunes}): add missing fields.
      *
      * @param array<array-key, mixed> $data
-     * @param array<string, mixed> $fields Feld => bisheriger Zustand
+     * @param array<string, mixed> $fields field => previous state
      * @return array<array-key, mixed>
      */
     public static function patchData(array $data, array $fields, int &$n): array
@@ -126,7 +126,7 @@ final class DefaultChanges
     }
 
     /**
-     * Spalte `data` eines Slices umstellen; null = unverändert.
+     * Migrate the column `data` of a slice; null = unchanged.
      *
      * @param array<string, mixed> $fields
      */
@@ -143,10 +143,10 @@ final class DefaultChanges
     }
 
     /**
-     * Wert eines Feldes „Fluid-Blöcke“ ([{module, data, tunes}, …]) umstellen; null = unverändert.
+     * Migrate the value of a field „Fluid-Blöcke“ ([{module, data, tunes}, …]); null = unchanged.
      *
-     * @param array<string, array<string, mixed>> $rules typ => Felder
-     * @param array<string, string> $types Modulschlüssel => Blocktyp
+     * @param array<string, array<string, mixed>> $rules type => fields
+     * @param array<string, string> $types module key => block type
      */
     public static function patchBlockList(?string $json, array $rules, array $types): ?string
     {
@@ -168,7 +168,7 @@ final class DefaultChanges
         return $n ? (string) json_encode($list, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) : null;
     }
 
-    /** @return array<string, string> Modulschlüssel der Blöcke => Blocktyp */
+    /** @return array<string, string> module keys of the blocks => block type */
     private static function types(): array
     {
         $out = [];
@@ -180,9 +180,9 @@ final class DefaultChanges
     }
 
     /**
-     * Offene Änderungen ausführen und als erledigt merken.
+     * Run pending changes and mark them as done.
      *
-     * @return list<string> Protokollzeilen
+     * @return list<string> log lines
      */
     public static function run(bool $dry = false): array
     {
@@ -201,7 +201,7 @@ final class DefaultChanges
                 try {
                     $rows = Sql::factory()->getArray('SELECT id, module, data FROM ' . $table . ' WHERE module IN (' . implode(',', array_fill(0, count($modules), '?')) . ')', $modules);
                 } catch (Throwable) {
-                    continue;   // Tabelle fehlt (z. B. Historie noch nicht angelegt)
+                    continue;   // Table missing (e.g. history not created yet)
                 }
                 foreach ($rows as $r) {
                     $json = self::patchJson(is_string($r['data']) ? $r['data'] : null, $rules[$types[(string) $r['module']]]);
@@ -234,7 +234,7 @@ final class DefaultChanges
         if (!$dry) {
             FluidAddon::instance()->setConfig(self::CONFIG, array_values(array_unique(array_merge(self::done(), $ids))));
             if ($count['slices'] + $count['history'] + $count['records']) {
-                Cache::delete();   // Inhalte neu aufbauen
+                Cache::delete();   // Rebuild content
             }
         }
         $log[] = sprintf('Blöcke: bisheriges Aussehen festgehalten (%s) – %d Slice(s), %d Version(en), %d Datensatz/Datensätze%s',
@@ -243,7 +243,7 @@ final class DefaultChanges
         return $log;
     }
 
-    /** @return list<array{0: string, 1: string}> Tabelle und Feld aller Felder „Fluid-Blöcke“ in YForm-Tabellen */
+    /** @return list<array{0: string, 1: string}> table and field of all fields „Fluid-Blöcke“ in YForm tables */
     private static function blockFields(): array
     {
         if (!Data\YFormBridge::available() || !class_exists(Data\FluidBlocks::class)) {

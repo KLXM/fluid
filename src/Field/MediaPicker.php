@@ -7,17 +7,17 @@ use Redaxo\Core\Form\Field\MediaPicker as CoreMediaPicker;
 use Redaxo\Core\View\Renderable;
 
 /**
- * Feld des Cores (`MediaPicker`) mit den Ergänzungen von fluid – alle zusätzlichen Parameter sind optional, ohne sie
- * verhält es sich genau wie das Feld des Cores (siehe docs/entwickler.md, „Felder“).
+ * Core field (`MediaPicker`) with fluid's additions – all additional parameters are optional; without them
+ * it behaves exactly like the core field (see docs/entwickler.md, „Felder“).
  *
- * In fluid: mit `preview: true` ein Bildfeld (Vorschau, Bildbearbeitung), sonst die Auswahl einer Datei.
+ * In fluid: with `preview: true` an image field (preview, image editing), otherwise the selection of a file.
  */
 #[Attribute(Attribute::TARGET_PROPERTY)]
 class MediaPicker extends CoreMediaPicker implements FluidField
 {
     /**
-     * @param 'half'|null $width fluid: halbe Breite im Formular
-     * @param list<string>|null $variants fluid: nur in diesen Darstellungen des Blocks
+     * @param 'half'|null $width fluid: half width in the form
+     * @param list<string>|null $variants fluid: only in these displays of the block
      */
     public function __construct(
         string|Renderable $label,

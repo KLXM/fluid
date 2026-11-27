@@ -27,24 +27,24 @@ use const JSON_UNESCAPED_SLASHES;
 use const JSON_UNESCAPED_UNICODE;
 
 /**
- * Seitenkopf für Suchmaschinen und soziale Netzwerke – für Seiten und für Einträge der Quellen gleich:
- * Titel, Beschreibung, robots, Canonical, hreflang (inkl. x-default), Open Graph (og:url, og:type, og:locale, Bild mit
- * Maßen), article:*-Zeiten, twitter:card, eigene Tags und JSON-LD.
+ * Page head for search engines and social networks – the same for pages and for entries of sources:
+ * title, description, robots, canonical, hreflang (incl. x-default), Open Graph (og:url, og:type, og:locale, image with
+ * dimensions), article:* times, twitter:card, custom tags and JSON-LD.
  *
  *     <title><?= escape(Head::title()) ?></title>
  *     <?= Head::render() ?>
  *
- * Woher die Angaben kommen (leere Werte überschreiben nie): Seite (Name, Adresse, Sprachen) → Extension Point ArticleMeta
- * (z. B. SEO-Felder der Seite) → Eintrag einer Quelle bzw. eines Resolvers (RouteSource::meta) → Head::override() (Blöcke,
- * Templates) → Extension Point PageMetaResolved. Eigene Tags: HeadConfig::$tags (jede Seite), Head::add() (diese Anfrage),
- * PageMeta::add() in einem Extension Point. Gleicher Schlüssel ersetzt – so lässt sich jede Angabe überschreiben.
+ * Where the data comes from (empty values never override): page (name, URL, languages) → extension point ArticleMeta
+ * (e.g. SEO fields of the page) → entry of a source or resolver (RouteSource::meta) → Head::override() (blocks,
+ * templates) → extension point PageMetaResolved. Custom tags: HeadConfig::$tags (every page), Head::add() (this request),
+ * PageMeta::add() in an extension point. The same key replaces – so every value can be overridden.
  */
 final class Head
 {
-    /** Einstellungen des Projekts (Project::configure()); null = Vorgaben */
+    /** Project settings (Project::configure()); null = defaults */
     public static ?HeadConfig $config = null;
 
-    /** @var array<string, HeadTag> eigene Tags dieser Anfrage */
+    /** @var array<string, HeadTag> custom tags of this request */
     private static array $tags = [];
 
     private static ?PageMeta $override = null;
@@ -57,7 +57,7 @@ final class Head
         return self::$config ??= new HeadConfig();
     }
 
-    /** Eigene Tags für diese Anfrage (gleicher Schlüssel ersetzt) */
+    /** Custom tags for this request (the same key replaces) */
     public static function add(HeadTag ...$tags): void
     {
         foreach ($tags as $t) {
@@ -67,8 +67,8 @@ final class Head
     }
 
     /**
-     * Angaben aus einer Ausgabe überschreiben – z. B. ein Block, der einen Eintrag zeigt. Muss vor dem Seitenkopf passieren
-     * (Templates rendern den Inhalt vor dem Kopf). Arrays: title, description, image, canonical (bzw. url), type ….
+     * Override data from an output – e.g. a block that shows an entry. Must happen before the page head
+     * (templates render the content before the head). Arrays: title, description, image, canonical (or url), type ….
      *
      * @param PageMeta|array<string, mixed> $meta
      */
@@ -88,7 +88,7 @@ final class Head
         self::$resolved = [];
     }
 
-    /** Angaben der aktuellen (bzw. einer) Seite – samt Eintrag einer Quelle, wenn die Adresse einer ist */
+    /** Data of the current (or a given) page – including the entry of a source if the URL is one */
     public static function meta(?Article $article = null): PageMeta
     {
         $article ??= Article::getCurrent();
@@ -134,7 +134,7 @@ final class Head
         }
         if (null !== self::$override) {
             if (null !== self::$override->url) {
-                $m->alternates = [];   // eigene Adresse: Sprachfassungen der Seite passen nicht mehr
+                $m->alternates = [];   // own URL: the page's language versions no longer match
             }
             $m->merge(self::$override);
         }
@@ -144,7 +144,7 @@ final class Head
         return self::$resolved[$key] = $m;
     }
 
-    /** Titel im Browser-Tab: eigener Titel, sonst „Seite – Website“ (Startseite: Website) */
+    /** Title in the browser tab: own title, otherwise „Seite – Website“ (start page: website) */
     public static function title(?Article $article = null): string
     {
         $article ??= Article::getCurrent();
@@ -161,7 +161,7 @@ final class Head
         return '' !== $site ? $m->title . self::config()->titleSeparator . $site : (string) $m->title;
     }
 
-    /** Alle Tags des Seitenkopfs (ohne <title>) */
+    /** All tags of the page head (without <title>) */
     public static function render(?Article $article = null): string
     {
         $m = self::meta($article);
@@ -223,7 +223,7 @@ final class Head
             $add(HeadTag::meta('twitter:card', null !== $image ? $card : 'summary'));
         }
         foreach ($m->tags as $tag) {
-            $t[$tag->key] = $tag;   // eigene Tags ersetzen die des Routings
+            $t[$tag->key] = $tag;   // custom tags replace those of the routing
         }
         $h = '';
         foreach ($t as $tag) {
@@ -236,7 +236,7 @@ final class Head
         return $h;
     }
 
-    /** Absolute Adresse eines Bildes: Datei des Medienpools oder schon absolute Adresse ('' = gibt es nicht) */
+    /** Absolute URL of an image: media pool file or an already absolute URL ('' = doesn't exist) */
     public static function imageUrl(string $fileOrUrl): string
     {
         if ('' === $fileOrUrl || preg_match('~^https?://~i', $fileOrUrl)) {
@@ -265,7 +265,7 @@ final class Head
         ];
     }
 
-    /** hreflang der Seite: Sprachen, in denen sie online ist (inkl. x-default) */
+    /** hreflang of the page: languages in which it is online (incl. x-default) */
     private static function pageAlternates(Article $article): array
     {
         $out = [];
@@ -291,7 +291,7 @@ final class Head
         return $alternates;
     }
 
-    /** „de“ → „de_DE“, „en“ → „en_US“ (Open Graph erwartet Sprache_Land), „de-ch“ → „de_CH“ */
+    /** „de“ → „de_DE“, „en“ → „en_US“ (Open Graph expects language_COUNTRY), „de-ch“ → „de_CH“ */
     private static function ogLocale(string $code): string
     {
         if (preg_match('~^([a-z]{2})[-_]([a-z]{2})$~i', $code, $m)) {

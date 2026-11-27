@@ -18,15 +18,15 @@ use const JSON_UNESCAPED_SLASHES;
 use const JSON_UNESCAPED_UNICODE;
 
 /**
- * Präsenz der Redaktion (Presence) – Anbindung an fluid: Artikel je Sprache (type „article“, id = „{sprache}:{artikel}“).
- * Endpunkt /fluid-presence, Antworten nach dem Schema von KLXM Studio (dasselbe Skript assets/editor/presence.js):
+ * Presence of the editors (Presence) – fluid integration: articles per language (type „article“, id = „{language}:{article}“).
+ * Endpoint /fluid-presence, responses following KLXM Studio's schema (the same script assets/editor/presence.js):
  *
  *   POST {type, id, label?, url?, leave?, peek?}   → {on, me, here: [Person…], last: ?Stand, live: Abo}
  *   GET                                            → {on, me, items: [{type, id, label, url, …Person}], live: Abo}
- *   Person = {user, name, initials, avatar, since, at, self}    Stand = {user, name, at, self} (zuletzt gespeichert, aus der Aktivität)
+ *   Person = {user, name, initials, avatar, since, at, self}    Stand = {user, name, at, self} (last saved, from the activity)
  *
- * Nur für angemeldete Backend-Benutzer mit Recht auf den Artikel; Besucher sehen nie etwas, der Artikel-Cache bleibt
- * unberührt. Abschaltbar in der Konfiguration des AddOns (presence = false).
+ * Only for logged-in backend users with permission for the article; visitors never see anything, the article cache
+ * stays untouched. Can be switched off in the addon's configuration (presence = false).
  */
 final class PresenceApi
 {
@@ -34,7 +34,7 @@ final class PresenceApi
     public const string SITE = 'default';
     private const array SAVES = ['save', 'publish', 'restore', 'discard', 'block_add', 'block_delete', 'page_settings'];
 
-    /** @internal Endpunkt der Präsenz */
+    /** @internal Endpoint of the presence */
     #[AsEndpoint('/' . self::PATH, early: true)]
     public static function serve(): void
     {
@@ -51,7 +51,7 @@ final class PresenceApi
         return Routing\Router::base() . '/' . self::PATH;
     }
 
-    /** Texte für presence.js (wie die Leiste: Sie) */
+    /** Texts for presence.js (formal „Sie“, like the toolbar) */
     public static function texts(): array
     {
         return ['editing1' => '{names} bearbeitet gerade', 'editingN' => '{names} bearbeiten gerade', 'last' => 'Zuletzt gespeichert: {name}, {ago}',
@@ -76,7 +76,7 @@ final class PresenceApi
     }
 
     /**
-     * Angaben für die Leiste (Toolbar): Attribute für [data-presence-here] und für Übersichten (Seitenbaum, „Gerade aktiv“).
+     * Data for the toolbar: attributes for [data-presence-here] and for overviews (page tree, „Gerade aktiv“).
      *
      * @return array{here: string, list: string, board: string, js: string}|null
      */
@@ -92,18 +92,18 @@ final class PresenceApi
             'here' => ' data-presence-here data-presence-type="article" data-presence-id="' . $article->languageId . ':' . $article->id . '"'
                 . ' data-presence-label="' . escape($article->name) . '" data-presence-url="' . escape(Url::article($article->id, $article->languageId, [Editing::PARAM => 1])) . '"'
                 . ' data-presence-csrf="' . escape(CsrfToken::factory(Api::CSRF)->getValue()) . '" data-presence-editing="' . ($editing ? '1' : '0') . '"'
-                . (null !== EditLock::blockedFor($article) ? ' data-presence-locked="1"' : '') . self::common(),   // Bearbeitungssperre: nur Ansehen
+                . (null !== EditLock::blockedFor($article) ? ' data-presence-locked="1"' : '') . self::common(),   // Editing lock: view only
             'list' => ' data-presence-list data-presence-type="article" data-presence-prefix="' . $article->languageId . ':"' . self::common(),
             'board' => ' data-presence-board' . self::common(),
             'js' => $a->getAssetsUrl('editor/presence.js') . '?v=' . (is_file($file) ? substr(md5((string) filemtime($file)), 0, 8) : '0'),
         ];
     }
 
-    /** /fluid-presence (Router, nach PACKAGES_INCLUDED) */
+    /** /fluid-presence (router, after PACKAGES_INCLUDED) */
     public static function handle(): never
     {
         $user = Editing::user();
-        if (!$user || Editing::isGuest()) {   // Gastzugang (z. B. AddOn fluid_demo): Gäste erscheinen nicht in der Präsenz
+        if (!$user || Editing::isGuest()) {   // Guest access (e.g. addon fluid_demo): guests don't appear in the presence
             self::send(['on' => false, 'error' => 'Keine Berechtigung.'], 403);
         }
         if (!self::on()) {
@@ -115,10 +115,10 @@ final class PresenceApi
                 array_values(array_filter(Presence::list(['site' => self::SITE]), static fn ($e) => null !== self::article((string) $e['type'], (string) $e['id'], $user))));
             self::send(['on' => true, 'me' => $me, 'items' => $items, 'live' => Live::token(['presence:' . self::SITE])]);
         }
-        // JSON (fetch) oder Formulardaten (sendBeacon beim Verlassen)
+        // JSON (fetch) or form data (sendBeacon on leaving)
         $in = str_contains((string) ($_SERVER['CONTENT_TYPE'] ?? ''), 'json') ? (array) json_decode((string) file_get_contents('php://input'), true) : $_POST;
         $csrf = (string) ($_SERVER['HTTP_X_CSRF_TOKEN'] ?? $in['_csrf'] ?? '');
-        $_REQUEST[CsrfToken::PARAM] = $csrf;   // Token ist bei jeder Ausgabe maskiert – Prüfung über den Core
+        $_REQUEST[CsrfToken::PARAM] = $csrf;   // The token is masked on every output – checked via the core
         if ('' === $csrf || !CsrfToken::factory(Api::CSRF)->isValid()) {
             self::send(['on' => true, 'error' => 'Sitzung abgelaufen.'], 419);
         }
@@ -133,9 +133,9 @@ final class PresenceApi
             Presence::leave($who);
             self::send(['on' => true, 'left' => true]);
         }
-        // Bearbeitungssperre übernehmen (Administration): melden und vor den bisherigen Inhaber rücken
+        // Take over the editing lock (administration): report and move ahead of the previous holder
         $take = !empty($in['take']) && EditLock::on() && EditLock::canTake($user);
-        // peek: nur nachsehen (Ansehen-Modus) – ohne sich selbst als „bearbeitet gerade“ zu melden
+        // peek: just look (view mode) – without reporting oneself as „bearbeitet gerade“
         if (empty($in['peek']) || $take) {
             Presence::beat($who, self::person($user) + ['label' => mb_substr((string) ($in['label'] ?? $article->name), 0, 120), 'url' => self::localUrl((string) ($in['url'] ?? ''))]);
         }
@@ -148,7 +148,7 @@ final class PresenceApi
     }
 
     /**
-     * Stand der Bearbeitungssperre für die Leiste: {on, by: fremder Inhaber|null, mine, canTake}.
+     * State of the editing lock for the toolbar: {on, by: other holder|null, mine, canTake}.
      *
      * @return array<string, mixed>
      */
@@ -163,7 +163,7 @@ final class PresenceApi
         return ['on' => true, 'by' => null !== $holder && !$mine ? self::out($holder, (string) $user->id) : null, 'mine' => $mine, 'canTake' => EditLock::canTake($user)];
     }
 
-    /** Artikel zu type/id, wenn die Person ihn bearbeiten darf – sonst null */
+    /** Article for type/id if the person may edit it – otherwise null */
     private static function article(string $type, string $id, User $user): ?Article
     {
         if ('article' !== $type || !preg_match('~^(\d+):(\d+)$~', $id, $m)) {
@@ -175,7 +175,7 @@ final class PresenceApi
         return $article && $perm instanceof StructurePermission && $perm->hasCategoryPerm($article->categoryId) ? $article : null;
     }
 
-    /** nur Pfade derselben Website (Link aus Übersichten) */
+    /** only paths of the same website (link from overviews) */
     private static function localUrl(string $url): string
     {
         return preg_match('~^/(?!/)[^\s"<>]*$~', $url) ? mb_substr($url, 0, 300) : '';
@@ -188,7 +188,7 @@ final class PresenceApi
 
     private static function person(User $u): array
     {
-        preg_match_all('~\pL[\pL\pN]*~u', preg_replace('~\(.*?\)~u', '', self::name($u)) ?? '', $m);   // Wörter ohne Klammerzusatz
+        preg_match_all('~\pL[\pL\pN]*~u', preg_replace('~\(.*?\)~u', '', self::name($u)) ?? '', $m);   // words without parenthetical suffix
         $parts = $m[0] ?: ['?'];
         $ini = mb_strtoupper(mb_substr($parts[0] ?? '?', 0, 1) . (count($parts) > 1 ? mb_substr((string) end($parts), 0, 1) : ''));
 
@@ -201,7 +201,7 @@ final class PresenceApi
             'since' => (int) $e['since'], 'at' => (int) $e['at'], 'self' => (string) $e['user'] === $me];
     }
 
-    /** Zuletzt gespeichert (Aktivität): Name und Zeitpunkt – die Aktivität kennt Namen, keine Benutzer-IDs */
+    /** Last saved (activity): name and time – the activity knows names, not user IDs */
     private static function last(Article $article, User $user): ?array
     {
         try {

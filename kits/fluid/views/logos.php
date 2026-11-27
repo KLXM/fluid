@@ -3,8 +3,8 @@
 use Klxm\Fluid\Block;
 
 /**
- * Logos: grid (umbrechende Reihe, zentriert) · marquee (Laufband in reinem CSS: Liste doppelt, zweite Hälfte aria-hidden;
- * hält bei Maus/Fokus an, steht bei „Bewegung reduzieren“ oder ausgeschalteter Bewegung als umbrechende Reihe still).
+ * Logos: grid (wrapping row, centered) · marquee (pure CSS marquee: list doubled, second half aria-hidden;
+ * pauses on hover/focus, stands still as a wrapping row with „Bewegung reduzieren“ or motion turned off).
  * @var Block $b  @var array $d
  */
 $v = 'marquee' === $b->variant() ? 'marquee' : 'grid';

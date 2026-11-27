@@ -36,14 +36,14 @@ use function trim;
 use const PHP_URL_PATH;
 
 /**
- * Weiterleitungen (Tabelle rex_fluid_redirect) und 404-Protokoll (rex_fluid_404) – Regeln aus KLXM Studio (Core\Redirects):
+ * Redirects (table rex_fluid_redirect) and 404 log (rex_fluid_404) – rules from KLXM Studio (Core\Redirects):
  *
- *  - Quelle: Pfad ohne Domain, optional mit ?query, optional mit * am Ende (Präfix). Ziel: redaxo://ID[#anker], /pfad oder
- *    https://…; „*“ im Ziel übernimmt den Rest. Code 301, 302 oder 410 (gelöscht).
- *  - Greift nur, wenn keine Seite passt. Vergleich ohne Schrägstrich am Ende, ASCII-Groß/Klein und Prozent-Kodierung egal.
- *  - Exakte Quelle vor Platzhalter, längster Präfix gewinnt. Query der Anfrage bleibt erhalten. Keine Ketten, keine Schleifen.
- *  - redaxo://ID folgt umbenannten und verschobenen Seiten automatisch; geänderte Pfade legen „alter Pfad → redaxo://ID“ an.
- *  - 404-Protokoll: die letzten MAX_404 verschiedenen Pfade mit Anzahl – ohne IP, ohne Referrer.
+ *  - Source: path without domain, optionally with ?query, optionally with * at the end (prefix). Target: redaxo://ID[#anchor],
+ *    /path or https://…; „*“ in the target takes over the rest. Code 301, 302 or 410 (gone).
+ *  - Applies only if no page matches. Compared without trailing slash, ignoring ASCII case and percent-encoding.
+ *  - Exact source before wildcard, longest prefix wins. The request's query is kept. No chains, no loops.
+ *  - redaxo://ID follows renamed and moved pages automatically; changed paths create „alter Pfad → redaxo://ID“.
+ *  - 404 log: the last MAX_404 distinct paths with count – no IP, no referrer.
  */
 final class Redirects
 {
@@ -51,7 +51,7 @@ final class Redirects
     public const string TABLE_404 = 'rex_fluid_404';
     public const array CODES = [301, 302, 410];
     public const int MAX_404 = 200;
-    /** Anfragen, die nie ins 404-Protokoll kommen (Angriffs-Scans, Dateien) */
+    /** Requests that never go into the 404 log (attack scans, files) */
     private const string NO_LOG = '~^/(wp-|wordpress|xmlrpc|\.env|\.git|\.well-known|cgi-bin|phpmyadmin|pma|vendor/|assets/|media/|apple-touch-icon|browserconfig\.xml|favicon)|\.(map|php\d?|asp|aspx|jsp|cgi|sql|bak|zip|gz|ini|log)$~i';
 
     public static function normalize(string $in): string
@@ -81,7 +81,7 @@ final class Redirects
         return $path . ('' !== $query ? '?' . $query : '');
     }
 
-    /** Vergleichsschlüssel: ohne Schrägstrich am Ende (außer „/“), ASCII-Kleinbuchstaben */
+    /** Comparison key: without trailing slash (except „/“), ASCII lowercase */
     public static function key(string $normalized): string
     {
         [$path, $query] = array_pad(explode('?', $normalized, 2), 2, '');
@@ -98,7 +98,7 @@ final class Redirects
     }
 
     /**
-     * Passende Regel: [regel, rest] oder null (reine Funktion). Exakt vor Platzhalter, längster Präfix gewinnt.
+     * Matching rule: [rule, rest] or null (pure function). Exact before wildcard, longest prefix wins.
      *
      * @param list<array<string, mixed>> $rules
      */
@@ -178,7 +178,7 @@ final class Redirects
         if (!is_string($loc) || '' === $loc) {
             return null;
         }
-        // Schleife (Ziel = Quelle): keine Weiterleitung
+        // Loop (target = source): no redirect
         $locPath = preg_match('~^https?://~i', $loc) ? (string) parse_url($loc, PHP_URL_PATH) : explode('?', explode('#', $loc, 2)[0], 2)[0];
         if (self::key(self::normalize($locPath)) === self::key($trimmed)) {
             return null;
@@ -188,8 +188,8 @@ final class Redirects
     }
 
     /**
-     * Interne Ziele zerlegen: `redaxo://ID[@Sprache][#anker]` (Seite) und `route://quelle/ID[@Sprache]` (Eintrag einer Quelle).
-     * Ohne Sprache gilt die Sprache der aufgerufenen Adresse (Regeln älterer Versionen speicherten keine).
+     * Split internal targets: `redaxo://ID[@language][#anchor]` (page) and `route://source/ID[@language]` (entry of a source).
+     * Without a language, the language of the requested URL applies (rules of older versions stored none).
      *
      * @return array{type: 'page'|'entry', id: string, source: string, lang: ?int, anchor: string}|null
      */
@@ -207,9 +207,9 @@ final class Redirects
     }
 
     /**
-     * Zieladresse oder null (Seite fehlt bzw. ist offline).
+     * Target URL or null (page missing or offline).
      *
-     * @param int|null $languageId Sprache der aufgerufenen Adresse – für interne Ziele ohne eigene Sprache
+     * @param int|null $languageId language of the requested URL – for internal targets without their own language
      */
     public static function targetUrl(string $target, string $rest = '', ?int $languageId = null): ?string
     {
@@ -247,14 +247,14 @@ final class Redirects
         try {
             Sql::factory()->setQuery('UPDATE ' . self::TABLE . ' SET hits = hits + 1, last_hit = NOW() WHERE id = ?', [$id]);
         } catch (Throwable) {
-            // Zählen ist nie wichtiger als die Weiterleitung selbst
+            // Counting is never more important than the redirect itself
         }
     }
 
     /**
-     * Geänderte Pfade (Routes::rebuild): neue Adresse aus exakten Regeln entfernen (echte Seite geht vor), alte Adresse
-     * online stehender Seiten bzw. Einträge → Ziel (redaxo://ID, route://quelle/ID; vorhandene Regel derselben Quelle
-     * übernimmt das Ziel – keine Ketten).
+     * Changed paths (Routes::rebuild): remove the new URL from exact rules (a real page takes precedence), old URL of
+     * online pages or entries → target (redaxo://ID, route://source/ID; an existing rule with the same source
+     * takes over the target – no chains).
      *
      * @param list<array{target: string, lang: int, old: string, new: string, online: bool}> $changes
      */
@@ -269,7 +269,7 @@ final class Redirects
                 continue;
             }
             $old = self::normalize($prefix . '/' . $c['old']);
-            $target = $c['target'] . '@' . $c['lang'];   // mit Sprache, sonst führte /en/alt auf die Seite der Startsprache
+            $target = $c['target'] . '@' . $c['lang'];   // with language, otherwise /en/old would lead to the page in the start language
             $row = $sql->getArray('SELECT id FROM ' . self::TABLE . ' WHERE source_hash = ? AND wildcard = 0 LIMIT 1', [sha1(self::key($old))])[0] ?? null;
             if ($row) {
                 $sql->setQuery('UPDATE ' . self::TABLE . ' SET target = ?, code = 301, active = 1, updated = NOW() WHERE id = ?', [$target, $row['id']]);
@@ -279,7 +279,7 @@ final class Redirects
         }
     }
 
-    /** Regel anlegen oder ändern (id > 0); gibt die ID zurück */
+    /** Create or update a rule (id > 0); returns the ID */
     public static function save(array $r, int $id = 0): int
     {
         $source = self::normalize((string) $r['source']);
@@ -300,7 +300,7 @@ final class Redirects
         return (int) $sql->getLastId();
     }
 
-    /** 404 merken (ohne IP); begrenzt auf MAX_404 verschiedene Pfade */
+    /** Remember a 404 (without IP); limited to MAX_404 distinct paths */
     public static function log404(string $path): void
     {
         if (preg_match(self::NO_LOG, $path)) {
@@ -315,7 +315,7 @@ final class Redirects
                 $sql->setQuery('DELETE FROM ' . self::TABLE_404 . ' WHERE id NOT IN (SELECT id FROM (SELECT id FROM ' . self::TABLE_404 . ' ORDER BY last_seen DESC LIMIT ' . self::MAX_404 . ') k)');
             }
         } catch (Throwable) {
-            // Protokoll ist nie wichtiger als die Seite
+            // The log is never more important than the page
         }
     }
 }

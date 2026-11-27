@@ -4,11 +4,11 @@ use Klxm\Fluid\Block;
 use Klxm\Fluid\Kit;
 
 /**
- * Scrollytelling im Kit „NativeCSS“ mit <ncss-scrolly>: Die Abschnitte ziehen als Karten vorbei, das Bild daneben bleibt
- * stehen und wechselt zum aktiven Abschnitt; schmal steht das Bild oben und die Abschnitte laufen darunter durch. Ohne
- * JavaScript stehen Abschnitte und Bilder untereinander. Abschnitte ohne eigenes Bild behalten das vorige.
- * Beim Bearbeiten die Ausgabe von fluid (Bild direkt am Text). Text: Rich-Text (früher Textfeld) – alter Klartext wie bisher;
- * Bildformat „auto“: jedes Bild ohne Zuschnitt.
+ * Scrollytelling in the kit „NativeCSS“ with <ncss-scrolly>: the sections pass by as cards, the image beside them stays
+ * and changes to the active section; on narrow screens the image is on top and the sections scroll below it. Without
+ * JavaScript sections and images are stacked. Sections without their own image keep the previous one.
+ * While editing fluid's output (image directly at the text). Text: rich text (formerly text field) – old plain text as
+ * before; image format „auto“: each image uncropped.
  * @var Block $b  @var array $d
  */
 if (is_editing()) {

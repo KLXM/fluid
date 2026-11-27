@@ -4,8 +4,8 @@ use Klxm\Fluid\Block;
 use Klxm\Fluid\Kit;
 
 /**
- * Pakete / Vergleich: cards (Raster auto-fit, Hervorhebung) · table (Vergleichstabelle – scrollt bei wenig Platz waagerecht,
- * erste Spalte bleibt stehen; Paketnamen als Spaltenköpfe, Werte ja/nein als Symbol mit Text für Screenreader).
+ * Packages / comparison: cards (auto-fit grid, highlight) · table (comparison table – scrolls horizontally when space
+ * is short, first column stays fixed; package names as column headers, yes/no values as symbol with text for screen readers).
  * @var Block $b  @var array $d
  */
 $v = in_array($b->variant(), ['table', 'list'], true) ? $b->variant() : 'cards';

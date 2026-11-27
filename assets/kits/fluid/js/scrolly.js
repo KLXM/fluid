@@ -1,8 +1,8 @@
 /*
- * Scrollytelling – nur auf Seiten mit dem Block. Der Abschnitt in der Bildschirmmitte wird aktiv und blendet in der stehenden
- * Spalte das Bild ein, das für ihn gilt (data-img: eigenes oder das zuletzt gebrachte, leer = noch keins). Fokus im Abschnitt
- * (Tastatur, Links) aktiviert ihn ebenso. Ohne JavaScript bleibt das erste Bild stehen; jedes Bild steht zusätzlich bei seinem
- * Text, wenn der Platz für die stehende Spalte fehlt (CSS Container-Query). Aus KLXM Studio (MIT).
+ * Scrollytelling – only on pages with the block. The section in the middle of the screen becomes active and fades in, in the
+ * sticky column, the image that applies to it (data-img: its own or the last one shown, empty = none yet). Focus in the
+ * section (keyboard, links) activates it as well. Without JavaScript the first image stays; each image also appears next to its
+ * text when there is no room for the sticky column (CSS container query). From KLXM Studio (MIT).
  */
 document.querySelectorAll('[data-scrolly]').forEach((box) => {
   const steps = [...box.querySelectorAll('[data-step]')];

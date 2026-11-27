@@ -12,16 +12,16 @@ use Redaxo\Core\Content\ContentHandler;
 use Redaxo\Core\Filesystem\Url;
 
 /**
- * Seitenvorlagen (Modell aus KLXM Studio – Core\PageTemplates): Vorlagen sind normale Seiten in der Offline-Kategorie
- * „Seitenvorlagen“ – für Besucher unsichtbar (offline: kein Menü, keine Sitemap, 404), bearbeitet im normalen Block-Editor.
- * Beim Anlegen einer Seite wählt die Redaktion „Leere Seite“, „Kopie dieser Seite“ oder eine Vorlage und bekommt eine
- * Kopie der Blöcke (aus der Arbeitsversion der Vorlage – also so, wie sie zuletzt bearbeitet wurde).
+ * Page templates (model from KLXM Studio – Core\PageTemplates): templates are normal pages in the offline category
+ * „Seitenvorlagen“ – invisible to visitors (offline: no menu, no sitemap, 404), edited in the normal block editor.
+ * When creating a page, editors choose „Leere Seite“, „Kopie dieser Seite“ or a template and get a copy of the
+ * blocks (from the template's working version – i.e. as it was last edited).
  */
 final class PageTemplates
 {
     private const string CONFIG = 'templates_category';
 
-    /** Kategorie der Vorlagen (wird beim ersten Speichern einer Vorlage angelegt) */
+    /** Category of the templates (created when the first template is saved) */
     public static function categoryId(bool $create = false): ?int
     {
         $id = (int) FluidAddon::instance()->getConfig(self::CONFIG, 0);
@@ -37,7 +37,7 @@ final class PageTemplates
         return $id;
     }
 
-    /** @return list<array{id: int, name: string, url: string}> url = Bearbeiten auf der Website */
+    /** @return list<array{id: int, name: string, url: string}> url = editing on the website */
     public static function all(int $languageId): array
     {
         $cat = self::categoryId() ? Category::get((int) self::categoryId(), $languageId) : null;
@@ -49,7 +49,7 @@ final class PageTemplates
             array_filter($cat->getArticles(false), static fn (Article $a) => !$a->isStartArticle())));
     }
 
-    /** Vorlage umbenennen (nur Seiten in „Seitenvorlagen“, nicht die Kategorie selbst) */
+    /** Rename a template (only pages in „Seitenvorlagen“, not the category itself) */
     public static function rename(int $id, string $name, int $languageId): void
     {
         $a = self::template($id, $languageId);
@@ -60,7 +60,7 @@ final class PageTemplates
         ArticleHandler::edit($a->id, $languageId, ['name' => mb_substr($name, 0, 191), 'template' => (string) $a->templateKey]);
     }
 
-    /** Vorlage löschen – vorhandene Seiten, die aus ihr entstanden sind, bleiben unberührt (sie haben eine Kopie) */
+    /** Delete a template – existing pages created from it stay untouched (they have a copy) */
     public static function delete(int $id, int $languageId): string
     {
         $a = self::template($id, $languageId);
@@ -79,17 +79,17 @@ final class PageTemplates
         return $a;
     }
 
-    /** Aktuelle Seite als Vorlage speichern; gibt die ID der Vorlage zurück */
+    /** Save the current page as a template; returns the template's ID */
     public static function saveFrom(Article $article, string $name): int
     {
         $cat = (int) self::categoryId(true);
-        $id = ArticleHandler::add(['category_id' => $cat, 'priority' => 999, 'name' => trim($name) ?: $article->name, 'template' => (string) $article->templateKey])->id;   // neu angelegte Seiten sind offline
+        $id = ArticleHandler::add(['category_id' => $cat, 'priority' => 999, 'name' => trim($name) ?: $article->name, 'template' => (string) $article->templateKey])->id;   // newly created pages are offline
         self::copy($article->id, $id, $article->languageId);
 
         return $id;
     }
 
-    /** Blöcke einer Seite (Arbeitsversion) in eine andere kopieren – in Arbeitsversion und Live-Fassung */
+    /** Copy the blocks of a page (working version) to another – into working and live version */
     public static function copy(int $fromId, int $toId, int $languageId): void
     {
         $work = FluidAddon::revision();

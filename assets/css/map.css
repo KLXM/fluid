@@ -1,7 +1,7 @@
-/* Karten (Kern) – Themes passen Farben über Variablen an:
-   --cms-map-accent (Markierung), --cms-map-radius, --cms-map-bg, --cms-map-line, --cms-map-ink */
+/* Maps (core) – themes adjust colors via variables:
+   --cms-map-accent (marker), --cms-map-radius, --cms-map-bg, --cms-map-line, --cms-map-ink */
 .cms-map{--_acc:var(--cms-map-accent,#314164);--_r:var(--cms-map-radius,16px);--_bg:var(--cms-map-bg,#ECECEE);--_line:var(--cms-map-line,#DCDCE0);display:grid;gap:10px}
-:where(.cms-map){margin:0}   /* ohne Gewicht: Themes setzen Abstände (z. B. praxis .cms-map{margin-top}) */
+:where(.cms-map){margin:0}   /* no weight: themes set spacing (e.g. praxis .cms-map{margin-top}) */
 .cms-map__canvas{position:relative;height:340px;border-radius:var(--_r);overflow:hidden;background-color:var(--_bg);background-image:linear-gradient(var(--_line) 1px,transparent 1px),linear-gradient(90deg,var(--_line) 1px,transparent 1px);background-size:44px 44px;isolation:isolate}
 .cms-map--s .cms-map__canvas{height:240px}
 .cms-map--l .cms-map__canvas{height:clamp(360px,60vh,560px)}
@@ -12,7 +12,7 @@
 @keyframes cms-map-pulse{50%{opacity:.45}}
 @media (prefers-reduced-motion:reduce){.cms-map.is-loading .cms-map__pin{animation:none}}
 .cms-map__load{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);padding:10px 18px;border:0;border-radius:999px;background:#fff;color:#16201E;font:inherit;font-weight:700;box-shadow:0 2px 10px rgba(0,0,0,.18);cursor:pointer}
-/* Zwei-Klick (data-click): Hinweis mit Link zur Datenschutzerklärung + Knopf; nach dem Klick (is-started) ausgeblendet */
+/* Two-click (data-click): notice with link to the privacy policy + button; hidden after the click (is-started) */
 .cms-map__consent{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);width:min(92%,30rem);display:grid;justify-items:center;gap:10px;padding:14px 16px;border-radius:14px;background:#fff;color:#16201E;box-shadow:0 2px 12px rgba(0,0,0,.18);text-align:center}
 .cms-map__note{margin:0;font-size:.9rem;line-height:1.4}
 .cms-map__note a{color:inherit}

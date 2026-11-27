@@ -1,4 +1,4 @@
-/* YForm-Feld „Fluid-Blöcke“ in der Maske */
+/* YForm field „Fluid-Blöcke“ in the form */
 .fluid-blocks-field { padding: 10px; border: 1px solid var(--rex-color-border); background: var(--rex-color-surface); }
 .fbf-list { list-style: none; margin: 0 0 10px; padding: 0; }
 .fbf-item { margin-bottom: 6px; border: 1px solid var(--rex-color-border); background: var(--rex-color-surface-subtle); }

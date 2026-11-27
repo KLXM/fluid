@@ -34,7 +34,7 @@ use Redaxo\Core\MediaPool\Media;
 )]
 final class Video extends FluidBlock
 {
-    /** Darstellungen mit Video (die Felder für Video fehlen bei „Audio“); „morph“ ergänzt das Kit „NativeCSS“ (kit.php → blocks) */
+    /** Displays with video (the video fields are missing for „Audio“); kit „NativeCSS“ adds „morph“ (kit.php → blocks) */
     public const array VIDEO = ['wide', 'text', 'cinema'];
 
     #[Text('Dachzeile (optional)', maxLength: 60, width: 'half')]

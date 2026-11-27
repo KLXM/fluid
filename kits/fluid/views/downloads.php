@@ -1,7 +1,7 @@
 <?php
 /**
- * Downloads – einzelne Dateien oder alle Dateien einer Medienkategorie (Medienpool). PDFs auf Wunsch mit „Ansehen“.
- * Aus KLXM Studio (dort mit PDF.js-Viewer und Sammlungen).
+ * Downloads – single files or all files of a media category (media pool). PDFs optionally with „Ansehen“.
+ * From KLXM Studio (there with PDF.js viewer and collections).
  * @var Block $b  @var array $d
  */
 use Klxm\Fluid\Block;

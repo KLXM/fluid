@@ -1,14 +1,14 @@
 /*
- * Hintergrundvideo (Einstieg „Vollflächig“ der Kits fluid und NativeCSS, Video „Morphing“ im Kit NativeCSS) mit Play/Pause-Schalter
- * (fluid_video_toggle() in functions.php, css/video-toggle.css). Übernommen aus KLXM Studio (resources/js/hero.mjs, MIT).
+ * Background video (hero „Vollflächig“ of the kits fluid and NativeCSS, video „Morphing“ in kit NativeCSS) with play/pause toggle
+ * (fluid_video_toggle() in functions.php, css/video-toggle.css). Taken from KLXM Studio (resources/js/hero.mjs, MIT).
  *
  *   <div data-hero-video-box> <video data-hero-video muted loop playsinline preload="none"><source data-src="…" type="…"></video>
  *     <button data-hero-video-toggle hidden class="hx-vt is-paused"><svg …pause/><svg …play/><span data-l-pause="…" data-l-play="…">…</span></button>
  *
- * Von selbst nur sichtbar und ohne „Bewegung reduzieren“ (Systemeinstellung oder <html data-motion>), „Daten sparen“ und
- * Kontrastmodus – dann steht der Schalter auf „abspielen“. Die bewusste Wahl der Besucherin (Klick) gilt, bis sie wieder klickt.
- * Läuft das Video: Pause-Symbol + „anhalten“, angehalten: Play-Symbol + „abspielen“ (Text und title; kein aria-pressed).
- * Quellen mit data-src laden erst beim ersten Abspielen. Ohne JavaScript: nur das Standbild, der Schalter bleibt verborgen.
+ * Plays by itself only when visible and without „Bewegung reduzieren“ (system or <html data-motion>), „Daten sparen“ and
+ * contrast mode – then the toggle shows „abspielen“. The visitor's deliberate choice (click) applies until she clicks again.
+ * While playing: pause icon + „anhalten“, paused: play icon + „abspielen“ (text and title; no aria-pressed).
+ * Sources with data-src load only on first play. Without JavaScript: only the still image, the toggle stays hidden.
  */
 (() => {
   const d = document, calm = matchMedia('(prefers-reduced-motion: reduce)'), lean = matchMedia('(prefers-reduced-data: reduce)'), forced = matchMedia('(forced-colors: active)');
@@ -38,7 +38,7 @@
       } else {
         if (!v.paused) v.pause();
         box.classList.remove('is-playing');
-        toggle(btn, want());   // außerhalb des Bildes bleibt die Absicht stehen (läuft weiter, sobald sichtbar)
+        toggle(btn, want());   // outside the viewport the intent stays (resumes as soon as visible)
       }
     };
     if (btn) {

@@ -19,15 +19,15 @@ use function in_array;
 use const JSON_UNESCAPED_UNICODE;
 
 /**
- * Selbsttest der Funktionen aus 1.0.0-beta.10 ff. (`console fluid:selftest`): je Gruppe eine Methode, ohne Daten zu ändern.
+ * Self-test of the features from 1.0.0-beta.10 on (`console fluid:selftest`): one method per group, without changing data.
  *
- *  - Rechte: Sperre und Modulrecht (Lock), Abschnitts-Optionen nur mit Gestaltungsrecht, Migration der Rollen (Perm).
- *  - Listen-Vorlagen: Felder der Vorlage, Anwenden, ohne Vorlage unverändert, fehlende Vorlage, Präfix der YForm-Felder,
- *    Vorlagen aus dem Extension Point.
- *  - Menü: Einstellungen „Einträge im Menü“, ohne Einstellung bleibt das Menü unverändert.
- *  - Glossar: Markieren (erstes Vorkommen, nicht in Links, Knöpfen, Überschriften, data-glossary="off", idempotent), Schreibweisen,
- *    Kurztext.
- *  - Wissen: Kapitelbaum (Nummern, eigene Nummern, Lesereihenfolge, Schleifen, fehlende Oberkapitel), Vor/Zurück, Abschnitte.
+ *  - Permissions: lock and module permission (Lock), section options only with the design permission, role migration (Perm).
+ *  - List templates: template fields, applying, unchanged without template, missing template, prefix of the YForm fields,
+ *    templates from the extension point.
+ *  - Menu: settings „Einträge im Menü“, without a setting the menu stays unchanged.
+ *  - Glossary: marking (first occurrence, not in links, buttons, headings, data-glossary="off", idempotent), spellings,
+ *    short text.
+ *  - Knowledge: chapter tree (numbers, custom numbers, reading order, loops, missing parent chapters), previous/next, sections.
  */
 final class FeatureSelfTest
 {
@@ -35,7 +35,7 @@ final class FeatureSelfTest
     /** @var list<string> */
     private array $fails = [];
 
-    /** @return array<string, callable(): array{ok: int, fails: list<string>}> Gruppen für die Konsole */
+    /** @return array<string, callable(): array{ok: int, fails: list<string>}> groups for the console */
     public static function groups(): array
     {
         return [
@@ -71,7 +71,7 @@ final class FeatureSelfTest
         }
     }
 
-    // ------------------------------------------------------------------ Rechte
+    // ------------------------------------------------------------------ Permissions
 
     private function rights(): void
     {
@@ -94,7 +94,7 @@ final class FeatureSelfTest
         $this->eq('Optionen angemeldet', Permission::has(Perm::DESIGN) && Permission::has(Perm::DESIGN_FULL), true);
     }
 
-    // ------------------------------------------------------------------ Listen-Vorlagen
+    // ------------------------------------------------------------------ List templates
 
     private function listTemplates(): void
     {
@@ -120,7 +120,7 @@ final class FeatureSelfTest
         $this->eq('Inhalt bleibt beim Block', $out['title'], 'Hallo');
         $opts = ListTemplates::optionsFrom($m, ['variant' => 'list', 'image_field' => 'rex_x.bild', 'title' => 'nicht'], 'rex_x');
         $this->eq('Als Vorlage speichern: Präfix weg, nur Vorlagen-Felder', [$opts['variant'] ?? null, $opts['image_field'] ?? null, isset($opts['title'])], ['list', 'bild', false]);
-        // Extension Point: Vorlage einer Erweiterung, nur für ihre Tabelle
+        // Extension point: an extension's template, only for its table
         Extension::register('FLUID_LIST_TEMPLATES', static function (ExtensionPoint $ep): array {
             return (array) $ep->subject + ['selbsttest' => ['name' => 'Selbsttest', 'tables' => ['rex_selbsttest'], 'default' => true, 'options' => ['variant' => 'list']]];
         });
@@ -214,7 +214,7 @@ final class FeatureSelfTest
         $this->eq('Deleted', Routing\Redirects::exists($link->path), false);
     }
 
-    // ------------------------------------------------------------------ Menü
+    // ------------------------------------------------------------------ Menu
 
     private function menu(): void
     {
@@ -225,7 +225,7 @@ final class FeatureSelfTest
             [['id' => 0, 'label' => 'A', 'href' => '/a', 'current' => false, 'active' => false, 'children' => []]]);
     }
 
-    // ------------------------------------------------------------------ Glossar
+    // ------------------------------------------------------------------ Glossary
 
     private function glossary(): void
     {
@@ -245,7 +245,7 @@ final class FeatureSelfTest
         $this->eq('Kurztext gekürzt', mb_strlen(Glossary\Glossary::short(str_repeat('Wort ', 80))) <= Glossary\Glossary::SHORT_MAX, true);
     }
 
-    // ------------------------------------------------------------------ Wissen
+    // ------------------------------------------------------------------ Knowledge
 
     private function knowledge(): void
     {

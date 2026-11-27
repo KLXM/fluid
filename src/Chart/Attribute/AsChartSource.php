@@ -5,8 +5,8 @@ namespace Klxm\Fluid\Chart\Attribute;
 use Attribute;
 
 /**
- * Datenquelle für den Block „Diagramm“ – an einer statischen Methode `fn (): array`, die labels und series liefert
- * (optional type, format, unit, description). Die Werte kommen bei jedem Aufruf der Seite frisch:
+ * Data source for the block „Diagramm“ – on a static method `fn (): array` that returns labels and series
+ * (optionally type, format, unit, description). The values are fresh on every page request:
  *
  *     #[AsChartSource('news.per_month', 'Neuigkeiten je Monat')]
  *     public static function perMonth(): array

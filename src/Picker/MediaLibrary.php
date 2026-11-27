@@ -15,8 +15,8 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use function in_array;
 
 /**
- * Medienauswahl auf der Website (FrontendPicker): Kategorien und Dateien des Medienpools durchsuchen und hochladen.
- * Es gelten die Rechte des Medienpools; im Backend übernimmt das der Medienpool des Cores (rex.pick).
+ * Media picker on the website (FrontendPicker): browse and upload categories and files of the media pool.
+ * The media pool's permissions apply; in the backend the core's media pool handles this (rex.pick).
  */
 final class MediaLibrary
 {
@@ -24,9 +24,9 @@ final class MediaLibrary
     public const array IMAGE_TYPES = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif', 'svg'];
 
     /**
-     * Medien einer Kategorie (0 = ohne Kategorie, die oberste Ebene des Medienpools) und alle Kategorien mit Rechten.
+     * Media of a category (0 = without category, the media pool's top level) and all categories with permissions.
      *
-     * @param list<string> $types erlaubte Endungen (leer = alle)
+     * @param list<string> $types allowed extensions (empty = all)
      * @return array{categories: list<array{id: int, name: string, parent: int}>, category: int, items: list<array<string, mixed>>, more: bool, upload: bool}
      */
     public static function list(User $user, int $category, string $term, array $types, int $page): array
@@ -36,7 +36,7 @@ final class MediaLibrary
             $category = 0;
         }
         $allowed = $perm->hasCategoryPerm($category ?: null);
-        // Suche über alle Kategorien nur mit Rechten für alle, sonst in der gewählten
+        // search across all categories only with permissions for all, otherwise in the selected one
         $everywhere = '' !== $term && $perm->hasAll();
 
         $filter = $everywhere ? [] : ['category_id' => $category ?: null];
@@ -61,7 +61,7 @@ final class MediaLibrary
     }
 
     /**
-     * @param list<string> $types erlaubte Endungen (leer = alle, die der Medienpool zulässt)
+     * @param list<string> $types allowed extensions (empty = all the media pool permits)
      * @return array<string, mixed>
      */
     public static function upload(User $user, int $category, string $title, array $types, mixed $file): array
@@ -76,7 +76,7 @@ final class MediaLibrary
         return self::item(MediaHandler::add(['file' => $file, 'category_id' => $category ?: null, 'title' => $title], types: $types));
     }
 
-    /** Vorschaubild; mit dem AddOn image_editor die bearbeitete Fassung */
+    /** Preview image; with the addon image_editor the edited version */
     public static function thumb(string $file): string
     {
         return class_exists(ImageEditor::class)
@@ -113,8 +113,8 @@ final class MediaLibrary
     }
 
     /**
-     * Kategorien mit Rechten in der Reihenfolge des Medienpools; `parent`: nächste übergeordnete Kategorie mit Rechten
-     * (0 = oberste Ebene), damit die Navigation auch bei Rechten nur für Unterkategorien funktioniert.
+     * Categories with permissions in the media pool's order; `parent`: next parent category with permissions
+     * (0 = top level), so navigation also works with permissions for subcategories only.
      *
      * @return list<array{id: int, name: string, parent: int}>
      */
