@@ -1,6 +1,6 @@
 # Changelog
 
-## Unveröffentlicht
+## 1.0.0-beta.14 – 2026-11-27
 
 - Text direkt auf der Seite: Die Werkzeugleiste von TipTap sieht aus wie die übrige fluid-Oberfläche (weiß, abgerundet,
   Farben, Schrift, dunkler Modus), bleibt einzeilig und zeigt seltene Werkzeuge hinter „⋯“ (TipTap 1.0.0-beta.3).
@@ -11,6 +11,7 @@
   Start (`ol type/start`). `RichText::P_CLASSES` und `RichText::COLORS` entfallen.
 - README und Demo-Beitrag „TipTap meets fluid“ mit neuen Bildern: einzeilige Leiste, Formate aus dem Kit (fluid und
   NativeCSS), Textblock mit allen Formaten zum Ausprobieren. Fix: Link-Leiste blieb sichtbar (TipTap 1.0.0-beta.5).
+- `fluid:demo --page=… --update` erneuert auch die Beitragsdaten (Anreißer, Bild, Datum, Autor, Schlagwörter).
 
 ## 1.0.0-beta.13 – 2026-11-27
 
