@@ -2,7 +2,7 @@
 
 namespace Klxm\Fluid\Kit\Fluid\Module;
 
-use Klxm\Fluid\Field\AsBlock;
+use Klxm\Fluid\Field\AsFluidBlock;
 use Klxm\Fluid\Field\Choice;
 use Klxm\Fluid\Field\Collection;
 use Klxm\Fluid\Field\Text;
@@ -13,7 +13,7 @@ use Redaxo\Core\Content\AsModule;
 use Redaxo\Core\Translation\Translatable;
 
 #[AsModule('fluid.steps', new Translatable('fluid_block_steps'))]
-#[AsBlock(
+#[AsFluidBlock(
     icon: 'path',
     group: new Translatable('fluid_block_group_content'),
     help: new Translatable('fluid_block_steps_help'),

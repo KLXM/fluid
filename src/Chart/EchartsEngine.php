@@ -2,7 +2,7 @@
 
 namespace Klxm\Fluid\Chart;
 
-use Klxm\Fluid\Chart\Attribute\AsChartEngine;
+use Klxm\Fluid\Chart\Attribute\AsFluidChartEngine;
 use Klxm\Fluid\FluidAddon;
 
 /**
@@ -11,7 +11,7 @@ use Klxm\Fluid\FluidAddon;
  *
  * @internal
  */
-#[AsChartEngine('echarts')]
+#[AsFluidChartEngine('echarts')]
 final class EchartsEngine implements ChartEngine
 {
     public function url(): string

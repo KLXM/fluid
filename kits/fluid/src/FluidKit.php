@@ -2,7 +2,7 @@
 
 namespace Klxm\Fluid\Kit\Fluid;
 
-use Klxm\Fluid\AsKit;
+use Klxm\Fluid\AsFluidKit;
 use Klxm\Fluid\Kit;
 use Override;
 use Redaxo\Core\Filesystem\Url;
@@ -13,7 +13,7 @@ use function dirname;
  * Kit „fluid“: breakpoint-free, for many kinds of projects (from KLXM Studio). Base kit all others inherit from.
  * Its assets live in the AddOn under assets/kits/fluid/ and are published with the AddOn.
  */
-#[AsKit('fluid', 'Fluid')]
+#[AsFluidKit('fluid', 'Fluid')]
 final class FluidKit extends Kit
 {
     #[Override]

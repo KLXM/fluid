@@ -39,7 +39,9 @@
         "klxm/routes": "^1.0@dev"
     },
     "conflict": {
-        "yakamara/yrewrite": "*"
+        "yakamara/yrewrite": "*",
+        "klxm/routes": "<1.0.0-beta.5",
+        "klxm/tiptap": "<1.0.0-beta.9"
     },
     "require-dev": {
         "redaxo/php-cs-fixer-config": "^3.1"

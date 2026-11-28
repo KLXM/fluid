@@ -2,7 +2,7 @@
 
 namespace Klxm\Fluid\Kit\Fluid\Module;
 
-use Klxm\Fluid\Field\AsBlock;
+use Klxm\Fluid\Field\AsFluidBlock;
 use Klxm\Fluid\Field\Collection;
 use Klxm\Fluid\Field\Text;
 use Klxm\Fluid\Kit\Fluid\FluidBlock;
@@ -11,7 +11,7 @@ use Redaxo\Core\Content\AsModule;
 use Redaxo\Core\Translation\Translatable;
 
 #[AsModule('fluid.quote', new Translatable('fluid_block_quote'))]
-#[AsBlock(
+#[AsFluidBlock(
     icon: 'quotes',
     group: new Translatable('fluid_block_group_content'),
     help: new Translatable('fluid_block_quote_help'),

@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.0-beta.21 – 2026-11-28
+
+- **Umbenannt (Bruch):** Die Attribute tragen den Namen des AddOns: `#[AsBlock]` → `#[AsFluidBlock]`, `#[AsKit]` → `#[AsFluidKit]`, `#[AsChartEngine]` → `#[AsFluidChartEngine]`, `#[AsChartSource]` → `#[AsFluidChartSource]`. Eigene Elemente, Kits und Diagramm-Quellen bitte anpassen (Attribut und `use`-Zeile).
+- Braucht klxm/routes 1.0.0-beta.5 (`#[AsRoutesEndpoint]`, `#[AsRoutesSource]` …) und klxm/tiptap 1.0.0-beta.9 (`#[AsTiptapProfile]`).
+
 ## 1.0.0-beta.20 – 2026-11-28
 
 - Lässt sich nicht zusammen mit yrewrite installieren (`conflict` in composer.json, ebenso klxm/routes 1.0.0-beta.4). fluid nutzt routes für Adressen, Domains und SEO.

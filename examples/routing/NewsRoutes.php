@@ -2,7 +2,7 @@
 
 namespace Project\Routing;
 
-use Klxm\Routes\Attribute\AsRouteSource;
+use Klxm\Routes\Attribute\AsRoutesSource;
 use Klxm\Routes\Attribute\Description;
 use Klxm\Routes\Attribute\FromTable;
 use Klxm\Routes\Attribute\Image;
@@ -18,7 +18,7 @@ use Klxm\Routes\TableSource;
  * the 301 redirect after a title change come from routing. Title, description, image and URL can be edited in
  * fluid in the detail page's page settings.
  */
-#[AsRouteSource('news', label: 'News')]
+#[AsRoutesSource('news', label: 'News')]
 #[FromTable('rex_news', page: 12, where: 'status = 1', param: 'news_id')]
 #[Slug('title')]
 #[Title('seo_title')]

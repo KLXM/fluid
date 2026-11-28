@@ -2,7 +2,7 @@
 
 namespace Klxm\Fluid\Kit\Native;
 
-use Klxm\Fluid\AsKit;
+use Klxm\Fluid\AsFluidKit;
 use Klxm\Fluid\Editing;
 use Klxm\Fluid\Kit;
 use Klxm\Fluid\Settings;
@@ -19,7 +19,7 @@ use function Redaxo\Core\View\escape;
  * cascade layers, container queries, light-dark(), native elements (dialog, details). Inherits from the kit fluid: blocks
  * without their own view come from there and look like NativeCSS via the token bridge (assets/css/native.css).
  */
-#[AsKit('native', 'NativeCSS')]
+#[AsFluidKit('native', 'NativeCSS')]
 final class NativeKit extends Kit
 {
     /**

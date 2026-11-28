@@ -2,7 +2,7 @@
 
 namespace Project\Block;
 
-use Klxm\Fluid\Field\AsBlock;
+use Klxm\Fluid\Field\AsFluidBlock;
 use Klxm\Fluid\Field\Link;
 use Klxm\Fluid\InlineStyle;
 use Klxm\Fluid\Kit\Fluid\FluidBlock;
@@ -18,7 +18,7 @@ use function Redaxo\Core\View\escape;
  * The output uses the helpers of the kit (classes wrap, card, btn) – the kit itself stays unchanged.
  */
 #[AsModule('fluid.teaser', 'Teaser (Projekt)')]
-#[AsBlock(icon: 'star', group: 'Inhalt', nestable: true, help: 'Beispiel für einen eigenen Block im Projekt.')]
+#[AsFluidBlock(icon: 'star', group: 'Inhalt', nestable: true, help: 'Beispiel für einen eigenen Block im Projekt.')]
 final class Teaser extends FluidBlock
 {
     #[Text(

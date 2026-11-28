@@ -2,8 +2,8 @@
 
 namespace Klxm\Fluid\Chart;
 
-use Klxm\Fluid\Chart\Attribute\AsChartEngine;
-use Klxm\Fluid\Chart\Attribute\AsChartSource;
+use Klxm\Fluid\Chart\Attribute\AsFluidChartEngine;
+use Klxm\Fluid\Chart\Attribute\AsFluidChartSource;
 use Klxm\Fluid\FluidAddon;
 use Klxm\Routes\Router;
 use Redaxo\Core\ClassDiscovery;
@@ -56,9 +56,9 @@ use const JSON_UNESCAPED_UNICODE;
  * fetches the engine only when in view and passes data and colours (CSS variables --chart-1 … --chart-8 etc.,
  * assets/css/charts.css).
  *
- * Swapping the engine: a class with #[AsChartEngine('name')] implementing ChartEngine, and in Project::configure()
+ * Swapping the engine: a class with #[AsFluidChartEngine('name')] implementing ChartEngine, and in Project::configure()
  * `Chart::$config = new ChartConfig(engine: 'name')`. Callers and blocks do not change.
- * Data sources for the block „Diagramm“: #[AsChartSource('key', 'Bezeichnung')] on a static method.
+ * Data sources for the block „Diagramm“: #[AsFluidChartSource('key', 'Bezeichnung')] on a static method.
  */
 final class Chart
 {
@@ -87,14 +87,14 @@ final class Chart
         return self::$config ??= new ChartConfig();
     }
 
-    /** @return array<string, ChartEngine> Name => Engine (per #[AsChartEngine]) */
+    /** @return array<string, ChartEngine> Name => Engine (per #[AsFluidChartEngine]) */
     public static function engines(): array
     {
         if (null === self::$engines) {
             self::$engines = ['echarts' => new EchartsEngine()];
             try {
-                foreach (ClassDiscovery::getInstance()->discoverByAttribute(AsChartEngine::class, ChartEngine::class) as $class => $attribute) {
-                    /** @var AsChartEngine $attribute */
+                foreach (ClassDiscovery::getInstance()->discoverByAttribute(AsFluidChartEngine::class, ChartEngine::class) as $class => $attribute) {
+                    /** @var AsFluidChartEngine $attribute */
                     self::$engines[$attribute->name] = new $class();
                 }
             } catch (Throwable) {
@@ -119,11 +119,11 @@ final class Chart
         if (null === self::$sources) {
             self::$sources = [];
             try {
-                foreach (ClassDiscovery::getInstance()->discoverByMethodAttribute(AsChartSource::class) as $e) {
+                foreach (ClassDiscovery::getInstance()->discoverByMethodAttribute(AsFluidChartSource::class) as $e) {
                     if (!$e['isStatic']) {
                         continue;
                     }
-                    /** @var AsChartSource $a */
+                    /** @var AsFluidChartSource $a */
                     $a = $e['attribute'];
                     self::$sources[$a->key] = ['label' => $a->label, 'handler' => [$e['class'], $e['method']]];
                 }

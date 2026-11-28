@@ -295,7 +295,7 @@ $code = [
         php bin/console routing:rebuild --source=news    # nur eine Quelle
         CODE,
     'rcode' => <<<'CODE'
-        #[AsRouteSource('events', label: 'Termine')]
+        #[AsRoutesSource('events', label: 'Termine')]
         final class EventRoutes extends RouteSource
         {
             /** alle Einträge – je Sprache einer */
@@ -331,10 +331,10 @@ $code = [
         CODE,
     'chartSource' => (string) file_get_contents(__DIR__ . '/src/ChartSources.php'),
     'chartEngine' => <<<'CODE'
-        use Klxm\Fluid\Chart\Attribute\AsChartEngine;
+        use Klxm\Fluid\Chart\Attribute\AsFluidChartEngine;
         use Klxm\Fluid\Chart\ChartEngine;
 
-        #[AsChartEngine('apex')]
+        #[AsFluidChartEngine('apex')]
         final class ApexEngine implements ChartEngine
         {
             public function url(): string
@@ -421,7 +421,7 @@ $code = [
         final class Calendar
         {
             // eigene Adresse vor den Seiten
-            #[AsEndpoint('/termine.ics')]
+            #[AsRoutesEndpoint('/termine.ics')]
             public static function ics(): void
             {
                 Router::respond(self::build(), 'text/calendar; charset=utf-8');
@@ -802,14 +802,14 @@ $code = [
 
         namespace Project\Kit\Nature;
 
-        use Klxm\Fluid\AsKit;
+        use Klxm\Fluid\AsFluidKit;
         use Klxm\Fluid\Kit;
 
         /**
          * Kit „Nature“ – erbt von „Fluid“. Dateien in diesem Ordner ersetzen die des Eltern-Kits:
          * kit.php (Definition, z. B. Darstellungen für Blöcke), views/{typ}.php, template.view.php, functions.php, assets/.
          */
-        #[AsKit('nature', 'Nature', parent: 'fluid')]
+        #[AsFluidKit('nature', 'Nature', parent: 'fluid')]
         final class NatureKit extends Kit {}
         CODE,
     'kitDef' => <<<'CODE'
@@ -1642,7 +1642,7 @@ vollständig: Module, Templates, Schema'],
                     'items' => [
                         $c('kitCreate', 'Terminal', 'bash'),
                     ]]],
-                ['type' => 'code', 'data' => ['eyebrow' => '', 'title' => '2. Die Kit-Klasse', 'intro' => 'Das Attribut #[AsKit] meldet das Kit an – Schlüssel, Name und Eltern-Kit. Die Klasse selbst bleibt leer.', 'note' => '',
+                ['type' => 'code', 'data' => ['eyebrow' => '', 'title' => '2. Die Kit-Klasse', 'intro' => 'Das Attribut #[AsFluidKit] meldet das Kit an – Schlüssel, Name und Eltern-Kit. Die Klasse selbst bleibt leer.', 'note' => '',
                     'items' => [
                         $c('kitClass', 'src/Kit/Nature/NatureKit.php', 'php'),
                     ]]],
@@ -1664,7 +1664,7 @@ vollständig: Module, Templates, Schema'],
                 ['type' => 'richtext', 'tunes' => ['background' => 'muted'], 'data' => ['variant' => 'standard', 'eyebrow' => '', 'title' => 'Was ein Kit ersetzen kann', 'intro' => '', 'meta' => '',
                     'measure' => 'normal', 'dropcap' => false, 'toc' => false, 'reveal' => 'off', 'scrollspy' => 'off',
                     'text' => '<ul><li><strong><code>views/{typ}.php</code></strong> – die Ausgabe eines Blocktyps</li><li><strong><code>template.view.php</code></strong> – der Seitenrahmen mit Kopf, Menü und Fuß</li><li><strong><code>assets/…</code></strong> – einzelne Dateien, z. B. <code>assets/css/b-cards.css</code> statt der von fluid</li><li><strong><code>functions.php</code></strong> – zusätzliche Hilfsfunktionen für Views</li><li><strong><code>kit.php</code></strong> – die Definition: Hintergründe, Design-Leiste, zusätzliche Darstellungen der Blöcke (ihre Felder stehen in den Blockklassen)</li></ul><p><strong>Design-Werte</strong> speichert jedes Kit für sich; solange ein neues Kit keine eigenen hat, übernimmt es die des Eltern-Kits. <strong>Assets</strong> veröffentlicht fluid bei <code>console migrate</code> – auf dem Server also den Kit-Ordner mit ausliefern und <code>migrate</code> ausführen. Ein Kit je Domain wählt der Extension Point <code>FLUID_KIT</code>.</p>']],
-                ['type' => 'code', 'data' => ['eyebrow' => '', 'title' => 'Als Composer-Paket für mehrere Projekte', 'intro' => 'Ein Kit für mehrere Projekte ist ein AddOn: REDAXO sucht Klassen mit #[AsKit] nur im Projekt und in aktiven AddOns. Die Dateien des Kits liegen neben der Kit-Klasse in src/.', 'note' => 'Nach composer require und console migrate steht das Kit in der Auswahl.',
+                ['type' => 'code', 'data' => ['eyebrow' => '', 'title' => 'Als Composer-Paket für mehrere Projekte', 'intro' => 'Ein Kit für mehrere Projekte ist ein AddOn: REDAXO sucht Klassen mit #[AsFluidKit] nur im Projekt und in aktiven AddOns. Die Dateien des Kits liegen neben der Kit-Klasse in src/.', 'note' => 'Nach composer require und console migrate steht das Kit in der Auswahl.',
                     'items' => [
                         $c('kitPackage', 'composer.json', 'json'),
                         $c('kitAddon', 'src/NatureAddon.php', 'php'),
@@ -1722,7 +1722,7 @@ vollständig: Module, Templates, Schema'],
                     'chart_type' => 'bar', 'source' => '', 'labels' => "Jan\nFeb\nMär\nApr\nMai\nJun",
                     'series' => [['name' => 'Website', 'values' => '42; 51; 47; 63; 78; 71'], ['name' => 'Telefon', 'values' => '18; 22; 19; 17; 21; 16']],
                     'format' => 'number', 'unit' => '', 'stacked' => false, 'height' => '320', 'table_view' => '', 'description' => 'Anfragen je Monat über Website und Telefon, höchster Wert im Mai']],
-                ['type' => 'chart', 'tunes' => ['background' => 'muted'], 'data' => ['variant' => 'split', 'eyebrow' => 'Live aus der Datenbank', 'title' => 'Was auf dieser Website steht', 'intro' => 'Eine Datenquelle des Kits zählt die Blöcke dieser Website – bei jedem Aufruf frisch. Eigene Quellen meldet ein AddOn oder das Projekt mit #[AsChartSource] an.',
+                ['type' => 'chart', 'tunes' => ['background' => 'muted'], 'data' => ['variant' => 'split', 'eyebrow' => 'Live aus der Datenbank', 'title' => 'Was auf dieser Website steht', 'intro' => 'Eine Datenquelle des Kits zählt die Blöcke dieser Website – bei jedem Aufruf frisch. Eigene Quellen meldet ein AddOn oder das Projekt mit #[AsFluidChartSource] an.',
                     'chart_type' => 'hbar', 'source' => 'fluid.blocks', 'labels' => '', 'series' => [],
                     'format' => 'number', 'unit' => '', 'stacked' => false, 'height' => '320', 'table_view' => '', 'description' => '']],
                 ['type' => 'layout', 'data' => ['preset' => '1-1', 'valign' => 'top', 'gap' => 'normal', 'stack' => 'default', 'reverse' => false], 'children' => [
@@ -1742,11 +1742,11 @@ vollständig: Module, Templates, Schema'],
                     'items' => [
                         $c('chartRender', 'PHP', 'php'),
                     ]]],
-                ['type' => 'code', 'data' => ['eyebrow' => '', 'title' => 'Eine Datenquelle anmelden', 'intro' => 'Eine statische Methode mit #[AsChartSource] erscheint im Block unter „Daten“. Diese Quelle liefert das Diagramm oben.', 'note' => '',
+                ['type' => 'code', 'data' => ['eyebrow' => '', 'title' => 'Eine Datenquelle anmelden', 'intro' => 'Eine statische Methode mit #[AsFluidChartSource] erscheint im Block unter „Daten“. Diese Quelle liefert das Diagramm oben.', 'note' => '',
                     'items' => [
                         $c('chartSource', 'kits/fluid/src/ChartSources.php', 'php'),
                     ]]],
-                ['type' => 'code', 'data' => ['eyebrow' => '', 'title' => 'Die Engine tauschen', 'intro' => 'Eine Klasse mit #[AsChartEngine] nennt das ES-Modul, die Konfiguration wählt es – wie die Policies von REDAXO 6.', 'note' => 'Vorlage für eine eigene Engine: resources/js/charts-echarts.mjs in fluid.',
+                ['type' => 'code', 'data' => ['eyebrow' => '', 'title' => 'Die Engine tauschen', 'intro' => 'Eine Klasse mit #[AsFluidChartEngine] nennt das ES-Modul, die Konfiguration wählt es – wie die Policies von REDAXO 6.', 'note' => 'Vorlage für eine eigene Engine: resources/js/charts-echarts.mjs in fluid.',
                     'items' => [
                         $c('chartEngine', 'src/Chart/ApexEngine.php', 'php'),
                         $c('chartJs', 'charts-apex.mjs', 'javascript'),

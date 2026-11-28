@@ -200,7 +200,7 @@ final class FluidAddon extends Addon
 
         // Components register with routing (endpoints, URLs, sitemap) and with SEO – routing doesn't know them.
         // This way they can later be split off as separate addons (see docs/entwickler.md → Bausteine).
-        // Endpoints (live, presence, MCP, map proxy, subtitles) register themselves via #[AsEndpoint].
+        // Endpoints (live, presence, MCP, map proxy, subtitles) register themselves via #[AsRoutesEndpoint].
         Maps\Maps::boot();
         Data\Detail::boot();
         Glossary\Glossary::boot();   // Glossar: Detailseiten, Sitemap, Einstellungen, schema.org

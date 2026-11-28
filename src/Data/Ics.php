@@ -4,7 +4,7 @@ namespace Klxm\Fluid\Data;
 
 use DateTimeImmutable;
 use DateTimeZone;
-use Klxm\Routes\Attribute\AsEndpoint;
+use Klxm\Routes\Attribute\AsRoutesEndpoint;
 use Klxm\Routes\Router;
 use Redaxo\Core\Http\Request;
 use Redaxo\Core\Language\Language;
@@ -68,7 +68,7 @@ final class Ics
     }
 
     /** @internal Endpunkt /fluid-ics/{seite}-{eintrag}.ics */
-    #[AsEndpoint('/' . self::PATH . '/*')]
+    #[AsRoutesEndpoint('/' . self::PATH . '/*')]
     public static function serve(string $path, string $rest): void
     {
         if (!YFormBridge::available() || !preg_match('~^(\d+)-(\d+)\.ics$~', $rest, $m)) {

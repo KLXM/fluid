@@ -5,7 +5,7 @@ namespace Klxm\Fluid\Maps;
 use FilesystemIterator;
 use Generator;
 use InvalidArgumentException;
-use Klxm\Routes\Attribute\AsEndpoint;
+use Klxm\Routes\Attribute\AsRoutesEndpoint;
 use Klxm\Routes\Router;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -48,7 +48,7 @@ final class Proxy
     private static bool $booted = false;
 
     /** @internal Own proxy for maps (tiles, styles, fonts) at /proxy/{service}/… – visitors never connect to third parties */
-    #[AsEndpoint('/proxy/*')]
+    #[AsRoutesEndpoint('/proxy/*')]
     public static function serve(string $path, string $rest): void
     {
         if (preg_match('~^([a-z][a-z0-9_-]{1,30})(/.*)?$~', $rest, $m)) {

@@ -7,14 +7,14 @@ use Attribute;
 /**
  * Registers a kit with fluid (like `#[AsModule]` for modules): in the project (`src/`) or in its own Composer package.
  *
- *     #[AsKit('nature', 'Nature')]
+ *     #[AsFluidKit('nature', 'Nature')]
  *     final class NatureKit extends Kit {}
  *
  * A kit inherits from the kit `parent` (default: `fluid`) and only brings what it changes: CSS, individual views, the
  * template, design options or blocks. Everything else comes from the parent kit. `bin/console fluid:kit:create` creates one.
  */
 #[Attribute(Attribute::TARGET_CLASS)]
-final readonly class AsKit
+final readonly class AsFluidKit
 {
     /**
      * @param non-empty-string $key Key of the kit (lowercase letters, digits, `-`), e.g. `nature`

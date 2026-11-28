@@ -2,7 +2,7 @@
 
 namespace Klxm\Fluid;
 
-use Klxm\Routes\Attribute\AsEndpoint;
+use Klxm\Routes\Attribute\AsRoutesEndpoint;
 use Klxm\Routes\Router;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\ArticleRevision;
@@ -54,7 +54,7 @@ final class Live
     private static bool $assets = false;
 
     /** @internal Endpoint of the live updates (SSE) – before the domain redirect */
-    #[AsEndpoint('/' . self::PATH, early: true)]
+    #[AsRoutesEndpoint('/' . self::PATH, early: true)]
     public static function serve(): void
     {
         self::stream();

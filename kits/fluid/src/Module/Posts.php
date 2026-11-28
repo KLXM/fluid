@@ -2,7 +2,7 @@
 
 namespace Klxm\Fluid\Kit\Fluid\Module;
 
-use Klxm\Fluid\Field\AsBlock;
+use Klxm\Fluid\Field\AsFluidBlock;
 use Klxm\Fluid\Field\Blog;
 use Klxm\Fluid\Field\Checkbox;
 use Klxm\Fluid\Field\Choice;
@@ -15,7 +15,7 @@ use Redaxo\Core\Content\AsModule;
 use Redaxo\Core\Translation\Translatable;
 
 #[AsModule('fluid.posts', new Translatable('fluid_block_posts'))]
-#[AsBlock(
+#[AsFluidBlock(
     icon: 'newspaper',
     group: new Translatable('fluid_block_group_website'),
     help: new Translatable('fluid_block_posts_help'),

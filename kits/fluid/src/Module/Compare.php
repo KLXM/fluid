@@ -2,7 +2,7 @@
 
 namespace Klxm\Fluid\Kit\Fluid\Module;
 
-use Klxm\Fluid\Field\AsBlock;
+use Klxm\Fluid\Field\AsFluidBlock;
 use Klxm\Fluid\Field\Choice;
 use Klxm\Fluid\Field\MediaPicker;
 use Klxm\Fluid\Field\Text;
@@ -13,7 +13,7 @@ use Redaxo\Core\MediaPool\Media;
 use Redaxo\Core\Translation\Translatable;
 
 #[AsModule('fluid.compare', new Translatable('fluid_block_compare'))]
-#[AsBlock(
+#[AsFluidBlock(
     icon: 'square-half',
     group: new Translatable('fluid_block_group_media'),
     help: new Translatable('fluid_block_compare_help'),

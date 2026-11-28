@@ -9,14 +9,14 @@ use Redaxo\Core\Translation\Translatable;
  * Block settings on the class – the fields are attributes on the properties (see {@see Field}).
  *
  *     #[AsModule('fluid.hinweis', 'Hinweis')]
- *     #[AsBlock(icon: 'info', group: 'Inhalt', nestable: true, variants: ['info' => 'Information', 'warn' => 'Warnung'])]
+ *     #[AsFluidBlock(icon: 'info', group: 'Inhalt', nestable: true, variants: ['info' => 'Information', 'warn' => 'Warnung'])]
  *     final class Hinweis extends FluidBlock { … }
  *
  * Label: name of the module (AsModule), unless `label:` is given. Texts for editors (group, help, label, variants,
  * variant help, labels of drags) are given directly or as translation key (`new Translatable('my_label')`).
  */
 #[Attribute(Attribute::TARGET_CLASS)]
-final class AsBlock
+final class AsFluidBlock
 {
     public function __construct(
         public readonly string $icon = 'square',

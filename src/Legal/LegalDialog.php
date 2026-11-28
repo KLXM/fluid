@@ -4,7 +4,7 @@ namespace Klxm\Fluid\Legal;
 
 use Klxm\Fluid\BlockModule;
 use Klxm\Fluid\FluidAddon;
-use Klxm\Routes\Attribute\AsEndpoint;
+use Klxm\Routes\Attribute\AsRoutesEndpoint;
 use Klxm\Routes\Router;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\ArticleRevision;
@@ -71,7 +71,7 @@ final class LegalDialog
         return '<script type="module" src="' . escape(FluidAddon::instance()->getAssetsUrl('js/legal-dialog.js')) . '"></script>';
     }
 
-    #[AsEndpoint('/_legal/*')]
+    #[AsRoutesEndpoint('/_legal/*')]
     public static function serve(string $path, string $rest): void
     {
         $type = trim($rest, '/');

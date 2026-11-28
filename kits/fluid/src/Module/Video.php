@@ -2,7 +2,7 @@
 
 namespace Klxm\Fluid\Kit\Fluid\Module;
 
-use Klxm\Fluid\Field\AsBlock;
+use Klxm\Fluid\Field\AsFluidBlock;
 use Klxm\Fluid\Field\Checkbox;
 use Klxm\Fluid\Field\Choice;
 use Klxm\Fluid\Field\Collection;
@@ -19,7 +19,7 @@ use Redaxo\Core\MediaPool\Media;
 use Redaxo\Core\Translation\Translatable;
 
 #[AsModule('fluid.video', new Translatable('fluid_block_video'))]
-#[AsBlock(
+#[AsFluidBlock(
     icon: 'play-circle',
     group: new Translatable('fluid_block_group_media'),
     label: new Translatable('fluid_block_video_label'),

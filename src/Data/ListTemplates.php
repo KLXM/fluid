@@ -54,7 +54,7 @@ use const JSON_UNESCAPED_UNICODE;
  *  - Extension point FLUID_LIST_TEMPLATES (same format, params table, block) – key „ext:…“.
  * Values of YForm fields may omit the table prefix („title“ instead of „rex_news.title“).
  *
- * Blocks take part with #[AsBlock(listTemplate: true)] (or a list of further fields that stay with the block) and a
+ * Blocks take part with #[AsFluidBlock(listTemplate: true)] (or a list of further fields that stay with the block) and a
  * field Field\ListTemplate. Permission to create, change and set the default: Perm::DESIGN_FULL.
  */
 final class ListTemplates

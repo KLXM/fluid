@@ -2,7 +2,7 @@
 
 namespace Klxm\Fluid\Kit\Fluid;
 
-use Klxm\Fluid\Chart\Attribute\AsChartSource;
+use Klxm\Fluid\Chart\Attribute\AsFluidChartSource;
 use Redaxo\Core\Content\AsModule;
 use Redaxo\Core\Content\Module;
 use Redaxo\Core\Database\Sql;
@@ -14,13 +14,13 @@ use function count;
 use function is_string;
 
 /**
- * Data sources of the kit for the block „Diagramm“ – also an example of #[AsChartSource]:
+ * Data sources of the kit for the block „Diagramm“ – also an example of #[AsFluidChartSource]:
  * a static method that returns labels and series. The values are fresh on every call.
  */
 final class ChartSources
 {
     /** @return array{labels: list<string>, series: list<array{name: string, data: list<int>}>, description: string} */
-    #[AsChartSource('fluid.blocks', 'Inhalte der Website: Blöcke je Art (live)')]
+    #[AsFluidChartSource('fluid.blocks', 'Inhalte der Website: Blöcke je Art (live)')]
     public static function blocks(): array
     {
         $rows = Sql::factory()->getArray(

@@ -2,7 +2,7 @@
 
 namespace Klxm\Fluid\Kit\Fluid\Module;
 
-use Klxm\Fluid\Field\AsBlock;
+use Klxm\Fluid\Field\AsFluidBlock;
 use Klxm\Fluid\Field\Choice;
 use Klxm\Fluid\Field\Collection;
 use Klxm\Fluid\Field\Link;
@@ -16,7 +16,7 @@ use Redaxo\Core\MediaPool\Media;
 use Redaxo\Core\Translation\Translatable;
 
 #[AsModule('fluid.hero', new Translatable('fluid_block_hero'))]
-#[AsBlock(
+#[AsFluidBlock(
     icon: 'star',
     group: new Translatable('fluid_block_group_header'),
     help: new Translatable('fluid_block_hero_help'),

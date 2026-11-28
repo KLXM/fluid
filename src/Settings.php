@@ -38,7 +38,7 @@ final class Settings
     /** @return array<string, array{label: string, fields: list<array<string, mixed>>}> */
     private static function baseSchema(): array
     {
-        // Tab „Kit“ only if there is more than one (project or Composer packages with #[AsKit])
+        // Tab „Kit“ only if there is more than one (project or Composer packages with #[AsFluidKit])
         $kits = Kit::options();
         $kitTab = count($kits) > 1 ? ['kit' => ['label' => I18n::rawMsg('fluid_settings_tab_kit'), 'fields' => [
             ['name' => 'kit', 'label' => I18n::rawMsg('fluid_settings_kit'), 'type' => 'select', 'required' => true, 'default' => Kit::DEFAULT, 'options' => $kits,

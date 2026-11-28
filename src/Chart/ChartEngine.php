@@ -3,7 +3,7 @@
 namespace Klxm\Fluid\Chart;
 
 /**
- * Engine that draws charts – register with #[AsChartEngine('name')] on the class.
+ * Engine that draws charts – register with #[AsFluidChartEngine('name')] on the class.
  *
  * url() is the address of an ES module with exactly one function:
  *

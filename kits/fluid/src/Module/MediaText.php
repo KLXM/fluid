@@ -2,7 +2,7 @@
 
 namespace Klxm\Fluid\Kit\Fluid\Module;
 
-use Klxm\Fluid\Field\AsBlock;
+use Klxm\Fluid\Field\AsFluidBlock;
 use Klxm\Fluid\Field\Choice;
 use Klxm\Fluid\Field\Link;
 use Klxm\Fluid\Field\MediaPicker;
@@ -15,7 +15,7 @@ use Redaxo\Core\MediaPool\Media;
 use Redaxo\Core\Translation\Translatable;
 
 #[AsModule('fluid.media_text', new Translatable('fluid_block_media_text'))]
-#[AsBlock(
+#[AsFluidBlock(
     icon: 'square-half',
     group: new Translatable('fluid_block_group_content'),
     help: new Translatable('fluid_block_media_text_help'),

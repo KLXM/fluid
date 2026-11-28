@@ -2,7 +2,7 @@
 
 namespace Klxm\Fluid\Kit\Fluid\Module;
 
-use Klxm\Fluid\Field\AsBlock;
+use Klxm\Fluid\Field\AsFluidBlock;
 use Klxm\Fluid\Field\Choice;
 use Klxm\Fluid\Field\Hotspots as HotspotsField;
 use Klxm\Fluid\Field\MediaPicker;
@@ -19,7 +19,7 @@ use Redaxo\Core\Translation\Translatable;
  * KLXM Studio). Output: views/hotspots.php, styles css/hotspots.css, script js/hotspots.js.
  */
 #[AsModule('fluid.hotspots', new Translatable('fluid_block_hotspots'))]
-#[AsBlock(
+#[AsFluidBlock(
     icon: 'map-pin',
     group: new Translatable('fluid_block_group_media'),
     help: new Translatable('fluid_block_hotspots_help'),

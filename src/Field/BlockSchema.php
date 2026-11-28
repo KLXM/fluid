@@ -17,7 +17,7 @@ use function preg_replace;
 use function strtolower;
 
 /**
- * Definition of a block from its class's attributes: #[AsBlock] on the class, core field attributes on the
+ * Definition of a block from its class's attributes: #[AsFluidBlock] on the class, core field attributes on the
  * properties (as with every core module; fluid's fields of the same name are subclasses with optional
  * additions, see FluidField). Order: inherited properties first, then those of the class.
  *
@@ -35,7 +35,7 @@ final class BlockSchema
     public static function of(string $class, string $name): array
     {
         $ref = new ReflectionClass($class);
-        $block = ($ref->getAttributes(AsBlock::class)[0] ?? null)?->newInstance() ?? new AsBlock();
+        $block = ($ref->getAttributes(AsFluidBlock::class)[0] ?? null)?->newInstance() ?? new AsFluidBlock();
         $def = ['label' => null !== $block->label ? Translatable::text($block->label) : $name, 'icon' => $block->icon, 'group' => Translatable::text($block->group)];
         foreach (['help' => null !== $block->help ? Translatable::text($block->help) : null, 'requires' => $block->requires, 'background' => $block->background, 'jsonld' => $block->jsonld] as $k => $v) {
             if (null !== $v) {

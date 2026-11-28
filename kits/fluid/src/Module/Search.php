@@ -2,7 +2,7 @@
 
 namespace Klxm\Fluid\Kit\Fluid\Module;
 
-use Klxm\Fluid\Field\AsBlock;
+use Klxm\Fluid\Field\AsFluidBlock;
 use Klxm\Fluid\Field\Number;
 use Klxm\Fluid\Field\Text;
 use Klxm\Fluid\Field\Textarea;
@@ -11,7 +11,7 @@ use Redaxo\Core\Content\AsModule;
 use Redaxo\Core\Translation\Translatable;
 
 #[AsModule('fluid.search', new Translatable('fluid_block_search'))]
-#[AsBlock(
+#[AsFluidBlock(
     icon: 'magnifying-glass',
     group: new Translatable('fluid_block_group_website'),
     help: new Translatable('fluid_block_search_help'),

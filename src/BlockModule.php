@@ -36,7 +36,7 @@ use function Redaxo\Core\View\escape;
  * columns and styling by a kit.
  *
  *     #[AsModule('fluid.hinweis', 'Hinweis')]
- *     #[AsBlock(icon: 'info', nestable: true)]
+ *     #[AsFluidBlock(icon: 'info', nestable: true)]
  *     final class Hinweis extends FluidBlock
  *     {
  *         #[Text('Überschrift', required: true, maxLength: 120)]
@@ -110,7 +110,7 @@ abstract class BlockModule extends Module
     }
 
     /**
-     * Definition of the block: #[AsBlock] on the class and the fields on the properties (Field\BlockSchema), on top of
+     * Definition of the block: #[AsFluidBlock] on the class and the fields on the properties (Field\BlockSchema), on top of
      * that the kit's settings for the block type (kit.php 'blocks' – e.g. additional variants) and the extension point
      * FLUID_BLOCK_DEFINITION (changing labels …).
      *
@@ -123,13 +123,13 @@ abstract class BlockModule extends Module
             ['type' => static::type(), 'module' => static::class, 'kit' => static::kit()]));
     }
 
-    /** Beschriftung des Blocks (#[AsBlock] label, sonst Name des Moduls) */
+    /** Beschriftung des Blocks (#[AsFluidBlock] label, sonst Name des Moduls) */
     public static function label(): string
     {
         return (string) (static::definition()['label'] ?? static::name());
     }
 
-    /** Required addons available? (#[AsBlock(requires: …)], e.g. 'yform') – otherwise the block is missing from the picker */
+    /** Required addons available? (#[AsFluidBlock(requires: …)], e.g. 'yform') – otherwise the block is missing from the picker */
     public static function available(): bool
     {
         return match (static::definition()['requires'] ?? null) {
@@ -457,7 +457,7 @@ abstract class BlockModule extends Module
         return Core::isBackend() && str_starts_with(Request::get('page', 'string'), 'content');
     }
 
-    /** May the block (in this variant) sit in a layout column? (#[AsBlock(nestable: true | ['variante', …])]) */
+    /** May the block (in this variant) sit in a layout column? (#[AsFluidBlock(nestable: true | ['variante', …])]) */
     public static function nestable(string $variant = ''): bool
     {
         $n = static::definition()['nestable'] ?? false;

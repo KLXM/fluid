@@ -70,14 +70,14 @@ final class KitCreateCommand extends AbstractCommand
 
             namespace {$ns};
 
-            use Klxm\\Fluid\\AsKit;
+            use Klxm\\Fluid\\AsFluidKit;
             use Klxm\\Fluid\\Kit;
 
             /**
              * Kit "{$label}" – inherits from "{$parentKit->label()}". Files in this folder replace those of the parent kit:
              * kit.php (definition), views/{type}.php, template.view.php, functions.php, assets/.
              */
-            #[AsKit('{$key}', '{$this->quote($label)}', parent: '{$parentKit->key()}')]
+            #[AsFluidKit('{$key}', '{$this->quote($label)}', parent: '{$parentKit->key()}')]
             final class {$class} extends Kit {}
 
             PHP);
@@ -138,7 +138,7 @@ final class KitCreateCommand extends AbstractCommand
 
         $io->success('Kit "' . $label . '" created: ' . Path::relative($dir));
         $io->listing(array_merge([
-            $class . '.php – registration (#[AsKit])',
+            $class . '.php – registration (#[AsFluidKit])',
             'kit.php – definition (inherits from "' . $parentKit->key() . '")',
             'assets/css/kit.css – own CSS',
         ], $copied));

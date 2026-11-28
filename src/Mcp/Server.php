@@ -6,7 +6,7 @@ use DomainException;
 use Klxm\Fluid\ApiError;
 use Klxm\Fluid\Editing;
 use Klxm\Fluid\FluidAddon;
-use Klxm\Routes\Attribute\AsEndpoint;
+use Klxm\Routes\Attribute\AsRoutesEndpoint;
 use Redaxo\Core\Core;
 use Redaxo\Core\Exception\UserMessageException;
 use Redaxo\Core\Filesystem\Url;
@@ -49,7 +49,7 @@ final class Server
     private Tools $tools;
 
     /** @internal Endpunkt /fluid-mcp bzw. ?fluid_mcp=1 */
-    #[AsEndpoint('/' . self::PATH, early: true, param: self::PARAM)]
+    #[AsRoutesEndpoint('/' . self::PATH, early: true, param: self::PARAM)]
     public static function serve(): void
     {
         self::handle();

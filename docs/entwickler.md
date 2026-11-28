@@ -27,7 +27,7 @@ ohne das Kit zu ändern (`examples/block/`):
 // src/Block/Teaser.php
 namespace Project\Block;
 
-use Klxm\Fluid\Field\AsBlock;
+use Klxm\Fluid\Field\AsFluidBlock;
 use Klxm\Fluid\Field\Link;
 use Klxm\Fluid\Kit\Fluid\FluidBlock;
 use Redaxo\Core\Content\AsModule;
@@ -36,7 +36,7 @@ use Redaxo\Core\Form\Field\{Text, Textarea};
 use function Redaxo\Core\View\escape;
 
 #[AsModule('fluid.teaser', 'Teaser')]
-#[AsBlock(icon: 'star', group: 'Inhalt', nestable: true)]   // nestable: darf in eine Layout-Spalte
+#[AsFluidBlock(icon: 'star', group: 'Inhalt', nestable: true)]   // nestable: darf in eine Layout-Spalte
 final class Teaser extends FluidBlock
 {
     #[Text('Überschrift', required: true, maxLength: 80)]
@@ -69,7 +69,7 @@ final class Teaser extends FluidBlock
   `BlockModule::classFor($key)` liefert die Klasse eines Blocks, `BlockModule::all()` alle; `->data()` die Werte eines
   Slices als Array.
 
-**Vom Modul des Cores zum Block:** von `FluidBlock` statt `Module` erben, Schlüssel mit `fluid.`, `#[AsBlock]` an die
+**Vom Modul des Cores zum Block:** von `FluidBlock` statt `Module` erben, Schlüssel mit `fluid.`, `#[AsFluidBlock]` an die
 Klasse – Felder und `output()` bleiben, wie sie sind. Für das Bearbeiten direkt auf der Seite `$this->edit('feld')` an
 die Elemente setzen. Vorhandene Slices behalten ihren Modulschlüssel; neue Inhalte kommen mit dem Block.
 
@@ -121,7 +121,7 @@ public array $items = [];
 Auswahlen aus Code: `choices: static function (): array { return Klasse::liste(); }` (wie beim Core; Pfeilfunktionen
 sind in Attributen nicht erlaubt) oder ein `ChoiceProvider`.
 
-**Block** (`#[AsBlock]`): `icon`, `group`, `help`, `label` (Standard: Name aus `AsModule`), `variants` (Darstellungen,
+**Block** (`#[AsFluidBlock]`): `icon`, `group`, `help`, `label` (Standard: Name aus `AsModule`), `variants` (Darstellungen,
 erste = Standard), `variantHelp`, `nestable` (`true` oder Liste der Varianten), `background`, `requires` (`'yform'`),
 `reload` (Teil der Seite ohne Neuladen aktualisieren), `jsonld` (strukturierte Daten, z. B.
 `['type' => 'faq', 'items' => 'items', 'question' => 'q', 'answer' => 'a']`), `drags` (Greifer auf der Seite:
@@ -229,7 +229,7 @@ Legt `src/Kit/Nature/` im Projekt an:
 
 | Datei | |
 |---|---|
-| `NatureKit.php` | Anmeldung: `#[AsKit('nature', 'Nature', parent: 'fluid')] final class NatureKit extends Kit {}` |
+| `NatureKit.php` | Anmeldung: `#[AsFluidKit('nature', 'Nature', parent: 'fluid')] final class NatureKit extends Kit {}` |
 | `kit.php` | Definition – nur, was vom Eltern-Kit abweicht (`$parent` steht bereit) |
 | `assets/css/kit.css` | eigenes CSS, geladen nach Grund- und Block-CSS des Eltern-Kits |
 | `views/hero.php` … | mit `--view` kopierte Views zum Anpassen |
@@ -419,7 +419,7 @@ Anzeige (`YFormBridge::sortType()`, `::sortValue()`).
 ### Als Composer-Paket
 
 Ein Kit für mehrere Projekte ist ein eigenes Composer-Paket – und zwar ein **AddOn** (Typ `redaxo-addon` mit
-AddOn-Klasse): REDAXO sucht Klassen mit Attributen (`#[AsKit]`) nur im Projekt und in aktiven AddOns, nicht in
+AddOn-Klasse): REDAXO sucht Klassen mit Attributen (`#[AsFluidKit]`) nur im Projekt und in aktiven AddOns, nicht in
 beliebigen Paketen unter `vendor/`. Die Dateien des Kits (`kit.php`, `views/`, `assets/` …) liegen neben der Kit-Klasse.
 
 ```json
@@ -545,7 +545,7 @@ gewählte Vorlage (Feld `template` leer) ändert sich nichts; fehlt eine gewähl
 Extension::register('FLUID_LIST_TEMPLATES', static fn (ExtensionPoint $ep) => $ep->subject + ['kompakt' => ['name' => 'Kompakt', 'options' => ['variant' => 'list']]]);
 ```
 
-Eigene Listenblöcke nehmen teil mit `#[AsBlock(listTemplate: true)]` (oder einer Liste weiterer Felder, die beim Block bleiben) und
+Eigene Listenblöcke nehmen teil mit `#[AsFluidBlock(listTemplate: true)]` (oder einer Liste weiterer Felder, die beim Block bleiben) und
 einem Feld `#[ListTemplate('Vorlage')] public string $template = '';`. Verwalten (Speichern, Standard, Überschreiben, Umbenennen,
 Löschen) in der Seitenleiste mit `fluid[design_full]`; Vorschläge je Tabelle legt `ListTemplates::seed()` beim ersten Öffnen an.
 
@@ -707,7 +707,7 @@ Parameter des Eintrags (Request und `$_GET`) und gibt ihn aus; gibt es den Eintr
 Aus einer Tabelle (auch YForm) nur mit Attributen – REDAXO findet die Klasse selbst (`examples/routing/NewsRoutes.php`):
 
 ```php
-#[AsRouteSource('news', label: 'News')]
+#[AsRoutesSource('news', label: 'News')]
 #[FromTable('rex_news', page: 12, where: 'status = 1', param: 'news_id')]   // language: 'clang_id' – sonst alle Sprachen
 #[Slug('title')]            // withId: true → /aktuelles/titel-12
 #[Title('seo_title')]       // sonst die Slug-Spalte
@@ -720,7 +720,7 @@ final class NewsRoutes extends TableSource {}
 Für alles andere eine eigene Quelle mit `entries()` (und optional `meta()`, `exists()`, `editable()`, `save()`):
 
 ```php
-#[AsRouteSource('events', label: 'Termine')]
+#[AsRoutesSource('events', label: 'Termine')]
 final class EventRoutes extends RouteSource
 {
     public function entries(): iterable
@@ -785,7 +785,7 @@ Gleicher Schlüssel ersetzt – so lässt sich jede Angabe des Rewriters übersc
 - Websites & Domains (Website → Websites & Domains, Recht `routes[sites]`): mehrere **Websites** mit Startpunkt,
   Sprachen, 404-Seite, Titel-Vorlage, KI-Crawlern und llms.txt; je Website **Hauptdomain** (auch je Sprache),
   **Varianten** (Stage, lokal – nie indexiert) und **Aliase** (301), https erzwingen. Landing-Page = Website „nur diese
-  Seite“, Spiegel = Canonical bleibt auf der Haupt-Website. Im Code per `#[AsSite]` (klxm/routes).
+  Seite“, Spiegel = Canonical bleibt auf der Haupt-Website. Im Code per `#[AsRoutesSite]` (klxm/routes).
 - Menü ⋯ → **Domain wechseln**: dieselbe Seite auf einer anderen Domain, dort angemeldet (eine Anmeldung für alle
   Domains, klxm/routes `Sso`). Menü ⋯ → **SEO & KI**: Hinweise für diese Seite und die ganze Website.
 - `sitemap.xml` je Website und Host: Seiten, die online sind (samt Eltern), nicht auf „nicht
@@ -856,7 +856,7 @@ Formatierter Text (`#[RichText]`, Ausgabe mit `rich()` bzw. `RichText::html()`) 
 direkt auf der Seite im Inline-Modus von TipTap (`RexTiptap.inline()`): Klick in den Text startet den Editor an der
 Stelle, die Werkzeugleiste schwebt darüber, Änderungen landen wie bei allen Feldern im Entwurf.
 
-- **Profil als Klasse:** `Klxm\Fluid\Tiptap\FluidProfile` – `#[AsProfile('tiptap.fluid', …)]`. Überschriften h2–h4,
+- **Profil als Klasse:** `Klxm\Fluid\Tiptap\FluidProfile` – `#[AsTiptapProfile('tiptap.fluid', …)]`. Überschriften h2–h4,
   Markieren, Hoch-/Tiefstellen, Zitat; Absatz-, Überschriften-, Farb-, Listen- und Linkformate kommen aus dem Kit
   ([Textformate im Kit](#textformate-im-kit)). Ein Projekt passt es an wie jedes
   Profil: eigene Klasse mit demselben Namen (`tiptap.fluid`) – Code im Projekt geht vor.
@@ -1002,11 +1002,11 @@ echo Chart::render([
   holt die Engine erst in Sichtweite und zeichnet bei Hell/Dunkel neu.
 - **Farben:** `--chart-1` … `--chart-8` (hell), `--chart-d1` … `--chart-d8` (dunkel), Text und Linien aus der Umgebung;
   Kits setzen `--chart-c1` … `c6` (das Kit fluid nimmt für Reihe 1 die Akzentfarbe).
-- **Engine tauschen:** Klasse mit `#[AsChartEngine('name')]`, die `ChartEngine` implementiert (`url()` → ES-Modul mit
+- **Engine tauschen:** Klasse mit `#[AsFluidChartEngine('name')]`, die `ChartEngine` implementiert (`url()` → ES-Modul mit
   `export function render(el, spec, theme) → {update, resize, dispose, image?}`), gewählt in `Project::configure()`:
   `Chart::$config = new ChartConfig(engine: 'name')`. Vorlage: `resources/js/charts-echarts.mjs` (Quelle des Bundles
   `assets/vendor/echarts/charts-echarts.mjs`, Apache ECharts, Apache-2.0, nur Linie/Balken/Torte, Canvas).
-- **Datenquellen:** statische Methode mit `#[AsChartSource('key', 'Bezeichnung')]`, die `labels` und `series` liefert
+- **Datenquellen:** statische Methode mit `#[AsFluidChartSource('key', 'Bezeichnung')]`, die `labels` und `series` liefert
   (optional `type`, `format`, `unit`, `description`) – erscheint im Block „Diagramm“ unter „Daten“, Werte bei jedem
   Aufruf frisch. Beispiel: `kits/fluid/src/ChartSources.php`.
 - **Block „Diagramm“** (`fluid.chart`): Art, Daten (von Hand oder Quelle), Beschriftungen je Zeile, Reihen als
@@ -1131,7 +1131,7 @@ Ohne JavaScript bleiben es normale Links und Formulare.
 Eigener Block:
 
 ```php
-// an der Blockklasse: #[AsBlock(reload: true)]
+// an der Blockklasse: #[AsFluidBlock(reload: true)]
 <div class="wrap …"<?= \Klxm\Fluid\Live::region($b) ?>>
   <a href="?seite=2#<?= $b->domId() ?>" data-live-nav>Weiter</a>
   <form method="get" data-live-nav><input name="q" id="…" data-live-input data-live-delay="600" data-live-min="3"></form>
@@ -1325,10 +1325,10 @@ Umbau geht, gelten feste Regeln:
 die Aufrufe gehen in `boot()` jedes AddOns (aufgelöst wird erst bei `PACKAGES_INCLUDED`):
 
 ```php
-#[AsEndpoint('/mein-dienst')]                 // an einer statischen Methode fn (string $path, string $rest): void
-#[AsEndpoint('/dateien/*')]                   // Präfix, Rest als $rest
-#[AsEndpoint('/mcp', early: true, param: 'mcp')]   // vor der Domain-Umleitung, auch als ?mcp=…
-#[AsRouteSource('news')]                      // Quelle eigener Adressen (RouteSource/TableSource)
+#[AsRoutesEndpoint('/mein-dienst')]                 // an einer statischen Methode fn (string $path, string $rest): void
+#[AsRoutesEndpoint('/dateien/*')]                   // Präfix, Rest als $rest
+#[AsRoutesEndpoint('/mcp', early: true, param: 'mcp')]   // vor der Domain-Umleitung, auch als ?mcp=…
+#[AsRoutesSource('news')]                      // Quelle eigener Adressen (RouteSource/TableSource)
 Router::endpoint('/x', fn (string $path, string $rest) => …);               // dasselbe ohne Attribut
 Router::resolver(fn (string $path, int $lang, array $query): ?RouteMatch => …);   // dynamische Adressen
 Router::onPage(fn (int $id, int $lang, array $query) => …);               // Seite gefunden (z. B. alte Parameter umleiten)
@@ -1350,9 +1350,9 @@ Addon-Klasse, `Schema::TABLES` in `getOwnedSchema()`; alles andere hängt schon 
 |---|---|
 | `src/` | Namespace `Klxm\Fluid`: Editor-API (`Api`), Blöcke (`BlockModule`, `Block`, `BlockData`), Routing, Blog, Daten (YForm), Medien, Suche |
 | `src/Data/` | YForm-Anbindung: `YFormBridge`, Formular-Baukasten `BuiltForm`, Feld `FluidBlocks`, `RecordBlocks`, `Detail`, Postfach |
-| `src/Field/` | Felder: gleichnamige Unterklassen der Felder des Cores mit Ergänzungen, Felder nur von fluid (`RichText`, `Link` …), `AsBlock`, `BlockSchema` (Schema für fluid aus den Attributen) |
+| `src/Field/` | Felder: gleichnamige Unterklassen der Felder des Cores mit Ergänzungen, Felder nur von fluid (`RichText`, `Link` …), `AsFluidBlock`, `BlockSchema` (Schema für fluid aus den Attributen) |
 | `kits/fluid/` | das Grund-Kit: `src/Module/` (Blockklassen mit Feld-Attributen), `views/` (Ausgaben), `kit.php` (Assets, Hintergründe), `design.php` (Design-Tokens, Vorlagen), `functions.php`, `lang/` |
-| `src/Kit.php`, `src/AsKit.php` | Kits: Anmeldung, Auswahl (`Kit::active()`), Vererbung, Assets |
+| `src/Kit.php`, `src/AsFluidKit.php` | Kits: Anmeldung, Auswahl (`Kit::active()`), Vererbung, Assets |
 | `kits/native/` | Kit „NativeCSS“: `template.view.php`, `views/`, `kit.php`, `assets/css/native.css`, NativeCSS in `assets/ncss/`, `src/NcssUpdate.php` (Aktualisierung) |
 | `assets/` | Editor (`editor/`), Formulare (`form.js`), Text-Editor-Plugin für TipTap (`tiptap-fluid.js`), Kit-CSS/JS (`kits/fluid/`), Schriften, MapLibre |
 | `examples/` | Vorlagen für eigene Blöcke und YForm-Tabellen |

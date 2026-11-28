@@ -8,7 +8,7 @@ use Redaxo\Core\View\Renderable;
 
 /**
  * List template of a list block (Data\ListTemplates): key of the chosen template, empty = own settings.
- * In fluid as tiles with a preview per template of the chosen table; the block needs #[AsBlock(listTemplate: true)].
+ * In fluid as tiles with a preview per template of the chosen table; the block needs #[AsFluidBlock(listTemplate: true)].
  *
  * Only in fluid (own name). In ordinary core forms it behaves like a text field.
  */

@@ -2,7 +2,7 @@
 
 namespace Klxm\Fluid\Kit\Fluid\Module;
 
-use Klxm\Fluid\Field\AsBlock;
+use Klxm\Fluid\Field\AsFluidBlock;
 use Klxm\Fluid\Field\Checkbox;
 use Klxm\Fluid\Field\Choice;
 use Klxm\Fluid\Field\Collection;
@@ -14,7 +14,7 @@ use Redaxo\Core\Content\AsModule;
 use Redaxo\Core\Translation\Translatable;
 
 #[AsModule('fluid.gallery', new Translatable('fluid_block_gallery'))]
-#[AsBlock(
+#[AsFluidBlock(
     icon: 'images',
     group: new Translatable('fluid_block_group_media'),
     help: new Translatable('fluid_block_gallery_help'),

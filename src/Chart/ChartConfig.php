@@ -11,7 +11,7 @@ namespace Klxm\Fluid\Chart;
  */
 final readonly class ChartConfig
 {
-    /** @param string $engine name of an engine registered via #[AsChartEngine] (default: echarts) */
+    /** @param string $engine name of an engine registered via #[AsFluidChartEngine] (default: echarts) */
     public function __construct(
         public string $engine = 'echarts',
     ) {}

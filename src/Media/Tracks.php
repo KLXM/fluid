@@ -2,7 +2,7 @@
 
 namespace Klxm\Fluid\Media;
 
-use Klxm\Routes\Attribute\AsEndpoint;
+use Klxm\Routes\Attribute\AsRoutesEndpoint;
 use Redaxo\Core\Core;
 use Redaxo\Core\Filesystem\Path;
 use Redaxo\Core\Language\Language;
@@ -38,7 +38,7 @@ final class Tracks
     private const int MAX_CUES = 5000;
 
     /** @internal Subtitles from the media pool at /fluid-track/{file} (validated as WebVTT) */
-    #[AsEndpoint(self::ROUTE . '*')]
+    #[AsRoutesEndpoint(self::ROUTE . '*')]
     public static function serve(string $path, string $rest): void
     {
         self::handle($rest);

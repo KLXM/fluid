@@ -32,7 +32,7 @@ use function str_contains;
  *   template.view.php page frame (optional, otherwise the parent kit's)
  *   assets/           CSS, JS, images – fluid publishes them to `assets/fluid-kits/{kit}/`
  *
- * Kits are registered with {@see AsKit} and inherit from a parent kit (default: `fluid`). Whatever a kit does not
+ * Kits are registered with {@see AsFluidKit} and inherit from a parent kit (default: `fluid`). Whatever a kit does not
  * provide itself – kit.php entries, views, template, assets, helper functions – comes from the parent kit. In kit.php
  * its definition is available as `$parent`. Which kit the website uses is set in the website settings
  * ({@see active()}); all block modules appear in the chosen kit, content is kept when switching.
@@ -55,7 +55,7 @@ abstract class Kit
 
     private bool $functionsLoaded = false;
 
-    private ?AsKit $attribute = null;
+    private ?AsFluidKit $attribute = null;
 
     /** @var array<string, true> Block types used in this request (for the CSS per block) */
     private array $used = [];
@@ -71,7 +71,7 @@ abstract class Kit
     // ------------------------------------------------------------------ Registration and selection
 
     /**
-     * All registered kits (`#[AsKit]` in the project, in fluid and in Composer packages).
+     * All registered kits (`#[AsFluidKit]` in the project, in fluid and in Composer packages).
      *
      * @return array<string, self> key => kit, `fluid` first
      */
@@ -79,7 +79,7 @@ abstract class Kit
     {
         if (null === self::$registry) {
             $map = [self::DEFAULT => FluidKit::class];
-            foreach (ClassDiscovery::getInstance()->discoverByAttribute(AsKit::class, self::class) as $class => $attribute) {
+            foreach (ClassDiscovery::getInstance()->discoverByAttribute(AsFluidKit::class, self::class) as $class => $attribute) {
                 $map[$attribute->key] ??= $class;
             }
             self::$registry = $map;
@@ -132,13 +132,13 @@ abstract class Kit
 
     // ------------------------------------------------------------------ Angaben des Kits
 
-    /** Key of the kit, e.g. `fluid` (from `#[AsKit]`) */
+    /** Key of the kit, e.g. `fluid` (from `#[AsFluidKit]`) */
     public function key(): string
     {
         return $this->attribute()->key ?? static::class;
     }
 
-    /** Name in the selection: `#[AsKit]`, otherwise `label` from kit.php */
+    /** Name in the selection: `#[AsFluidKit]`, otherwise `label` from kit.php */
     public function label(): string
     {
         return $this->attribute()->label ?? (string) ($this->definition()['label'] ?? $this->key());
@@ -546,10 +546,10 @@ abstract class Kit
         return in_array($background, $this->darkBackgrounds(), true);
     }
 
-    private function attribute(): ?AsKit
+    private function attribute(): ?AsFluidKit
     {
         if (null === $this->attribute) {
-            $attributes = new ReflectionClass($this)->getAttributes(AsKit::class);
+            $attributes = new ReflectionClass($this)->getAttributes(AsFluidKit::class);
             $this->attribute = isset($attributes[0]) ? $attributes[0]->newInstance() : null;
         }
 

@@ -3,7 +3,7 @@
 namespace Project\Block;
 
 use DateTimeImmutable;
-use Klxm\Fluid\Field\AsBlock;
+use Klxm\Fluid\Field\AsFluidBlock;
 use Klxm\Fluid\Field\Checkbox;
 use Klxm\Fluid\Field\Choice;
 use Klxm\Fluid\Field\DatePicker;
@@ -22,13 +22,13 @@ use function Redaxo\Core\View\escape;
 /**
  * The example module „Hinweis“ (examples/module/HinweisModule.php) as a fluid block. Compared to the module:
  *
- *  1. extends FluidBlock instead of Module, the key starts with „fluid.“, #[AsBlock] for the block picker;
+ *  1. extends FluidBlock instead of Module, the key starts with „fluid.“, #[AsFluidBlock] for the block picker;
  *  2. the fields remain those of the core – here the fluid ones of the same name, which also know `width` (half width in the
  *     sidebar); plus Link, a field only fluid has;
  *  3. output() stays output(): `$this->edit('feld')` makes a field editable directly on the page.
  */
 #[AsModule('fluid.hinweis', 'Hinweis')]
-#[AsBlock(icon: 'info', group: 'Inhalt', nestable: true, help: 'Kurzer Hinweis mit Art, Bild und Link.')]
+#[AsFluidBlock(icon: 'info', group: 'Inhalt', nestable: true, help: 'Kurzer Hinweis mit Art, Bild und Link.')]
 final class Hinweis extends FluidBlock
 {
     #[Text(

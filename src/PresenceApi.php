@@ -2,7 +2,7 @@
 
 namespace Klxm\Fluid;
 
-use Klxm\Routes\Attribute\AsEndpoint;
+use Klxm\Routes\Attribute\AsRoutesEndpoint;
 use Klxm\Routes\Router;
 use Redaxo\Core\Content\Article;
 use Redaxo\Core\Content\StructurePermission;
@@ -37,7 +37,7 @@ final class PresenceApi
     private const array SAVES = ['save', 'publish', 'restore', 'discard', 'block_add', 'block_delete', 'page_settings'];
 
     /** @internal Endpoint of the presence */
-    #[AsEndpoint('/' . self::PATH, early: true)]
+    #[AsRoutesEndpoint('/' . self::PATH, early: true)]
     public static function serve(): void
     {
         self::handle();

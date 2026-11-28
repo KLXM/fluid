@@ -3,7 +3,7 @@
 namespace Klxm\Fluid\Tiptap;
 
 use Klxm\Fluid\RichText;
-use Klxm\Tiptap\AsProfile;
+use Klxm\Tiptap\AsTiptapProfile;
 use Klxm\Tiptap\ProfileDefinition;
 use Override;
 use Redaxo\Core\Translation\Translatable;
@@ -15,7 +15,7 @@ use Redaxo\Core\Translation\Translatable;
  *
  * Projects adapt it like any profile: a class with the same name (`tiptap.fluid`) in the project wins.
  */
-#[AsProfile('tiptap.fluid', 'fluid', description: new Translatable('fluid_tiptap_profile_desc'), priority: -10)]
+#[AsTiptapProfile('tiptap.fluid', 'fluid', description: new Translatable('fluid_tiptap_profile_desc'), priority: -10)]
 final class FluidProfile extends ProfileDefinition
 {
     public const string NAME = 'tiptap.fluid';

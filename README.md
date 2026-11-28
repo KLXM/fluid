@@ -459,7 +459,7 @@ Ein eigener Block in Kürze – ein Modul des Cores mit anderer Basisklasse:
 ```php
 // src/Block/Teaser.php
 #[AsModule('fluid.teaser', 'Teaser')]
-#[AsBlock(icon: 'star', group: 'Inhalt')]
+#[AsFluidBlock(icon: 'star', group: 'Inhalt')]
 final class Teaser extends FluidBlock
 {
     #[Text('Überschrift', required: true)]
