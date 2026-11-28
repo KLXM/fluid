@@ -264,7 +264,8 @@ php bin/console migrate
 ```
 
 YForm ist das einzige externe AddOn, das fluid nutzt, und auch das ist optional: Ohne YForm fehlen nur Formulare,
-Datenlisten und das Postfach. Für die Bildbearbeitung auf der
+Datenlisten und das Postfach. Adressen, Domains und SEO kommen aus [klxm/routes](https://github.com/KLXM/routes);
+fluid lässt sich deshalb nicht zusammen mit yrewrite installieren. Bitte yrewrite vorher entfernen. Für die Bildbearbeitung auf der
 Website gibt es das AddOn [image_editor](https://github.com/KLXM/image_editor) (optional, das
 Installationsskript nimmt es mit):
 
