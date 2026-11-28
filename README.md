@@ -264,8 +264,11 @@ php bin/console migrate
 ```
 
 YForm ist das einzige externe AddOn, das fluid nutzt, und auch das ist optional: Ohne YForm fehlen nur Formulare,
-Datenlisten und das Postfach. Adressen, Domains und SEO kommen aus [klxm/routes](https://github.com/KLXM/routes);
-fluid lässt sich deshalb nicht zusammen mit yrewrite installieren. Bitte yrewrite vorher entfernen. Für die Bildbearbeitung auf der
+Datenlisten und das Postfach. Adressen, Domains und SEO kommen aus [klxm/routes](https://github.com/KLXM/routes).
+Die Bearbeitung auf der Website baut darauf auf, etwa beim Domainwechsel, bei der Anmeldung über alle Domains und bei
+den SEO-Hinweisen. routes und yrewrite erfüllen dieselbe Aufgabe und lassen sich deshalb nicht gemeinsam installieren.
+Ein Projekt mit yrewrite kann fluid daher erst nach einem Wechsel zu routes nutzen. Mehr dazu steht unter
+[routes und yrewrite](https://github.com/KLXM/routes/blob/main/README.de.md#routes-und-yrewrite). Für die Bildbearbeitung auf der
 Website gibt es das AddOn [image_editor](https://github.com/KLXM/image_editor) (optional, das
 Installationsskript nimmt es mit):
 
