@@ -827,15 +827,22 @@ Extension::register('FLUID_SITE_TRANSLATIONS', static function (ExtensionPoint $
 
 ## Videos
 
-- **Vorschaubild:** Media-Manager-Typ `fluid_poster` – bei einem Video ein typisches Standbild per ffmpeg (bei ~10 % der
-  Laufzeit), bei einem Bild nur verkleinert; Ausgabe AVIF/WebP, gespeichert im Cache des Media Managers. Ohne ffmpeg
-  gibt es nur gewählte Vorschaubilder. Pfad bei Bedarf über `FFMPEG_BIN` / `FFPROBE_BIN` in `.env`.
-  `MediaManager::getUrl('fluid_poster', 'film.mp4')` funktioniert auch in eigenen Templates.
-- **Untertitel und Kapitel:** `.vtt` oder `.srt` im Medienpool, im Block je Spur Sprache und Art. fluid liefert sie geprüft
-  als WebVTT unter `/fluid-track/{datei}` aus (SRT umgewandelt; nur erlaubte WebVTT-Tags). Option „gleich einschalten“
-  wählt die Spur in der Sprache der Seite; „Transkript“ zeigt den Text darunter (`<details>`).
-- Eigene Ausgabe: `fluid_video_embed($url, $datei, $poster, $format, $titel, $spuren, $einschalten, $transkript)`
-  bzw. `Klxm\Fluid\Media\Tracks` (`parse()`, `toVtt()`, `transcript()`).
+Für eigene Videodateien arbeitet fluid mit dem AddOn [video_editor](https://github.com/KLXM/video_editor) zusammen. Es
+ist optional, so wie image_editor für Bilder.
+
+| | ohne video_editor | mit video_editor |
+|---|---|---|
+| Quellen | die Originaldatei | Web-Fassungen (480p/720p/1080p je nach Bildschirm, WebM) |
+| Vorschaubild | nur ein gewähltes Bild | gewähltes Bild, sonst das im Video-Editor gesetzte Poster, sonst ein Standbild per ffmpeg |
+| Untertitel und Kapitel | gewählte `.vtt`-Dateien, so wie sie sind | `.vtt` und `.srt`, geprüft und gesäubert als WebVTT; ohne Auswahl im Block die im Video-Editor verknüpften Spuren |
+| Text zum Video | – | aus der Untertiteldatei in der Sprache der Seite (`<details>`) |
+
+- **Vorschaubild:** Media-Manager-Typ `fluid_poster` für gewählte Bilder (verkleinert, AVIF/WebP). Das Standbild
+  kommt von `VideoEditor::frameUrl()` (Typ `video_editor_poster`).
+- **Untertitel:** im Block je Spur Datei, Sprache und Art. „Gleich einschalten“ wählt die Spur in der Sprache der Seite.
+- **Eigene Ausgabe:** `fluid_video_embed($url, $datei, $poster, $format, $titel, $spuren, $einschalten, $transkript)`,
+  dazu `fluid_track_url($datei)` und `fluid_track_label($art, $sprache)`. Mit video_editor auch direkt
+  `VideoEditor::html()`, `sources()`, `trackUrl()` und `transcript()`.
 - **Hintergrundvideo mit Play/Pause-Schalter** (Einstieg „Vollflächig“ beider Kits, Video „Morphing“ im Kit NativeCSS):
   `fluid_video_toggle($klasse, 'icon'|'text')` gibt einen runden Symbol-Knopf aus (mind. 44 px, Fläche mit Rand, doppelter
   Fokusring). Läuft das Video, zeigt er „Pause“, angehalten „Play“; der zugängliche Name steht als Text im Knopf und wechselt
@@ -1312,7 +1319,7 @@ Umbau geht, gelten feste Regeln:
 | SEO von fluid (SEO-Felder, Bild für soziale Netzwerke, schema.org) | `src/Seo/`, `PageSettings` | `ArticleMeta`, `PageMetaResolved` | Routing, Einstellungen von fluid | bleibt im Kern |
 | Suche (Loupe) | `src/Search/` | `RoutesRebuilt` | Routing, Block-Inhalte | herauslösbar nach dem Routing |
 | Karten (MapLibre, eigener Proxy) | `src/Maps/` | Endpunkt `/proxy/*`, Geo in schema.org | Routing, Einstellungen | herauslösbar |
-| Videos und Untertitel | `src/Media/` | Endpunkt `/fluid-track/*` | Routing | herauslösbar |
+| Videos und Untertitel | AddOn video_editor (optional) | – | – | ausgelagert |
 | Datenlisten, Formulare, Postfach (YForm) | `src/Data/` | Resolver Detailseiten, Sitemap-Einträge | Routing, Blöcke, YForm | bleibt vorerst im Kern |
 | Blog | `src/Blog/` | Resolver `feed.xml`, RSS im Kopf (`PageMetaResolved`), schema.org | Routing, Seiteneinstellungen | herauslösbar |
 | MCP-Server | `src/Mcp/` | Endpunkt `/fluid-mcp` | Kern (Blöcke, Rechte) | herauslösbar |

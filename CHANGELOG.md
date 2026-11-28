@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.0-beta.22 – 2026-11-28
+
+- **Videos über das AddOn video_editor (optional, wie image_editor):** fluid bringt kein eigenes ffmpeg und keine eigene
+  Untertitel-Auslieferung mehr mit (`src/Media/Ffmpeg.php`, `src/Media/Tracks.php` und der Endpunkt `/fluid-track/*`
+  sind entfallen). Mit video_editor: Web-Fassungen, Poster oder Standbild, Untertitel auch als SRT (gesäubert) und Text
+  zum Video. Ohne: Originaldatei, gewähltes Vorschaubild, WebVTT-Dateien unverändert.
+- `fluid_poster` verkleinert nur noch gewählte Bilder; das Standbild kommt von `VideoEditor::frameUrl()`.
+- Neu für eigene Ausgaben: `fluid_track_url()` und `fluid_track_label()`. Braucht klxm/video_editor ab 1.0.0-beta.2.
+
 ## 1.0.0-beta.21 – 2026-11-28
 
 - **Umbenannt (Bruch):** Die Attribute tragen den Namen des AddOns: `#[AsBlock]` → `#[AsFluidBlock]`, `#[AsKit]` → `#[AsFluidKit]`, `#[AsChartEngine]` → `#[AsFluidChartEngine]`, `#[AsChartSource]` → `#[AsFluidChartSource]`. Eigene Elemente, Kits und Diagramm-Quellen bitte anpassen (Attribut und `use`-Zeile).

@@ -2,7 +2,7 @@
 
 use Klxm\Fluid\Block;
 use Klxm\Fluid\Kit;
-use Klxm\Fluid\Media\Ffmpeg;
+use Klxm\VideoEditor\VideoEditor;
 use Redaxo\Core\Language\Language;
 use Redaxo\Core\MediaManager\MediaManager;
 use Redaxo\Core\MediaPool\Media;
@@ -61,7 +61,7 @@ if ('morph' === $b->variant()) {
         Kit::active()->markUsed('video', '@morph');
         $mm = MediaManager::class;
         $posterFile = (string) ($d['poster'] ?? '');
-        $posterUrl = '' !== $posterFile && Media::get($posterFile) ? $mm::getUrl('fluid_poster', $posterFile) : (Ffmpeg::available() ? $mm::getUrl('fluid_poster', (string) $mv['file']) : '');
+        $posterUrl = '' !== $posterFile && Media::get($posterFile) ? $mm::getUrl('fluid_poster', $posterFile) : (class_exists(VideoEditor::class) ? (string) VideoEditor::frameUrl((string) $mv['file']) : '');
         echo '<div class="wrap nv-morph"><div class="ncss-morph ncss-morph--card"><div class="ncss-morph-stage">'
             . '<div class="ncss-morph-media nv-morph__media" data-hero-video-box><video data-hero-video muted loop playsinline preload="none" disablepictureinpicture tabindex="-1" aria-hidden="true"' . ('' !== $posterUrl ? ' poster="' . e($posterUrl) . '"' : '') . '>'
             . '<source data-src="' . e(media_url($mv)) . '" type="' . e((string) $mv['mime']) . '"></video>' . fluid_video_toggle('ncss-video-bg-toggle nv-morph__toggle') . '</div>'

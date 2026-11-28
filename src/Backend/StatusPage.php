@@ -6,10 +6,11 @@ use Closure;
 use FilesystemIterator;
 use Klxm\Fluid\Kit;
 use Klxm\Fluid\Mail\Mail;
-use Klxm\Fluid\Media\Ffmpeg;
 use Klxm\Fluid\Search\Search;
 use Klxm\Fluid\Settings;
 use Klxm\ImageEditor\ImageEditorAddon;
+use Klxm\VideoEditor\Ffmpeg as VideoFfmpeg;
+use Klxm\VideoEditor\VideoEditor;
 use Klxm\Routes\Redirects;
 use Klxm\Routes\Routes;
 use Klxm\Routes\Sites;
@@ -57,6 +58,7 @@ final class StatusPage
         $site = $start ? $start->getUrl(['fluid_edit' => 1]) : Url::frontend();
 
         // [status, area, text]; status: ok | warn | info
+        $video = class_exists(VideoEditor::class);
         $rows = [
             [$start ? 'ok' : 'warn', I18n::rawMsg('fluid_backend_status_start'), $start ? I18n::rawMsg('fluid_backend_status_start_ok', escape($start->name), escape((string) $start->templateKey)) . ('fluid' === $start->templateKey ? '' : ' ' . I18n::msg('fluid_backend_status_start_not_fluid')) : I18n::msg('fluid_backend_status_start_none')],
             ['ok', I18n::rawMsg('fluid_backend_status_kit'), escape($kit->label()) . ' (' . escape($kit->key()) . ')' . (null !== ($parent = $kit->parent()) ? ' – ' . I18n::rawMsg('fluid_backend_status_kit_inherits', escape($parent->label())) : '')
@@ -70,7 +72,7 @@ final class StatusPage
                 : ($mail['configured'] ? escape($mail['transport']) . ('' !== $mail['from'] ? ' · ' . I18n::rawMsg('fluid_backend_status_mail_from', escape($mail['from'])) : ' · ' . I18n::msg('fluid_backend_status_mail_from_missing')) : I18n::msg('fluid_backend_status_mail_null'))
                 . ($mail['detour'] ? ' · ' . I18n::rawMsg('fluid_backend_status_mail_detour', escape(implode(', ', $mail['detour']))) : '') . ' – ' . I18n::msg('fluid_backend_status_mail_details')],
             [extension_loaded('pdo_sqlite') ? 'ok' : 'warn', I18n::rawMsg('fluid_backend_status_search'), extension_loaded('pdo_sqlite') ? I18n::msg('fluid_backend_status_search_ok') : I18n::msg('fluid_backend_status_search_missing')],
-            [Ffmpeg::available() ? 'ok' : 'info', I18n::rawMsg('fluid_backend_status_video'), Ffmpeg::available() ? 'ffmpeg ' . escape(Ffmpeg::bin()) : I18n::msg('fluid_backend_status_video_missing')],
+            [$video ? 'ok' : 'info', I18n::rawMsg('fluid_backend_status_video'), $video ? I18n::msg('fluid_backend_status_video_ok') . (VideoFfmpeg::available() ? '' : ' · ' . I18n::msg('fluid_backend_status_video_no_ffmpeg')) : I18n::msg('fluid_backend_status_video_missing')],
             [Addon::exists('yform') ? 'ok' : 'info', 'YForm', Addon::exists('yform') ? I18n::msg('fluid_backend_status_yform_ok') : I18n::msg('fluid_backend_status_yform_missing')],
             [class_exists(ImageEditorAddon::class) ? 'ok' : 'info', I18n::rawMsg('fluid_backend_status_image_editor'), class_exists(ImageEditorAddon::class) ? I18n::msg('fluid_backend_status_image_editor_ok') : I18n::msg('fluid_backend_status_image_editor_missing')],
             [$n404 > 0 ? 'info' : 'ok', I18n::rawMsg('fluid_backend_status_404'), I18n::msg('fluid_backend_status_404_text', $n404)],

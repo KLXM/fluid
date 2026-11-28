@@ -22,7 +22,8 @@ dann fehlen nur diese Teile. Alles andere ist eingebaut:
 
 Optional dazu gibt es [image_editor](https://github.com/KLXM/image_editor), ebenfalls von KLXM,
 zum Zuschneiden und Drehen von Bildern direkt auf der Website, mit Fokuspunkt und eigenem Ausschnitt je Bildformat.
-fluid läuft auch ohne.
+Für Videos gibt es [video_editor](https://github.com/KLXM/video_editor): Web-Fassungen, Poster und Standbild, Untertitel
+(auch SRT) und Text zum Video. fluid läuft auch ohne beide.
 
 ![Die Demo-Website mit fluid](docs/bilder/website.jpg)
 
@@ -142,7 +143,7 @@ allen Seiten, Beispieldaten, Bildern und dem Design „REDAXO · Blau“.
 | **MySQL oder MariaDB** | MySQL 8.4 / MariaDB 10.11 oder neuer | in Herd/Laragon/MAMP enthalten, sonst [DBngin](https://dbngin.com) (Mac) |
 | **git** | beliebig | meist schon da: `git --version` |
 | Composer | 2.9 oder neuer | **lädt das Skript selbst**, wenn deins fehlt oder älter ist |
-| ffmpeg | optional | nur für automatische Video-Vorschaubilder |
+| ffmpeg | optional | nur mit dem AddOn video_editor: Web-Fassungen und Standbilder als Vorschaubild |
 
 Prüfen kannst du PHP mit `php -v` – dort sollte `8.5` stehen.
 
@@ -270,10 +271,12 @@ den SEO-Hinweisen. routes und yrewrite erfüllen dieselbe Aufgabe und lassen sic
 Ein Projekt mit yrewrite kann fluid daher erst nach einem Wechsel zu routes nutzen. Mehr dazu steht unter
 [routes und yrewrite](https://github.com/KLXM/routes/blob/main/README.de.md#routes-und-yrewrite). Für die Bildbearbeitung auf der
 Website gibt es das AddOn [image_editor](https://github.com/KLXM/image_editor) (optional, das
-Installationsskript nimmt es mit):
+Installationsskript nimmt es mit), für Videos das AddOn [video_editor](https://github.com/KLXM/video_editor) (optional,
+braucht für Web-Fassungen und Standbilder ffmpeg):
 
 ```bash
 composer require klxm/image_editor:^1.0@beta && php bin/console migrate
+composer require klxm/video_editor:^1.0@beta && php bin/console migrate
 ```
 
 Danach entweder auf der Website „Erste Schritte“ nutzen oder in der Konsole:

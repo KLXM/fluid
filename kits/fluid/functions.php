@@ -15,11 +15,9 @@ use Klxm\Fluid\InlineStyle;
 use Klxm\Fluid\Kit;
 use Klxm\Fluid\Kit\Fluid\FluidKit;
 use Klxm\Fluid\Legal\Legal;
-use Klxm\Fluid\Media\Ffmpeg;
 use Klxm\Fluid\Media\ImageFit;
 use Klxm\Fluid\Media\ImagePlace;
 use Klxm\Fluid\Media\ImagePlaces;
-use Klxm\Fluid\Media\Tracks;
 use Klxm\Fluid\RichText;
 use Klxm\Fluid\Settings;
 use Klxm\ImageEditor\ImageEditor;
@@ -758,7 +756,8 @@ function fluid_video_embed(string $url, string $file, string $poster, string $ra
 }
 
 /**
- * Own video file: poster (chosen or still frame via ffmpeg), subtitle tracks, transcript.
+ * Own video file: poster, subtitle tracks, transcript. The addon video_editor (optional) adds web versions, a still
+ * frame as poster (ffmpeg), SRT files and the transcript; without it: chosen poster, WebVTT files as they are.
  */
 function fluid_video_file(Media $video, string $poster, string $ratio, string $label, array $tracks, bool $ccOn, bool $transcript): string
 {
@@ -766,7 +765,7 @@ function fluid_video_file(Media $video, string $poster, string $ratio, string $l
     // AddOn video_editor (optional): poster and web versions chosen there (WebM, 480p/720p/1080p depending on screen) – without it the original
     $ve = class_exists(VideoEditor::class);
     $p = '' !== $poster ? Media::get($poster) : ($ve ? VideoEditor::poster($video->fileName) : null);
-    $posterUrl = $p ? $mm::getUrl('fluid_poster', $p) : (Ffmpeg::available() ? $mm::getUrl('fluid_poster', $video) : '');
+    $posterUrl = $p ? $mm::getUrl('fluid_poster', $p) : ($ve ? (string) VideoEditor::frameUrl($video->fileName) : '');
     $sources = $ve ? VideoEditor::sources($video->fileName) : [];
     $sources = $sources ?: [['url' => $video->getUrl(), 'type' => (string) $video->type]];
     // subtitles from the video editor if none are chosen in the block
@@ -782,7 +781,8 @@ function fluid_video_file(Media $video, string $poster, string $ratio, string $l
         $f = trim((string) ($t['file'] ?? ''));
         $code = strtolower(trim((string) ($t['lang'] ?? '')));
         $kind = in_array($t['kind'] ?? '', ['subtitles', 'captions', 'chapters'], true) ? $t['kind'] : 'subtitles';
-        if ('' === $f || !preg_match('~^[a-z]{2,3}(-[a-z0-9]{2,8})?$~', $code) || !Media::get($f)) {
+        $src = '' !== $f && preg_match('~^[a-z]{2,3}(-[a-z0-9]{2,8})?$~', $code) ? fluid_track_url($f) : null;
+        if (null === $src) {
             continue;
         }
         $default = $ccOn && !$on && 'chapters' !== $kind && $code === $lang;
@@ -790,16 +790,16 @@ function fluid_video_file(Media $video, string $poster, string $ratio, string $l
         if ('chapters' !== $kind && (null === $first || $code === $lang && $first['lang'] !== $lang)) {
             $first = ['file' => $f, 'lang' => $code];
         }
-        $out .= '<track kind="' . e($kind) . '" src="' . e(Tracks::url($f)) . '" srclang="' . e($code) . '" label="'
-            . e(Tracks::label($kind, $code, (string) ($t['label'] ?? ''))) . '"' . ($default ? ' default' : '') . '>';
+        $out .= '<track kind="' . e($kind) . '" src="' . e($src) . '" srclang="' . e($code) . '" label="'
+            . e(fluid_track_label($kind, $code, (string) ($t['label'] ?? ''))) . '"' . ($default ? ' default' : '') . '>';
     }
     // subtitles from the same address (crossorigin needed as soon as media come from another domain)
     $h = '<div class="vembed r-' . e($ratio) . '"><video controls preload="none" playsinline' . ('' !== $posterUrl ? ' poster="' . e($posterUrl) . '"' : '')
         . ('' !== $label ? ' aria-label="' . e($label) . '"' : '') . '>'
         . implode('', array_map(static fn (array $src) => '<source src="' . e($src['url']) . '" type="' . e($src['type']) . '"'
             . (($src['media'] ?? '') !== '' ? ' media="' . e($src['media']) . '"' : '') . '>', $sources)) . $out . '</video></div>';
-    if ($transcript && $first) {
-        $paras = Tracks::transcript(Tracks::cuesOf($first['file']));
+    if ($transcript && $first && $ve) {
+        $paras = VideoEditor::transcript($first['file']);
         if ($paras) {
             $h .= '<details class="vtranscript"><summary>' . e(lt('Text zum Video')) . '</summary><div class="vtranscript__body" lang="' . e($first['lang']) . '">'
                 . implode('', array_map(static fn ($t) => '<p>' . e($t) . '</p>', $paras)) . '</div></details>';
@@ -810,8 +810,42 @@ function fluid_video_file(Media $video, string $poster, string $ratio, string $l
 }
 
 /**
+ * Address of a subtitle or chapter file from the media pool: with the addon video_editor as cleaned WebVTT (also SRT),
+ * without it WebVTT files as they are. Null if the file can't be used.
+ */
+function fluid_track_url(string $file): ?string
+{
+    if (class_exists(VideoEditor::class)) {
+        return VideoEditor::trackUrl($file);
+    }
+    $m = '' !== $file ? Media::get($file) : null;
+
+    return null !== $m && 'vtt' === strtolower($m->getExtension()) ? $m->getUrl() : null;
+}
+
+/** Label of a track in the player's selection: own label, otherwise the language (CC for captions) */
+function fluid_track_label(string $kind, string $lang, string $label = ''): string
+{
+    if ('' !== trim($label)) {
+        return trim($label);
+    }
+    $names = ['de' => 'Deutsch', 'en' => 'English', 'fr' => 'Français', 'es' => 'Español', 'it' => 'Italiano', 'nl' => 'Nederlands', 'pl' => 'Polski',
+        'tr' => 'Türkçe', 'ar' => 'العربية', 'ru' => 'Русский', 'uk' => 'Українська', 'pt' => 'Português', 'el' => 'Ελληνικά', 'sl' => 'Slovenščina'];
+    foreach (Language::getAll() as $l) {
+        $names[$l->code] ??= $l->name;
+    }
+    $n = $names[strtolower(substr($lang, 0, 2))] ?? strtoupper($lang);
+
+    return match ($kind) {
+        'captions' => $n . ' (CC)',
+        'chapters' => $n . ' – ' . lt('Kapitel'),
+        default => $n,
+    };
+}
+
+/**
  * Audio files of the block „Video & Audio“ (display audio) for output: only existing audio files, title from the
- * block or the media pool, chapters as validated WebVTT (/fluid-track/…).
+ * block or the media pool, chapters as WebVTT (see fluid_track_url()).
  *
  * @return list<array{url: string, mime: string, title: string, artist: string, chapters: string}>
  */
@@ -826,7 +860,7 @@ function fluid_audio_tracks(array $items): array
         $ch = trim((string) ($it['chapters'] ?? ''));
         $title = trim((string) ($it['title'] ?? ''));
         $out[] = ['url' => media_url($m), 'mime' => $m['mime'], 'title' => '' !== $title ? $title : ((string) $m['title'] ?: (string) $m['file']),
-            'artist' => trim((string) ($it['artist'] ?? '')), 'chapters' => '' !== $ch && Media::get($ch) ? Tracks::url($ch) : ''];
+            'artist' => trim((string) ($it['artist'] ?? '')), 'chapters' => (string) fluid_track_url($ch)];
     }
 
     return $out;
